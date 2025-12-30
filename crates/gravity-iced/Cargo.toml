@@ -1,0 +1,20 @@
+[package]
+name = "gravity-iced"
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+documentation = { workspace = true }
+description = "Iced backend implementation for Gravity UI framework"
+readme = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+
+[dependencies]
+gravity-core = { path = "../gravity-core" }
+iced = { workspace = true }
+
+[lints]
+workspace = true

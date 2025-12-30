@@ -32,16 +32,16 @@ examples/                    # Example applications
 
 **Purpose**: Initialize Cargo workspace and core project structure
 
-- [ ] T001 Create Cargo workspace manifest at Cargo.toml with all 5 crates
-- [ ] T002 [P] Initialize gravity-core crate at crates/gravity-core/Cargo.toml
-- [ ] T003 [P] Initialize gravity-macros crate at crates/gravity-macros/Cargo.toml (proc-macro = true)
-- [ ] T004 [P] Initialize gravity-runtime crate at crates/gravity-runtime/Cargo.toml
-- [ ] T005 [P] Initialize gravity-iced crate at crates/gravity-iced/Cargo.toml
-- [ ] T006 [P] Initialize gravity-cli crate at crates/gravity-cli/Cargo.toml
-- [ ] T007 [P] Configure rustfmt.toml with project formatting rules
-- [ ] T008 [P] Configure clippy.toml with lint rules
-- [ ] T009 Create .github/workflows/ci.yml for CI pipeline (test, clippy, fmt)
-- [ ] T010 Create examples/ directory structure with placeholder README
+- [X] T001 Create Cargo workspace manifest at Cargo.toml with all 5 crates
+- [X] T002 [P] Initialize gravity-core crate at crates/gravity-core/Cargo.toml
+- [X] T003 [P] Initialize gravity-macros crate at crates/gravity-macros/Cargo.toml (proc-macro = true)
+- [X] T004 [P] Initialize gravity-runtime crate at crates/gravity-runtime/Cargo.toml
+- [X] T005 [P] Initialize gravity-iced crate at crates/gravity-iced/Cargo.toml
+- [X] T006 [P] Initialize gravity-cli crate at crates/gravity-cli/Cargo.toml
+- [X] T007 [P] Configure rustfmt.toml with project formatting rules
+- [X] T008 [P] Configure clippy.toml with lint rules
+- [X] T009 Create .github/workflows/ci.yml for CI pipeline (test, clippy, fmt)
+- [X] T010 Create examples/ directory structure with placeholder README
 
 ---
 
@@ -53,38 +53,38 @@ examples/                    # Example applications
 
 ### Core Types (gravity-core)
 
-- [ ] T011 [P] Implement Span type in crates/gravity-core/src/ir/span.rs
-- [ ] T012 [P] Implement WidgetKind enum in crates/gravity-core/src/ir/node.rs
-- [ ] T013 Implement WidgetNode struct in crates/gravity-core/src/ir/node.rs (depends on T011, T012)
-- [ ] T014 [P] Implement AttributeValue enum in crates/gravity-core/src/ir/node.rs
-- [ ] T015 [P] Implement EventBinding and EventKind in crates/gravity-core/src/ir/node.rs
-- [ ] T016 Implement GravityDocument struct in crates/gravity-core/src/ir/mod.rs
-- [ ] T017 Add serde derives to all IR types for serialization
-- [ ] T018 Create crates/gravity-core/src/ir/mod.rs exporting all IR types
+- [X] T011 [P] Implement Span type in crates/gravity-core/src/ir/span.rs
+- [X] T012 [P] Implement WidgetKind enum in crates/gravity-core/src/ir/node.rs
+- [X] T013 Implement WidgetNode struct in crates/gravity-core/src/ir/node.rs (depends on T011, T012)
+- [X] T014 [P] Implement AttributeValue enum in crates/gravity-core/src/ir/node.rs
+- [X] T015 [P] Implement EventBinding and EventKind in crates/gravity-core/src/ir/node.rs
+- [X] T016 Implement GravityDocument struct in crates/gravity-core/src/ir/mod.rs
+- [X] T017 Add serde derives to all IR types for serialization
+- [X] T018 Create crates/gravity-core/src/ir/mod.rs exporting all IR types
 
 ### Expression AST (gravity-core)
 
-- [ ] T019 [P] Implement Expr enum in crates/gravity-core/src/expr/ast.rs
-- [ ] T020 [P] Implement FieldAccessExpr in crates/gravity-core/src/expr/ast.rs
-- [ ] T021 [P] Implement MethodCallExpr in crates/gravity-core/src/expr/ast.rs
-- [ ] T022 [P] Implement BinaryOpExpr and BinaryOp in crates/gravity-core/src/expr/ast.rs
-- [ ] T023 [P] Implement UnaryOpExpr and UnaryOp in crates/gravity-core/src/expr/ast.rs
-- [ ] T024 [P] Implement ConditionalExpr in crates/gravity-core/src/expr/ast.rs
-- [ ] T025 [P] Implement LiteralExpr in crates/gravity-core/src/expr/ast.rs
-- [ ] T026 Implement BindingExpr wrapper in crates/gravity-core/src/expr/ast.rs
-- [ ] T027 Create crates/gravity-core/src/expr/mod.rs exporting AST types
+- [X] T019 [P] Implement Expr enum in crates/gravity-core/src/expr/ast.rs
+- [X] T020 [P] Implement FieldAccessExpr in crates/gravity-core/src/expr/ast.rs
+- [X] T021 [P] Implement MethodCallExpr in crates/gravity-core/src/expr/ast.rs
+- [X] T022 [P] Implement BinaryOpExpr and BinaryOp in crates/gravity-core/src/expr/ast.rs
+- [X] T023 [P] Implement UnaryOpExpr and UnaryOp in crates/gravity-core/src/expr/ast.rs
+- [X] T024 [P] Implement ConditionalExpr in crates/gravity-core/src/expr/ast.rs
+- [X] T025 [P] Implement LiteralExpr in crates/gravity-core/src/expr/ast.rs
+- [X] T026 Implement BindingExpr wrapper in crates/gravity-core/src/expr/ast.rs
+- [X] T027 Create crates/gravity-core/src/expr/mod.rs exporting AST types
 
 ### Error Types (gravity-core)
 
-- [ ] T028 [P] Implement ParseError and ParseErrorKind in crates/gravity-core/src/parser/error.rs
-- [ ] T029 [P] Implement BindingError and BindingErrorKind in crates/gravity-core/src/expr/error.rs
-- [ ] T030 Implement Display trait for ParseError with span formatting
+- [X] T028 [P] Implement ParseError and ParseErrorKind in crates/gravity-core/src/parser/error.rs
+- [X] T029 [P] Implement BindingError and BindingErrorKind in crates/gravity-core/src/expr/error.rs
+- [X] T030 Implement Display trait for ParseError with span formatting
 
 ### Backend Trait (gravity-core)
 
-- [ ] T031 Define Backend trait in crates/gravity-core/src/traits/backend.rs
-- [ ] T032 Create crates/gravity-core/src/traits/mod.rs exporting Backend trait
-- [ ] T033 Create crates/gravity-core/src/lib.rs with public exports
+- [X] T031 Define Backend trait in crates/gravity-core/src/traits/backend.rs
+- [X] T032 Create crates/gravity-core/src/traits/mod.rs exporting Backend trait
+- [X] T033 Create crates/gravity-core/src/lib.rs with public exports
 
 **Checkpoint**: Foundation ready - gravity-core compiles with `cargo check -p gravity-core`
 

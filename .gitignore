@@ -1,0 +1,60 @@
+# Rust
+target/
+debug/
+release/
+*.rs.bk
+*.rlib
+*.prof*
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Logs
+*.log
+log/
+
+# Build artifacts
+*.o
+*.so
+*.a
+*.exe
+*.dll
+*.dylib
+
+# Profiling
+*.png
+flamegraph.svg
+criterion/
+
+# Generated documentation
+doc/
+target/doc/
+
+# Coverage
+coverage/
+tarpaulin-report.html
+*.profraw
+
+# Editor backups
+*~
+*.bak
+*.orig
+
+# Temporary files
+*.tmp
+*.temp

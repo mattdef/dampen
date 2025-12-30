@@ -1,0 +1,21 @@
+[package]
+name = "gravity-core"
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+documentation = { workspace = true }
+description = "Core parser, IR, and traits for Gravity UI framework"
+readme = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+roxmltree = { workspace = true }
+
+[lints]
+workspace = true
