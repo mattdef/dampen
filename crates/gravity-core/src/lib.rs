@@ -13,17 +13,23 @@ pub mod parser;
 pub mod traits;
 
 // Public exports
-pub use binding::{BindingValue, UiBindable};
+pub use binding::{BindingValue, ToBindingValue, UiBindable};
 pub use expr::{
-    BinaryOp, BinaryOpExpr, BindingError, BindingErrorKind, BindingExpr, ConditionalExpr, Expr,
-    FieldAccessExpr, LiteralExpr, MethodCallExpr, UnaryOp, UnaryOpExpr,
+    evaluate_binding_expr, evaluate_expr, evaluate_formatted, BinaryOp, BinaryOpExpr, BindingError,
+    BindingErrorKind, BindingExpr, ConditionalExpr, Expr, FieldAccessExpr, LiteralExpr,
+    MethodCallExpr, UnaryOp, UnaryOpExpr,
 };
+pub use handler::{HandlerEntry, HandlerRegistry, HandlerSignature};
 pub use ir::{
-    AttributeValue, EventBinding, EventKind, GravityDocument, SchemaVersion, Span, WidgetKind,
-    WidgetNode,
+    AttributeValue, EventBinding, EventKind, GravityDocument, InterpolatedPart, SchemaVersion,
+    Span, WidgetKind, WidgetNode,
 };
-pub use parser::{parse, ParseError, ParseErrorKind};
+pub use parser::error::{ParseError, ParseErrorKind};
+pub use parser::parse;
 pub use traits::Backend;
+
+// Re-export for convenience
+pub use expr::tokenize_binding_expr;
 
 /// Version of the Gravity framework
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

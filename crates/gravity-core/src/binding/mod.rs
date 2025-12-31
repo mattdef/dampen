@@ -1,12 +1,14 @@
 //! Binding system types
 
 /// Trait for types that expose bindable fields
-pub trait UiBindable: serde::Serialize + for<'de> serde::Deserialize<'de> {
+pub trait UiBindable {
     /// Get a field value by path
     fn get_field(&self, path: &[&str]) -> Option<BindingValue>;
 
     /// List available field paths for error suggestions
-    fn available_fields() -> Vec<String>;
+    fn available_fields() -> Vec<String>
+    where
+        Self: Sized;
 }
 
 /// Value returned from a binding evaluation
@@ -42,6 +44,73 @@ impl BindingValue {
             BindingValue::Float(f) => *f != 0.0,
             BindingValue::List(l) => !l.is_empty(),
             BindingValue::None => false,
+        }
+    }
+
+    /// Create BindingValue from a value
+    pub fn from_value<T: ToBindingValue>(value: &T) -> Self {
+        value.to_binding_value()
+    }
+}
+
+/// Trait for converting types to BindingValue
+pub trait ToBindingValue {
+    fn to_binding_value(&self) -> BindingValue;
+}
+
+impl ToBindingValue for String {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::String(self.clone())
+    }
+}
+
+impl ToBindingValue for &str {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::String(self.to_string())
+    }
+}
+
+impl ToBindingValue for i32 {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::Integer(*self as i64)
+    }
+}
+
+impl ToBindingValue for i64 {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::Integer(*self)
+    }
+}
+
+impl ToBindingValue for f32 {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::Float(*self as f64)
+    }
+}
+
+impl ToBindingValue for f64 {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::Float(*self)
+    }
+}
+
+impl ToBindingValue for bool {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::Bool(*self)
+    }
+}
+
+impl<T: ToBindingValue> ToBindingValue for Vec<T> {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::List(self.iter().map(|v| v.to_binding_value()).collect())
+    }
+}
+
+impl<T: ToBindingValue> ToBindingValue for Option<T> {
+    fn to_binding_value(&self) -> BindingValue {
+        match self {
+            Some(v) => v.to_binding_value(),
+            None => BindingValue::None,
         }
     }
 }

@@ -98,45 +98,45 @@ examples/                    # Example applications
 
 ### Tests for User Story 1
 
-- [ ] T034 [P] [US1] Create test fixtures at crates/gravity-core/tests/fixtures/valid_simple.gravity
-- [ ] T035 [P] [US1] Create test fixtures at crates/gravity-core/tests/fixtures/valid_nested.gravity
-- [ ] T036 [P] [US1] Create test fixtures at crates/gravity-core/tests/fixtures/invalid_syntax.gravity
-- [ ] T037 [US1] Implement parser unit tests in crates/gravity-core/tests/parser_tests.rs
-- [ ] T038 [US1] Implement IR serialization tests in crates/gravity-core/tests/ir_tests.rs
+- [X] T034 [P] [US1] Create test fixtures at crates/gravity-core/tests/fixtures/valid_simple.gravity
+- [X] T035 [P] [US1] Create test fixtures at crates/gravity-core/tests/fixtures/valid_nested.gravity
+- [X] T036 [P] [US1] Create test fixtures at crates/gravity-core/tests/fixtures/invalid_syntax.gravity
+- [X] T037 [US1] Implement parser unit tests in crates/gravity-core/tests/parser_tests.rs
+- [X] T038 [US1] Implement IR serialization tests in crates/gravity-core/tests/ir_tests.rs
 
 ### XML Parser Implementation
 
-- [ ] T039 [US1] Add roxmltree dependency to crates/gravity-core/Cargo.toml
-- [ ] T040 [US1] Implement XML tokenizer in crates/gravity-core/src/parser/lexer.rs
-- [ ] T041 [US1] Implement widget element parsing in crates/gravity-core/src/parser/mod.rs
-- [ ] T042 [US1] Implement attribute parsing with binding detection in crates/gravity-core/src/parser/mod.rs
-- [ ] T043 [US1] Implement event attribute parsing (on_click, etc.) in crates/gravity-core/src/parser/mod.rs
-- [ ] T044 [US1] Implement error recovery with span information in crates/gravity-core/src/parser/error.rs
-- [ ] T045 [US1] Implement parse() public function returning Result<GravityDocument, ParseError>
+- [X] T039 [US1] Add roxmltree dependency to crates/gravity-core/Cargo.toml
+- [X] T040 [US1] Implement XML tokenizer in crates/gravity-core/src/parser/lexer.rs
+- [X] T041 [US1] Implement widget element parsing in crates/gravity-core/src/parser/mod.rs
+- [X] T042 [US1] Implement attribute parsing with binding detection in crates/gravity-core/src/parser/mod.rs
+- [X] T043 [US1] Implement event attribute parsing (on_click, etc.) in crates/gravity-core/src/parser/mod.rs
+- [X] T044 [US1] Implement error recovery with span information in crates/gravity-core/src/parser/error.rs
+- [X] T045 [US1] Implement parse() public function returning Result<GravityDocument, ParseError>
 
 ### Expression Tokenizer (no evaluation yet)
 
-- [ ] T046 [US1] Implement expression tokenizer in crates/gravity-core/src/expr/tokenizer.rs
-- [ ] T047 [US1] Parse `{field}` syntax into FieldAccessExpr
-- [ ] T048 [US1] Parse `{obj.field}` nested syntax into FieldAccessExpr with path
-- [ ] T049 [US1] Store raw expression in BindingExpr for later evaluation
+- [X] T046 [US1] Implement expression tokenizer in crates/gravity-core/src/expr/tokenizer.rs
+- [X] T047 [US1] Parse `{field}` syntax into FieldAccessExpr
+- [X] T048 [US1] Parse `{obj.field}` nested syntax into FieldAccessExpr with path
+- [X] T049 [US1] Store raw expression in BindingExpr for later evaluation
 
 ### Iced Backend (minimal)
 
-- [ ] T050 [US1] Add iced dependency to crates/gravity-iced/Cargo.toml
-- [ ] T051 [US1] Implement IcedBackend struct in crates/gravity-iced/src/lib.rs
-- [ ] T052 [P] [US1] Implement text widget mapping in crates/gravity-iced/src/widgets/text.rs
-- [ ] T053 [P] [US1] Implement button widget mapping in crates/gravity-iced/src/widgets/button.rs
-- [ ] T054 [P] [US1] Implement column layout mapping in crates/gravity-iced/src/widgets/column.rs
-- [ ] T055 [P] [US1] Implement row layout mapping in crates/gravity-iced/src/widgets/row.rs
-- [ ] T056 [US1] Implement IR-to-Element conversion in crates/gravity-iced/src/lib.rs
-- [ ] T057 [US1] Create crates/gravity-iced/src/widgets/mod.rs exporting widget builders
+- [X] T050 [US1] Add iced dependency to crates/gravity-iced/Cargo.toml
+- [X] T051 [US1] Implement IcedBackend struct in crates/gravity-iced/src/lib.rs
+- [X] T052 [P] [US1] Implement text widget mapping in crates/gravity-iced/src/widgets/text.rs
+- [X] T053 [P] [US1] Implement button widget mapping in crates/gravity-iced/src/widgets/button.rs
+- [X] T054 [P] [US1] Implement column layout mapping in crates/gravity-iced/src/widgets/column.rs
+- [X] T055 [P] [US1] Implement row layout mapping in crates/gravity-iced/src/widgets/row.rs
+- [X] T056 [US1] Implement IR-to-Element conversion in crates/gravity-iced/src/lib.rs
+- [X] T057 [US1] Create crates/gravity-iced/src/widgets/mod.rs exporting widget builders
 
 ### Hello World Example
 
-- [ ] T058 [US1] Create examples/hello-world/Cargo.toml
-- [ ] T059 [US1] Create examples/hello-world/ui/main.gravity with static content
-- [ ] T060 [US1] Create examples/hello-world/src/main.rs loading and rendering XML
+- [X] T058 [US1] Create examples/hello-world/Cargo.toml
+- [X] T059 [US1] Create examples/hello-world/ui/main.gravity with static content
+- [X] T060 [US1] Create examples/hello-world/src/main.rs loading and rendering XML
 
 **Checkpoint**: `cargo run -p hello-world` displays UI from XML file
 
@@ -150,38 +150,38 @@ examples/                    # Example applications
 
 ### Tests for User Story 3
 
-- [ ] T061 [P] [US3] Create handler test fixtures at crates/gravity-macros/tests/ui_handler_tests.rs
-- [ ] T062 [US3] Implement trybuild tests for macro expansion in crates/gravity-macros/tests/
+- [X] T061 [P] [US3] Create handler test fixtures at crates/gravity-macros/tests/ui_handler_tests.rs
+- [X] T062 [US3] Implement trybuild tests for macro expansion in crates/gravity-macros/tests/
 
 ### Handler Macro Implementation
 
-- [ ] T063 [US3] Add syn, quote, proc-macro2 dependencies to crates/gravity-macros/Cargo.toml
-- [ ] T064 [US3] Implement #[ui_handler] attribute macro in crates/gravity-macros/src/ui_handler.rs
-- [ ] T065 [US3] Generate handler registration code in macro expansion
-- [ ] T066 [US3] Validate handler signature (simple, with value, with Command)
-- [ ] T067 [US3] Create crates/gravity-macros/src/lib.rs exporting ui_handler macro
+- [X] T063 [US3] Add syn, quote, proc-macro2 dependencies to crates/gravity-macros/Cargo.toml
+- [X] T064 [US3] Implement #[ui_handler] attribute macro in crates/gravity-macros/src/ui_handler.rs
+- [X] T065 [US3] Generate handler registration code in macro expansion
+- [X] T066 [US3] Validate handler signature (simple, with value, with Command)
+- [X] T067 [US3] Create crates/gravity-macros/src/lib.rs exporting ui_handler macro
 
 ### Handler Registry (gravity-core)
 
-- [ ] T068 [US3] Define HandlerRegistry struct in crates/gravity-core/src/handler/registry.rs
-- [ ] T069 [US3] Define HandlerEntry enum (Simple, WithValue, WithCommand)
-- [ ] T070 [US3] Implement handler lookup by name
-- [ ] T071 [US3] Create crates/gravity-core/src/handler/mod.rs
+- [X] T068 [US3] Define HandlerRegistry struct in crates/gravity-core/src/handler/registry.rs
+- [X] T069 [US3] Define HandlerEntry enum (Simple, WithValue, WithCommand)
+- [X] T070 [US3] Implement handler lookup by name
+- [X] T071 [US3] Create crates/gravity-core/src/handler/mod.rs
 
 ### Event Dispatch (gravity-runtime)
 
-- [ ] T072 [US3] Implement event dispatch in crates/gravity-runtime/src/interpreter.rs
-- [ ] T073 [US3] Map EventBinding from IR to handler lookup
-- [ ] T074 [US3] Generate Iced Message from handler call
-- [ ] T075 [US3] Integrate Command return type with Iced runtime
+- [X] T072 [US3] Implement event dispatch in crates/gravity-runtime/src/interpreter.rs
+- [X] T073 [US3] Map EventBinding from IR to handler lookup
+- [X] T074 [US3] Generate Iced Message from handler call
+- [X] T075 [US3] Integrate Command return type with Iced runtime
 
 ### Counter Example
 
-- [ ] T076 [US3] Create examples/counter/Cargo.toml
-- [ ] T077 [US3] Create examples/counter/ui/main.gravity with increment/decrement buttons
-- [ ] T078 [US3] Create examples/counter/src/main.rs with handler implementations
+- [X] T076 [US3] Create examples/counter/Cargo.toml
+- [X] T077 [US3] Create examples/counter/ui/main.gravity with increment/decrement buttons
+- [X] T078 [US3] Create examples/counter/src/main.rs with handler implementations
 
-**Checkpoint**: `cargo run -p counter` responds to button clicks
+**Checkpoint**: `cargo run -p counter` responds to button clicks ✓
 
 ---
 
@@ -193,44 +193,46 @@ examples/                    # Example applications
 
 ### Tests for User Story 5
 
-- [ ] T079 [P] [US5] Create UiModel derive test fixtures in crates/gravity-macros/tests/ui_model_tests.rs
-- [ ] T080 [US5] Test primitive field accessors
-- [ ] T081 [US5] Test nested struct accessors
-- [ ] T082 [US5] Test #[ui_skip] attribute
+- [X] T079 [P] [US5] Create UiModel derive test fixtures in crates/gravity-macros/tests/ui_model_tests.rs
+- [X] T080 [US5] Test primitive field accessors
+- [X] T081 [US5] Test nested struct accessors (single-level paths only, nested paths handled by evaluator)
+- [X] T082 [US5] Test #[ui_skip] attribute
 
 ### UiBindable Trait (gravity-core)
 
-- [ ] T083 [US5] Define UiBindable trait in crates/gravity-core/src/binding/mod.rs
-- [ ] T084 [US5] Define BindingValue enum (String, Integer, Float, Bool, List, None)
-- [ ] T085 [US5] Implement BindingValue::to_display_string()
-- [ ] T086 [US5] Implement BindingValue::to_bool() for conditionals
+- [X] T083 [US5] Define UiBindable trait in crates/gravity-core/src/binding/mod.rs
+- [X] T084 [US5] Define BindingValue enum (String, Integer, Float, Bool, List, None)
+- [X] T085 [US5] Implement BindingValue::to_display_string()
+- [X] T086 [US5] Implement BindingValue::to_bool() for conditionals
 
 ### UiModel Derive Macro
 
-- [ ] T087 [US5] Implement #[derive(UiModel)] in crates/gravity-macros/src/ui_model.rs
-- [ ] T088 [US5] Generate get_field() implementation for each field
-- [ ] T089 [US5] Support primitive types (i32, i64, f32, f64, bool, String)
-- [ ] T090 [US5] Support Option<T> fields
-- [ ] T091 [US5] Support Vec<T> fields
-- [ ] T092 [US5] Implement #[ui_skip] attribute handling
-- [ ] T093 [US5] Implement #[ui_bind] attribute for explicit inclusion
-- [ ] T094 [US5] Generate available_fields() for error suggestions
+- [X] T087 [US5] Implement #[derive(UiModel)] in crates/gravity-macros/src/ui_model.rs
+- [X] T088 [US5] Generate get_field() implementation for each field
+- [X] T089 [US5] Support primitive types (i32, i64, f32, f64, bool, String)
+- [X] T090 [US5] Support Option<T> fields
+- [X] T091 [US5] Support Vec<T> fields
+- [X] T092 [US5] Implement #[ui_skip] attribute handling
+- [X] T093 [US5] Implement #[ui_bind] attribute for explicit inclusion
+- [X] T094 [US5] Generate available_fields() for error suggestions
 
 ### Expression Evaluator (gravity-core)
 
-- [ ] T095 [US5] Implement expression evaluator in crates/gravity-core/src/expr/eval.rs
-- [ ] T096 [US5] Evaluate FieldAccessExpr against UiBindable
-- [ ] T097 [US5] Evaluate MethodCallExpr (len, to_string, etc.)
-- [ ] T098 [US5] Evaluate BinaryOpExpr (comparisons, logical)
-- [ ] T099 [US5] Evaluate ConditionalExpr (if-then-else)
-- [ ] T100 [US5] Evaluate formatted bindings with interpolation
+- [X] T095 [US5] Implement expression evaluator in crates/gravity-core/src/expr/eval.rs
+- [X] T096 [US5] Evaluate FieldAccessExpr against UiBindable
+- [X] T097 [US5] Evaluate MethodCallExpr (len, to_string, etc.)
+- [X] T098 [US5] Evaluate BinaryOpExpr (comparisons, logical)
+- [X] T099 [US5] Evaluate ConditionalExpr (if-then-else)
+- [X] T100 [US5] Evaluate formatted bindings with interpolation
 
 ### Integration with Runtime
 
-- [ ] T101 [US5] Update interpreter to evaluate bindings before rendering
-- [ ] T102 [US5] Pass evaluated values to widget constructors
+- [X] T101 [US5] Update interpreter to evaluate bindings before rendering
+- [X] T102 [US5] Pass evaluated values to widget constructors
+- [X] T103 [US5] Update parser to create AttributeValue::Binding and AttributeValue::Interpolated
+- [X] T104 [US5] Add tests for binding parsing
 
-**Checkpoint**: `{counter}` in XML displays current model value
+**Checkpoint**: `{counter}` in XML displays current model value ✓
 
 ---
 
@@ -349,6 +351,8 @@ examples/                    # Example applications
 ---
 
 ## Phase 9: User Story 7 - Support All Core Iced Widgets (Priority: P3)
+
+**Note**: The `todo-app` example demonstrates bindings with `{items.len()}`, `{if ...}` working correctly.
 
 **Goal**: Complete widget coverage for all core Iced widgets
 

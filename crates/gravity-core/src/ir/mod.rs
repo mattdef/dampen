@@ -1,6 +1,7 @@
 pub mod node;
 pub mod span;
 
+pub use node::InterpolatedPart;
 pub use node::{AttributeValue, EventBinding, EventKind, WidgetKind, WidgetNode};
 pub use span::Span;
 

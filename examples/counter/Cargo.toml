@@ -1,0 +1,23 @@
+[package]
+name = "counter"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gravity-core = { path = "../../crates/gravity-core" }
+gravity-macros = { path = "../../crates/gravity-macros" }
+gravity-runtime = { path = "../../crates/gravity-runtime", optional = true }
+gravity-iced = { path = "../../crates/gravity-iced" }
+iced = "0.14"
+serde = { version = "1.0", features = ["derive"] }
+
+[features]
+default = []
+dev = ["gravity-runtime"]
+
+[[bin]]
+name = "counter"
+path = "src/main.rs"
+
+[workspace]
+# Exclude from main workspace

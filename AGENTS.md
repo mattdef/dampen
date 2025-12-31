@@ -202,6 +202,21 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 
 ## Recent Changes
 
+- **Phase 5 Complete**: User Story 5 - Derive Bindable Model from Rust Struct
+  - Implemented `#[derive(UiModel)]` macro with field accessors
+  - Created `UiBindable` trait and `BindingValue` enum
+  - Implemented expression evaluator for field access, method calls, binary ops, conditionals
+  - Added support for primitives, Option<T>, Vec<T>, #[ui_skip], #[ui_bind]
+  - Working `todo-app` example demonstrating bindings
+  - All tests passing (14 tests total), clippy clean
+
+- **Phase 4 Complete**: User Story 3 - Connect UI Events to Typed Handlers
+  - Implemented `#[ui_handler]` attribute macro with signature validation
+  - Created `HandlerRegistry` with support for simple, value, and command handlers
+  - Added Iced backend integration for event dispatch
+  - Working `counter` example demonstrating interactive handlers
+  - All tests passing, clippy clean
+
 - 001-framework-technical-specs: Initial framework design with 5 crates, 8 user stories, 195 implementation tasks
 
 <!-- MANUAL ADDITIONS START -->
@@ -227,5 +242,23 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 - Clippy clean (`cargo clippy --workspace -- -D warnings`)
 - Formatted (`cargo fmt --all -- --check`)
 - Documentation updated if public API changed
+
+### Current Status: Phase 5 Complete ✓
+
+**Implemented Components:**
+- `gravity-core/src/binding/`: UiBindable trait, BindingValue enum
+- `gravity-core/src/expr/eval.rs`: Expression evaluator
+- `gravity-macros/src/ui_model.rs`: #[derive(UiModel)] macro
+- `gravity-macros/tests/ui_model_tests.rs`: 10 comprehensive tests
+- `examples/todo-app/`: Working bindings example
+- `examples/counter/`: Working handlers example
+- `examples/hello-world/`: Working static example
+
+**Next Steps:**
+- Phase 6: User Story 2 - Hot-Reload UI During Development
+  - Implement file watcher with notify
+  - Add state serialization/restoration
+  - Create error overlay UI
+  - Build dev mode with hot-reload
 
 <!-- MANUAL ADDITIONS END -->

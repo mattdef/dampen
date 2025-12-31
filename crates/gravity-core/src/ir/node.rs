@@ -38,6 +38,15 @@ pub enum WidgetKind {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum AttributeValue {
     Static(String),
+    Binding(crate::expr::BindingExpr),
+    Interpolated(Vec<InterpolatedPart>),
+}
+
+/// Part of an interpolated string
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum InterpolatedPart {
+    Literal(String),
+    Binding(crate::expr::BindingExpr),
 }
 
 /// An event binding from XML to a Rust handler

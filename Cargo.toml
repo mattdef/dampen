@@ -43,6 +43,9 @@ clap = { version = "4.0", features = ["derive"] }
 # UI Backend
 iced = "0.14"
 
+# Error handling
+thiserror = "1.0"
+
 # Testing
 proptest = "1.0"
 insta = "1.0"

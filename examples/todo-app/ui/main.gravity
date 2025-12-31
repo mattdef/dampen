@@ -1,0 +1,17 @@
+<column padding="20" spacing="10">
+    <text value="Todo List" size="24" weight="bold" />
+    
+    <!-- Display total count -->
+    <text value="Total: {items.len()} items" />
+    
+    <!-- List of todos (simplified - just show count for now) -->
+    <text value="Items in list: {items.len()}" />
+    
+    <row spacing="10">
+        <button label="Add Item" on_click="add_item" />
+        <button label="Clear All" on_click="clear_all" />
+    </row>
+    
+    <!-- Show if list is empty -->
+    <text value="{if items.len() == 0 then 'No items yet!' else ''}" />
+</column>
