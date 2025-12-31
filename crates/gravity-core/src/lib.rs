@@ -28,6 +28,9 @@ pub use parser::error::{ParseError, ParseErrorKind};
 pub use parser::parse;
 pub use traits::Backend;
 
+// Code generation exports
+pub use codegen::{generate_application, validate_handlers, CodegenError, CodegenOutput};
+
 // Re-export for convenience
 pub use expr::tokenize_binding_expr;
 

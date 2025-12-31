@@ -18,6 +18,9 @@ gravity-macros = { path = "../gravity-macros" }
 gravity-runtime = { path = "../gravity-runtime" }
 gravity-iced = { path = "../gravity-iced" }
 clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+iced = { workspace = true }
 
 [[bin]]
 name = "gravity"

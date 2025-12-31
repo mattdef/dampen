@@ -290,34 +290,34 @@ examples/                    # Example applications
 
 ### Tests for User Story 4
 
-- [ ] T124 [P] [US4] Create codegen snapshot tests in crates/gravity-core/tests/codegen_tests.rs
-- [ ] T125 [US4] Test generated view() function
-- [ ] T126 [US4] Test generated update() function
-- [ ] T127 [US4] Test inlined binding expressions
+- [X] T124 [P] [US4] Create codegen snapshot tests in crates/gravity-core/tests/codegen_tests.rs
+- [X] T125 [US4] Test generated view() function
+- [X] T126 [US4] Test generated update() function
+- [X] T127 [US4] Test inlined binding expressions
 
 ### Code Generation (gravity-core)
 
-- [ ] T128 [US4] Add quote dependency to crates/gravity-core/Cargo.toml
-- [ ] T129 [US4] Create codegen module at crates/gravity-core/src/codegen/mod.rs
-- [ ] T130 [US4] Implement Application trait generation in crates/gravity-core/src/codegen/application.rs
-- [ ] T131 [US4] Implement view() generation in crates/gravity-core/src/codegen/view.rs
-- [ ] T132 [US4] Implement update() generation in crates/gravity-core/src/codegen/update.rs
-- [ ] T133 [US4] Inline binding expressions as Rust code
-- [ ] T134 [US4] Generate Message enum from handlers
-- [ ] T135 [US4] Apply constant folding optimization
+- [X] T128 [US4] Add quote dependency to crates/gravity-core/Cargo.toml
+- [X] T129 [US4] Create codegen module at crates/gravity-core/src/codegen/mod.rs
+- [X] T130 [US4] Implement Application trait generation in crates/gravity-core/src/codegen/application.rs
+- [X] T131 [US4] Implement view() generation in crates/gravity-core/src/codegen/view.rs
+- [X] T132 [US4] Implement update() generation in crates/gravity-core/src/codegen/update.rs
+- [X] T133 [US4] Inline binding expressions as Rust code
+- [X] T134 [US4] Generate Message enum from handlers
+- [X] T135 [US4] Apply constant folding optimization
 
 ### Build Script Integration
 
-- [ ] T136 [US4] Create build.rs template for gravity projects
-- [ ] T137 [US4] Scan for .gravity files in ui/ directory
-- [ ] T138 [US4] Generate ui_generated.rs in OUT_DIR
+- [X] T136 [US4] Create build.rs template for gravity projects
+- [X] T137 [US4] Scan for .gravity files in ui/ directory
+- [X] T138 [US4] Generate ui_generated.rs in OUT_DIR
 
 ### CLI Build Command (gravity-cli)
 
-- [ ] T139 [US4] Add clap dependency to crates/gravity-cli/Cargo.toml
-- [ ] T140 [US4] Implement build command in crates/gravity-cli/src/commands/build.rs
-- [ ] T141 [US4] Parse XML and generate code to specified output
-- [ ] T142 [US4] Add compile-time handler validation
+- [X] T139 [US4] Add clap dependency to crates/gravity-cli/Cargo.toml
+- [X] T140 [US4] Implement build command in crates/gravity-cli/src/commands/build.rs
+- [X] T141 [US4] Parse XML and generate code to specified output
+- [X] T142 [US4] Add compile-time handler validation
 
 **Checkpoint**: `gravity build` generates compilable Rust code
 

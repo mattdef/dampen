@@ -5,7 +5,46 @@
 pub mod commands;
 pub mod config;
 
+use clap::{Parser, Subcommand};
+
+/// Gravity UI Framework CLI
+#[derive(Parser)]
+#[command(name = "gravity")]
+#[command(about = "Developer CLI for Gravity UI framework", long_about = None)]
+#[command(version)]
+pub struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+pub enum Commands {
+    /// Build production code from .gravity files
+    Build(commands::BuildArgs),
+    
+    /// Validate .gravity files without building
+    Check(commands::CheckArgs),
+    
+    /// Run in development mode with hot-reload
+    Dev(commands::DevArgs),
+    
+    /// Inspect IR or generated code
+    Inspect(commands::InspectArgs),
+}
+
 /// CLI entry point
 pub fn run() {
-    // Placeholder - will be implemented in Phase 10
+    let cli = Cli::parse();
+    
+    let result = match cli.command {
+        Commands::Build(args) => commands::build_execute(&args),
+        Commands::Check(args) => commands::check_execute(&args),
+        Commands::Dev(args) => commands::dev_execute(&args),
+        Commands::Inspect(args) => commands::inspect_execute(&args),
+    };
+    
+    if let Err(e) = result {
+        eprintln!("Error: {}", e);
+        std::process::exit(1);
+    }
 }
