@@ -2,7 +2,7 @@ use crate::ir::span::Span;
 use std::collections::HashMap;
 
 /// A node in the widget tree
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct WidgetNode {
     pub kind: WidgetKind,
     pub id: Option<String>,
@@ -12,22 +12,10 @@ pub struct WidgetNode {
     pub span: Span,
 }
 
-impl Default for WidgetNode {
-    fn default() -> Self {
-        Self {
-            kind: WidgetKind::default(),
-            id: None,
-            attributes: HashMap::new(),
-            events: Vec::new(),
-            children: Vec::new(),
-            span: Span::default(),
-        }
-    }
-}
-
 /// Enumeration of all supported widget types
-#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, Default)]
 pub enum WidgetKind {
+    #[default]
     Column,
     Row,
     Container,
@@ -45,12 +33,6 @@ pub enum WidgetKind {
     Space,
     Rule,
     Custom(String),
-}
-
-impl Default for WidgetKind {
-    fn default() -> Self {
-        WidgetKind::Column
-    }
 }
 
 /// A value that can be either static or dynamically bound
@@ -81,26 +63,17 @@ impl Default for InterpolatedPart {
 }
 
 /// An event binding from XML to a Rust handler
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct EventBinding {
     pub event: EventKind,
     pub handler: String,
     pub span: Span,
 }
 
-impl Default for EventBinding {
-    fn default() -> Self {
-        Self {
-            event: EventKind::default(),
-            handler: String::new(),
-            span: Span::default(),
-        }
-    }
-}
-
 /// Supported event types
-#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, Default)]
 pub enum EventKind {
+    #[default]
     Click,
     Press,
     Release,
@@ -110,10 +83,4 @@ pub enum EventKind {
     Select,
     Toggle,
     Scroll,
-}
-
-impl Default for EventKind {
-    fn default() -> Self {
-        EventKind::Click
-    }
 }

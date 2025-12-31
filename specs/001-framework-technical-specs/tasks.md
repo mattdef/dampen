@@ -331,22 +331,22 @@ examples/                    # Example applications
 
 ### Tests for User Story 6
 
-- [ ] T143 [P] [US6] Create validation test fixtures in crates/gravity-cli/tests/check_tests.rs
-- [ ] T144 [US6] Test invalid widget detection
-- [ ] T145 [US6] Test unknown handler detection
-- [ ] T146 [US6] Test binding field validation
+- [X] T143 [P] [US6] Create validation test fixtures in crates/gravity-cli/tests/check_tests.rs
+- [X] T144 [US6] Test invalid widget detection
+- [X] T145 [US6] Test unknown handler detection
+- [X] T146 [US6] Test binding field validation
 
 ### Check Command (gravity-cli)
 
-- [ ] T147 [US6] Implement check command in crates/gravity-cli/src/commands/check.rs
-- [ ] T148 [US6] Parse all .gravity files in project
-- [ ] T149 [US6] Validate widget names against WidgetKind enum
-- [ ] T150 [US6] Validate handler references exist
-- [ ] T151 [US6] Validate binding fields against Model
-- [ ] T152 [US6] Output errors with spans and suggestions
-- [ ] T153 [US6] Return exit code 0 on success, 1 on failure
+- [X] T147 [US6] Implement check command in crates/gravity-cli/src/commands/check.rs
+- [X] T148 [US6] Parse all .gravity files in project
+- [X] T149 [US6] Validate widget names against WidgetKind enum
+- [X] T150 [US6] Validate handler references exist
+- [X] T151 [US6] Validate binding fields against Model
+- [X] T152 [US6] Output errors with spans and suggestions
+- [X] T153 [US6] Return exit code 0 on success, 1 on failure
 
-**Checkpoint**: `gravity check` validates project with clear output
+**Checkpoint**: `gravity check` validates project with clear output ✓
 
 ---
 

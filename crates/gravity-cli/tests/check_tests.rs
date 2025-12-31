@@ -1,0 +1,154 @@
+//! Tests for the check command
+
+use gravity_cli::commands::check::{CheckArgs, execute};
+use std::fs;
+use tempfile::TempDir;
+
+#[test]
+fn test_valid_ui_file() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    let valid_ui = r#"<column padding="10">
+    <text value="Hello World" />
+    <button label="Click me" on_click="handle_click" />
+</column>"#;
+
+    fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+    };
+
+    let result = execute(&args);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_invalid_widget_detection() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    let invalid_ui = r#"<column padding="10">
+    <text value="Hello World" />
+    <invalid_widget label="This should fail" />
+</column>"#;
+
+    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+    };
+
+    let result = execute(&args);
+    assert!(result.is_err());
+    let error_msg = result.unwrap_err().to_string();
+    assert!(error_msg.contains("invalid_widget"));
+}
+
+#[test]
+fn test_unknown_handler_detection() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    let invalid_ui = r#"<column padding="10">
+    <text value="Hello World" />
+    <button label="Click me" on_click="unknown_handler" />
+</column>"#;
+
+    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+    };
+
+    let result = execute(&args);
+    assert!(result.is_err());
+    let error_msg = result.unwrap_err().to_string();
+    assert!(error_msg.contains("unknown_handler"));
+}
+
+#[test]
+fn test_binding_field_validation() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    let invalid_ui = r#"<column padding="10">
+    <text value="Hello World" />
+    <text value="{non_existent_field}" />
+</column>"#;
+
+    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+    };
+
+    let result = execute(&args);
+    assert!(result.is_err());
+    let error_msg = result.unwrap_err().to_string();
+    assert!(error_msg.contains("non_existent_field"));
+}
+
+#[test]
+fn test_multiple_errors() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    let invalid_ui = r#"<column padding="10">
+    <invalid_widget label="This should fail" />
+    <button label="Click me" on_click="unknown_handler" />
+    <text value="{non_existent_field}" />
+</column>"#;
+
+    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+    };
+
+    let result = execute(&args);
+    assert!(result.is_err());
+    let error_msg = result.unwrap_err().to_string();
+    assert!(error_msg.contains("invalid_widget"));
+    assert!(error_msg.contains("unknown_handler"));
+    assert!(error_msg.contains("non_existent_field"));
+}
+
+#[test]
+fn test_empty_ui_directory() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+    };
+
+    let result = execute(&args);
+    assert!(result.is_ok()); // Empty directory should be valid
+}
+
+#[test]
+fn test_nonexistent_ui_directory() {
+    let args = CheckArgs {
+        input: "/nonexistent/path".to_string(),
+        verbose: false,
+    };
+
+    let result = execute(&args);
+    assert!(result.is_err());
+    let error_msg = result.unwrap_err().to_string();
+    assert!(error_msg.contains("not found") || error_msg.contains("does not exist"));
+}

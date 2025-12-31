@@ -37,8 +37,8 @@ pub fn run() {
     let cli = Cli::parse();
     
     let result = match cli.command {
-        Commands::Build(args) => commands::build_execute(&args),
-        Commands::Check(args) => commands::check_execute(&args),
+        Commands::Build(args) => commands::build_execute(&args).map_err(|e| e.to_string()),
+        Commands::Check(args) => commands::check_execute(&args).map_err(|e| e.to_string()),
         Commands::Dev(args) => commands::dev_execute(&args),
         Commands::Inspect(args) => commands::inspect_execute(&args),
     };

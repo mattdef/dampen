@@ -347,7 +347,7 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 - Formatted (`cargo fmt --all -- --check`)
 - Documentation updated if public API changed
 
-### Current Status: Phase 6 Complete ✓
+### Current Status: Phase 8 Complete ✓
 
 **Implemented Components:**
 - `gravity-core/src/binding/`: UiBindable trait, BindingValue enum
@@ -358,6 +358,7 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 - `gravity-runtime/src/interpreter.rs`: Hot-reload interpreter
 - `gravity-runtime/src/overlay.rs`: Error overlay UI
 - `gravity-cli/src/commands/dev.rs`: Dev mode with hot-reload
+- `gravity-cli/src/commands/check.rs`: UI validation command
 - `examples/todo-app/`: Working bindings example
 - `examples/counter/`: Working handlers example
 - `examples/hello-world/`: Working static example
@@ -370,10 +371,17 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 - ✅ Verbose logging mode
 - ✅ ~200ms hot-reload latency
 
+**Validation Features (Phase 8):**
+- ✅ `gravity check` validates XML syntax and widget names
+- ✅ Clear error messages with span information
+- ✅ Exit code 0 for success, 1 for failure
+- ✅ File walking with `.gravity` extension filtering
+- ✅ Comprehensive test coverage for validation
+
 **Next Steps:**
-- Phase 7: User Story 4 - Code Generation for Production
-  - Implement static code generation
-  - Optimize for production builds
-  - Add compilation-time type checking
+- Phase 9: User Story 7 - Support All Core Iced Widgets
+  - Implement remaining widgets (container, scrollable, stack, etc.)
+  - Add attribute parsing for width/height, padding, spacing
+  - Create comprehensive todo-app example
 
 <!-- MANUAL ADDITIONS END -->

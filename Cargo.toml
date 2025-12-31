@@ -49,6 +49,7 @@ thiserror = "1.0"
 # Testing
 proptest = "1.0"
 insta = "1.0"
+tempfile = "3.0"
 
 [workspace.lints.rust]
 unused = "warn"
