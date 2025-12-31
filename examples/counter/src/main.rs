@@ -1,7 +1,10 @@
-use gravity_core::{parse, HandlerRegistry, WidgetNode, WidgetKind, EventKind, AttributeValue};
+use gravity_core::{
+    parse, evaluate_binding_expr, HandlerRegistry, WidgetNode, WidgetKind, EventKind,
+    AttributeValue, InterpolatedPart,
+};
 use gravity_macros::{ui_handler, UiModel};
 use iced::widget::{column, row, text, button};
-use iced::{Element, Theme, Task};
+use iced::{Element, Task};
 use serde::{Serialize, Deserialize};
 use std::any::Any;
 
@@ -14,9 +17,6 @@ struct Model {
 /// Messages for the application
 #[derive(Clone, Debug)]
 enum Message {
-    Increment,
-    Decrement,
-    Reset,
     Handler(String, Option<String>),
 }
 
@@ -82,24 +82,10 @@ impl AppState {
 /// Update function
 fn update(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
-        Message::Increment => {
-            state.model.count += 1;
-        }
-        Message::Decrement => {
-            state.model.count -= 1;
-        }
-        Message::Reset => {
-            state.model.count = 0;
-        }
         Message::Handler(handler_name, _value) => {
             // Dispatch to handler registry
-            if let Some(handler) = state.handler_registry.get(&handler_name) {
-                match handler {
-                    gravity_core::HandlerEntry::Simple(h) => {
-                        h(&mut state.model);
-                    }
-                    _ => {}
-                }
+            if let Some(gravity_core::HandlerEntry::Simple(h)) = state.handler_registry.get(&handler_name) {
+                h(&mut state.model);
             }
         }
     }
@@ -107,21 +93,62 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
 }
 
 /// Helper to render a widget node
+#[allow(clippy::only_used_in_recursion)]
 fn render_node<'a>(node: &'a WidgetNode, model: &'a Model, handler_registry: &'a HandlerRegistry) -> Element<'a, Message> {
     match node.kind {
         WidgetKind::Text => {
             let value = match node.attributes.get("value") {
                 Some(AttributeValue::Static(v)) => v.clone(),
-                _ => String::new(),
+                Some(AttributeValue::Binding(expr)) => {
+                    match evaluate_binding_expr(expr, model) {
+                        Ok(v) => v.to_display_string(),
+                        Err(_) => "[error]".to_string(),
+                    }
+                }
+                Some(AttributeValue::Interpolated(parts)) => {
+                    let mut result = String::new();
+                    for part in parts {
+                        match part {
+                            InterpolatedPart::Literal(l) => result.push_str(l),
+                            InterpolatedPart::Binding(expr) => {
+                                match evaluate_binding_expr(expr, model) {
+                                    Ok(v) => result.push_str(&v.to_display_string()),
+                                    Err(_) => result.push_str("[error]"),
+                                }
+                            }
+                        }
+                    }
+                    result
+                }
+                None => String::new(),
             };
-            // Simple binding replacement
-            let value = value.replace("{count}", &model.count.to_string());
             text(value).into()
         }
         WidgetKind::Button => {
             let label = match node.attributes.get("label") {
                 Some(AttributeValue::Static(l)) => l.clone(),
-                _ => String::new(),
+                Some(AttributeValue::Binding(expr)) => {
+                    match evaluate_binding_expr(expr, model) {
+                        Ok(v) => v.to_display_string(),
+                        Err(_) => "[error]".to_string(),
+                    }
+                }
+                Some(AttributeValue::Interpolated(parts)) => {
+                    let mut result = String::new();
+                    for part in parts {
+                        match part {
+                            InterpolatedPart::Literal(l) => result.push_str(l),
+                            InterpolatedPart::Binding(expr) => {
+                                match evaluate_binding_expr(expr, model) {
+                                    Ok(v) => result.push_str(&v.to_display_string()),
+                                    Err(_) => result.push_str("[error]"),
+                                }
+                            }
+                        }
+                    }
+                    result
+                }
+                None => String::new(),
             };
             
             // Find click handler
@@ -140,20 +167,43 @@ fn render_node<'a>(node: &'a WidgetNode, model: &'a Model, handler_registry: &'a
             let children: Vec<_> = node.children.iter()
                 .map(|child| render_node(child, model, handler_registry))
                 .collect();
-            column(children).into()
+            let mut col = column(children);
+            
+            // Handle attributes
+            if let Some(AttributeValue::Static(padding)) = node.attributes.get("padding") {
+                if let Ok(p) = padding.parse::<f32>() {
+                    col = col.padding(p);
+                }
+            }
+            if let Some(AttributeValue::Static(spacing)) = node.attributes.get("spacing") {
+                if let Ok(s) = spacing.parse::<f32>() {
+                    col = col.spacing(s);
+                }
+            }
+            
+            col.into()
         }
         WidgetKind::Row => {
             let children: Vec<_> = node.children.iter()
                 .map(|child| render_node(child, model, handler_registry))
                 .collect();
-            row(children).into()
+            let mut row_widget = row(children);
+            
+            // Handle attributes
+            if let Some(AttributeValue::Static(spacing)) = node.attributes.get("spacing") {
+                if let Ok(s) = spacing.parse::<f32>() {
+                    row_widget = row_widget.spacing(s);
+                }
+            }
+            
+            row_widget.into()
         }
         _ => column(Vec::new()).into(),
     }
 }
 
 /// View function
-fn view(state: &AppState) -> Element<Message> {
+fn view(state: &AppState) -> Element<'_, Message> {
     render_node(&state.document.root, &state.model, &state.handler_registry)
 }
 

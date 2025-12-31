@@ -1,7 +1,9 @@
-use gravity_core::{parse, HandlerRegistry, WidgetNode, AttributeValue, InterpolatedPart, evaluate_binding_expr, WidgetKind, EventKind};
+use gravity_core::{
+    parse, HandlerRegistry, WidgetNode, AttributeValue, InterpolatedPart,
+    evaluate_binding_expr, WidgetKind, EventKind,
+};
 use gravity_macros::{ui_handler, UiModel};
-use iced::{Application, Element, Task};
-use iced::widget::{column, row, text, button};
+use iced::{Element, Task};
 use serde::{Serialize, Deserialize};
 use std::any::Any;
 
@@ -14,8 +16,6 @@ struct Model {
 /// Messages
 #[derive(Clone, Debug)]
 enum Message {
-    AddItem,
-    ClearAll,
     Handler(String, Option<String>),
 }
 
@@ -98,12 +98,13 @@ fn evaluate_attribute(
 }
 
 /// Helper to render a node with binding evaluation
+#[allow(clippy::only_used_in_recursion)]
 fn render_node<'a>(
     node: &'a WidgetNode,
     model: &Model,
     handler_registry: &HandlerRegistry,
 ) -> Element<'a, Message> {
-    use iced::widget::{column, row, text, button};
+    use iced::widget::{button, column, row, text};
     
     match node.kind {
         WidgetKind::Text => {
@@ -147,28 +148,9 @@ fn render_node<'a>(
 /// Update function
 fn update(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
-        Message::AddItem => {
-            if let Some(handler) = state.handler_registry.get("add_item") {
-                if let gravity_core::HandlerEntry::Simple(h) = handler {
-                    h(&mut state.model);
-                }
-            }
-        }
-        Message::ClearAll => {
-            if let Some(handler) = state.handler_registry.get("clear_all") {
-                if let gravity_core::HandlerEntry::Simple(h) = handler {
-                    h(&mut state.model);
-                }
-            }
-        }
         Message::Handler(name, _value) => {
-            if let Some(handler) = state.handler_registry.get(&name) {
-                match handler {
-                    gravity_core::HandlerEntry::Simple(h) => {
-                        h(&mut state.model);
-                    }
-                    _ => {}
-                }
+            if let Some(gravity_core::HandlerEntry::Simple(h)) = state.handler_registry.get(&name) {
+                h(&mut state.model);
             }
         }
     }
@@ -176,7 +158,7 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
 }
 
 /// View function
-fn view(state: &AppState) -> Element<Message> {
+fn view(state: &AppState) -> Element<'_, Message> {
     render_node(&state.document.root, &state.model, &state.handler_registry)
 }
 

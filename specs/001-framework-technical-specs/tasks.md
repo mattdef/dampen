@@ -244,41 +244,41 @@ examples/                    # Example applications
 
 ### Tests for User Story 2
 
-- [ ] T103 [P] [US2] Create hot-reload test harness in crates/gravity-runtime/tests/reload_tests.rs
-- [ ] T104 [US2] Test file change detection
-- [ ] T105 [US2] Test state preservation across reload
-- [ ] T106 [US2] Test error overlay on parse failure
+- [X] T103 [P] [US2] Create hot-reload test harness in crates/gravity-runtime/tests/reload_tests.rs
+- [X] T104 [US2] Test file change detection
+- [X] T105 [US2] Test state preservation across reload
+- [X] T106 [US2] Test error overlay on parse failure
 
 ### File Watcher (gravity-runtime)
 
-- [ ] T107 [US2] Add notify dependency to crates/gravity-runtime/Cargo.toml
-- [ ] T108 [US2] Implement file watcher in crates/gravity-runtime/src/watcher.rs
-- [ ] T109 [US2] Configure debounce (100ms) to batch rapid saves
-- [ ] T110 [US2] Filter for .gravity file extensions
+- [X] T107 [US2] Add notify dependency to crates/gravity-runtime/Cargo.toml
+- [X] T108 [US2] Implement file watcher in crates/gravity-runtime/src/watcher.rs
+- [X] T109 [US2] Configure debounce (100ms) to batch rapid saves
+- [X] T110 [US2] Filter for .gravity file extensions
 
 ### State Serialization (gravity-runtime)
 
-- [ ] T111 [US2] Implement RuntimeState wrapper in crates/gravity-runtime/src/state.rs
-- [ ] T112 [US2] Serialize model to JSON before reload
-- [ ] T113 [US2] Deserialize model after reload with lenient parsing
-- [ ] T114 [US2] Implement StateRestoration enum (Restored, Partial, Default)
-- [ ] T115 [US2] Handle added/removed fields gracefully
+- [X] T111 [US2] Implement RuntimeState wrapper in crates/gravity-runtime/src/state.rs
+- [X] T112 [US2] Serialize model to JSON before reload
+- [X] T113 [US2] Deserialize model after reload with lenient parsing
+- [X] T114 [US2] Implement StateRestoration enum (Restored, Partial, Default)
+- [X] T115 [US2] Handle added/removed fields gracefully
 
 ### Error Overlay (gravity-runtime)
 
-- [ ] T116 [US2] Implement error overlay widget in crates/gravity-runtime/src/overlay.rs
-- [ ] T117 [US2] Display ParseError with span information
-- [ ] T118 [US2] Display BindingError with field suggestions
-- [ ] T119 [US2] Add dismiss button to overlay
+- [X] T116 [US2] Implement error overlay widget in crates/gravity-runtime/src/overlay.rs
+- [X] T117 [US2] Display ParseError with span information
+- [X] T118 [US2] Display BindingError with field suggestions
+- [X] T119 [US2] Add dismiss button to overlay
 
 ### Hot-Reload Integration
 
-- [ ] T120 [US2] Implement reload loop in crates/gravity-runtime/src/interpreter.rs
-- [ ] T121 [US2] Re-parse XML on file change
-- [ ] T122 [US2] Rebuild widget tree from new IR
-- [ ] T123 [US2] Measure and log reload latency
+- [X] T120 [US2] Implement reload loop in crates/gravity-runtime/src/interpreter.rs
+- [X] T121 [US2] Re-parse XML on file change
+- [X] T122 [US2] Rebuild widget tree from new IR
+- [X] T123 [US2] Measure and log reload latency
 
-**Checkpoint**: Changes to XML files update running app within 500ms
+**Checkpoint**: Changes to XML files update running app within 500ms ✓
 
 ---
 
