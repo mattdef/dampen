@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <column padding="40" spacing="20" align="center">
     <text value="Counter: {count}" size="48" weight="bold" />
     

@@ -16,6 +16,9 @@ pub enum CheckError {
     #[error("Parse error in {file}:{line}:{col}: {message}")]
     ParseError { file: PathBuf, line: u32, col: u32, message: String },
     
+    #[error("XML validation error in {file}:{line}:{col}: {message}")]
+    XmlValidationError { file: PathBuf, line: u32, col: u32, message: String },
+    
     #[error("Invalid widget '{widget}' in {file}:{line}:{col}")]
     InvalidWidget { widget: String, file: PathBuf, line: u32, col: u32 },
     
@@ -73,6 +76,14 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         // Read and parse the file
         let content = fs::read_to_string(file_path)?;
         
+        // First check for XML declaration
+        validate_xml_declaration(&content, file_path, &mut errors);
+        
+        // Only proceed to parse if XML declaration is valid
+        if !errors.is_empty() {
+            continue;
+        }
+        
         match parser::parse(&content) {
             Ok(document) => {
                 // Validate the document
@@ -99,19 +110,31 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         for error in &errors {
             eprintln!("  {}", error);
         }
-        return Err(CheckError::ParseError {
-            file: PathBuf::new(),
-            line: 0,
-            col: 0,
-            message: format!("{} validation errors found", errors.len()),
+        // Return the first error for exit code purposes
+        return Err(errors.remove(0));
+    } else {
+        if args.verbose {
+            eprintln!("✓ All files passed validation");
+        }
+        Ok(())
+    }
+}
+
+fn validate_xml_declaration(
+    content: &str,
+    file_path: &Path,
+    errors: &mut Vec<CheckError>,
+) {
+    // Check if content starts with proper XML declaration
+    let trimmed = content.trim_start();
+    if !trimmed.starts_with("<?xml version=\"1.0\"") {
+        errors.push(CheckError::XmlValidationError {
+            file: file_path.to_path_buf(),
+            line: 1,
+            col: 1,
+            message: "Missing or invalid XML declaration. Expected: <?xml version=\"1.0\" encoding=\"UTF-8\"?>".to_string(),
         });
     }
-    
-    if args.verbose {
-        eprintln!("✓ All files passed validation");
-    }
-    
-    Ok(())
 }
 
 fn validate_document(
