@@ -1,0 +1,38 @@
+[package]
+name = "gravity-cli"
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+documentation = { workspace = true }
+description = "Developer CLI for Gravity UI framework"
+readme = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+
+[dependencies]
+gravity-core = { path = "../gravity-core" }
+gravity-macros = { path = "../gravity-macros" }
+gravity-runtime = { path = "../gravity-runtime" }
+gravity-iced = { path = "../gravity-iced" }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+iced = { workspace = true }
+walkdir = "2.4"
+glob = "0.3"
+thiserror = { workspace = true }
+tempfile = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.0"
+
+[[bin]]
+name = "gravity"
+path = "src/main.rs"
+
+[lints]
+workspace = true

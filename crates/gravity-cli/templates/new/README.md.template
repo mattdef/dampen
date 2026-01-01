@@ -1,0 +1,174 @@
+# {{PROJECT_NAME}}
+
+A Gravity UI application - build declarative UIs with XML and Rust!
+
+## Quick Start
+
+Run the application:
+
+```bash
+cargo run
+```
+
+This will open a window with your UI. Click the button to see bindings in action!
+
+## Development with Hot-Reload
+
+For live editing of the UI with instant feedback, use Gravity's dev mode:
+
+```bash
+gravity dev --ui ui --file main.gravity --verbose
+```
+
+Now edit `ui/main.gravity` and watch your changes appear instantly without recompiling!
+
+## Project Structure
+
+```
+{{PROJECT_NAME}}/
+├── Cargo.toml       # Project dependencies
+├── README.md        # This file
+├── src/
+│   └── main.rs      # Application logic, state, and handlers
+└── ui/
+    └── main.gravity # Declarative UI definition (XML)
+```
+
+## Understanding the Code
+
+### UI Definition (`ui/main.gravity`)
+
+The UI is defined declaratively in XML:
+
+```xml
+<column padding="40" spacing="20">
+    <text value="Welcome to {{PROJECT_NAME}}!" />
+    <text value="{message}" />  <!-- Binding to model.message -->
+    <button label="Click me!" on_click="greet" />
+</column>
+```
+
+- **Bindings**: `{message}` automatically displays the `message` field from your model
+- **Handlers**: `on_click="greet"` connects the button to the `greet` function
+- **Layout**: Use `<column>` and `<row>` to arrange widgets
+
+### Application Logic (`src/main.rs`)
+
+The Rust code defines:
+
+1. **Model** - Your application state:
+   ```rust
+   #[derive(UiModel, Serialize, Deserialize)]
+   struct Model {
+       message: String,
+       click_count: i32,
+   }
+   ```
+
+2. **Handlers** - Functions that update the model:
+   ```rust
+   #[ui_handler]
+   fn greet(model: &mut Model) {
+       model.click_count += 1;
+       model.message = format!("Clicked {} times", model.click_count);
+   }
+   ```
+
+3. **Rendering** - Maps XML to Iced widgets (handled by the framework)
+
+## Features Demonstrated
+
+- ✅ **Data Binding**: UI automatically updates when model changes
+- ✅ **Event Handlers**: Connect UI events to Rust functions
+- ✅ **Type Safety**: Full Rust type checking on your state
+- ✅ **Hot Reload**: Edit UI without recompiling (dev mode)
+- ✅ **Declarative**: Separate UI structure from logic
+
+## Next Steps
+
+### Modify the UI
+
+Edit `ui/main.gravity` to add more widgets:
+
+```xml
+<row spacing="10">
+    <button label="Button 1" on_click="handler1" />
+    <button label="Button 2" on_click="handler2" />
+</row>
+```
+
+### Add State
+
+Update your `Model` in `src/main.rs`:
+
+```rust
+#[derive(UiModel, Serialize, Deserialize)]
+struct Model {
+    message: String,
+    counter: i32,
+    enabled: bool,  // Add new fields
+}
+```
+
+### Add Handlers
+
+Create new event handlers:
+
+```rust
+#[ui_handler]
+fn reset(model: &mut Model) {
+    model.counter = 0;
+    model.message = "Reset!".to_string();
+}
+```
+
+Then connect them in the UI:
+```xml
+<button label="Reset" on_click="reset" />
+```
+
+## Available Widgets
+
+- `<column>` - Vertical layout (attributes: `padding`, `spacing`)
+- `<row>` - Horizontal layout (attributes: `spacing`)
+- `<text>` - Display text (attributes: `value`, `size`, `weight`*)
+- `<button>` - Clickable button (attributes: `label`, events: `on_click`)
+
+*Note: Style attributes like `size`, `weight`, and `align` are currently in development and may not be fully functional yet.
+
+## Building for Production
+
+Create an optimized release build:
+
+```bash
+cargo build --release
+```
+
+Your binary will be in `target/release/{{PROJECT_NAME}}`.
+
+## Documentation
+
+- [Gravity Documentation](https://docs.rs/gravity-core)
+- [Iced Documentation](https://docs.rs/iced)
+- [XML Schema Reference](../../docs/XML_SCHEMA.md)
+
+## Troubleshooting
+
+**UI doesn't update in dev mode:**
+- Make sure you're using `gravity dev` command
+- Check the console for parse errors
+- Verify the `.gravity` file has valid XML syntax
+
+**Compilation errors:**
+- Ensure all handlers are registered in `AppState::new()`
+- Check that handler names in XML match function names
+- Verify your model derives `UiModel`, `Serialize`, and `Deserialize`
+
+**Bindings don't work:**
+- Field names in `{field}` must match your `Model` struct exactly
+- Make sure your model derives `UiModel`
+- Check the console for binding evaluation errors
+
+---
+
+Happy coding with Gravity! 🚀

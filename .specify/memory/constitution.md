@@ -1,50 +1,166 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT
+==================
+Version Change: N/A (initial) -> 1.0.0
+Modified Principles: N/A (initial constitution)
+Added Sections:
+  - Core Principles (5 principles)
+  - Technical Constraints
+  - Development Workflow
+  - Governance
+Removed Sections: N/A
+Templates Requiring Updates:
+  - .specify/templates/plan-template.md: OK (generic, no changes needed)
+  - .specify/templates/spec-template.md: OK (generic, no changes needed)
+  - .specify/templates/tasks-template.md: OK (generic, no changes needed)
+Follow-up TODOs: None
+-->
+
+# Gravity Declarative Framework Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Declarative-First
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All user interface definitions MUST originate from declarative XML/markup files. The markup
+serves as the single source of truth for UI structure, layout, and widget hierarchy.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- Markup files MUST be parseable without runtime Rust context
+- The AST/IR representation MUST capture complete UI semantics
+- Imperative Rust code defines behavior (handlers, state), not structure
+- Separation of concerns: visual structure (XML) vs application logic (Rust)
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: Declarative definitions enable tooling (visual editors, linters), simplify
+reasoning about UI state, and support the dual-mode architecture requirement.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Type Safety Preservation
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Rust's strong type system MUST be preserved across the XML-to-Rust boundary. No runtime
+type erasure or `Any`-based dispatch for core message and state types.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- Messages defined in XML MUST map to concrete Rust enum variants
+- State bindings MUST be verified at compile-time in production mode
+- Handler signatures MUST be type-checked against declared events
+- Generic parameters and lifetimes MUST be expressible where needed
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: Type safety is Rust's primary value proposition. Sacrificing it would
+eliminate the advantage over dynamic UI frameworks.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Dual-Mode Architecture
+
+The framework MUST support two operational modes with identical semantic behavior:
+
+**Development Mode**:
+- Runtime interpretation of XML files
+- Hot-reload on file changes (< 500ms target latency)
+- No recompilation required for UI-only changes
+- Diagnostic overlay for binding errors
+
+**Production Mode**:
+- Static Rust code generation via proc macros or build.rs
+- Zero runtime XML parsing overhead
+- Full compile-time verification of all bindings
+- Generated code MUST be human-readable for debugging
+
+**Rationale**: Fast iteration during development is essential for UI work. Production
+deployments require maximum performance and compile-time guarantees.
+
+### IV. Backend Abstraction
+
+The framework MUST abstract over rendering backends through a trait-based interface.
+Iced is the initial and primary target, but the architecture MUST NOT hardcode Iced types
+in the core IR or public API.
+
+- Core crate MUST NOT depend on any specific backend crate
+- Backend trait MUST define widget primitives, layout, and event mapping
+- Iced backend is the reference implementation
+- Adding a new backend MUST NOT require modifying core crates
+
+**Rationale**: While Iced is the initial target, backend abstraction future-proofs the
+framework and enables community contributions for alternative renderers.
+
+### V. Test-First Development
+
+All features MUST follow TDD methodology. Tests define the contract before implementation.
+
+- Contract tests for XML parsing and IR generation
+- Integration tests for the full XML-to-rendered-UI pipeline
+- Property-based tests for parser edge cases
+- Hot-reload behavior MUST be testable without manual intervention
+- Generated code MUST be deterministic for snapshot testing
+
+**Rationale**: A declarative framework has well-defined input/output contracts that are
+naturally suited to test-first development. Parser correctness is critical.
+
+## Technical Constraints
+
+### Language and Toolchain
+
+- **Language**: Rust Edition 2024 or later
+- **MSRV**: Stable Rust (no nightly-only features in public API)
+- **Backend**: Iced 0.14+ as reference implementation
+- **Platforms**: Windows, Linux, macOS (tier 1 support)
+
+### Crate Architecture
+
+The framework MUST be organized as a workspace with these crates:
+
+| Crate | Purpose | Dependencies |
+|-------|---------|--------------|
+| `gravity-core` | Parser, AST, IR, trait definitions | None (backend-agnostic) |
+| `gravity-macros` | Proc macros for production mode | `gravity-core` |
+| `gravity-runtime` | Hot-reload interpreter, file watcher | `gravity-core` |
+| `gravity-iced` | Iced backend implementation | `gravity-core`, `iced` |
+| `gravity-cli` | Developer CLI (dev/build commands) | All above |
+
+### Performance Budgets
+
+- XML parse time: < 10ms for 1000-widget file
+- Hot-reload latency: < 500ms from file save to UI update
+- Production code generation: < 5s for typical application
+- Runtime memory overhead (dev mode): < 50MB baseline
+
+### API Stability
+
+- Public API changes require CHANGELOG entry
+- Breaking changes require major version bump
+- Internal modules (`_internal`, `__private`) carry no stability guarantee
+
+## Development Workflow
+
+### Feature Development
+
+1. Features MUST start with a specification in `/specs/`
+2. Parser changes MUST include grammar documentation
+3. New widgets MUST be implemented in core IR before any backend
+4. Backend implementations MUST pass the core test suite
+
+### Code Review Requirements
+
+- All PRs MUST pass CI (tests, clippy, rustfmt)
+- Parser changes require two approvals
+- Public API changes require documentation updates
+- Generated code changes require snapshot review
+
+### Documentation Standards
+
+- All public items MUST have rustdoc comments
+- Examples MUST compile and run (`cargo test --doc`)
+- XML schema MUST be documented with examples
+- Error messages MUST be actionable
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other development practices for the Gravity project.
+Amendments require:
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+1. Written proposal with rationale
+2. Impact analysis on existing code
+3. Migration plan for breaking changes
+4. Documentation update plan
+5. Version bump according to semantic versioning
+
+All code reviews MUST verify compliance with these principles. Deviations require explicit
+justification documented in the PR description and approved by maintainers.
+
+**Version**: 1.0.0 | **Ratified**: 2025-12-30 | **Last Amended**: 2025-12-30

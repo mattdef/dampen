@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<column padding="40" spacing="20">
+    <text value="Hello, Gravity!" size="32" weight="bold" />
+    <text value="This is a declarative UI defined in XML" />
+    <button label="Click me!" on_click="greet" />
+</column>

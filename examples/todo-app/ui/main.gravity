@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container padding="20">
+    <scrollable>
+        <column spacing="15">
+            <!-- Header with title and toggle -->
+            <row spacing="10" align="center">
+                <text value="Todo List" size="28" weight="bold" />
+                <space />
+                <toggler
+                    label="Dark Mode"
+                    on_toggle="toggle_dark_mode"
+                    active="{dark_mode}"
+                />
+            </row>
+
+            <rule />
+
+            <!-- Stats -->
+            <column spacing="5">
+                <text value="Total Items: {items.len()}" />
+                <text value="Completed: {completed_count}" />
+                <text value="Pending: {pending_count}" />
+            </column>
+
+            <rule />
+
+            <!-- Add Item Section -->
+            <text value="Add New Item" size="18" weight="bold" />
+            <row spacing="10">
+                <text_input
+                    value="{new_item_text}"
+                    on_input="update_new_item"
+                    placeholder="Enter todo item..."
+                />
+                <button
+                    label="Add"
+                    on_click="add_item"
+                    enabled="{new_item_text.len() > 0}"
+                />
+            </row>
+
+            <!-- Category and Priority -->
+            <row spacing="10">
+                <pick_list
+                    options="Work,Personal,Shopping,Other"
+                    selected="{selected_category}"
+                    on_select="select_category"
+                />
+                <text value="Priority: {priority}" />
+            </row>
+
+            <slider
+                min="1"
+                max="5"
+                value="{priority}"
+                on_change="update_priority"
+            />
+
+            <rule />
+
+            <!-- Todo List -->
+            <text value="Your Todos" size="18" weight="bold" />
+
+            <!-- Show if list is empty -->
+            <text
+                value="{if items.len() == 0 then 'No items yet! Add one above.' else ''}"
+            />
+
+            <!-- Placeholder for list items (would need runtime support for dynamic lists) -->
+            <text
+                value="Items: {items.len()} (list rendering with checkboxes would go here)"
+            />
+
+            <rule />
+
+            <!-- Actions -->
+            <row spacing="10">
+                <button
+                    label="Clear All"
+                    on_click="clear_all"
+                    enabled="{items.len() > 0}"
+                />
+                <button
+                    label="Clear Completed"
+                    on_click="clear_completed"
+                    enabled="{completed_count > 0}"
+                />
+            </row>
+        </column>
+    </scrollable>
+</container>

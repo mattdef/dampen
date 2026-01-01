@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<column padding="40">
+    <text value="Nested Layout" />
+    <row spacing="20">
+        <button label="Left" on_click="left_click" />
+        <column spacing="5">
+            <text value="Middle" />
+            <text value="Column" />
+        </column>
+        <button label="Right" on_click="right_click" />
+    </row>
+</column>
