@@ -78,56 +78,56 @@ Phase 11: Polish & Integration
 
 ### 2.1: Layout System Types
 
-- [ ] T016 [P] Implement `Length` enum in gravity-core/src/ir/layout.rs
-- [ ] T017 [P] Implement `Padding` struct with parse() method in gravity-core/src/ir/layout.rs
-- [ ] T018 [P] Implement `Alignment` enum in gravity-core/src/ir/layout.rs
-- [ ] T019 [P] Implement `Justification` enum in gravity-core/src/ir/layout.rs
-- [ ] T020 [P] Implement `Direction` enum in gravity-core/src/ir/layout.rs
-- [ ] T021 [P] Implement `LayoutConstraints` struct in gravity-core/src/ir/layout.rs
+- [X] T016 [P] Implement `Length` enum in gravity-core/src/ir/layout.rs
+- [X] T017 [P] Implement `Padding` struct with parse() method in gravity-core/src/ir/layout.rs
+- [X] T018 [P] Implement `Alignment` enum in gravity-core/src/ir/layout.rs
+- [X] T019 [P] Implement `Justification` enum in gravity-core/src/ir/layout.rs
+- [X] T020 [P] Implement `Direction` enum in gravity-core/src/ir/layout.rs
+- [X] T021 [P] Implement `LayoutConstraints` struct in gravity-core/src/ir/layout.rs
 
 ### 2.2: Style System Types
 
-- [ ] T022 [P] Implement `Color` struct with parse() method in gravity-core/src/ir/style.rs
-- [ ] T023 [P] Implement `Background` enum in gravity-core/src/ir/style.rs
-- [ ] T024 [P] Implement `Border` and `BorderRadius` structs in gravity-core/src/ir/style.rs
-- [ ] T025 [P] Implement `Shadow` struct in gravity-core/src/ir/style.rs
-- [ ] T026 [P] Implement `Transform` enum in gravity-core/src/ir/style.rs
-- [ ] T027 [P] Implement `StyleProperties` struct in gravity-core/src/ir/style.rs
+- [X] T022 [P] Implement `Color` struct with parse() method in gravity-core/src/ir/style.rs
+- [X] T023 [P] Implement `Background` enum in gravity-core/src/ir/style.rs
+- [X] T024 [P] Implement `Border` and `BorderRadius` structs in gravity-core/src/ir/style.rs
+- [X] T025 [P] Implement `Shadow` struct in gravity-core/src/ir/style.rs
+- [X] T026 [P] Implement `Transform` enum in gravity-core/src/ir/style.rs
+- [X] T027 [P] Implement `StyleProperties` struct in gravity-core/src/ir/style.rs
 
 ### 2.3: Theme System Types
 
-- [ ] T028 [P] Implement `ThemePalette` struct in gravity-core/src/ir/theme.rs
-- [ ] T029 [P] Implement `Typography` and `FontWeight` in gravity-core/src/ir/theme.rs
-- [ ] T030 [P] Implement `SpacingScale` struct in gravity-core/src/ir/theme.rs
-- [ ] T031 [P] Implement `Theme` struct in gravity-core/src/ir/theme.rs
-- [ ] T032 [P] Implement `WidgetState` enum in gravity-core/src/ir/theme.rs
-- [ ] T033 [P] Implement `StyleClass` struct in gravity-core/src/ir/theme.rs
-- [ ] T034 [P] Implement `Breakpoint` enum in gravity-core/src/ir/layout.rs
+- [X] T028 [P] Implement `ThemePalette` struct in gravity-core/src/ir/theme.rs
+- [X] T029 [P] Implement `Typography` and `FontWeight` in gravity-core/src/ir/theme.rs
+- [X] T030 [P] Implement `SpacingScale` struct in gravity-core/src/ir/theme.rs
+- [X] T031 [P] Implement `Theme` struct in gravity-core/src/ir/theme.rs
+- [X] T032 [P] Implement `WidgetState` enum in gravity-core/src/ir/theme.rs
+- [X] T033 [P] Implement `StyleClass` struct in gravity-core/src/ir/theme.rs
+- [X] T034 [P] Implement `Breakpoint` enum in gravity-core/src/ir/layout.rs
 
 ### 2.4: Core IR Extensions
 
-- [ ] T035 Extend `WidgetNode` with style/layout/theme fields in gravity-core/src/ir/node.rs
-- [ ] T036 Extend `GravityDocument` with themes/classes/global_theme in gravity-core/src/ir/mod.rs
+- [X] T035 Extend `WidgetNode` with style/layout/theme fields in gravity-core/src/ir/node.rs
+- [X] T036 Extend `GravityDocument` with themes/classes/global_theme in gravity-core/src/ir/mod.rs
 
 ### 2.5: Parser Infrastructure
 
-- [ ] T037 Implement `parse_color_attr()` in gravity-core/src/parser/style_parser.rs
-- [ ] T038 Implement `parse_length_attr()` in gravity-core/src/parser/style_parser.rs
-- [ ] T039 Implement `parse_padding_attr()` in gravity-core/src/parser/style_parser.rs
-- [ ] T040 Implement `parse_shadow_attr()` in gravity-core/src/parser/style_parser.rs
-- [ ] T041 Implement `parse_gradient()` (linear) in gravity-core/src/parser/gradient.rs
-- [ ] T042 Implement `parse_angle()` for gradients in gravity-core/src/parser/gradient.rs
-- [ ] T043 Implement `parse_color_stop()` in gravity-core/src/parser/gradient.rs
-- [ ] T044 Implement `parse_breakpoint_attributes()` in gravity-core/src/parser/mod.rs
-- [ ] T045 Implement `parse_theme_definition()` in gravity-core/src/parser/theme_parser.rs
-- [ ] T046 Implement `parse_style_class_definition()` in gravity-core/src/parser/theme_parser.rs
+- [X] T037 Implement `parse_color_attr()` in gravity-core/src/parser/style_parser.rs
+- [X] T038 Implement `parse_length_attr()` in gravity-core/src/parser/style_parser.rs
+- [X] T039 Implement `parse_padding_attr()` in gravity-core/src/parser/style_parser.rs
+- [X] T040 Implement `parse_shadow_attr()` in gravity-core/src/parser/style_parser.rs
+- [X] T041 Implement `parse_gradient()` (linear) in gravity-core/src/parser/gradient.rs
+- [X] T042 Implement `parse_angle()` for gradients in gravity-core/src/parser/gradient.rs
+- [X] T043 Implement `parse_color_stop()` in gravity-core/src/parser/gradient.rs
+- [X] T044 Implement `parse_breakpoint_attributes()` in gravity-core/src/parser/mod.rs
+- [X] T045 Implement `parse_theme_definition()` in gravity-core/src/parser/theme_parser.rs
+- [X] T046 Implement `parse_style_class_definition()` in gravity-core/src/parser/theme_parser.rs
 
 ### 2.6: Validation
 
-- [ ] T047 Implement validation rules for LayoutConstraints in gravity-core/src/ir/layout.rs
-- [ ] T048 Implement validation rules for StyleProperties in gravity-core/src/ir/style.rs
-- [ ] T049 Implement validation rules for Theme in gravity-core/src/ir/theme.rs
-- [ ] T050 Implement circular dependency detection for StyleClass in gravity-core/src/ir/theme.rs
+- [X] T047 Implement validation rules for LayoutConstraints in gravity-core/src/ir/layout.rs
+- [X] T048 Implement validation rules for StyleProperties in gravity-core/src/ir/style.rs
+- [X] T049 Implement validation rules for Theme in gravity-core/src/ir/theme.rs
+- [X] T050 Implement circular dependency detection for StyleClass in gravity-core/src/ir/theme.rs
 
 **Total Phase 2 Tasks**: 35
 

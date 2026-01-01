@@ -95,6 +95,7 @@ impl ThemeManager {
 
     // Built-in theme definitions
 
+    #[allow(clippy::unwrap_used)]
     fn light_theme() -> Theme {
         Theme {
             name: "light".to_string(),
@@ -122,6 +123,7 @@ impl ThemeManager {
         }
     }
 
+    #[allow(clippy::unwrap_used)]
     fn dark_theme() -> Theme {
         Theme {
             name: "dark".to_string(),

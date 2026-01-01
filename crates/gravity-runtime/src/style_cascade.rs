@@ -114,15 +114,12 @@ pub fn merge_styles(base: &StyleProperties, override_style: &StyleProperties) ->
             .background
             .clone()
             .or_else(|| base.background.clone()),
-        color: override_style.color.clone().or_else(|| base.color.clone()),
+        color: override_style.color.or(base.color),
         border: override_style
             .border
             .clone()
             .or_else(|| base.border.clone()),
-        shadow: override_style
-            .shadow
-            .clone()
-            .or_else(|| base.shadow.clone()),
+        shadow: override_style.shadow.or(base.shadow),
         opacity: override_style.opacity.or(base.opacity),
         transform: override_style
             .transform
@@ -142,11 +139,9 @@ pub fn resolve_layout(
     let mut has_any = false;
 
     // Apply class layouts in order
-    for class_layout in class_layouts {
-        if let Some(layout) = class_layout {
-            has_any = true;
-            merge_layout(&mut result, layout);
-        }
+    for layout in class_layouts.iter().flatten() {
+        has_any = true;
+        merge_layout(&mut result, layout);
     }
 
     // Apply inline layout

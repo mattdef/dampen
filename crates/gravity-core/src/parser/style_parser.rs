@@ -76,7 +76,7 @@ pub fn parse_border_style(s: &str) -> Result<BorderStyle, String> {
 /// Parse opacity
 pub fn parse_opacity(s: &str) -> Result<f32, String> {
     let value: f32 = s.parse().map_err(|_| format!("Invalid opacity: {}", s))?;
-    if value < 0.0 || value > 1.0 {
+    if !(0.0..=1.0).contains(&value) {
         return Err(format!("Opacity must be 0.0-1.0, got {}", value));
     }
     Ok(value)
@@ -122,7 +122,7 @@ pub fn parse_fill_portion(s: &str) -> Result<u8, String> {
     let value: u8 = s
         .parse()
         .map_err(|_| format!("Invalid fill_portion: {}", s))?;
-    if value == 0 || value > 255 {
+    if value == 0 {
         return Err(format!("fill_portion must be 1-255, got {}", value));
     }
     Ok(value)
@@ -137,7 +137,7 @@ pub fn parse_percentage(s: &str) -> Result<f32, String> {
     let value: f32 = num
         .parse()
         .map_err(|_| format!("Invalid percentage: {}", s))?;
-    if value < 0.0 || value > 100.0 {
+    if !(0.0..=100.0).contains(&value) {
         return Err(format!("Percentage must be 0.0-100.0, got {}", value));
     }
     Ok(value)

@@ -73,25 +73,25 @@ impl LayoutConstraints {
         }
 
         if let Some(Length::FillPortion(n)) = self.width {
-            if n == 0 || n > 255 {
+            if n == 0 {
                 return Err(format!("fill_portion must be 1-255, got {}", n));
             }
         }
 
         if let Some(Length::FillPortion(n)) = self.height {
-            if n == 0 || n > 255 {
+            if n == 0 {
                 return Err(format!("fill_portion must be 1-255, got {}", n));
             }
         }
 
         if let Some(Length::Percentage(p)) = self.width {
-            if p < 0.0 || p > 100.0 {
+            if !(0.0..=100.0).contains(&p) {
                 return Err(format!("percentage must be 0.0-100.0, got {}", p));
             }
         }
 
         if let Some(Length::Percentage(p)) = self.height {
-            if p < 0.0 || p > 100.0 {
+            if !(0.0..=100.0).contains(&p) {
                 return Err(format!("percentage must be 0.0-100.0, got {}", p));
             }
         }
@@ -149,8 +149,7 @@ impl Length {
         }
 
         // Parse percentage
-        if s.ends_with('%') {
-            let num = &s[..s.len() - 1];
+        if let Some(num) = s.strip_suffix('%') {
             let p: f32 = num
                 .parse()
                 .map_err(|_| format!("Invalid percentage: {}", s))?;

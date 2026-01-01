@@ -65,20 +65,17 @@ fn parse_radial_gradient(s: &str) -> Result<Gradient, String> {
 pub fn parse_angle(s: &str) -> Result<f32, String> {
     let s = s.trim();
 
-    if s.ends_with("deg") {
-        let num = &s[..s.len() - 3];
+    if let Some(num) = s.strip_suffix("deg") {
         let value: f32 = num
             .parse()
             .map_err(|_| format!("Invalid degree value: {}", s))?;
         Ok(value % 360.0)
-    } else if s.ends_with("rad") {
-        let num = &s[..s.len() - 3];
+    } else if let Some(num) = s.strip_suffix("rad") {
         let value: f32 = num
             .parse()
             .map_err(|_| format!("Invalid radian value: {}", s))?;
         Ok(value * 180.0 / std::f32::consts::PI)
-    } else if s.ends_with("turn") {
-        let num = &s[..s.len() - 4];
+    } else if let Some(num) = s.strip_suffix("turn") {
         let value: f32 = num
             .parse()
             .map_err(|_| format!("Invalid turn value: {}", s))?;
@@ -130,8 +127,7 @@ pub fn parse_color_stop(s: &str) -> Result<ColorStop, String> {
     // Optional offset
     let offset = if parts.len() > 1 {
         let offset_str = parts[1];
-        if offset_str.ends_with('%') {
-            let num = &offset_str[..offset_str.len() - 1];
+        if let Some(num) = offset_str.strip_suffix('%') {
             let value: f32 = num
                 .parse()
                 .map_err(|_| format!("Invalid offset: {}", offset_str))?;

@@ -31,7 +31,7 @@ impl StyleProperties {
     /// - Colors are invalid
     pub fn validate(&self) -> Result<(), String> {
         if let Some(opacity) = self.opacity {
-            if opacity < 0.0 || opacity > 1.0 {
+            if !(0.0..=1.0).contains(&opacity) {
                 return Err(format!("opacity must be 0.0-1.0, got {}", opacity));
             }
         }

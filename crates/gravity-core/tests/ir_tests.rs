@@ -3,6 +3,7 @@ use gravity_core::ir::{
     AttributeValue, EventBinding, EventKind, GravityDocument, SchemaVersion, Span, WidgetKind,
     WidgetNode,
 };
+use std::collections::HashMap;
 
 #[test]
 fn test_ir_serialization() {
@@ -12,7 +13,7 @@ fn test_ir_serialization() {
             kind: WidgetKind::Column,
             id: Some("root".to_string()),
             attributes: {
-                let mut map = std::collections::HashMap::new();
+                let mut map = HashMap::new();
                 map.insert(
                     "padding".to_string(),
                     AttributeValue::Static("20".to_string()),
@@ -24,7 +25,7 @@ fn test_ir_serialization() {
                 kind: WidgetKind::Text,
                 id: None,
                 attributes: {
-                    let mut map = std::collections::HashMap::new();
+                    let mut map = HashMap::new();
                     map.insert(
                         "value".to_string(),
                         AttributeValue::Static("Hello".to_string()),
@@ -34,9 +35,22 @@ fn test_ir_serialization() {
                 events: vec![],
                 children: vec![],
                 span: Span::new(0, 0, 1, 1),
+                style: None,
+                layout: None,
+                theme_ref: None,
+                classes: vec![],
+                breakpoint_attributes: HashMap::new(),
             }],
             span: Span::new(0, 0, 1, 1),
+            style: None,
+            layout: None,
+            theme_ref: None,
+            classes: vec![],
+            breakpoint_attributes: HashMap::new(),
         },
+        themes: HashMap::new(),
+        style_classes: HashMap::new(),
+        global_theme: None,
     };
 
     // Test serialization

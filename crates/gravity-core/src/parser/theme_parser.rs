@@ -131,7 +131,6 @@ pub fn parse_style_properties_from_attrs(
 
     let mut background = None;
     let mut color = None;
-    let mut border = None;
     let mut shadow = None;
     let mut opacity = None;
     let mut transform = None;
@@ -164,7 +163,7 @@ pub fn parse_style_properties_from_attrs(
         .map(|v| parse_border_style(v))
         .transpose()?;
 
-    border = build_border(border_width, border_color, border_radius, border_style)?;
+    let border = build_border(border_width, border_color, border_radius, border_style)?;
 
     // Parse shadow
     if let Some(value) = attrs.get("shadow") {
@@ -280,7 +279,7 @@ pub fn parse_state_variants(
 
             variants
                 .entry(state)
-                .or_insert_with(HashMap::new)
+                .or_default()
                 .insert(attr_name.to_string(), value.to_string());
         }
     }
