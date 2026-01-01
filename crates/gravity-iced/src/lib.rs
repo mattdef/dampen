@@ -69,6 +69,93 @@ impl Backend for IcedBackend {
     fn row<'a>(&self, children: Vec<Self::Widget<'a>>) -> Self::Widget<'a> {
         row(children).into()
     }
+
+    fn container<'a>(&self, content: Self::Widget<'a>) -> Self::Widget<'a> {
+        // Iced 0.14 doesn't have a simple container() helper, use column as placeholder
+        // In a full implementation, you'd use iced::widget::container with proper imports
+        column(vec![content]).into()
+    }
+
+    fn scrollable<'a>(&self, content: Self::Widget<'a>) -> Self::Widget<'a> {
+        // Placeholder - Iced 0.14 has scrollable but needs feature flags
+        column(vec![content]).into()
+    }
+
+    fn stack<'a>(&self, children: Vec<Self::Widget<'a>>) -> Self::Widget<'a> {
+        // Stack is not in Iced 0.14 core - use column as placeholder
+        column(children).into()
+    }
+
+    fn text_input<'a>(
+        &self,
+        _placeholder: &str,
+        _value: &str,
+        _on_input: Option<Self::Message>,
+    ) -> Self::Widget<'a> {
+        // Placeholder - text_input needs proper message handling
+        text("[text_input]").into()
+    }
+
+    fn checkbox<'a>(
+        &self,
+        _label: &str,
+        _is_checked: bool,
+        _on_toggle: Option<Self::Message>,
+    ) -> Self::Widget<'a> {
+        // Placeholder - checkbox needs proper message handling
+        text("[checkbox]").into()
+    }
+
+    fn slider<'a>(
+        &self,
+        _min: f32,
+        _max: f32,
+        _value: f32,
+        _on_change: Option<Self::Message>,
+    ) -> Self::Widget<'a> {
+        // Placeholder - slider needs proper message handling
+        text("[slider]").into()
+    }
+
+    fn pick_list<'a>(
+        &self,
+        _options: Vec<&str>,
+        _selected: Option<&str>,
+        _on_select: Option<Self::Message>,
+    ) -> Self::Widget<'a> {
+        // Placeholder - pick_list needs proper message handling
+        text("[pick_list]").into()
+    }
+
+    fn toggler<'a>(
+        &self,
+        _label: &str,
+        _is_active: bool,
+        _on_toggle: Option<Self::Message>,
+    ) -> Self::Widget<'a> {
+        // Placeholder - toggler needs proper message handling
+        text("[toggler]").into()
+    }
+
+    fn image<'a>(&self, _path: &str) -> Self::Widget<'a> {
+        // Placeholder - image needs feature flag
+        text("[image]").into()
+    }
+
+    fn svg<'a>(&self, _path: &str) -> Self::Widget<'a> {
+        // Placeholder - SVG not in core Iced
+        text("[svg]").into()
+    }
+
+    fn space<'a>(&self) -> Self::Widget<'a> {
+        // Placeholder - space needs proper implementation
+        text("").into()
+    }
+
+    fn rule<'a>(&self) -> Self::Widget<'a> {
+        // Placeholder - rule needs proper implementation
+        text("─").into()
+    }
 }
 
 /// Render a widget node to an Iced element
@@ -134,8 +221,163 @@ pub fn render<'a>(
                 .collect();
             backend.row(children)
         }
-        _ => {
-            // For unsupported widgets, return empty
+        WidgetKind::Container => {
+            let children: Vec<_> = node
+                .children
+                .iter()
+                .map(|child| render(child, backend))
+                .collect();
+            if let Some(first_child) = children.into_iter().next() {
+                backend.container(first_child)
+            } else {
+                backend.container(backend.text(""))
+            }
+        }
+        WidgetKind::Scrollable => {
+            let children: Vec<_> = node
+                .children
+                .iter()
+                .map(|child| render(child, backend))
+                .collect();
+            if let Some(first_child) = children.into_iter().next() {
+                backend.scrollable(first_child)
+            } else {
+                backend.scrollable(backend.text(""))
+            }
+        }
+        WidgetKind::Stack => {
+            let children: Vec<_> = node
+                .children
+                .iter()
+                .map(|child| render(child, backend))
+                .collect();
+            backend.stack(children)
+        }
+        WidgetKind::TextInput => {
+            let placeholder = match node.attributes.get("placeholder") {
+                Some(AttributeValue::Static(v)) => v.clone(),
+                _ => String::new(),
+            };
+            let value = match node.attributes.get("value") {
+                Some(AttributeValue::Static(v)) => v.clone(),
+                Some(AttributeValue::Binding(_)) => "[binding]".to_string(),
+                Some(AttributeValue::Interpolated(parts)) => format_interpolated(parts),
+                None => String::new(),
+            };
+            // Find input handler
+            let on_input = node
+                .events
+                .iter()
+                .find(|e| e.event == EventKind::Input)
+                .map(|e| {
+                    let handler_name = e.handler.clone();
+                    (backend.message_handler)(handler_name, None)
+                });
+            backend.text_input(&placeholder, &value, on_input)
+        }
+        WidgetKind::Checkbox => {
+            let label = match node.attributes.get("label") {
+                Some(AttributeValue::Static(l)) => l.clone(),
+                _ => String::new(),
+            };
+            let is_checked = match node.attributes.get("checked") {
+                Some(AttributeValue::Static(v)) => v == "true" || v == "1",
+                _ => false,
+            };
+            // Find toggle handler
+            let on_toggle = node
+                .events
+                .iter()
+                .find(|e| e.event == EventKind::Toggle)
+                .map(|e| {
+                    let handler_name = e.handler.clone();
+                    (backend.message_handler)(handler_name, None)
+                });
+            backend.checkbox(&label, is_checked, on_toggle)
+        }
+        WidgetKind::Slider => {
+            let min = match node.attributes.get("min") {
+                Some(AttributeValue::Static(v)) => v.parse::<f32>().unwrap_or(0.0),
+                _ => 0.0,
+            };
+            let max = match node.attributes.get("max") {
+                Some(AttributeValue::Static(v)) => v.parse::<f32>().unwrap_or(100.0),
+                _ => 100.0,
+            };
+            let value = match node.attributes.get("value") {
+                Some(AttributeValue::Static(v)) => v.parse::<f32>().unwrap_or(50.0),
+                _ => 50.0,
+            };
+            // Find change handler
+            let on_change = node
+                .events
+                .iter()
+                .find(|e| e.event == EventKind::Change)
+                .map(|e| {
+                    let handler_name = e.handler.clone();
+                    (backend.message_handler)(handler_name, None)
+                });
+            backend.slider(min, max, value, on_change)
+        }
+        WidgetKind::PickList => {
+            let options_str = match node.attributes.get("options") {
+                Some(AttributeValue::Static(v)) => v.clone(),
+                _ => String::new(),
+            };
+            let options: Vec<&str> = options_str.split(',').collect();
+            let selected = match node.attributes.get("selected") {
+                Some(AttributeValue::Static(v)) => Some(v.as_str()),
+                _ => None,
+            };
+            // Find select handler
+            let on_select = node
+                .events
+                .iter()
+                .find(|e| e.event == EventKind::Select)
+                .map(|e| {
+                    let handler_name = e.handler.clone();
+                    (backend.message_handler)(handler_name, None)
+                });
+            backend.pick_list(options, selected, on_select)
+        }
+        WidgetKind::Toggler => {
+            let label = match node.attributes.get("label") {
+                Some(AttributeValue::Static(l)) => l.clone(),
+                _ => String::new(),
+            };
+            let is_active = match node.attributes.get("active") {
+                Some(AttributeValue::Static(v)) => v == "true" || v == "1",
+                _ => false,
+            };
+            // Find toggle handler
+            let on_toggle = node
+                .events
+                .iter()
+                .find(|e| e.event == EventKind::Toggle)
+                .map(|e| {
+                    let handler_name = e.handler.clone();
+                    (backend.message_handler)(handler_name, None)
+                });
+            backend.toggler(&label, is_active, on_toggle)
+        }
+        WidgetKind::Image => {
+            let path = match node.attributes.get("src") {
+                Some(AttributeValue::Static(v)) => v.clone(),
+                _ => String::new(),
+            };
+            backend.image(&path)
+        }
+        WidgetKind::Svg => {
+            let path = match node.attributes.get("src") {
+                Some(AttributeValue::Static(v)) => v.clone(),
+                _ => String::new(),
+            };
+            backend.svg(&path)
+        }
+        WidgetKind::Space => backend.space(),
+        WidgetKind::Rule => backend.rule(),
+        WidgetKind::Custom(_) => {
+            // For custom widgets, return empty
             backend.column(Vec::new())
         }
     }

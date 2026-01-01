@@ -21,13 +21,13 @@ pub struct Cli {
 pub enum Commands {
     /// Build production code from .gravity files
     Build(commands::BuildArgs),
-    
+
     /// Validate .gravity files without building
     Check(commands::CheckArgs),
-    
+
     /// Run in development mode with hot-reload
     Dev(commands::DevArgs),
-    
+
     /// Inspect IR or generated code
     Inspect(commands::InspectArgs),
 }
@@ -35,14 +35,14 @@ pub enum Commands {
 /// CLI entry point
 pub fn run() {
     let cli = Cli::parse();
-    
+
     let result = match cli.command {
         Commands::Build(args) => commands::build_execute(&args).map_err(|e| e.to_string()),
         Commands::Check(args) => commands::check_execute(&args).map_err(|e| e.to_string()),
         Commands::Dev(args) => commands::dev_execute(&args),
         Commands::Inspect(args) => commands::inspect_execute(&args),
     };
-    
+
     if let Err(e) = result {
         eprintln!("Error: {}", e);
         std::process::exit(1);

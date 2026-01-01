@@ -9,10 +9,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub struct RuntimeState<T> {
     /// Serialized model data
     pub model: T,
-    
+
     /// Schema version for migration
     pub version: u32,
-    
+
     /// Timestamp of last save (seconds since epoch)
     pub saved_at: u64,
 }
@@ -24,7 +24,7 @@ impl<T> RuntimeState<T> {
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
-        
+
         Self {
             model,
             version: 1,
@@ -52,18 +52,15 @@ impl<T: for<'de> Deserialize<'de>> RuntimeState<T> {
 pub enum StateRestoration<T> {
     /// Full restoration successful
     Restored(T),
-    
+
     /// Partial restoration with default values for new fields
     Partial {
         model: T,
         missing_fields: Vec<String>,
     },
-    
+
     /// Cannot restore, using defaults
-    Default {
-        model: T,
-        reason: String,
-    },
+    Default { model: T, reason: String },
 }
 
 impl<T> StateRestoration<T> {
@@ -71,12 +68,12 @@ impl<T> StateRestoration<T> {
     pub fn is_full(&self) -> bool {
         matches!(self, StateRestoration::Restored(_))
     }
-    
+
     /// Check if restoration was partial
     pub fn is_partial(&self) -> bool {
         matches!(self, StateRestoration::Partial { .. })
     }
-    
+
     /// Get the model, regardless of restoration type
     pub fn into_model(self) -> T {
         match self {
@@ -98,7 +95,7 @@ pub trait StateMigration: Sized {
         if let Ok(model) = serde_json::from_str::<Self>(json) {
             return Ok(StateRestoration::Restored(model));
         }
-        
+
         // Try lenient deserialization with default for missing fields
         #[derive(Deserialize)]
         struct Lenient<T> {
@@ -107,18 +104,21 @@ pub trait StateMigration: Sized {
             #[serde(default)]
             _extra: serde_json::Value,
         }
-        
+
         if let Ok(lenient) = serde_json::from_str::<Lenient<Self>>(json) {
             // Check if there were extra fields that were dropped
             let parsed: serde_json::Value = serde_json::from_str(json)?;
-            let actual_keys = parsed.as_object().map(|o| o.keys().cloned().collect::<Vec<_>>()).unwrap_or_default();
+            let actual_keys = parsed
+                .as_object()
+                .map(|o| o.keys().cloned().collect::<Vec<_>>())
+                .unwrap_or_default();
             let expected_keys = Self::available_fields();
-            
+
             let missing: Vec<String> = actual_keys
                 .into_iter()
                 .filter(|k| !expected_keys.contains(k))
                 .collect();
-            
+
             if missing.is_empty() {
                 Ok(StateRestoration::Restored(lenient.data))
             } else {
@@ -135,12 +135,15 @@ pub trait StateMigration: Sized {
             })
         }
     }
-    
+
     /// Get available fields for this state type
     fn available_fields() -> Vec<String>;
 }
 
-impl<T> StateMigration for T where T: UiBindable + Default + DeserializeOwned + Serialize {
+impl<T> StateMigration for T
+where
+    T: UiBindable + Default + DeserializeOwned + Serialize,
+{
     fn available_fields() -> Vec<String> {
         T::available_fields()
     }
@@ -181,10 +184,10 @@ mod tests {
             count: 42,
             name: "Test".to_string(),
         };
-        
+
         let state = RuntimeState::new(model.clone());
         let json = state.to_json().unwrap();
-        
+
         assert!(json.contains("count"));
         assert!(json.contains("42"));
         assert!(json.contains("name"));
@@ -195,7 +198,7 @@ mod tests {
     fn test_state_deserialization() {
         let json = r#"{"model":{"count":42,"name":"Test"},"version":1,"saved_at":123456}"#;
         let state: RuntimeState<TestModel> = RuntimeState::from_json(json).unwrap();
-        
+
         assert_eq!(state.model.count, 42);
         assert_eq!(state.model.name, "Test");
         assert_eq!(state.version, 1);
@@ -207,10 +210,10 @@ mod tests {
             count: 100,
             name: "Restored".to_string(),
         };
-        
+
         let state = RuntimeState::new(model);
         let json = state.to_json().unwrap();
-        
+
         let restored: RuntimeState<TestModel> = RuntimeState::from_json(&json).unwrap();
         assert_eq!(restored.model.count, 100);
         assert_eq!(restored.model.name, "Restored");
@@ -220,25 +223,25 @@ mod tests {
     fn test_file_save_load() {
         use std::fs;
         use std::path::PathBuf;
-        
+
         // Create a temporary directory
         let temp_dir = std::env::temp_dir();
         let file_path = temp_dir.join("test_gravity_state.json");
-        
+
         let original_state = RuntimeState::new(TestModel {
             count: 42,
             name: "File Test".to_string(),
         });
-        
+
         // Save
         save_state_to_file(&original_state, &file_path).unwrap();
-        
+
         // Load
         let loaded_state: RuntimeState<TestModel> = load_state_from_file(&file_path).unwrap();
-        
+
         assert_eq!(loaded_state.model.count, original_state.model.count);
         assert_eq!(loaded_state.model.name, original_state.model.name);
-        
+
         // Cleanup
         let _ = fs::remove_file(&file_path);
     }

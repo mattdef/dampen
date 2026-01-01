@@ -4,7 +4,7 @@
 pub struct InspectArgs {
     #[arg(short, long)]
     file: String,
-    
+
     #[arg(long)]
     codegen: bool,
 }

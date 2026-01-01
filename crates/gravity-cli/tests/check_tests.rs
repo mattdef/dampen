@@ -1,6 +1,6 @@
 //! Tests for the check command
 
-use gravity_cli::commands::check::{CheckArgs, execute};
+use gravity_cli::commands::check::{execute, CheckArgs};
 use std::fs;
 use tempfile::TempDir;
 

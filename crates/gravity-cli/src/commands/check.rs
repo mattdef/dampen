@@ -1,7 +1,7 @@
 //! Check command - validates Gravity UI files
 
 use clap::Args;
-use gravity_core::{parser, ir::WidgetKind};
+use gravity_core::{ir::WidgetKind, parser};
 use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -12,22 +12,47 @@ use walkdir::WalkDir;
 pub enum CheckError {
     #[error("Directory not found: {0}")]
     DirectoryNotFound(PathBuf),
-    
+
     #[error("Parse error in {file}:{line}:{col}: {message}")]
-    ParseError { file: PathBuf, line: u32, col: u32, message: String },
-    
+    ParseError {
+        file: PathBuf,
+        line: u32,
+        col: u32,
+        message: String,
+    },
+
     #[error("XML validation error in {file}:{line}:{col}: {message}")]
-    XmlValidationError { file: PathBuf, line: u32, col: u32, message: String },
-    
+    XmlValidationError {
+        file: PathBuf,
+        line: u32,
+        col: u32,
+        message: String,
+    },
+
     #[error("Invalid widget '{widget}' in {file}:{line}:{col}")]
-    InvalidWidget { widget: String, file: PathBuf, line: u32, col: u32 },
-    
+    InvalidWidget {
+        widget: String,
+        file: PathBuf,
+        line: u32,
+        col: u32,
+    },
+
     #[error("Unknown handler '{handler}' in {file}:{line}:{col}")]
-    UnknownHandler { handler: String, file: PathBuf, line: u32, col: u32 },
-    
+    UnknownHandler {
+        handler: String,
+        file: PathBuf,
+        line: u32,
+        col: u32,
+    },
+
     #[error("Invalid binding field '{field}' in {file}:{line}:{col}")]
-    InvalidBinding { field: String, file: PathBuf, line: u32, col: u32 },
-    
+    InvalidBinding {
+        field: String,
+        file: PathBuf,
+        line: u32,
+        col: u32,
+    },
+
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 }
@@ -37,7 +62,7 @@ pub struct CheckArgs {
     /// Directory containing .gravity files to check
     #[arg(short, long, default_value = "ui")]
     pub input: String,
-    
+
     /// Enable verbose output
     #[arg(short, long)]
     pub verbose: bool,
@@ -45,45 +70,48 @@ pub struct CheckArgs {
 
 pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
     let input_path = Path::new(&args.input);
-    
+
     if !input_path.exists() {
         return Err(CheckError::DirectoryNotFound(input_path.to_path_buf()));
     }
-    
+
     if args.verbose {
         eprintln!("Checking Gravity UI files in: {}", input_path.display());
     }
-    
+
     let mut errors = Vec::new();
     let mut files_checked = 0;
-    
+
     // Find all .gravity files
     for entry in WalkDir::new(input_path)
         .follow_links(true)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| {
-            e.path().extension().map(|ext| ext == "gravity").unwrap_or(false)
+            e.path()
+                .extension()
+                .map(|ext| ext == "gravity")
+                .unwrap_or(false)
         })
     {
         let file_path = entry.path();
         files_checked += 1;
-        
+
         if args.verbose {
             eprintln!("Checking: {}", file_path.display());
         }
-        
+
         // Read and parse the file
         let content = fs::read_to_string(file_path)?;
-        
+
         // First check for XML declaration
         validate_xml_declaration(&content, file_path, &mut errors);
-        
+
         // Only proceed to parse if XML declaration is valid
         if !errors.is_empty() {
             continue;
         }
-        
+
         match parser::parse(&content) {
             Ok(document) => {
                 // Validate the document
@@ -99,11 +127,11 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
             }
         }
     }
-    
+
     if args.verbose {
         eprintln!("Checked {} files", files_checked);
     }
-    
+
     // Report errors
     if !errors.is_empty() {
         eprintln!("Found {} error(s):", errors.len());
@@ -120,11 +148,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
     }
 }
 
-fn validate_xml_declaration(
-    content: &str,
-    file_path: &Path,
-    errors: &mut Vec<CheckError>,
-) {
+fn validate_xml_declaration(content: &str, file_path: &Path, errors: &mut Vec<CheckError>) {
     // Check if content starts with proper XML declaration
     let trimmed = content.trim_start();
     if !trimmed.starts_with("<?xml version=\"1.0\"") {
@@ -147,7 +171,7 @@ fn validate_document(
         .iter()
         .map(|w| format!("{:?}", w).to_lowercase())
         .collect();
-    
+
     // Validate each widget in the tree
     validate_widget_node(&document.root, file_path, &valid_widgets, errors);
 }
@@ -168,7 +192,7 @@ fn validate_widget_node(
             col: node.span.column,
         });
     }
-    
+
     // Validate event handlers
     for event_binding in &node.events {
         // For now, we'll assume any handler name is valid
@@ -182,12 +206,18 @@ fn validate_widget_node(
             });
         }
     }
-    
+
     // Validate attribute bindings
     for (_attr_name, attr_value) in &node.attributes {
-        validate_attribute_value(attr_value, file_path, node.span.line, node.span.column, errors);
+        validate_attribute_value(
+            attr_value,
+            file_path,
+            node.span.line,
+            node.span.column,
+            errors,
+        );
     }
-    
+
     // Recursively validate children
     for child in &node.children {
         validate_widget_node(child, file_path, valid_widgets, errors);

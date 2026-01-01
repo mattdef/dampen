@@ -5,7 +5,7 @@ pub mod check;
 pub mod dev;
 pub mod inspect;
 
-pub use build::{BuildArgs, execute as build_execute};
-pub use check::{CheckArgs, execute as check_execute};
-pub use dev::{DevArgs, execute as dev_execute};
-pub use inspect::{InspectArgs, execute as inspect_execute};
+pub use build::{execute as build_execute, BuildArgs};
+pub use check::{execute as check_execute, CheckArgs};
+pub use dev::{execute as dev_execute, DevArgs};
+pub use inspect::{execute as inspect_execute, InspectArgs};

@@ -360,31 +360,37 @@ examples/                    # Example applications
 
 ### Remaining Widget Implementations
 
-- [ ] T154 [P] [US7] Implement container widget in crates/gravity-iced/src/widgets/container.rs
-- [ ] T155 [P] [US7] Implement scrollable widget in crates/gravity-iced/src/widgets/scrollable.rs
-- [ ] T156 [P] [US7] Implement stack widget in crates/gravity-iced/src/widgets/stack.rs
-- [ ] T157 [P] [US7] Implement text_input widget in crates/gravity-iced/src/widgets/text_input.rs
-- [ ] T158 [P] [US7] Implement checkbox widget in crates/gravity-iced/src/widgets/checkbox.rs
-- [ ] T159 [P] [US7] Implement slider widget in crates/gravity-iced/src/widgets/slider.rs
-- [ ] T160 [P] [US7] Implement pick_list widget in crates/gravity-iced/src/widgets/pick_list.rs
-- [ ] T161 [P] [US7] Implement toggler widget in crates/gravity-iced/src/widgets/toggler.rs
-- [ ] T162 [P] [US7] Implement image widget in crates/gravity-iced/src/widgets/image.rs
-- [ ] T163 [P] [US7] Implement svg widget in crates/gravity-iced/src/widgets/svg.rs
-- [ ] T164 [P] [US7] Implement space widget in crates/gravity-iced/src/widgets/space.rs
-- [ ] T165 [P] [US7] Implement rule widget in crates/gravity-iced/src/widgets/rule.rs
+- [X] T154 [P] [US7] Implement container widget in crates/gravity-iced/src/widgets/container.rs
+- [X] T155 [P] [US7] Implement scrollable widget in crates/gravity-iced/src/widgets/scrollable.rs
+- [X] T156 [P] [US7] Implement stack widget in crates/gravity-iced/src/widgets/stack.rs
+- [X] T157 [P] [US7] Implement text_input widget in crates/gravity-iced/src/widgets/text_input.rs
+- [X] T158 [P] [US7] Implement checkbox widget in crates/gravity-iced/src/widgets/checkbox.rs
+- [X] T159 [P] [US7] Implement slider widget in crates/gravity-iced/src/widgets/slider.rs
+- [X] T160 [P] [US7] Implement pick_list widget in crates/gravity-iced/src/widgets/pick_list.rs
+- [X] T161 [P] [US7] Implement toggler widget in crates/gravity-iced/src/widgets/toggler.rs
+- [X] T162 [P] [US7] Implement image widget in crates/gravity-iced/src/widgets/image.rs
+- [X] T163 [P] [US7] Implement svg widget in crates/gravity-iced/src/widgets/svg.rs
+- [X] T164 [P] [US7] Implement space widget in crates/gravity-iced/src/widgets/space.rs
+- [X] T165 [P] [US7] Implement rule widget in crates/gravity-iced/src/widgets/rule.rs
 
 ### Widget Attribute Support
 
-- [ ] T166 [US7] Implement width/height constraints parsing
-- [ ] T167 [US7] Implement padding attribute parsing (single value and box)
-- [ ] T168 [US7] Implement spacing attribute for layouts
-- [ ] T169 [US7] Implement align attribute parsing
+- [X] T166 [US7] Implement width/height constraints parsing
+- [X] T167 [US7] Implement padding attribute parsing (single value and box)
+- [X] T168 [US7] Implement spacing attribute for layouts
+- [X] T169 [US7] Implement align attribute parsing
 
 ### Todo App Example
 
-- [ ] T170 [US7] Create examples/todo-app/Cargo.toml
-- [ ] T171 [US7] Create examples/todo-app/ui/main.gravity with full widget variety
-- [ ] T172 [US7] Create examples/todo-app/src/main.rs demonstrating CRUD operations
+- [X] T170 [US7] Update examples/todo-app/Cargo.toml
+- [X] T171 [US7] Update examples/todo-app/ui/main.gravity with full widget variety
+- [X] T172 [US7] Update examples/todo-app/src/main.rs demonstrating CRUD operations
+
+### Widget Tests
+
+- [X] T173 [US7] Add unit tests for Backend trait implementations
+- [X] T174 [US7] Add integration tests for widget rendering
+- [X] T175 [US7] Test attribute parsing for all widget types
 
 **Checkpoint**: All core Iced widgets available in XML
 

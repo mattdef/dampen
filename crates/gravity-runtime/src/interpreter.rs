@@ -1,6 +1,6 @@
 //! Event dispatch and interpreter for Gravity applications
 
-use gravity_core::{EventBinding, HandlerRegistry, parse, GravityDocument};
+use gravity_core::{parse, EventBinding, GravityDocument, HandlerRegistry};
 use std::any::Any;
 use std::time::Instant;
 
@@ -79,18 +79,18 @@ impl HotReloadInterpreter {
             state_file: None,
         }
     }
-    
+
     /// Set the state file path for persistence
     pub fn with_state_file(mut self, path: std::path::PathBuf) -> Self {
         self.state_file = Some(path);
         self
     }
-    
+
     /// Load initial document
     #[allow(clippy::print_stderr)]
     pub fn load_document(&mut self, xml: &str) -> Result<(), String> {
         let start = Instant::now();
-        
+
         match parse(xml) {
             Ok(doc) => {
                 self.current_document = Some(doc);
@@ -104,22 +104,22 @@ impl HotReloadInterpreter {
             }
         }
     }
-    
+
     /// Reload document from XML (preserving state)
     #[allow(clippy::print_stderr)]
     pub fn reload_document(&mut self, xml: &str) -> Result<ReloadResult, String> {
         let start = Instant::now();
-        
+
         // Parse new document
         match parse(xml) {
             Ok(new_doc) => {
                 self.current_document = Some(new_doc);
-                
+
                 let duration = start.elapsed();
                 let latency_ms = duration.as_millis();
-                
+
                 eprintln!("[INFO] Reload completed in {}ms", latency_ms);
-                
+
                 Ok(ReloadResult::Success {
                     latency_ms,
                     state_restored: false, // State restoration handled separately
@@ -127,8 +127,12 @@ impl HotReloadInterpreter {
             }
             Err(e) => {
                 let duration = start.elapsed();
-                eprintln!("[ERROR] Reload failed after {}ms: {}", duration.as_millis(), e);
-                
+                eprintln!(
+                    "[ERROR] Reload failed after {}ms: {}",
+                    duration.as_millis(),
+                    e
+                );
+
                 Ok(ReloadResult::Failure {
                     error: e.to_string(),
                     latency_ms: duration.as_millis(),
@@ -136,39 +140,33 @@ impl HotReloadInterpreter {
             }
         }
     }
-    
+
     /// Get the current document
     pub fn document(&self) -> Option<&GravityDocument> {
         self.current_document.as_ref()
     }
-    
+
     /// Get mutable access to document (for rebuilding widget tree)
     pub fn document_mut(&mut self) -> Option<&mut GravityDocument> {
         self.current_document.as_mut()
     }
-    
+
     /// Save current state to file
-    pub fn save_state<T: serde::Serialize>(
-        &self,
-        model: T,
-    ) -> Result<(), String> {
+    pub fn save_state<T: serde::Serialize>(&self, model: T) -> Result<(), String> {
         if let Some(state_file) = &self.state_file {
             let state = crate::state::RuntimeState::new(model);
-            crate::state::save_state_to_file(&state, state_file)
-                .map_err(|e| e.to_string())
+            crate::state::save_state_to_file(&state, state_file).map_err(|e| e.to_string())
         } else {
             Err("No state file configured".to_string())
         }
     }
-    
+
     /// Load state from file
-    pub fn load_state<T: for<'de> serde::Deserialize<'de>>(
-        &self,
-    ) -> Result<Option<T>, String> {
+    pub fn load_state<T: for<'de> serde::Deserialize<'de>>(&self) -> Result<Option<T>, String> {
         if let Some(state_file) = &self.state_file {
             if state_file.exists() {
-                let state = crate::state::load_state_from_file(state_file)
-                    .map_err(|e| e.to_string())?;
+                let state =
+                    crate::state::load_state_from_file(state_file).map_err(|e| e.to_string())?;
                 return Ok(Some(state.model));
             }
         }
@@ -185,10 +183,7 @@ pub enum ReloadResult {
         state_restored: bool,
     },
     /// Reload failed
-    Failure {
-        error: String,
-        latency_ms: u128,
-    },
+    Failure { error: String, latency_ms: u128 },
 }
 
 impl ReloadResult {
@@ -196,7 +191,7 @@ impl ReloadResult {
     pub fn is_success(&self) -> bool {
         matches!(self, ReloadResult::Success { .. })
     }
-    
+
     /// Get latency in milliseconds
     pub fn latency_ms(&self) -> u128 {
         match self {
@@ -210,7 +205,7 @@ impl ReloadResult {
 mod tests {
     use super::*;
     use gravity_core::HandlerRegistry;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
 
     #[derive(Debug, Clone, Serialize, Deserialize, Default)]
     struct TestModel {
@@ -242,10 +237,10 @@ mod tests {
     fn test_hot_reload_interpreter() {
         let registry = HandlerRegistry::new();
         let mut interpreter = HotReloadInterpreter::new(registry);
-        
+
         let xml = r#"<column><text value="Test" /></column>"#;
         let result = interpreter.load_document(xml);
-        
+
         assert!(result.is_ok());
         assert!(interpreter.document().is_some());
     }
@@ -256,15 +251,15 @@ mod tests {
             latency_ms: 100,
             state_restored: true,
         };
-        
+
         assert!(success.is_success());
         assert_eq!(success.latency_ms(), 100);
-        
+
         let failure = ReloadResult::Failure {
             error: "Parse error".to_string(),
             latency_ms: 50,
         };
-        
+
         assert!(!failure.is_success());
         assert_eq!(failure.latency_ms(), 50);
     }

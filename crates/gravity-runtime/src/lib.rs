@@ -30,10 +30,10 @@ pub mod overlay;
 pub mod state;
 pub mod watcher;
 
-pub use interpreter::{Interpreter, HotReloadInterpreter, ReloadResult, DispatchError};
+pub use interpreter::{DispatchError, HotReloadInterpreter, Interpreter, ReloadResult};
 pub use overlay::{ErrorOverlay, OverlayManager};
-pub use state::{RuntimeState, StateRestoration, StateMigration};
-pub use watcher::{FileWatcher, FileEvent};
+pub use state::{RuntimeState, StateMigration, StateRestoration};
+pub use watcher::{FileEvent, FileWatcher};
 
 /// Hot-reload enabled runtime
 pub struct Runtime;
