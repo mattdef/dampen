@@ -1,0 +1,5 @@
+---
+source: crates/gravity-core/tests/codegen_snapshot_tests.rs
+expression: output.code
+---
+# [derive (Clone , Debug)] pub enum Message { } impl iced :: Application for Model { type Executor = iced :: executor :: Default ; type Flags = () ; type Message = Message ; fn new (_flags : ()) -> (Self , iced :: Task < Self :: Message >) { (Self :: default () , iced :: Task :: none ()) } fn title (& self) -> String { "Gravity Application" . to_string () } } fn view (& self) -> iced :: Element < '_ , Self :: Message > { iced :: widget :: text ({ let mut result = String :: new () ; result . push_str (& "Count: " . to_string ()) ; result . push_str (& Model :: count . to_binding_value () . to_display_string ()) ; result . push_str (& ", Name: " . to_string ()) ; result . push_str (& Model :: name . to_binding_value () . to_display_string ()) ; result }) } fn update (& mut self , message : Self :: Message) -> iced :: Task < Self :: Message > { match message { } }

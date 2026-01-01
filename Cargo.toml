@@ -12,14 +12,14 @@ members = [
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
-authors = ["Gravity Developers"]
+authors = ["Gravity Developers <dev@gravity-ui.dev>"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/your-org/gravity"
-documentation = "https://docs.rs/gravity"
-description = "Declarative UI framework for Rust with Iced backend"
+repository = "https://github.com/gravity-ui/gravity"
+documentation = "https://docs.rs/gravity-core"
 readme = "README.md"
 keywords = ["ui", "iced", "declarative", "gui", "framework"]
 categories = ["gui", "development-tools"]
+publish = true
 
 [workspace.dependencies]
 # Core dependencies

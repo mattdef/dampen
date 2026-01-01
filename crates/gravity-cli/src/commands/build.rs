@@ -1,6 +1,6 @@
 //! Build command - generates production Rust code from Gravity UI files
 
-use gravity_core::{generate_application, parse, validate_handlers, HandlerSignature};
+use gravity_core::{generate_application, parse, HandlerSignature};
 use std::fs;
 use std::path::{Path, PathBuf};
 

@@ -404,20 +404,20 @@ examples/                    # Example applications
 
 ### Inspect Command (gravity-cli)
 
-- [ ] T173 [US8] Implement inspect command in crates/gravity-cli/src/commands/inspect.rs
-- [ ] T174 [US8] Display IR tree in human-readable format
-- [ ] T175 [US8] Add --codegen flag to show generated Rust code
-- [ ] T176 [US8] Add --format json flag for machine-readable output
-- [ ] T177 [US8] Display binding expressions with resolved types
+- [X] T173 [US8] Implement inspect command in crates/gravity-cli/src/commands/inspect.rs
+- [X] T174 [US8] Display IR tree in human-readable format
+- [X] T175 [US8] Add --codegen flag to show generated Rust code
+- [X] T176 [US8] Add --format json flag for machine-readable output
+- [X] T177 [US8] Display binding expressions with resolved types
 
 ### CLI Integration
 
-- [ ] T178 [US8] Create crates/gravity-cli/src/commands/mod.rs with subcommand routing
-- [ ] T179 [US8] Implement dev command in crates/gravity-cli/src/commands/dev.rs
-- [ ] T180 [US8] Implement config loading in crates/gravity-cli/src/config.rs
-- [ ] T181 [US8] Add gravity.toml parser
+- [X] T178 [US8] Create crates/gravity-cli/src/commands/mod.rs with subcommand routing
+- [X] T179 [US8] Implement dev command in crates/gravity-cli/src/commands/dev.rs
+- [X] T180 [US8] Implement config loading in crates/gravity-cli/src/config.rs
+- [X] T181 [US8] Add gravity.toml parser
 
-**Checkpoint**: `gravity inspect` displays useful debug information
+**Checkpoint**: `gravity inspect` displays useful debug information ✓
 
 ---
 
@@ -425,20 +425,20 @@ examples/                    # Example applications
 
 **Purpose**: Documentation, examples, and release preparation
 
-- [ ] T182 [P] Create README.md with installation and quick start
-- [ ] T183 [P] Create docs/QUICKSTART.md from specs/001-framework-technical-specs/quickstart.md
-- [ ] T184 [P] Create docs/XML_SCHEMA.md from specs/001-framework-technical-specs/contracts/xml-schema.md
-- [ ] T185 Create examples/full-demo/ showcasing all features
-- [ ] T186 [P] Add rustdoc comments to all public types in gravity-core
-- [ ] T187 [P] Add rustdoc comments to all public macros in gravity-macros
-- [ ] T188 Run cargo doc --workspace and verify no warnings
-- [ ] T189 [P] Add proptest dependency for property-based testing
-- [ ] T190 [P] Add insta dependency for snapshot testing
-- [ ] T191 Create property-based parser tests in crates/gravity-core/tests/proptest_parser.rs
-- [ ] T192 Create codegen snapshot tests in crates/gravity-core/tests/snapshots/
-- [ ] T193 Benchmark XML parse time for 1000-widget file
-- [ ] T194 Benchmark hot-reload latency
-- [ ] T195 Prepare crates for crates.io publication (metadata, license)
+- [X] T182 [P] Create README.md with installation and quick start
+- [X] T183 [P] Create docs/QUICKSTART.md from specs/001-framework-technical-specs/quickstart.md
+- [X] T184 [P] Create docs/XML_SCHEMA.md from specs/001-framework-technical-specs/contracts/xml-schema.md
+- [X] T185 Create examples/full-demo/ showcasing all features
+- [X] T186 [P] Add rustdoc comments to all public types in gravity-core
+- [X] T187 [P] Add rustdoc comments to all public macros in gravity-macros
+- [X] T188 Run cargo doc --workspace and verify no warnings
+- [X] T189 [P] Add proptest dependency for property-based testing
+- [X] T190 [P] Add insta dependency for snapshot testing
+- [X] T191 Create property-based parser tests in crates/gravity-core/tests/proptest_parser.rs
+- [X] T192 Create codegen snapshot tests in crates/gravity-core/tests/snapshots/
+- [X] T193 Benchmark XML parse time for 1000-widget file
+- [X] T194 Benchmark hot-reload latency
+- [X] T195 Prepare crates for crates.io publication (metadata, license)
 
 ---
 

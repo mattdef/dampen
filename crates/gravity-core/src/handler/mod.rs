@@ -14,13 +14,13 @@ pub struct HandlerRegistry {
 #[derive(Clone)]
 #[allow(clippy::type_complexity)]
 pub enum HandlerEntry {
-    /// Simple handler: fn(&mut Model)
+    /// Simple handler: `fn(&mut Model)`
     Simple(Arc<dyn Fn(&mut dyn Any) + Send + Sync>),
 
-    /// Handler with value: fn(&mut Model, T)
+    /// Handler with value: `fn(&mut Model, T)`
     WithValue(Arc<dyn Fn(&mut dyn Any, Box<dyn Any>) + Send + Sync>),
 
-    /// Handler returning command: fn(&mut Model) -> Command<Message>
+    /// Handler returning command: `fn(&mut Model) -> Command<Message>`
     WithCommand(Arc<dyn Fn(&mut dyn Any) -> Box<dyn Any> + Send + Sync>),
 }
 

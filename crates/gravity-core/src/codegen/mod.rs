@@ -2,6 +2,33 @@
 //!
 //! This module generates static Rust code from Gravity UI definitions.
 //! The generated code has zero runtime overhead compared to hand-written Iced code.
+//!
+//! # Overview
+//!
+//! Code generation is used in production mode to eliminate runtime parsing:
+//! 1. Parse `.gravity` files at build time
+//! 2. Generate Rust code with `generate_application()`
+//! 3. Include generated code via `include!(concat!(env!("OUT_DIR"), "/ui_generated.rs"))`
+//!
+//! # Example
+//!
+//! ```rust,ignore
+//! // At build time:
+//! let doc = parse(ui_xml)?;
+//! let output = generate_application(&doc, "Model", "Message", &handlers)?;
+//! fs::write("ui_generated.rs", output.code)?;
+//!
+//! // At runtime:
+//! include!("ui_generated.rs");
+//! // No XML parsing, no runtime overhead!
+//! ```
+//!
+//! # Generated Code Structure
+//!
+//! The generated code includes:
+//! - Message enum from handler signatures
+//! - `impl Application for Model` with `view()` and `update()` methods
+//! - Inlined widget tree with evaluated bindings
 
 pub mod application;
 pub mod update;
@@ -13,6 +40,8 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 /// Result of code generation
+///
+/// Contains the generated Rust code and any warnings or notes.
 #[derive(Debug)]
 pub struct CodegenOutput {
     /// Generated Rust code
@@ -22,6 +51,26 @@ pub struct CodegenOutput {
 }
 
 /// Generate complete application code from a Gravity document
+///
+/// This is the main entry point for code generation. It orchestrates
+/// the generation of all necessary components.
+///
+/// # Arguments
+///
+/// * `document` - Parsed Gravity document
+/// * `model_name` - Name of the model struct (e.g., "Model")
+/// * `message_name` - Name of the message enum (e.g., "Message")
+/// * `handlers` - List of handler signatures
+///
+/// # Returns
+///
+/// `Ok(CodegenOutput)` with generated code and warnings
+///
+/// # Errors
+///
+/// Returns `CodegenError` if:
+/// - Handler validation fails
+/// - Widget generation fails
 pub fn generate_application(
     document: &GravityDocument,
     model_name: &str,

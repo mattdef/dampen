@@ -9,7 +9,37 @@ use crate::ir::{
 use crate::parser::error::{ParseError, ParseErrorKind};
 use roxmltree::{Document, Node, NodeType};
 
-/// Parse XML into a GravityDocument
+/// Parse XML markup into a GravityDocument.
+///
+/// This is the main entry point for the parser. It takes XML markup and
+/// converts it into the Intermediate Representation (IR) suitable for
+/// rendering or code generation.
+///
+/// # Arguments
+///
+/// * `xml` - XML markup string
+///
+/// # Returns
+///
+/// `Ok(GravityDocument)` on success, `Err(ParseError)` on failure
+///
+/// # Examples
+///
+/// ```rust
+/// use gravity_core::parse;
+///
+/// let xml = r#"<column><text value="Hello" /></column>"#;
+/// let doc = parse(xml).unwrap();
+/// assert_eq!(doc.root.children.len(), 1);
+/// ```
+///
+/// # Errors
+///
+/// Returns `ParseError` for:
+/// - Invalid XML syntax
+/// - Unknown widget elements
+/// - Invalid attribute values
+/// - Malformed binding expressions
 pub fn parse(xml: &str) -> Result<GravityDocument, ParseError> {
     // Parse XML using roxmltree
     let doc = Document::parse(xml).map_err(|e| ParseError {

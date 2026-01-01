@@ -21,5 +21,14 @@ proc-macro2 = { workspace = true }
 syn = { workspace = true }
 thiserror = { workspace = true }
 
+[dev-dependencies]
+proptest = { workspace = true }
+insta = { workspace = true }
+criterion = "0.5"
+
+[[bench]]
+name = "parser_bench"
+harness = false
+
 [lints]
 workspace = true
