@@ -28,6 +28,8 @@ serde_json = "1.0"
 
 # Parser
 roxmltree = "0.19"
+nom = "7.1"
+csscolorparser = "0.6"
 
 # File watching
 notify = "6.0"

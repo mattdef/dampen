@@ -1,5 +1,8 @@
 pub mod error;
+pub mod gradient;
 pub mod lexer;
+pub mod style_parser;
+pub mod theme_parser;
 
 use crate::expr::tokenize_binding_expr;
 use crate::ir::{
@@ -8,6 +11,7 @@ use crate::ir::{
 };
 use crate::parser::error::{ParseError, ParseErrorKind};
 use roxmltree::{Document, Node, NodeType};
+use std::collections::HashMap;
 
 /// Parse XML markup into a GravityDocument.
 ///
@@ -63,6 +67,9 @@ pub fn parse(xml: &str) -> Result<GravityDocument, ParseError> {
     Ok(GravityDocument {
         version: SchemaVersion { major: 1, minor: 0 },
         root: root_widget,
+        themes: HashMap::new(),
+        style_classes: HashMap::new(),
+        global_theme: None,
     })
 }
 
@@ -167,6 +174,11 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         events,
         children,
         span: get_span(node, source),
+        style: None,
+        layout: None,
+        theme_ref: None,
+        classes: Vec::new(),
+        breakpoint_attributes: HashMap::new(),
     })
 }
 

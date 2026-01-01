@@ -28,11 +28,15 @@
 pub mod interpreter;
 pub mod overlay;
 pub mod state;
+pub mod style_cascade;
+pub mod theme_manager;
 pub mod watcher;
 
 pub use interpreter::{DispatchError, HotReloadInterpreter, Interpreter, ReloadResult};
 pub use overlay::{ErrorOverlay, OverlayManager};
 pub use state::{RuntimeState, StateMigration, StateRestoration};
+pub use style_cascade::{merge_styles, resolve_layout, StyleCascade};
+pub use theme_manager::ThemeManager;
 pub use watcher::{FileEvent, FileWatcher};
 
 /// Hot-reload enabled runtime

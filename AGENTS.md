@@ -3,6 +3,7 @@
 Auto-generated from all feature plans. Last updated: 2025-12-30
 
 ## Active Technologies
+- File-based (XML UI definitions, optional separate style files), serialized state in `.gravity-state.json` (002-layout-theming-styling)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
@@ -305,6 +306,7 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 | Runtime memory (dev) | < 50MB baseline |
 
 ## Recent Changes
+- 002-layout-theming-styling: Added Rust Edition 2024, MSRV stable (no nightly features in public API)
 
 - **Phase 5 Complete**: User Story 5 - Derive Bindable Model from Rust Struct
   - Implemented `#[derive(UiModel)]` macro with field accessors
@@ -321,7 +323,6 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
   - Working `counter` example demonstrating interactive handlers
   - All tests passing, clippy clean
 
-- 001-framework-technical-specs: Initial framework design with 5 crates, 8 user stories, 195 implementation tasks
 
 <!-- MANUAL ADDITIONS START -->
 

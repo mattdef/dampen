@@ -1,9 +1,24 @@
+pub mod layout;
 pub mod node;
 pub mod span;
+pub mod style;
+pub mod theme;
 
+use std::collections::HashMap;
+
+pub use layout::{
+    Alignment, Breakpoint, Direction, Justification, LayoutConstraints, Length, Padding,
+};
 pub use node::InterpolatedPart;
 pub use node::{AttributeValue, EventBinding, EventKind, WidgetKind, WidgetNode};
 pub use span::Span;
+pub use style::{
+    Background, Border, BorderRadius, BorderStyle, Color, Gradient, ImageFit, Shadow,
+    StyleProperties, Transform,
+};
+pub use theme::{
+    FontWeight, SpacingScale, StyleClass, Theme, ThemePalette, Typography, WidgetState,
+};
 
 /// A complete parsed Gravity UI document.
 ///
@@ -26,6 +41,15 @@ pub struct GravityDocument {
 
     /// Root widget of the UI tree
     pub root: WidgetNode,
+
+    /// Theme definitions
+    pub themes: HashMap<String, crate::ir::theme::Theme>,
+
+    /// Style class definitions
+    pub style_classes: HashMap<String, crate::ir::theme::StyleClass>,
+
+    /// Global theme name
+    pub global_theme: Option<String>,
 }
 
 impl Default for GravityDocument {
@@ -34,6 +58,9 @@ impl Default for GravityDocument {
         Self {
             version: SchemaVersion { major: 1, minor: 0 },
             root: WidgetNode::default(),
+            themes: HashMap::new(),
+            style_classes: HashMap::new(),
+            global_theme: None,
         }
     }
 }

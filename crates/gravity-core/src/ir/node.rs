@@ -1,4 +1,6 @@
+use crate::ir::layout::{Breakpoint, LayoutConstraints};
 use crate::ir::span::Span;
+use crate::ir::style::StyleProperties;
 use std::collections::HashMap;
 
 /// A node in the widget tree
@@ -10,6 +12,13 @@ pub struct WidgetNode {
     pub events: Vec<EventBinding>,
     pub children: Vec<WidgetNode>,
     pub span: Span,
+
+    // Styling extensions
+    pub style: Option<StyleProperties>,
+    pub layout: Option<LayoutConstraints>,
+    pub theme_ref: Option<String>,
+    pub classes: Vec<String>,
+    pub breakpoint_attributes: HashMap<Breakpoint, HashMap<String, AttributeValue>>,
 }
 
 /// Enumeration of all supported widget types

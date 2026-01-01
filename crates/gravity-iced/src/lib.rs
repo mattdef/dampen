@@ -1,5 +1,9 @@
 //! Gravity Iced - Iced Backend Implementation
 
+pub mod style_mapping;
+pub mod theme_adapter;
+// pub mod widgets; // Placeholder - will be implemented in Phase 10
+
 use gravity_core::{AttributeValue, Backend, EventKind, InterpolatedPart, WidgetKind, WidgetNode};
 use iced::widget::{button, column, row, text};
 use iced::{Element, Renderer, Theme};
