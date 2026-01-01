@@ -1,0 +1,14 @@
+[package]
+name = "responsive"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gravity-core = { path = "../../crates/gravity-core" }
+gravity-runtime = { path = "../../crates/gravity-runtime" }
+gravity-iced = { path = "../../crates/gravity-iced" }
+iced = { workspace = true }
+
+[[bin]]
+name = "responsive"
+path = "src/main.rs"
