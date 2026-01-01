@@ -30,6 +30,9 @@ pub enum Commands {
 
     /// Inspect IR or generated code
     Inspect(commands::InspectArgs),
+
+    /// Create a new Gravity project
+    New(commands::NewArgs),
 }
 
 /// CLI entry point
@@ -41,6 +44,7 @@ pub fn run() {
         Commands::Check(args) => commands::check_execute(&args).map_err(|e| e.to_string()),
         Commands::Dev(args) => commands::dev_execute(&args),
         Commands::Inspect(args) => commands::inspect_execute(&args),
+        Commands::New(args) => commands::new_execute(&args),
     };
 
     if let Err(e) = result {

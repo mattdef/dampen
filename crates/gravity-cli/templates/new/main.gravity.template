@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<column padding="40" spacing="20" align="center">
+    <text value="Welcome to {{PROJECT_NAME}}!" size="32" weight="bold" />
+    <text value="{message}" size="18" />
+    <button label="Click me!" on_click="greet" />
+    
+    <!-- Note: Style attributes (size, weight, align) are currently in development -->
+    <!-- They are shown here for demonstration but may not be fully functional yet -->
+</column>

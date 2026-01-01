@@ -314,13 +314,13 @@ fn test_parse_all_widget_types() {
         <stack><text value="Stack" /></stack>
         <row><text value="Row" /></row>
     </column>"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
     assert_eq!(doc.root.children.len(), 15);
-    
+
     // Verify all widget kinds are recognized
     let kinds: Vec<_> = doc.root.children.iter().map(|c| c.kind.clone()).collect();
     assert!(kinds.contains(&WidgetKind::Text));
@@ -345,35 +345,35 @@ fn test_parse_layout_attributes() {
     let xml = r#"<column spacing="10" padding="20" width="300" height="200" align="center">
         <text value="Test" />
     </column>"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     // All attributes should be present and static
     assert_eq!(doc.root.attributes.len(), 5);
-    
+
     match doc.root.attributes.get("spacing") {
         Some(AttributeValue::Static(v)) => assert_eq!(v, "10"),
         _ => panic!("Expected static spacing"),
     }
-    
+
     match doc.root.attributes.get("padding") {
         Some(AttributeValue::Static(v)) => assert_eq!(v, "20"),
         _ => panic!("Expected static padding"),
     }
-    
+
     match doc.root.attributes.get("width") {
         Some(AttributeValue::Static(v)) => assert_eq!(v, "300"),
         _ => panic!("Expected static width"),
     }
-    
+
     match doc.root.attributes.get("height") {
         Some(AttributeValue::Static(v)) => assert_eq!(v, "200"),
         _ => panic!("Expected static height"),
     }
-    
+
     match doc.root.attributes.get("align") {
         Some(AttributeValue::Static(v)) => assert_eq!(v, "center"),
         _ => panic!("Expected static align"),
@@ -385,12 +385,12 @@ fn test_parse_binding_in_layout_attributes() {
     let xml = r#"<column spacing="{spacing_value}" padding="{padding_value}">
         <text value="Test" />
     </column>"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     // Both attributes should be bindings
     match doc.root.attributes.get("spacing") {
         Some(AttributeValue::Binding(expr)) => {
@@ -402,7 +402,7 @@ fn test_parse_binding_in_layout_attributes() {
         }
         _ => panic!("Expected binding for spacing"),
     }
-    
+
     match doc.root.attributes.get("padding") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::FieldAccess(field) = &expr.expr {
@@ -428,50 +428,50 @@ fn test_parse_widget_specific_attributes() {
         <image src="logo.png" width="100" height="50" />
         <svg src="icon.svg" />
     </column>"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     // Text widget attributes - should have value, size, weight
     let text = &doc.root.children[0];
     assert!(text.attributes.contains_key("value"));
     assert!(text.attributes.contains_key("size"));
     assert!(text.attributes.contains_key("weight"));
-    
+
     // Button widget attributes - should have label, enabled, and event
     let button = &doc.root.children[1];
     assert!(button.attributes.contains_key("label"));
     assert!(button.attributes.contains_key("enabled"));
     assert_eq!(button.events.len(), 1);
-    
+
     // TextInput widget attributes
     let text_input = &doc.root.children[2];
     assert!(text_input.attributes.contains_key("value"));
     assert!(text_input.attributes.contains_key("placeholder"));
-    
+
     // Checkbox widget attributes
     let checkbox = &doc.root.children[3];
     assert!(checkbox.attributes.contains_key("label"));
     assert!(checkbox.attributes.contains_key("checked"));
-    
+
     // Slider widget attributes
     let slider = &doc.root.children[4];
     assert!(slider.attributes.contains_key("min"));
     assert!(slider.attributes.contains_key("max"));
     assert!(slider.attributes.contains_key("value"));
-    
+
     // PickList widget attributes
     let pick_list = &doc.root.children[5];
     assert!(pick_list.attributes.contains_key("options"));
     assert!(pick_list.attributes.contains_key("selected"));
-    
+
     // Toggler widget attributes
     let toggler = &doc.root.children[6];
     assert!(toggler.attributes.contains_key("label"));
     assert!(toggler.attributes.contains_key("active"));
-    
+
     // Image widget attributes
     let image = &doc.root.children[7];
     assert!(image.attributes.contains_key("src"));
@@ -482,17 +482,21 @@ fn test_parse_widget_specific_attributes() {
 #[test]
 fn test_parse_interpolated_strings() {
     let xml = r#"<text value="Hello {name}, you have {count} items and {if active then 'active' else 'inactive'}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Interpolated(parts)) => {
             // Should have multiple parts with literals and bindings
-            assert!(parts.len() >= 5, "Should have at least 5 parts, got {}", parts.len());
-            
+            assert!(
+                parts.len() >= 5,
+                "Should have at least 5 parts, got {}",
+                parts.len()
+            );
+
             // Verify it contains the expected bindings
             let has_name_binding = parts.iter().any(|p| {
                 matches!(p, InterpolatedPart::Binding(expr) if matches!(&expr.expr, gravity_core::expr::Expr::FieldAccess(f) if f.path == vec!["name"]))
@@ -503,7 +507,7 @@ fn test_parse_interpolated_strings() {
             let has_conditional = parts.iter().any(|p| {
                 matches!(p, InterpolatedPart::Binding(expr) if matches!(&expr.expr, gravity_core::expr::Expr::Conditional(_)))
             });
-            
+
             assert!(has_name_binding, "Should contain name binding");
             assert!(has_count_binding, "Should contain count binding");
             assert!(has_conditional, "Should contain conditional expression");
@@ -515,12 +519,12 @@ fn test_parse_interpolated_strings() {
 #[test]
 fn test_parse_nested_binding_paths() {
     let xml = r#"<text value="{user.profile.name}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::FieldAccess(field) = &expr.expr {
@@ -536,12 +540,12 @@ fn test_parse_nested_binding_paths() {
 #[test]
 fn test_parse_method_calls() {
     let xml = r#"<text value="{items.len()}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::MethodCall(method) = &expr.expr {
@@ -562,12 +566,12 @@ fn test_parse_method_calls() {
 #[test]
 fn test_parse_binary_operations() {
     let xml = r#"<text value="{count > 0}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::BinaryOp(binop) = &expr.expr {
@@ -593,12 +597,12 @@ fn test_parse_binary_operations() {
 #[test]
 fn test_parse_conditional_expressions() {
     let xml = r#"<text value="{if condition then 'yes' else 'no'}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::Conditional(cond) = &expr.expr {
@@ -608,17 +612,23 @@ fn test_parse_conditional_expressions() {
                 } else {
                     panic!("Expected field access in condition");
                 }
-                
+
                 // Check then branch
                 if let gravity_core::expr::Expr::Literal(lit) = &*cond.then_branch {
-                    assert_eq!(lit, &gravity_core::expr::LiteralExpr::String("yes".to_string()));
+                    assert_eq!(
+                        lit,
+                        &gravity_core::expr::LiteralExpr::String("yes".to_string())
+                    );
                 } else {
                     panic!("Expected literal in then branch");
                 }
-                
+
                 // Check else branch
                 if let gravity_core::expr::Expr::Literal(lit) = &*cond.else_branch {
-                    assert_eq!(lit, &gravity_core::expr::LiteralExpr::String("no".to_string()));
+                    assert_eq!(
+                        lit,
+                        &gravity_core::expr::LiteralExpr::String("no".to_string())
+                    );
                 } else {
                     panic!("Expected literal in else branch");
                 }
@@ -633,12 +643,12 @@ fn test_parse_conditional_expressions() {
 #[test]
 fn test_parse_unary_operations() {
     let xml = r#"<text value="{!is_valid}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::UnaryOp(unop) = &expr.expr {
@@ -661,12 +671,12 @@ fn test_parse_complex_expressions() {
     // Note: The current expression parser may not support parentheses or complex nested expressions
     // This test verifies what we can parse
     let xml = r#"<text value="{items.len() > 0}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     // Should parse without error
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(_)) => {
@@ -691,18 +701,21 @@ fn test_parse_all_event_types() {
         <slider on_change="change" />
         <scrollable on_scroll="scroll" />
     </column>"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     // Verify all event types are recognized
-    let all_events: Vec<_> = doc.root.children.iter()
+    let all_events: Vec<_> = doc
+        .root
+        .children
+        .iter()
         .flat_map(|c| &c.events)
         .map(|e| e.event.clone())
         .collect();
-    
+
     assert!(all_events.contains(&EventKind::Click));
     assert!(all_events.contains(&EventKind::Press));
     assert!(all_events.contains(&EventKind::Release));
@@ -719,12 +732,12 @@ fn test_parse_id_attribute() {
     let xml = r#"<column id="main_container">
         <text id="header" value="Hello" />
     </column>"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     assert_eq!(doc.root.id, Some("main_container".to_string()));
     assert_eq!(doc.root.children[0].id, Some("header".to_string()));
 }
@@ -739,22 +752,31 @@ fn test_parse_mixed_attributes_and_events() {
         on_press="highlight"
         style="primary"
     />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     // Should have ID
     assert_eq!(doc.root.id, Some("submit_btn".to_string()));
-    
+
     // Should have 3 static attributes
-    assert!(matches!(doc.root.attributes.get("label"), Some(AttributeValue::Static(_))));
-    assert!(matches!(doc.root.attributes.get("style"), Some(AttributeValue::Static(_))));
-    
+    assert!(matches!(
+        doc.root.attributes.get("label"),
+        Some(AttributeValue::Static(_))
+    ));
+    assert!(matches!(
+        doc.root.attributes.get("style"),
+        Some(AttributeValue::Static(_))
+    ));
+
     // Should have 1 binding attribute
-    assert!(matches!(doc.root.attributes.get("enabled"), Some(AttributeValue::Binding(_))));
-    
+    assert!(matches!(
+        doc.root.attributes.get("enabled"),
+        Some(AttributeValue::Binding(_))
+    ));
+
     // Should have 2 events
     assert_eq!(doc.root.events.len(), 2);
 }
@@ -762,12 +784,12 @@ fn test_parse_mixed_attributes_and_events() {
 #[test]
 fn test_parse_empty_attribute_values() {
     let xml = r#"<text value="" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Static(v)) => assert_eq!(v, ""),
         _ => panic!("Expected empty static value"),
@@ -777,12 +799,12 @@ fn test_parse_empty_attribute_values() {
 #[test]
 fn test_parse_whitespace_in_attributes() {
     let xml = r#"<text value="  spaces  " />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Static(v)) => assert_eq!(v, "  spaces  "),
         _ => panic!("Expected value with whitespace"),
@@ -792,12 +814,12 @@ fn test_parse_whitespace_in_attributes() {
 #[test]
 fn test_parse_binding_with_arithmetic() {
     let xml = r#"<text value="{count + 1}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::BinaryOp(binop) = &expr.expr {
@@ -813,12 +835,12 @@ fn test_parse_binding_with_arithmetic() {
 #[test]
 fn test_parse_binding_with_comparison() {
     let xml = r#"<button enabled="{count >= 5}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("enabled") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::BinaryOp(binop) = &expr.expr {
@@ -836,12 +858,12 @@ fn test_parse_binding_with_logical_ops() {
     // Note: The expression parser may not support && operator
     // Test with a simpler comparison that should work
     let xml = r#"<button enabled="{is_valid == true}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("enabled") {
         Some(AttributeValue::Binding(expr)) => {
             // Should parse as a binary operation
@@ -860,12 +882,12 @@ fn test_parse_binding_with_logical_ops() {
 #[test]
 fn test_parse_binding_with_negation() {
     let xml = r#"<text value="{-offset}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::UnaryOp(unop) = &expr.expr {
@@ -881,19 +903,22 @@ fn test_parse_binding_with_negation() {
 #[test]
 fn test_parse_binding_with_method_and_args() {
     let xml = r#"<text value="{items.contains('test')}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
             if let gravity_core::expr::Expr::MethodCall(method) = &expr.expr {
                 assert_eq!(method.method, "contains");
                 assert_eq!(method.args.len(), 1);
                 if let gravity_core::expr::Expr::Literal(lit) = &method.args[0] {
-                    assert_eq!(lit, &gravity_core::expr::LiteralExpr::String("test".to_string()));
+                    assert_eq!(
+                        lit,
+                        &gravity_core::expr::LiteralExpr::String("test".to_string())
+                    );
                 } else {
                     panic!("Expected literal argument");
                 }
@@ -908,12 +933,12 @@ fn test_parse_binding_with_method_and_args() {
 #[test]
 fn test_parse_binding_with_nested_method() {
     let xml = r#"<text value="{items.first().to_uppercase()}" />"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     // Should parse nested method calls
     match doc.root.attributes.get("value") {
         Some(AttributeValue::Binding(_)) => {
@@ -933,18 +958,18 @@ fn test_parse_all_literal_types() {
         <text value="{true}" />
         <text value="{false}" />
     </column>"#;
-    
+
     let result = parse(xml);
     assert!(result.is_ok());
-    
+
     let doc = result.unwrap();
-    
+
     // String literal (static)
     match doc.root.children[0].attributes.get("value") {
         Some(AttributeValue::Static(v)) => assert_eq!(v, "string literal"),
         _ => panic!("Expected string literal"),
     }
-    
+
     // Integer literal
     match doc.root.children[1].attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
@@ -956,7 +981,7 @@ fn test_parse_all_literal_types() {
         }
         _ => panic!("Expected binding"),
     }
-    
+
     // Float literal
     match doc.root.children[2].attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
@@ -968,7 +993,7 @@ fn test_parse_all_literal_types() {
         }
         _ => panic!("Expected binding"),
     }
-    
+
     // Bool true
     match doc.root.children[3].attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
@@ -980,7 +1005,7 @@ fn test_parse_all_literal_types() {
         }
         _ => panic!("Expected binding"),
     }
-    
+
     // Bool false
     match doc.root.children[4].attributes.get("value") {
         Some(AttributeValue::Binding(expr)) => {
