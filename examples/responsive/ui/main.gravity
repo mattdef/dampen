@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gravity>
+    <column padding="40" spacing="20">
+        <text value="Responsive Layout Example" size="32" weight="bold" color="#2c3e50" />
+        <text value="This example demonstrates responsive design with constraints" size="16" color="#7f8c8d" />
+        
+        <!-- Fixed width container -->
+        <container width="400" padding="20" background="#ecf0f1" border_radius="8">
+            <text value="Fixed Width (400px)" size="18" weight="bold" />
+            <text value="This container has a fixed width of 400 pixels" size="14" />
+        </container>
+        
+        <!-- Fill width -->
+        <container width="fill" padding="20" background="#d5dbdb" border_radius="8">
+            <text value="Fill Width" size="18" weight="bold" />
+            <text value="This container fills the available width" size="14" />
+        </container>
+        
+        <!-- Min/Max constraints -->
+        <container 
+            width="fill" 
+            min_width="300" 
+            max_width="600"
+            padding="20" 
+            background="#e8f4f8" 
+            border_width="2"
+            border_color="#3498db"
+            border_radius="8">
+            <text value="Min/Max Constraints" size="18" weight="bold" color="#3498db" />
+            <text value="Min: 300px, Max: 600px, Fill: true" size="14" />
+        </container>
+        
+        <!-- Alignment example -->
+        <row spacing="10" align_items="center">
+            <button label="Left" on_click="left" width="100" />
+            <button label="Center" on_click="center" width="100" />
+            <button label="Right" on_click="right" width="100" />
+        </row>
+        
+        <!-- Nested layout -->
+        <container padding="20" background="#ffffff" border_radius="8">
+            <text value="Nested Layout" size="18" weight="bold" />
+            <column spacing="10">
+                <container padding="10" background="#f8f9fa" border_radius="4">
+                    <text value="Level 1" size="14" />
+                </container>
+                <container padding="10" background="#e9ecef" border_radius="4">
+                    <text value="Level 2" size="14" />
+                </container>
+            </column>
+        </container>
+    </column>
+</gravity>

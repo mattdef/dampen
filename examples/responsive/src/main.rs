@@ -1,179 +1,105 @@
-//! Responsive Example - Demonstrates responsive layout with breakpoints
-//!
-//! This example showcases:
-//! - Mobile/tablet/desktop breakpoints
-//! - Responsive spacing and padding
-//! - Adaptive layout direction
-//! - Viewport-based sizing
+use gravity_core::{parse, WidgetNode, WidgetKind, AttributeValue};
+use iced::widget::{column, text, button, row};
+use iced::{Element, Task};
 
-use gravity_core::parse;
-use gravity_iced::{IcedBackend, render};
-use iced::{Application, Command, Element, Settings, Theme};
-
-pub fn main() -> iced::Result {
-    ResponsiveExample::run(Settings {
-        title: "Gravity Responsive Example".to_string(),
-        ..Default::default()
-    })
-}
-
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
-    WindowResized { width: u32, height: u32 },
+    Left,
+    Center,
+    Right,
 }
 
-pub struct ResponsiveExample {
-    viewport_width: u32,
-    doc: gravity_core::ir::GravityDocument,
+pub struct AppState {
+    document: gravity_core::GravityDocument,
 }
 
-impl Application for ResponsiveExample {
-    type Message = Message;
-    type Theme = Theme;
-    type Executor = iced::executor::Default;
-    type Flags = ();
-
-    fn new(_flags: ()) -> (Self, Command<Message>) {
-        // Example UI with responsive attributes
-        let xml = r#"
-<gravity>
-    <column 
-        padding="20"
-        mobile:padding="16"
-        tablet:padding="24"
-        desktop:padding="32"
-        
-        spacing="10"
-        mobile:spacing="8"
-        tablet:spacing="12"
-        desktop:spacing="20"
-        
-        align_items="center">
-        
-        <text 
-            value="Resize the window to see responsive changes!" 
-            size="18"
-            mobile:size="14"
-            desktop:size="24"
-            color="#2c3e50"
-            weight="bold" />
-        
-        <row 
-            mobile:direction="vertical"
-            desktop:direction="horizontal"
-            spacing="10"
-            mobile:spacing="8"
-            desktop:spacing="20">
-            
-            <container 
-                background="#3498db"
-                padding="20"
-                mobile:padding="12"
-                desktop:padding="32"
-                width="fill"
-                mobile:width="fill"
-                desktop:width="fill_portion(2)"
-                border_radius="8">
-                <text 
-                    value="Flexible Box 1" 
-                    color="#ffffff"
-                    mobile:size="12"
-                    desktop:size="16" />
-            </container>
-            
-            <container 
-                background="#2ecc71"
-                padding="20"
-                mobile:padding="12"
-                desktop:padding="32"
-                width="fill"
-                mobile:width="fill"
-                desktop:width="fill_portion(1)"
-                border_radius="8">
-                <text 
-                    value="Flexible Box 2" 
-                    color="#ffffff"
-                    mobile:size="12"
-                    desktop:size="16" />
-            </container>
-        </row>
-        
-        <container 
-            background="#f8f9fa"
-            padding="16"
-            mobile:padding="8"
-            desktop:padding="24"
-            width="80%"
-            max_width="800"
-            border_radius="4"
-            border_width="1"
-            border_color="#dee2e6">
-            <text 
-                value="This container adapts its size and spacing based on viewport width" 
-                color="#495057"
-                mobile:size="12"
-                tablet:size="14"
-                desktop:size="16" />
-        </container>
-        
-        <column 
-            mobile:spacing="4"
-            tablet:spacing="8"
-            desktop:spacing="12"
-            align_items="start">
-            <text value="Breakpoint Demo:" color="#6c757d" size="14" />
-            <text value="• Mobile (< 640px): Compact layout" color="#28a745" size="12" />
-            <text value="• Tablet (640-1024px): Medium spacing" color="#ffc107" size="12" />
-            <text value="• Desktop (≥ 1024px): Spacious layout" color="#007bff" size="12" />
-        </column>
-    </column>
-</gravity>
-        "#;
-
-        let doc = parse(xml).expect("Failed to parse UI");
-
-        (
-            Self {
-                viewport_width: 800, // Initial width
-                doc,
-            },
-            Command::none(),
-        )
-    }
-
-    fn title(&self) -> String {
-        format!("Responsive Example - {}px", self.viewport_width)
-    }
-
-    fn update(&mut self, message: Message) -> Command<Message> {
-        match message {
-            Message::WindowResized { width, .. } => {
-                self.viewport_width = width;
+impl AppState {
+    fn new() -> Self {
+        let ui_path = std::path::PathBuf::from("examples/responsive/ui/main.gravity");
+        let xml = match std::fs::read_to_string(&ui_path) {
+            Ok(content) => content,
+            Err(e) => {
+                eprintln!("Error: Failed to read UI file: {}", e);
+                r#"<column padding="40" spacing="20">
+                    <text value="Error: Could not load ui/main.gravity" size="18" />
+                </column>"#.to_string()
             }
-        }
-        Command::none()
-    }
+        };
 
-    fn view(&self) -> Element<Message> {
-        let backend = IcedBackend::new(|_handler, _param| {
-            // In a full implementation, this would handle events
-            Box::new(Message::WindowResized { width: 0, height: 0 })
+        let document = parse(&xml).unwrap_or_else(|e| {
+            eprintln!("Error: Failed to parse UI: {}", e);
+            gravity_core::GravityDocument::default()
         });
 
-        // Note: In a full implementation:
-        // 1. Determine current breakpoint from viewport_width
-        // 2. Resolve breakpoint-specific attributes
-        // 3. Apply responsive styles
-        
-        render(&self.doc.root, &backend)
+        Self { document }
     }
+}
 
-    fn theme(&self) -> Theme {
-        Theme::Light
+fn update(state: &mut AppState, message: Message) -> Task<Message> {
+    match message {
+        Message::Left => println!("Left"),
+        Message::Center => println!("Center"),
+        Message::Right => println!("Right"),
     }
-    
-    fn subscription(&self) -> iced::Subscription<Message> {
-        // In a full implementation, subscribe to window resize events
-        iced::Subscription::none()
+    Task::none()
+}
+
+fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
+    match node.kind {
+        WidgetKind::Text => {
+            let value = match node.attributes.get("value") {
+                Some(AttributeValue::Static(v)) => v.clone(),
+                _ => String::new(),
+            };
+            text(value).into()
+        }
+        WidgetKind::Button => {
+            let label = match node.attributes.get("label") {
+                Some(AttributeValue::Static(l)) => l.clone(),
+                _ => String::new(),
+            };
+            let msg = if let Some(AttributeValue::Static(handler)) = node.attributes.get("on_click") {
+                match handler.as_str() {
+                    "left" => Message::Left,
+                    "center" => Message::Center,
+                    "right" => Message::Right,
+                    _ => Message::Center,
+                }
+            } else {
+                Message::Center
+            };
+            button(text(label)).on_press(msg).into()
+        }
+        WidgetKind::Column => {
+            let children: Vec<_> = node.children.iter()
+                .map(|child| render_node(child))
+                .collect();
+            column(children).into()
+        }
+        WidgetKind::Row => {
+            let children: Vec<_> = node.children.iter()
+                .map(|child| render_node(child))
+                .collect();
+            row(children).into()
+        }
+        WidgetKind::Container => {
+            let children: Vec<_> = node.children.iter()
+                .map(|child| render_node(child))
+                .collect();
+            if children.is_empty() {
+                text("").into()
+            } else {
+                children.into_iter().next().unwrap()
+            }
+        }
+        _ => column(Vec::new()).into(),
     }
+}
+
+fn view(state: &AppState) -> Element<Message> {
+    render_node(&state.document.root)
+}
+
+pub fn main() -> iced::Result {
+    iced::application(AppState::new, update, view).run()
 }

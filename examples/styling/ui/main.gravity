@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gravity>
+    <themes>
+        <theme name="custom">
+            <palette 
+                primary="#3498db" 
+                secondary="#2ecc71" 
+                background="#ecf0f1" 
+                text="#2c3e50" />
+            <typography 
+                font_family="Inter, sans-serif"
+                font_size_base="16" />
+            <spacing unit="8" />
+        </theme>
+    </themes>
+    
+    <global_theme name="custom" />
+    
+    <column padding="40" spacing="20">
+        <text value="Styled Gravity App" size="32" weight="bold" color="#2c3e50" />
+        <text value="Count: {count}" size="24" color="#3498db" background="#ffffff" padding="10 20" border_radius="8" />
+        
+        <row spacing="10">
+            <button 
+                label="Increment" 
+                on_click="increment"
+                background="#27ae60"
+                color="#ffffff"
+                padding="12 24"
+                border_radius="4"
+                width="120" />
+            
+            <button 
+                label="Decrement" 
+                on_click="decrement"
+                background="#e74c3c"
+                color="#ffffff"
+                padding="12 24"
+                border_radius="4"
+                width="120" />
+        </row>
+        
+        <button 
+            label="Reset" 
+            on_click="reset"
+            background="transparent"
+            color="#3498db"
+            border_width="2"
+            border_color="#3498db"
+            padding="12 24"
+            border_radius="4" />
+        
+        <container 
+            background="#ffffff"
+            padding="20"
+            border_radius="8"
+            width="fill"
+            border_width="1"
+            border_color="#e0e0e0">
+            <text 
+                value="This container demonstrates background, padding, border, and width constraints" 
+                color="#6c757d"
+                size="14" />
+        </container>
+    </column>
+</gravity>

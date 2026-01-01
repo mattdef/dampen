@@ -6,6 +6,8 @@ members = [
     "crates/gravity-runtime",
     "crates/gravity-iced",
     "crates/gravity-cli",
+    "examples/styling",
+    "examples/responsive",
 ]
 
 [workspace.package]

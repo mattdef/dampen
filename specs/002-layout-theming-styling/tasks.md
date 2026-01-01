@@ -141,34 +141,34 @@ Phase 11: Polish & Integration
 
 ### 3.1: Parser Implementation
 
-- [ ] T051 [P] [US1] Extend parser to parse `padding` attribute into LayoutConstraints
-- [ ] T052 [P] [US1] Extend parser to parse `spacing` attribute into LayoutConstraints
-- [ ] T053 [P] [US1] Extend parser to parse `width` attribute (fixed/fill/shrink/fill_portion/percentage)
-- [ ] T054 [P] [US1] Extend parser to parse `height` attribute (fixed/fill/shrink/fill_portion/percentage)
-- [ ] T055 [P] [US1] Extend parser to parse `min_width`, `max_width`, `min_height`, `max_height`
+- [X] T051 [P] [US1] Extend parser to parse `padding` attribute into LayoutConstraints
+- [X] T052 [P] [US1] Extend parser to parse `spacing` attribute into LayoutConstraints
+- [X] T053 [P] [US1] Extend parser to parse `width` attribute (fixed/fill/shrink/fill_portion/percentage)
+- [X] T054 [P] [US1] Extend parser to parse `height` attribute (fixed/fill/shrink/fill_portion/percentage)
+- [X] T055 [P] [US1] Extend parser to parse `min_width`, `max_width`, `min_height`, `max_height`
 
 ### 3.2: IR Integration
 
-- [ ] T056 [US1] Update `parse_node()` in gravity-core/src/parser/mod.rs to populate `layout` field
-- [ ] T057 [US1] Implement `resolve_layout()` in gravity-core to merge layout attributes
+- [X] T056 [US1] Update `parse_node()` in gravity-core/src/parser/mod.rs to populate `layout` field
+- [X] T057 [US1] Implement `resolve_layout()` in gravity-core to merge layout attributes
 
 ### 3.3: Runtime Support
 
-- [ ] T058 [P] [US1] Implement `apply_layout()` in gravity-runtime/src/interpreter.rs
-- [ ] T059 [US1] Test layout resolution with nested padding/spacing in gravity-runtime/tests/
+- [X] T058 [P] [US1] Implement `apply_layout()` in gravity-runtime/src/interpreter.rs
+- [X] T059 [US1] Test layout resolution with nested padding/spacing in gravity-runtime/tests/
 
 ### 3.4: Iced Backend
 
-- [ ] T060 [P] [US1] Map `LayoutConstraints` to Iced container padding in gravity-iced/src/style_mapping.rs
-- [ ] T061 [P] [US1] Map `LayoutConstraints` to Iced column/row spacing in gravity-iced/src/style_mapping.rs
-- [ ] T062 [P] [US1] Map `Length` to Iced widget width/height in gravity-iced/src/style_mapping.rs
-- [ ] T063 [US1] Create `examples/styling/src/main.rs` demonstrating sizing/spacing
+- [X] T060 [P] [US1] Map `LayoutConstraints` to Iced container padding in gravity-iced/src/style_mapping.rs
+- [X] T061 [P] [US1] Map `LayoutConstraints` to Iced column/row spacing in gravity-iced/src/style_mapping.rs
+- [X] T062 [P] [US1] Map `Length` to Iced widget width/height in gravity-iced/src/style_mapping.rs
+- [X] T063 [US1] Create `examples/styling/src/main.rs` demonstrating sizing/spacing
 
 ### 3.5: Testing
 
-- [ ] T064 [US1] Write contract test: XML layout attributes → IR LayoutConstraints
-- [ ] T065 [US1] Write integration test: Render column with padding/spacing, verify pixels
-- [ ] T066 [US1] Write snapshot test: Generated code for layout attributes
+- [X] T064 [US1] Write contract test: XML layout attributes → IR LayoutConstraints
+- [X] T065 [US1] Write integration test: Render column with padding/spacing, verify pixels
+- [X] T066 [US1] Write snapshot test: Generated code for layout attributes
 
 **Total Phase 3 Tasks**: 16
 
@@ -558,7 +558,7 @@ All tests can run independently per story phase.
 **Format Examples from this document**:
 - ✅ `- [ ] T001 Add csscolorparser dependency to gravity-core/Cargo.toml`
 - ✅ `- [ ] T016 [P] Implement Length enum in gravity-core/src/ir/layout.rs`
-- ✅ `- [ ] T051 [P] [US1] Extend parser to parse padding attribute`
+- ✅ `- [X] T051 [P] [US1] Extend parser to parse padding attribute`
 
 ---
 

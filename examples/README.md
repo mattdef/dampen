@@ -1,78 +1,104 @@
 # Gravity Examples
 
-This directory contains progressive examples demonstrating the Gravity UI framework.
+This directory contains example applications demonstrating Gravity's features.
 
-## Examples
+## Available Examples
 
 ### 1. Hello World (`hello-world/`)
-**Phase**: MVP (Phase 3)  
-**Concepts**: Static XML, basic widgets, rendering
+**Purpose**: Minimal static example  
+**Features**: Basic XML parsing, simple rendering  
+**UI**: Embedded in Rust code
 
-Minimal example showing how to define a UI in XML and render it through Iced.
+### 2. Styling (`styling/`)
+**Purpose**: Layout and styling demonstration  
+**Features**: 
+- External `.gravity` files
+- Layout attributes (padding, spacing, width, height)
+- Style attributes (background, border, shadow)
+- Binding expressions
+- Theme support
 
-**Run**: `cargo run -p hello-world`
+**Run**: `cargo run -p styling`
 
----
+### 3. Responsive (`responsive/`)
+**Purpose**: Responsive layout demonstration  
+**Features**:
+- External `.gravity` files
+- Fixed/fill width containers
+- Min/max constraints
+- Alignment
+- Nested layouts
 
-### 2. Counter (`counter/`)
-**Phase**: Interactive (Phase 4)  
-**Concepts**: Event handlers, state changes
+**Run**: `cargo run -p responsive`
 
-Interactive counter demonstrating button clicks and state updates.
+### 4. Counter (`counter/`)
+**Purpose**: Interactive handlers demonstration  
+**Features**:
+- Event handlers
+- State management
+- Dynamic updates
 
-**Run**: `cargo run -p counter`
+### 5. Todo App (`todo-app/`)
+**Purpose**: Full bindings demonstration  
+**Features**:
+- Model bindings
+- List rendering
+- CRUD operations
 
----
+## Key Differences
 
-### 3. Todo App (`todo-app/`)
-**Phase**: Bindings (Phase 5)  
-**Concepts**: Data binding, lists, form inputs
-
-Full CRUD application showing model bindings and complex state.
-
-**Run**: `cargo run -p todo-app`
-
----
-
-### 4. Full Demo (`full-demo/`)
-**Phase**: Complete (Phase 9+)  
-**Concepts**: All features combined
-
-Comprehensive showcase of all framework capabilities.
-
-**Run**: `cargo run -p full-demo`
+| Example | UI Location | Features | Complexity |
+|---------|-------------|----------|------------|
+| hello-world | Embedded | Basic | Low |
+| styling | External file | Layout + Style | Medium |
+| responsive | External file | Constraints | Medium |
+| counter | Embedded | Handlers | Medium |
+| todo-app | Embedded | Bindings | High |
 
 ## Running Examples
 
-From the workspace root:
-
 ```bash
-# Run specific example
+# Run any example
+cargo run -p <example-name>
+
+# Examples:
+cargo run -p styling
+cargo run -p responsive
 cargo run -p hello-world
-
-# Run in dev mode (if supported)
-cargo run -p counter --features dev
-
-# Build all examples
-cargo build --workspace --examples
 ```
 
-## Example Structure
+## Why External .gravity Files?
 
-Each example follows this pattern:
+### Benefits
+1. **Separation of Concerns**: UI designers work on XML, developers on Rust
+2. **Hot-Reload**: Modify UI without recompiling
+3. **Readability**: XML is more readable for UI structure
+4. **Tooling**: Can use XML editors, validators
+5. **Collaboration**: Designers and developers can work independently
 
+### Trade-offs
+- Requires file I/O at runtime
+- Need to manage file paths
+- Slightly more complex setup
+
+## Getting Started
+
+### 1. Explore Styling Example
+```bash
+cd examples/styling
+cat ui/main.gravity
+cargo run
 ```
-example-name/
-├── Cargo.toml          # Example-specific dependencies
-├── ui/
-│   └── main.gravity    # XML UI definition
-└── src/
-    └── main.rs         # Model, handlers, and main function
+
+### 2. Modify the UI
+Edit `ui/main.gravity` and change:
+- `padding="40"` → `padding="60"`
+- Colors
+- Text content
+
+### 3. Run Again
+```bash
+cargo run
 ```
 
-## Learning Path
-
-1. Start with `hello-world` to understand basic structure
-2. Move to `counter` for event handling
-3. Try `todo-app` for data binding
-4. Explore `full-demo` for advanced features
+See your changes immediately!

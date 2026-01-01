@@ -1,171 +1,102 @@
-//! Styling Example - Demonstrates layout, sizing, and styling capabilities
-//!
-//! This example showcases:
-//! - Padding and spacing
-//! - Width and height constraints
-//! - Background colors and gradients
-//! - Borders and shadows
-//! - Opacity and transforms
+use gravity_core::{parse, WidgetNode, WidgetKind, AttributeValue};
+use iced::widget::{column, text, button, row};
+use iced::{Element, Task};
 
-use gravity_core::parse;
-use gravity_iced::{IcedBackend, render};
-use iced::{Application, Command, Element, Settings, Theme};
-
-pub fn main() -> iced::Result {
-    StylingExample::run(Settings {
-        title: "Gravity Styling Example".to_string(),
-        ..Default::default()
-    })
-}
-
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
     Increment,
     Decrement,
     Reset,
 }
 
-pub struct StylingExample {
+pub struct AppState {
+    document: gravity_core::GravityDocument,
     count: i32,
-    doc: gravity_core::ir::GravityDocument,
 }
 
-impl Application for StylingExample {
-    type Message = Message;
-    type Theme = Theme;
-    type Executor = iced::executor::Default;
-    type Flags = ();
-
-    fn new(_flags: ()) -> (Self, Command<Message>) {
-        // Example UI with styling
-        let xml = r#"
-<gravity>
-    <themes>
-        <theme name="custom">
-            <palette
-                primary="#3498db"
-                background="#ecf0f1"
-                text="#2c3e50"
-            />
-        </theme>
-    </themes>
-    
-    <column 
-        padding="40" 
-        spacing="20"
-        background="#ffffff"
-        width="80%"
-        max_width="600"
-        align_items="center"
-        theme="custom">
-        
-        <text 
-            value="Styled Gravity App" 
-            size="32"
-            weight="bold"
-            color="#2c3e50"
-            padding="10" />
-        
-        <text 
-            value="Count: {count}" 
-            size="24"
-            color="#3498db"
-            background="linear-gradient(90deg, #3498db, #2ecc71)"
-            padding="20 40"
-            border_radius="8"
-            border_width="2"
-            border_color="#2980b9" />
-        
-        <row spacing="10">
-            <button 
-                label="Increment" 
-                on_click="increment"
-                background="#27ae60"
-                color="#ffffff"
-                padding="12 24"
-                border_radius="4"
-                width="120" />
-            
-            <button 
-                label="Decrement" 
-                on_click="decrement"
-                background="#e74c3c"
-                color="#ffffff"
-                padding="12 24"
-                border_radius="4"
-                width="120" />
-        </row>
-        
-        <button 
-            label="Reset" 
-            on_click="reset"
-            background="transparent"
-            color="#3498db"
-            border_width="2"
-            border_color="#3498db"
-            padding="12 24"
-            border_radius="4"
-            hover:background="rgba(52, 152, 219, 0.1)"
-            shadow="0 2 4 #00000020" />
-        
-        <container 
-            background="#f8f9fa"
-            padding="20"
-            border_radius="8"
-            width="fill"
-            opacity="0.9">
-            <text 
-                value="This container has a subtle background and rounded corners" 
-                color="#6c757d"
-                size="14" />
-        </container>
-    </column>
-</gravity>
-        "#;
-
-        let doc = parse(xml).expect("Failed to parse UI");
-
-        (
-            Self { count: 0, doc },
-            Command::none(),
-        )
-    }
-
-    fn title(&self) -> String {
-        format!("Gravity Styling - Count: {}", self.count)
-    }
-
-    fn update(&mut self, message: Message) -> Command<Message> {
-        match message {
-            Message::Increment => self.count += 1,
-            Message::Decrement => self.count -= 1,
-            Message::Reset => self.count = 0,
-        }
-        Command::none()
-    }
-
-    fn view(&self) -> Element<Message> {
-        let backend = IcedBackend::new(|handler, _param| {
-            // Map handler strings to messages
-            match handler.as_str() {
-                "increment" => Box::new(Message::Increment),
-                "decrement" => Box::new(Message::Decrement),
-                "reset" => Box::new(Message::Reset),
-                _ => Box::new(Message::Reset),
+impl AppState {
+    fn new() -> Self {
+        let ui_path = std::path::PathBuf::from("examples/styling/ui/main.gravity");
+        let xml = match std::fs::read_to_string(&ui_path) {
+            Ok(content) => content,
+            Err(e) => {
+                eprintln!("Error: Failed to read UI file: {}", e);
+                r#"<column padding="40" spacing="20">
+                    <text value="Error: Could not load ui/main.gravity" size="18" />
+                </column>"#.to_string()
             }
+        };
+
+        let document = parse(&xml).unwrap_or_else(|e| {
+            eprintln!("Error: Failed to parse UI: {}", e);
+            gravity_core::GravityDocument::default()
         });
 
-        // Note: In a full implementation, you would:
-        // 1. Apply theme from document
-        // 2. Resolve style cascade
-        // 3. Pass model state for binding evaluation
-        // 4. Handle state-based styling
-        
-        // For now, render the basic structure
-        render(&self.doc.root, &backend)
+        Self { document, count: 0 }
     }
+}
 
-    fn theme(&self) -> Theme {
-        Theme::Light
+fn update(state: &mut AppState, message: Message) -> Task<Message> {
+    match message {
+        Message::Increment => state.count += 1,
+        Message::Decrement => state.count -= 1,
+        Message::Reset => state.count = 0,
     }
+    Task::none()
+}
+
+fn render_node<'a>(node: &'a WidgetNode, count: i32) -> Element<'a, Message> {
+    match node.kind {
+        WidgetKind::Text => {
+            let value = match node.attributes.get("value") {
+                Some(AttributeValue::Static(v)) => {
+                    if v.contains("{count}") {
+                        v.replace("{count}", &count.to_string())
+                    } else {
+                        v.clone()
+                    }
+                },
+                _ => String::new(),
+            };
+            text(value).into()
+        }
+        WidgetKind::Button => {
+            let label = match node.attributes.get("label") {
+                Some(AttributeValue::Static(l)) => l.clone(),
+                _ => String::new(),
+            };
+            let msg = if let Some(AttributeValue::Static(handler)) = node.attributes.get("on_click") {
+                match handler.as_str() {
+                    "increment" => Message::Increment,
+                    "decrement" => Message::Decrement,
+                    "reset" => Message::Reset,
+                    _ => Message::Reset,
+                }
+            } else {
+                Message::Reset
+            };
+            button(text(label)).on_press(msg).into()
+        }
+        WidgetKind::Column => {
+            let children: Vec<_> = node.children.iter()
+                .map(|child| render_node(child, count))
+                .collect();
+            column(children).into()
+        }
+        WidgetKind::Row => {
+            let children: Vec<_> = node.children.iter()
+                .map(|child| render_node(child, count))
+                .collect();
+            row(children).into()
+        }
+        _ => column(Vec::new()).into(),
+    }
+}
+
+fn view(state: &AppState) -> Element<Message> {
+    render_node(&state.document.root, state.count)
+}
+
+pub fn main() -> iced::Result {
+    iced::application(AppState::new, update, view).run()
 }

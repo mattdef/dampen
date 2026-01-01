@@ -61,16 +61,24 @@ pub fn parse(xml: &str) -> Result<GravityDocument, ParseError> {
         suggestion: None,
     })?;
 
-    // Parse the root widget
-    let root_widget = parse_node(root, xml)?;
-
-    Ok(GravityDocument {
-        version: SchemaVersion { major: 1, minor: 0 },
-        root: root_widget,
-        themes: HashMap::new(),
-        style_classes: HashMap::new(),
-        global_theme: None,
-    })
+    // Check if root is <gravity> wrapper
+    let root_tag = root.tag_name().name();
+    
+    if root_tag == "gravity" {
+        // Parse <gravity> document with themes and widgets
+        parse_gravity_document(root, xml)
+    } else {
+        // Parse direct widget (backward compatibility)
+        let root_widget = parse_node(root, xml)?;
+        
+        Ok(GravityDocument {
+            version: SchemaVersion { major: 1, minor: 0 },
+            root: root_widget,
+            themes: HashMap::new(),
+            style_classes: HashMap::new(),
+            global_theme: None,
+        })
+    }
 }
 
 /// Parse a single XML node into a WidgetNode
@@ -181,6 +189,86 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         breakpoint_attributes: HashMap::new(),
     })
 }
+
+/// Parse a <gravity> document with themes and widgets
+fn parse_gravity_document(root: Node, source: &str) -> Result<GravityDocument, ParseError> {
+    let mut themes = HashMap::new();
+    let mut style_classes = HashMap::new();
+    let mut root_widget = None;
+    let mut global_theme = None;
+
+    // Iterate through children of <gravity>
+    for child in root.children() {
+        if child.node_type() != NodeType::Element {
+            continue;
+        }
+
+        let tag_name = child.tag_name().name();
+        
+        match tag_name {
+            "themes" => {
+                // Parse themes section
+                for theme_node in child.children() {
+                    if theme_node.node_type() == NodeType::Element {
+                        if theme_node.tag_name().name() == "theme" {
+                            let theme = crate::parser::theme_parser::parse_theme_from_node(theme_node, source)?;
+                            let name = theme_node.attribute("name")
+                                .map(|s| s.to_string())
+                                .unwrap_or_else(|| "default".to_string());
+                            themes.insert(name, theme);
+                        }
+                    }
+                }
+            }
+            "style_classes" | "classes" => {
+                // Parse style classes
+                for class_node in child.children() {
+                    if class_node.node_type() == NodeType::Element {
+                        if class_node.tag_name().name() == "class" {
+                            let class = crate::parser::theme_parser::parse_style_class_from_node(class_node, source)?;
+                            style_classes.insert(class.name.clone(), class);
+                        }
+                    }
+                }
+            }
+            "global_theme" => {
+                // Set global theme reference
+                if let Some(theme_name) = child.attribute("name") {
+                    global_theme = Some(theme_name.to_string());
+                }
+            }
+            _ => {
+                // This should be a widget - parse as root
+                if root_widget.is_some() {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::XmlSyntax,
+                        message: "Multiple root widgets found in <gravity>".to_string(),
+                        span: get_span(child, source),
+                        suggestion: Some("Only one root widget is allowed".to_string()),
+                    });
+                }
+                root_widget = Some(parse_node(child, source)?);
+            }
+        }
+    }
+
+    // Ensure we have a root widget
+    let root_widget = root_widget.ok_or_else(|| ParseError {
+        kind: ParseErrorKind::XmlSyntax,
+        message: "No root widget found in <gravity>".to_string(),
+        span: get_span(root, source),
+        suggestion: Some("Add a widget like <column> or <row> inside <gravity>".to_string()),
+    })?;
+
+    Ok(GravityDocument {
+        version: SchemaVersion { major: 1, minor: 0 },
+        root: root_widget,
+        themes,
+        style_classes,
+        global_theme,
+    })
+}
+
 
 /// Parse attribute value, detecting binding expressions
 fn parse_attribute_value(value: &str, span: Span) -> Result<AttributeValue, ParseError> {

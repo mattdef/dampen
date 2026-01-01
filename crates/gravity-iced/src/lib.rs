@@ -166,6 +166,23 @@ impl Backend for IcedBackend {
 ///
 /// Note: This is a simplified version. In a full implementation, this would receive
 /// a model and evaluate bindings. For now, it handles static values.
+/// Render a widget tree with layout and style support
+pub fn render_with_layout<'a>(
+    node: &WidgetNode,
+    backend: &IcedBackend,
+) -> Element<'a, Box<dyn CloneableMessage>, Theme, Renderer> {
+    // First render the base widget
+    let widget = render(node, backend);
+    
+    // For now, just return the base widget
+    // In a full implementation, we would:
+    // 1. Apply layout constraints (width, height, padding, spacing)
+    // 2. Apply style properties (background, border, shadow, opacity)
+    // 3. Handle state-based styling
+    
+    widget
+}
+
 pub fn render<'a>(
     node: &WidgetNode,
     backend: &IcedBackend,
