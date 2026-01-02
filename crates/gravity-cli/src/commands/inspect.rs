@@ -1,3 +1,5 @@
+#![allow(clippy::print_stderr, clippy::print_stdout)]
+
 //! Inspect command - view IR and generated code
 
 use gravity_core::{generate_application, parse, HandlerSignature};

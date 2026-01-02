@@ -1,8 +1,9 @@
 //! Gravity Iced - Iced Backend Implementation
 
+pub mod state;
 pub mod style_mapping;
 pub mod theme_adapter;
-// pub mod widgets; // Placeholder - will be implemented in Phase 10
+pub mod widgets;
 
 use gravity_core::{AttributeValue, Backend, EventKind, InterpolatedPart, WidgetKind, WidgetNode};
 use iced::widget::{button, column, row, text};
@@ -171,16 +172,42 @@ pub fn render_with_layout<'a>(
     node: &WidgetNode,
     backend: &IcedBackend,
 ) -> Element<'a, Box<dyn CloneableMessage>, Theme, Renderer> {
+    use crate::style_mapping::{map_layout_constraints, map_style_properties};
+    use iced::widget::container;
+
     // First render the base widget
     let widget = render(node, backend);
-    
-    // For now, just return the base widget
-    // In a full implementation, we would:
-    // 1. Apply layout constraints (width, height, padding, spacing)
-    // 2. Apply style properties (background, border, shadow, opacity)
-    // 3. Handle state-based styling
-    
-    widget
+
+    // Apply layout constraints
+    let layout = node.layout.as_ref().map(map_layout_constraints);
+
+    // Apply style properties
+    let style = node.style.as_ref().map(map_style_properties);
+
+    // Wrap widget in container with layout and style
+    if layout.is_some() || style.is_some() {
+        let mut container = container(widget);
+
+        if let Some(layout) = layout {
+            container = container
+                .width(layout.width)
+                .height(layout.height)
+                .padding(layout.padding);
+
+            // Apply alignment
+            if let Some(align) = layout.align_items {
+                container = container.align_y(align);
+            }
+        }
+
+        if let Some(style) = style {
+            container = container.style(move |_theme| style);
+        }
+
+        container.into()
+    } else {
+        widget
+    }
 }
 
 pub fn render<'a>(

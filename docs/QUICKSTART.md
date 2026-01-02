@@ -469,12 +469,112 @@ If handlers don't fire:
 2. Check handler name matches XML `on_click="handler_name"`
 3. Ensure handler is in scope
 
+## Adding Styles
+
+Now let's make our app look better with themes and state-based styling.
+
+### Step 1: Define a Theme
+
+Update `ui/main.gravity`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<gravity>
+    <themes>
+        <theme name="app_theme">
+            <palette 
+                primary="#3498db" 
+                secondary="#2ecc71"
+                background="#ecf0f1" 
+                surface="#ffffff"
+                text="#2c3e50" />
+            <typography font_family="Inter, sans-serif" />
+            <spacing unit="8" />
+        </theme>
+    </themes>
+    
+    <global_theme name="app_theme" />
+    
+    <column padding="40" spacing="20" align="center">
+        <text value="Counter: {count}" size="48" weight="bold" color="{theme.primary}" />
+        
+        <row spacing="20">
+            <button label="-" on_click="decrement" enabled="{count > 0}" />
+            <button label="+" on_click="increment" />
+        </row>
+        
+        <button label="Reset" on_click="reset" />
+    </column>
+</gravity>
+```
+
+### Step 2: Add Style Classes
+
+```xml
+<style_classes>
+    <style name="btn" 
+        padding="12 24" 
+        border_radius="6" 
+        border_width="2" 
+        background="{theme.primary}"
+        color="#ffffff"
+        border_color="#2980b9">
+        <hover background="#2980b9" />
+        <active background="#21618c" />
+        <disabled opacity="0.5" />
+    </style>
+</style_classes>
+
+<column padding="40" spacing="20" align="center">
+    <text value="Counter: {count}" size="48" weight="bold" />
+    
+    <row spacing="20">
+        <button class="btn" label="-" on_click="decrement" enabled="{count > 0}" />
+        <button class="btn" label="+" on_click="increment" />
+    </row>
+    
+    <button class="btn" label="Reset" on_click="reset" />
+</column>
+```
+
+### Step 3: Make it Responsive
+
+```xml
+<column 
+    padding="40" 
+    mobile:padding="20"
+    spacing="20"
+    mobile:spacing="10"
+    align="center">
+    
+    <text 
+        value="Counter: {count}" 
+        size="48"
+        mobile:size="32"
+        weight="bold" />
+    
+    <row spacing="20" mobile:spacing="10">
+        <button class="btn" label="-" on_click="decrement" enabled="{count > 0}" />
+        <button class="btn" label="+" on_click="increment" />
+    </row>
+    
+    <button class="btn" label="Reset" on_click="reset" />
+</column>
+```
+
+Now your app has:
+- ✅ Custom theme with colors and typography
+- ✅ Reusable button styles with hover/active states
+- ✅ Responsive padding and sizing
+- ✅ Automatic state transitions on hover/click
+
 ## Performance Tips
 
 1. **Keep XML files small**: Split into components
 2. **Use codegen for production**: Zero runtime overhead
 3. **Minimize bindings**: Each binding adds evaluation cost
 4. **Cache computed values**: In your model, not in XML
+5. **Use classes**: Reuse styles instead of repeating attributes
 
 ## Next Steps
 

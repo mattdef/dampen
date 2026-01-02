@@ -1,5 +1,5 @@
-use gravity_core::{parse, WidgetNode, WidgetKind, AttributeValue};
-use iced::widget::{column, text, button, row};
+use gravity_core::{parse, AttributeValue, WidgetKind, WidgetNode};
+use iced::widget::{button, column, row, text};
 use iced::{Element, Task};
 
 #[derive(Clone, Debug)]
@@ -23,7 +23,8 @@ impl AppState {
                 eprintln!("Error: Failed to read UI file: {}", e);
                 r#"<column padding="40" spacing="20">
                     <text value="Error: Could not load ui/main.gravity" size="18" />
-                </column>"#.to_string()
+                </column>"#
+                    .to_string()
             }
         };
 
@@ -55,7 +56,7 @@ fn render_node<'a>(node: &'a WidgetNode, count: i32) -> Element<'a, Message> {
                     } else {
                         v.clone()
                     }
-                },
+                }
                 _ => String::new(),
             };
             text(value).into()
@@ -65,7 +66,8 @@ fn render_node<'a>(node: &'a WidgetNode, count: i32) -> Element<'a, Message> {
                 Some(AttributeValue::Static(l)) => l.clone(),
                 _ => String::new(),
             };
-            let msg = if let Some(AttributeValue::Static(handler)) = node.attributes.get("on_click") {
+            let msg = if let Some(AttributeValue::Static(handler)) = node.attributes.get("on_click")
+            {
                 match handler.as_str() {
                     "increment" => Message::Increment,
                     "decrement" => Message::Decrement,
@@ -78,13 +80,17 @@ fn render_node<'a>(node: &'a WidgetNode, count: i32) -> Element<'a, Message> {
             button(text(label)).on_press(msg).into()
         }
         WidgetKind::Column => {
-            let children: Vec<_> = node.children.iter()
+            let children: Vec<_> = node
+                .children
+                .iter()
                 .map(|child| render_node(child, count))
                 .collect();
             column(children).into()
         }
         WidgetKind::Row => {
-            let children: Vec<_> = node.children.iter()
+            let children: Vec<_> = node
+                .children
+                .iter()
                 .map(|child| render_node(child, count))
                 .collect();
             row(children).into()
@@ -93,7 +99,7 @@ fn render_node<'a>(node: &'a WidgetNode, count: i32) -> Element<'a, Message> {
     }
 }
 
-fn view(state: &AppState) -> Element<Message> {
+fn view(state: &AppState) -> Element<'_, Message> {
     render_node(&state.document.root, state.count)
 }
 

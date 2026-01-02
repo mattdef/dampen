@@ -467,6 +467,133 @@ fn fetch_data(model: &mut Model) -> Command<Message> {
 
 ---
 
+## Styling System
+
+### Theme Definition
+
+```xml
+<themes>
+    <theme name="custom">
+        <palette 
+            primary="#3498db" 
+            secondary="#2ecc71"
+            success="#27ae60"
+            warning="#f39c12"
+            danger="#e74c3c"
+            background="#ecf0f1"
+            surface="#ffffff"
+            text="#2c3e50"
+            text_secondary="#7f8c8d" />
+        <typography 
+            font_family="Inter, sans-serif"
+            font_size_base="16"
+            font_size_small="12"
+            font_size_large="24"
+            font_weight="normal"
+            line_height="1.5" />
+        <spacing unit="8" />
+    </theme>
+</themes>
+
+<global_theme name="custom" />
+```
+
+### Style Classes
+
+```xml
+<style_classes>
+    <style name="button_primary" 
+        extends="button_base"
+        background="#3498db"
+        color="#ffffff"
+        padding="12 24"
+        border_radius="6">
+        <hover background="#2980b9" />
+        <active background="#21618c" />
+        <disabled opacity="0.5" />
+    </style>
+</style_classes>
+```
+
+### Inline Style Attributes
+
+**Layout:**
+- `width`: fixed, fill, shrink, fill_portion(n), percentage
+- `height`: fixed, fill, shrink, fill_portion(n), percentage
+- `padding`: spacing value (e.g., "10 20" or "10 20 30 40")
+- `spacing`: child spacing value
+- `align_items`: start, center, end, stretch
+- `justify_content`: start, center, end, space_between, space_around, space_evenly
+- `position`: relative, absolute
+- `top`, `right`, `bottom`, `left`: offset values
+- `z_index`: integer
+
+**Style:**
+- `background`: color or gradient
+- `color`: text color
+- `border_width`: thickness
+- `border_color`: color
+- `border_radius`: corner rounding
+- `shadow`: "offset_x offset_y blur color"
+- `opacity`: 0.0-1.0
+- `transform`: transform operations
+
+**State Variants (prefixed):**
+- `hover:*`: hover state (e.g., `hover:background`, `hover:color`)
+- `focus:*`: focus state (e.g., `focus:border_color`)
+- `active:*`: active state (e.g., `active:background`)
+- `disabled:*`: disabled state (e.g., `disabled:opacity`)
+
+**Responsive (prefixed):**
+- `mobile:*`: < 640px
+- `tablet:*`: 640px - 1024px
+- `desktop:*`: > 1024px
+
+### Widget Attributes
+
+**All Widgets:**
+- `class`: space-separated style class names
+- `theme_ref`: apply local theme
+- `disabled`: boolean
+- `id`: identifier for state tracking
+
+**Interactive Widgets:**
+- `on_click`: handler name
+- `on_input`: handler name (text_input)
+- `on_change`: handler name (checkbox, slider, pick_list)
+- `on_toggle`: handler name (toggler)
+- `on_submit`: handler name (text_input)
+
+### State-Based Styling
+
+State variants can be defined using child elements or prefixed attributes:
+
+```xml
+<!-- Child elements -->
+<style name="btn" background="#3498db">
+    <hover background="#2980b9" />
+    <active background="#21618c" />
+</style>
+
+<!-- Prefixed attributes -->
+<style name="btn" 
+    background="#3498db"
+    hover_background="#2980b9"
+    active_background="#21618c" />
+```
+
+### Responsive Design
+
+Breakpoint-prefixed attributes override base values:
+
+```xml
+<column mobile:spacing="10" desktop:spacing="20">
+    <text mobile:size="18" desktop:size="32" value="Responsive" />
+</column>
+```
+
+---
+
 ## Complete Example
 
 ```xml

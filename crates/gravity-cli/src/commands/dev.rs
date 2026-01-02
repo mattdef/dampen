@@ -1,7 +1,10 @@
 //! Dev command - runs app with hot-reload
 
+#![allow(clippy::print_stderr)]
+
 use gravity_core::ir::layout::Breakpoint;
 use gravity_core::{AttributeValue, EventKind, HandlerRegistry, InterpolatedPart, WidgetNode};
+use gravity_iced::state::WidgetStateManager;
 use gravity_runtime::{resolve_tree_breakpoint_attributes, ErrorOverlay, HotReloadInterpreter};
 use iced::time;
 use iced::window;
@@ -66,6 +69,7 @@ pub fn execute(args: &DevArgs) -> Result<(), String> {
         viewport_width: 800.0, // Default window width
         current_breakpoint: Breakpoint::from_viewport_width(800.0),
         previous_breakpoint: None,
+        widget_state: WidgetStateManager::new(),
     }));
 
     // Load initial document
@@ -114,6 +118,8 @@ struct DevState {
     current_breakpoint: Breakpoint,
     /// Previous breakpoint for change detection
     previous_breakpoint: Option<Breakpoint>,
+    /// Widget state manager for hover/focus/active/disabled
+    widget_state: WidgetStateManager,
 }
 
 /// Application state
@@ -123,12 +129,20 @@ struct State {
 
 /// Messages for the dev app
 #[derive(Clone, Debug)]
+#[allow(dead_code)] // Some variants used in state tracking
 enum Message {
     FileChanged,
     ReloadComplete(Result<(), String>),
     DismissError,
     Tick,
     WindowResized(f32),
+    // Widget state messages
+    WidgetMouseEnter(String),
+    WidgetMouseLeave(String),
+    WidgetMousePress(String),
+    WidgetMouseRelease(String),
+    WidgetFocus(String),
+    WidgetBlur(String),
 }
 
 fn update(state: &mut State, message: Message) -> Task<Message> {
@@ -172,6 +186,8 @@ fn update(state: &mut State, message: Message) -> Task<Message> {
                         eprintln!("[DEV] ✓ Reload successful");
                     }
                     dev_state.error_overlay = None;
+                    // Clear widget states on successful reload
+                    dev_state.widget_state.clear();
                 }
                 Err(e) => {
                     eprintln!("[DEV] ✗ Reload failed: {}", e);
@@ -207,19 +223,69 @@ fn update(state: &mut State, message: Message) -> Task<Message> {
                 );
             }
         }
+        // Widget state management
+        Message::WidgetMouseEnter(widget_id) => {
+            #[allow(clippy::unwrap_used)]
+            let mut dev_state = state.state.lock().unwrap();
+            dev_state.widget_state.on_mouse_enter(widget_id);
+            if dev_state.verbose {
+                eprintln!("[DEV] Widget mouse enter");
+            }
+        }
+        Message::WidgetMouseLeave(widget_id) => {
+            #[allow(clippy::unwrap_used)]
+            let mut dev_state = state.state.lock().unwrap();
+            dev_state.widget_state.on_mouse_leave(widget_id);
+            if dev_state.verbose {
+                eprintln!("[DEV] Widget mouse leave");
+            }
+        }
+        Message::WidgetMousePress(widget_id) => {
+            #[allow(clippy::unwrap_used)]
+            let mut dev_state = state.state.lock().unwrap();
+            dev_state.widget_state.on_mouse_press(widget_id);
+            if dev_state.verbose {
+                eprintln!("[DEV] Widget mouse press");
+            }
+        }
+        Message::WidgetMouseRelease(widget_id) => {
+            #[allow(clippy::unwrap_used)]
+            let mut dev_state = state.state.lock().unwrap();
+            dev_state.widget_state.on_mouse_release(widget_id);
+            if dev_state.verbose {
+                eprintln!("[DEV] Widget mouse release");
+            }
+        }
+        Message::WidgetFocus(widget_id) => {
+            #[allow(clippy::unwrap_used)]
+            let mut dev_state = state.state.lock().unwrap();
+            dev_state.widget_state.on_focus(widget_id);
+            if dev_state.verbose {
+                eprintln!("[DEV] Widget focus");
+            }
+        }
+        Message::WidgetBlur(widget_id) => {
+            #[allow(clippy::unwrap_used)]
+            let mut dev_state = state.state.lock().unwrap();
+            dev_state.widget_state.on_blur(widget_id);
+            if dev_state.verbose {
+                eprintln!("[DEV] Widget blur");
+            }
+        }
     }
     Task::none()
 }
 
 fn view(state: &State) -> Element<'_, Message> {
     // Clone the data we need while holding the lock
-    let (error_overlay, doc, viewport_width) = {
+    let (error_overlay, doc, viewport_width, widget_state) = {
         #[allow(clippy::unwrap_used)]
         let dev_state = state.state.lock().unwrap();
         (
             dev_state.error_overlay.clone(),
             dev_state.interpreter.document().cloned(),
             dev_state.viewport_width,
+            dev_state.widget_state.clone(),
         )
     };
 
@@ -266,8 +332,8 @@ fn view(state: &State) -> Element<'_, Message> {
         // Resolve breakpoint attributes for the entire tree
         let resolved_root = resolve_tree_breakpoint_attributes(&doc.root, viewport_width);
 
-        // Render with resolved attributes
-        render_widget_tree(&resolved_root)
+        // Render with resolved attributes and state
+        render_widget_tree(&resolved_root, &doc, &widget_state)
     } else {
         iced::widget::container(iced::widget::text("No document loaded").size(20)).into()
     }
@@ -324,15 +390,24 @@ fn reload_file(state: Arc<Mutex<DevState>>) -> Task<Message> {
     )
 }
 
-/// Render a widget tree using Iced widgets
-fn render_widget_tree(node: &WidgetNode) -> Element<'static, Message> {
-    // Get layout attributes from the node
-    let width = node.layout.as_ref().and_then(|l| l.width.as_ref());
-    let height = node.layout.as_ref().and_then(|l| l.height.as_ref());
-    let _padding = node.layout.as_ref().and_then(|l| l.padding.as_ref());
+/// Render a widget tree using Iced widgets with state-based styling
+fn render_widget_tree(
+    node: &WidgetNode,
+    doc: &gravity_core::ir::GravityDocument,
+    state_manager: &WidgetStateManager,
+) -> Element<'static, Message> {
+    use gravity_iced::style_mapping::{map_layout_constraints, map_style_properties};
+    use iced::widget::container;
+
+    // Get spacing from the node
     let spacing = node.layout.as_ref().and_then(|l| l.spacing);
 
-    match node.kind {
+    // Resolve style for this widget (base + classes + state)
+    let resolved_style = resolve_widget_style(node, doc, state_manager);
+
+    // Render base widget based on kind
+    // Render base widget
+    let widget = match node.kind {
         gravity_core::WidgetKind::Text => {
             let value = node
                 .attributes
@@ -353,10 +428,12 @@ fn render_widget_tree(node: &WidgetNode) -> Element<'static, Message> {
                 })
                 .unwrap_or_else(|| "No value".to_string());
 
-            let text_widget = iced::widget::text(value);
-
-            // Apply width/height if specified
-            apply_size_constraints(text_widget.into(), width, height)
+            // Apply text color from style if present
+            let mut text_widget = iced::widget::text(value);
+            if let Some(color) = &resolved_style.color {
+                text_widget = text_widget.color(gravity_iced::style_mapping::map_color(color));
+            }
+            text_widget.into()
         }
         gravity_core::WidgetKind::Button => {
             let label = node
@@ -371,112 +448,126 @@ fn render_widget_tree(node: &WidgetNode) -> Element<'static, Message> {
             // Check for click handler
             let has_handler = node.events.iter().any(|e| e.event == EventKind::Click);
 
-            let btn = if has_handler {
-                iced::widget::button(iced::widget::text(label)).on_press(Message::Tick)
-            // Placeholder
-            } else {
-                iced::widget::button(iced::widget::text(label))
-            };
+            // Create button
+            let mut btn = iced::widget::button(iced::widget::text(label));
 
-            // Note: Padding handling simplified for dev mode
-            // In production, use gravity-iced style_mapping for full support
+            // Apply click handler
+            if has_handler {
+                // For now, just use a placeholder message
+                // In a full implementation, this would map to actual handlers
+                btn = btn.on_press(Message::Tick);
+            }
 
-            apply_size_constraints(btn.into(), width, height)
+            btn.into()
         }
         gravity_core::WidgetKind::Column => {
             let children: Vec<Element<Message>> = node
                 .children
                 .iter()
-                .map(|child| render_widget_tree(child))
+                .map(|child| render_widget_tree(child, doc, state_manager))
                 .collect();
 
             let mut col = iced::widget::column(children);
-
-            // Apply spacing
             if let Some(s) = spacing {
                 col = col.spacing(s);
             }
-
-            // Note: Padding handling simplified
-            apply_size_constraints(col.into(), width, height)
+            col.into()
         }
         gravity_core::WidgetKind::Row => {
             let children: Vec<Element<Message>> = node
                 .children
                 .iter()
-                .map(|child| render_widget_tree(child))
+                .map(|child| render_widget_tree(child, doc, state_manager))
                 .collect();
 
             let mut row = iced::widget::row(children);
-
-            // Apply spacing
             if let Some(s) = spacing {
                 row = row.spacing(s);
             }
-
-            // Note: Padding handling simplified
-            apply_size_constraints(row.into(), width, height)
+            row.into()
         }
         gravity_core::WidgetKind::Container => {
             let children: Vec<Element<Message>> = node
                 .children
                 .iter()
-                .map(|child| render_widget_tree(child))
+                .map(|child| render_widget_tree(child, doc, state_manager))
                 .collect();
 
-            // Container wraps its children in a column for now
-            let mut container = iced::widget::column(children);
-
-            // Apply spacing
+            let mut col = iced::widget::column(children);
             if let Some(s) = spacing {
-                container = container.spacing(s);
+                col = col.spacing(s);
             }
-
-            // Note: Padding handling simplified
-            apply_size_constraints(container.into(), width, height)
+            col.into()
         }
         _ => {
             // For unsupported widgets, show a placeholder
-            let text = iced::widget::text(format!("[{:?}]", node.kind));
-            apply_size_constraints(text.into(), width, height)
+            iced::widget::text(format!("[{:?}]", node.kind)).into()
         }
+    };
+
+    // Apply layout constraints and style via container wrapper
+    let has_layout = node.layout.is_some();
+    let has_style = resolved_style.background.is_some()
+        || resolved_style.color.is_some()
+        || resolved_style.border.is_some()
+        || resolved_style.shadow.is_some()
+        || resolved_style.opacity.is_some()
+        || resolved_style.transform.is_some();
+
+    if has_layout || has_style {
+        let mut container = container(widget);
+
+        // Apply layout
+        if let Some(layout) = &node.layout {
+            let iced_layout = map_layout_constraints(layout);
+            container = container
+                .width(iced_layout.width)
+                .height(iced_layout.height)
+                .padding(iced_layout.padding);
+            if let Some(align) = iced_layout.align_items {
+                container = container.align_y(align);
+            }
+        }
+
+        // Apply style
+        if has_style {
+            let container_style = map_style_properties(&resolved_style);
+            container = container.style(move |_theme| container_style);
+        }
+
+        return container.into();
     }
+
+    widget
 }
 
-/// Helper to apply size constraints to a widget
-fn apply_size_constraints(
-    widget: Element<'static, Message>,
-    width: Option<&gravity_core::ir::layout::Length>,
-    height: Option<&gravity_core::ir::layout::Length>,
-) -> Element<'static, Message> {
-    use gravity_core::ir::layout::Length;
+/// Resolve the final style for a widget by merging base style, class styles, and state styles
+fn resolve_widget_style(
+    node: &WidgetNode,
+    doc: &gravity_core::ir::GravityDocument,
+    state_manager: &WidgetStateManager,
+) -> gravity_core::ir::style::StyleProperties {
+    use gravity_runtime::StyleCascade;
 
-    // Convert Length to Iced Length
-    let iced_width = match width {
-        Some(Length::Fixed(pixels)) => iced::Length::Fixed(*pixels),
-        Some(Length::Fill) => iced::Length::Fill,
-        Some(Length::Shrink) => iced::Length::Shrink,
-        Some(Length::FillPortion(n)) => iced::Length::FillPortion(*n as u16),
-        Some(Length::Percentage(_p)) => {
-            // Percentage needs to be calculated based on parent, which Iced handles
-            // For now, treat as Fill
-            iced::Length::Fill
+    // Get base style from node
+    let base_style = node.style.clone().unwrap_or_default();
+
+    // Get class names
+    let class_names = &node.classes;
+
+    // Get theme style (if any)
+    let theme_style = None; // Would need theme manager for this
+
+    // Create cascade with document
+    let mut cascade = StyleCascade::new(doc);
+
+    // Get widget state
+    if let Some(id) = &node.id {
+        if let Some(state) = state_manager.get_state(id) {
+            cascade = cascade.with_state(state);
         }
-        None => iced::Length::Shrink,
-    };
+    }
 
-    let iced_height = match height {
-        Some(Length::Fixed(pixels)) => iced::Length::Fixed(*pixels),
-        Some(Length::Fill) => iced::Length::Fill,
-        Some(Length::Shrink) => iced::Length::Shrink,
-        Some(Length::FillPortion(n)) => iced::Length::FillPortion(*n as u16),
-        Some(Length::Percentage(_p)) => iced::Length::Fill,
-        None => iced::Length::Shrink,
-    };
-
-    // Apply size to widget using container wrapper
-    iced::widget::container(widget)
-        .width(iced_width)
-        .height(iced_height)
-        .into()
+    // Resolve final style
+    cascade.resolve(Some(&base_style), class_names, theme_style)
 }

@@ -417,7 +417,7 @@ pub fn parse_style_class_from_node(
             continue;
         }
 
-        // Check for state variants
+        // Check for state variants (prefixed attributes)
         if let Some((prefix, attr_name)) = split_state_prefix(key) {
             let state = WidgetState::from_prefix(prefix).ok_or_else(|| ParseError {
                 kind: ParseErrorKind::InvalidValue,
@@ -454,6 +454,47 @@ pub fn parse_style_class_from_node(
 
         // Regular style attribute
         base_attrs.insert(key.to_string(), value.to_string());
+    }
+
+    // Parse child elements for state variants and base styles
+    for child in node.children() {
+        if child.node_type() != roxmltree::NodeType::Element {
+            continue;
+        }
+
+        let tag = child.tag_name().name();
+
+        // Handle state variant child elements
+        if let Some(state) = WidgetState::from_prefix(tag) {
+            let state_attr = state_variants_raw.entry(state).or_default();
+            for attr in child.attributes() {
+                state_attr.insert(attr.name().to_string(), attr.value().to_string());
+            }
+            continue;
+        }
+
+        // Handle base element
+        if tag == "base" {
+            for attr in child.attributes() {
+                base_attrs.insert(attr.name().to_string(), attr.value().to_string());
+            }
+            continue;
+        }
+
+        // Handle layout child element
+        if tag == "layout" {
+            let mut layout_attrs = HashMap::new();
+            for attr in child.attributes() {
+                layout_attrs.insert(attr.name().to_string(), attr.value().to_string());
+            }
+            layout = parse_layout_constraints(&layout_attrs).map_err(|e| ParseError {
+                kind: ParseErrorKind::InvalidValue,
+                message: format!("Failed to parse layout: {}", e),
+                span: crate::ir::Span::default(),
+                suggestion: None,
+            })?;
+            continue;
+        }
     }
 
     // Parse layout if any layout attributes present

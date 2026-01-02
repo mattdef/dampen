@@ -1,3 +1,5 @@
+#![allow(clippy::print_stderr, clippy::print_stdout)]
+
 //! Build command - generates production Rust code from Gravity UI files
 
 use gravity_core::{generate_application, parse, HandlerSignature};

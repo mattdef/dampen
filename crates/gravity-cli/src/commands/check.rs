@@ -1,3 +1,5 @@
+#![allow(clippy::print_stderr, clippy::print_stdout)]
+
 //! Check command - validates Gravity UI files
 
 use clap::Args;
@@ -48,6 +50,23 @@ pub enum CheckError {
     #[error("Invalid binding field '{field}' in {file}:{line}:{col}")]
     InvalidBinding {
         field: String,
+        file: PathBuf,
+        line: u32,
+        col: u32,
+    },
+
+    #[error("Invalid style attribute '{attr}' in {file}:{line}:{col}: {message}")]
+    InvalidStyleAttribute {
+        attr: String,
+        file: PathBuf,
+        line: u32,
+        col: u32,
+        message: String,
+    },
+
+    #[error("Invalid state prefix '{prefix}' in {file}:{line}:{col}")]
+    InvalidStatePrefix {
+        prefix: String,
         file: PathBuf,
         line: u32,
         col: u32,

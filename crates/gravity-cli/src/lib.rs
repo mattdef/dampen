@@ -2,6 +2,8 @@
 //!
 //! This crate provides the CLI for the Gravity UI framework.
 
+#![allow(clippy::print_stderr, clippy::print_stdout)]
+
 pub mod commands;
 pub mod config;
 

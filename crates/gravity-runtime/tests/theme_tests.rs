@@ -10,9 +10,17 @@ fn c(s: &str) -> Color {
     Color::parse(s).unwrap()
 }
 
+#[allow(dead_code)]
+fn complete_palette(primary: &str, secondary: &str, background: &str, text: &str) -> String {
+    format!(
+        "primary=\"{}\" secondary=\"{}\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"{}\" surface=\"#ffffff\" text=\"{}\" text_secondary=\"#7f8c8d\"",
+        primary, secondary, background, text
+    )
+}
+
 #[test]
 fn test_theme_parsing() {
-    let xml = "<gravity><themes><theme name=\"custom\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" background=\"#ecf0f1\" text=\"#2c3e50\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"8\" /></theme></themes><global_theme name=\"custom\" /><column><text value=\"Test\" /></column></gravity>";
+    let xml = "<gravity><themes><theme name=\"custom\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"8\" /></theme></themes><global_theme name=\"custom\" /><column><text value=\"Test\" /></column></gravity>";
 
     let doc = parse(xml).unwrap();
     assert!(doc.themes.contains_key("custom"));
@@ -37,9 +45,9 @@ fn test_builtin_themes() {
 
 #[test]
 fn test_theme_switching() {
-    let xml = "<gravity><themes><theme name=\"light\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" background=\"#ecf0f1\" text=\"#2c3e50\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme><theme name=\"dark\"><palette primary=\"#5dade2\" secondary=\"#58d68d\" background=\"#2c3e50\" text=\"#ecf0f1\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"light\" /><column><text value=\"Test\" /></column></gravity>";
+    let xml = format!("<gravity><themes><theme name=\"light\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme><theme name=\"dark\"><palette primary=\"#5dade2\" secondary=\"#58d68d\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#2c3e50\" surface=\"#ffffff\" text=\"#ecf0f1\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"light\" /><column><text value=\"Test\" /></column></gravity>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
 
-    let doc = parse(xml).unwrap();
+    let doc = parse(&xml).unwrap();
     let mut manager = ThemeManager::new();
     manager.load_from_document(&doc);
 
@@ -106,9 +114,9 @@ fn test_class_inheritance() {
 
 #[test]
 fn test_widget_theme_ref() {
-    let xml = "<gravity><themes><theme name=\"global\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" background=\"#ecf0f1\" text=\"#2c3e50\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme><theme name=\"local\"><palette primary=\"#e74c3c\" secondary=\"#e67e22\" background=\"#ecf0f1\" text=\"#2c3e50\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"global\" /><column><text value=\"Global\" /><container theme_ref=\"local\"><text value=\"Local\" /></container></column></gravity>";
+    let xml = format!("<gravity><themes><theme name=\"global\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme><theme name=\"local\"><palette primary=\"#e74c3c\" secondary=\"#e67e22\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"global\" /><column><text value=\"Global\" /><container theme_ref=\"local\"><text value=\"Local\" /></container></column></gravity>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
 
-    let doc = parse(xml).unwrap();
+    let doc = parse(&xml).unwrap();
     assert!(doc.themes.contains_key("global"));
     assert!(doc.themes.contains_key("local"));
     assert_eq!(doc.global_theme, Some("global".to_string()));
@@ -133,9 +141,9 @@ fn test_full_theme_spec() {
 
 #[test]
 fn test_minimal_theme() {
-    let xml = "<gravity><themes><theme name=\"minimal\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" background=\"#ecf0f1\" text=\"#2c3e50\" /></theme></themes><global_theme name=\"minimal\" /><column><text value=\"Test\" /></column></gravity>";
+    let xml = format!("<gravity><themes><theme name=\"minimal\"><palette {} /></theme></themes><global_theme name=\"minimal\" /><column><text value=\"Test\" /></column></gravity>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
 
-    let doc = parse(xml).unwrap();
+    let doc = parse(&xml).unwrap();
     let theme = doc.themes.get("minimal").unwrap();
 
     assert_eq!(theme.typography.font_family, "sans-serif");
@@ -187,9 +195,9 @@ fn test_inline_style_parsing() {
 // T113: Integration test - Inline styles override theme
 #[test]
 fn test_inline_style_overrides_theme() {
-    let xml = "<gravity><themes><theme name=\"app\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" background=\"#ecf0f1\" text=\"#2c3e50\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"app\" /><column><container background=\"#ffffff\" padding=\"20\"><text value=\"Override Test\" /></container></column></gravity>";
+    let xml = format!("<gravity><themes><theme name=\"app\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"app\" /><column><container background=\"#ffffff\" padding=\"20\"><text value=\"Override Test\" /></container></column></gravity>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
 
-    let doc = parse(xml).unwrap();
+    let doc = parse(&xml).unwrap();
 
     // Create theme manager
     let mut theme_manager = ThemeManager::new();

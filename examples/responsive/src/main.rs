@@ -95,7 +95,7 @@ fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
     let padding = node
         .layout
         .as_ref()
-        .map(|l| map_padding(l))
+        .map(map_padding)
         .unwrap_or(Padding::new(0.0));
 
     match node.kind {
@@ -139,7 +139,7 @@ fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
                 .collect();
 
             let col = column(children)
-                .spacing(spacing as f32)
+                .spacing(spacing)
                 .width(width)
                 .height(height);
 
@@ -154,10 +154,7 @@ fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
                 .map(|child| render_node(child))
                 .collect();
 
-            let row_widget = row(children)
-                .spacing(spacing as f32)
-                .width(width)
-                .height(height);
+            let row_widget = row(children).spacing(spacing).width(width).height(height);
 
             container(row_widget).padding(padding).into()
         }
