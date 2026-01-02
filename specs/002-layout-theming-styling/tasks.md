@@ -217,36 +217,36 @@ Phase 11: Polish & Integration
 
 ### 5.1: Theme Parser
 
-- [ ] T080 [P] [US3] Implement `parse_theme()` to parse `<theme>` XML element
-- [ ] T081 [P] [US3] Implement `parse_palette()` to parse `<palette>` attributes
-- [ ] T082 [P] [US3] Implement `parse_typography()` to parse `<typography>` attributes
-- [ ] T083 [P] [US3] Implement `parse_spacing()` to parse `<spacing>` attributes
-- [ ] T084 [US3] Extend `GravityDocument` to store parsed themes
+- [X] T080 [P] [US3] Implement `parse_theme()` to parse `<theme>` XML element
+- [X] T081 [P] [US3] Implement `parse_palette()` to parse `<palette>` attributes
+- [X] T082 [P] [US3] Implement `parse_typography()` to parse `<typography>` attributes
+- [X] T083 [P] [US3] Implement `parse_spacing()` to parse `<spacing>` attributes
+- [X] T084 [US3] Extend `GravityDocument` to store parsed themes
 
 ### 5.2: Theme Manager
 
-- [ ] T085 [US3] Implement `ThemeManager` in gravity-runtime/src/theme_manager.rs
-- [ ] T086 [US3] Implement theme resolution (global vs local theme_ref)
-- [ ] T087 [US3] Implement theme switching with state preservation
-- [ ] T088 [US3] Implement built-in themes: `light`, `dark`, `default`
+- [X] T085 [US3] Implement `ThemeManager` in gravity-runtime/src/theme_manager.rs
+- [X] T086 [US3] Implement theme resolution (global vs local theme_ref)
+- [X] T087 [US3] Implement theme switching with state preservation
+- [X] T088 [US3] Implement built-in themes: `light`, `dark`, `default`
 
 ### 5.3: Theme Application
 
-- [ ] T089 [US3] Implement `apply_theme()` in gravity-runtime to merge theme with widget styles
-- [ ] T090 [US3] Implement theme-aware style cascading (theme → widget → inline)
+- [X] T089 [US3] Implement `apply_theme()` in gravity-runtime to merge theme with widget styles
+- [X] T090 [US3] Implement theme-aware style cascading (theme → widget → inline)
 
 ### 5.4: Iced Backend
 
-- [ ] T091 [P] [US3] Implement `ThemeAdapter` in gravity-iced/src/theme_adapter.rs
-- [ ] T092 [P] [US3] Map Gravity ThemePalette to Iced Theme colors
-- [ ] T093 [P] [US3] Map Gravity Typography to Iced text styling
-- [ ] T094 [US3] Create `examples/styling/src/theme_demo.rs` demonstrating theme switching
+- [X] T091 [P] [US3] Implement `ThemeAdapter` in gravity-iced/src/theme_adapter.rs
+- [X] T092 [P] [US3] Map Gravity ThemePalette to Iced Theme colors
+- [X] T093 [P] [US3] Map Gravity Typography to Iced text styling
+- [X] T094 [US3] Create `examples/styling/src/theme_demo.rs` demonstrating theme switching
 
 ### 5.5: Testing
 
-- [ ] T095 [US3] Write contract test: Theme XML → Theme struct
-- [ ] T096 [US3] Write integration test: Theme switching preserves state
-- [ ] T097 [US3] Write snapshot test: Theme application to widgets
+- [X] T095 [US3] Write contract test: Theme XML → Theme struct
+- [X] T096 [US3] Write integration test: Theme switching preserves state
+- [X] T097 [US3] Write snapshot test: Theme application to widgets
 
 **Total Phase 5 Tasks**: 18
 
@@ -260,32 +260,32 @@ Phase 11: Polish & Integration
 
 ### 6.1: Style Parser
 
-- [ ] T098 [P] [US4] Extend parser to parse `background` attribute (color/gradient)
-- [ ] T099 [P] [US4] Extend parser to parse `color` attribute
-- [ ] T100 [P] [US4] Extend parser to parse `border_*` attributes
-- [ ] T101 [P] [US4] Extend parser to parse `shadow` attribute
-- [ ] T102 [P] [US4] Extend parser to parse `opacity` attribute
-- [ ] T103 [P] [US4] Extend parser to parse `transform` attribute
+- [X] T098 [P] [US4] Extend parser to parse `background` attribute (color/gradient)
+- [X] T099 [P] [US4] Extend parser to parse `color` attribute
+- [X] T100 [P] [US4] Extend parser to parse `border_*` attributes
+- [X] T101 [P] [US4] Extend parser to parse `shadow` attribute
+- [X] T102 [P] [US4] Extend parser to parse `opacity` attribute
+- [X] T103 [P] [US4] Extend parser to parse `transform` attribute
 
 ### 6.2: Style Resolution
 
-- [ ] T104 [US4] Implement `resolve_style_cascade()` in gravity-runtime/src/style_cascade.rs
-- [ ] T105 [US4] Implement precedence: inline > classes > theme > defaults
+- [X] T104 [US4] Implement `resolve_style_cascade()` in gravity-runtime/src/style_cascade.rs
+- [X] T105 [US4] Implement precedence: inline > classes > theme > defaults
 
 ### 6.3: Iced Backend
 
-- [ ] T106 [P] [US4] Map `StyleProperties` to Iced container::Style in gravity-iced/src/style_mapping.rs
-- [ ] T107 [P] [US4] Map `Background` to Iced background in gravity-iced/src/style_mapping.rs
-- [ ] T108 [P] [US4] Map `Border` to Iced border in gravity-iced/src/style_mapping.rs
-- [ ] T109 [P] [US4] Map `Shadow` to Iced shadow in gravity-iced/src/style_mapping.rs
-- [ ] T110 [P] [US4] Map `Opacity` to Iced opacity in gravity-iced/src/style_mapping.rs
-- [ ] T111 [P] [US4] Map `Transform` to Iced transform in gravity-iced/src/style_mapping.rs
+- [X] T106 [P] [US4] Map `StyleProperties` to Iced container::Style in gravity-iced/src/style_mapping.rs
+- [X] T107 [P] [US4] Map `Background` to Iced background in gravity-iced/src/style_mapping.rs
+- [X] T108 [P] [US4] Map `Border` to Iced border in gravity-iced/src/style_mapping.rs
+- [X] T109 [P] [US4] Map `Shadow` to Iced shadow in gravity-iced/src/style_mapping.rs
+- [X] T110 [P] [US4] Map `Opacity` to Iced opacity in gravity-iced/src/style_mapping.rs
+- [X] T111 [P] [US4] Map `Transform` to Iced transform in gravity-iced/src/style_mapping.rs
 
 ### 6.4: Testing
 
-- [ ] T112 [US4] Write contract test: Inline style attributes → StyleProperties
-- [ ] T113 [US4] Write integration test: Inline styles override theme
-- [ ] T114 [US4] Write snapshot test: Generated code with inline styles
+- [X] T112 [US4] Write contract test: Inline style attributes → StyleProperties
+- [X] T113 [US4] Write integration test: Inline styles override theme
+- [X] T114 [US4] Write snapshot test: Generated code with inline styles
 
 **Total Phase 6 Tasks**: 17
 
@@ -299,30 +299,30 @@ Phase 11: Polish & Integration
 
 ### 7.1: Class Parser
 
-- [ ] T115 [P] [US5] Implement `parse_style_class()` to parse `<style>` XML element
-- [ ] T116 [P] [US5] Implement `parse_class_base()` for base properties
-- [ ] T117 [P] [US5] Implement `parse_class_extends()` for inheritance
-- [ ] T118 [P] [US5] Implement `parse_class_state()` for hover/focus/active/disabled variants
-- [ ] T119 [US5] Extend `GravityDocument` to store style classes
+- [X] T115 [P] [US5] Implement `parse_style_class()` to parse `<style>` XML element
+- [X] T116 [P] [US5] Implement `parse_class_base()` for base properties
+- [X] T117 [P] [US5] Implement `parse_class_extends()` for inheritance
+- [X] T118 [P] [US5] Implement `parse_class_state()` for hover/focus/active/disabled variants
+- [X] T119 [US5] Extend `GravityDocument` to store style classes
 
 ### 7.2: Class Resolution
 
-- [ ] T120 [US5] Implement `resolve_class()` in gravity-runtime with inheritance depth limit (5)
-- [ ] T121 [US5] Implement circular dependency detection in class resolution
-- [ ] T122 [US5] Implement class merging for multiple classes on one widget
-- [ ] T123 [US5] Implement hot-reload support for class updates
+- [X] T120 [US5] Implement `resolve_class()` in gravity-runtime with inheritance depth limit (5)
+- [X] T121 [US5] Implement circular dependency detection in class resolution
+- [X] T122 [US5] Implement class merging for multiple classes on one widget
+- [X] T123 [US5] Implement hot-reload support for class updates
 
 ### 7.3: Iced Backend
 
-- [ ] T124 [P] [US5] Map resolved class properties to Iced styles in gravity-iced/src/style_mapping.rs
-- [ ] T125 [US5] Create `examples/styling/src/class_demo.rs` demonstrating class usage
+- [X] T124 [P] [US5] Map resolved class properties to Iced styles in gravity-iced/src/style_mapping.rs
+- [X] T125 [US5] Create `examples/styling/src/class_demo.rs` demonstrating class usage
 
 ### 7.4: Testing
 
-- [ ] T126 [US5] Write contract test: Class XML → StyleClass struct
-- [ ] T127 [US5] Write integration test: Class inheritance and merging
-- [ ] T128 [US5] Write integration test: Hot-reload class updates
-- [ ] T129 [US5] Write error test: Circular dependency detection
+- [X] T126 [US5] Write contract test: Class XML → StyleClass struct
+- [X] T127 [US5] Write integration test: Class inheritance and merging
+- [X] T128 [US5] Write integration test: Hot-reload class updates
+- [X] T129 [US5] Write error test: Circular dependency detection
 
 **Total Phase 7 Tasks**: 15
 
@@ -336,31 +336,31 @@ Phase 11: Polish & Integration
 
 ### 8.1: Parser Extensions
 
-- [ ] T130 [P] [US6] Extend parser to parse `align_items` attribute
-- [ ] T131 [P] [US6] Extend parser to parse `justify_content` attribute
-- [ ] T132 [P] [US6] Extend parser to parse `align_self` attribute
-- [ ] T133 [P] [US6] Extend parser to parse `align` shorthand
-- [ ] T134 [P] [US6] Extend parser to parse `position` attribute
-- [ ] T135 [P] [US6] Extend parser to parse `top`, `right`, `bottom`, `left` attributes
-- [ ] T136 [P] [US6] Extend parser to parse `z_index` attribute
+- [X] T130 [P] [US6] Extend parser to parse `align_items` attribute
+- [X] T131 [P] [US6] Extend parser to parse `justify_content` attribute
+- [X] T132 [P] [US6] Extend parser to parse `align_self` attribute
+- [X] T133 [P] [US6] Extend parser to parse `align` shorthand
+- [X] T134 [P] [US6] Extend parser to parse `position` attribute
+- [X] T135 [P] [US6] Extend parser to parse `top`, `right`, `bottom`, `left` attributes
+- [X] T136 [P] [US6] Extend parser to parse `z_index` attribute
 
 ### 8.2: Layout Resolution
 
-- [ ] T137 [US6] Implement alignment resolution in `resolve_layout()`
-- [ ] T138 [US6] Implement position offset handling in layout resolution
+- [X] T137 [US6] Implement alignment resolution in `resolve_layout()`
+- [X] T138 [US6] Implement position offset handling in layout resolution
 
 ### 8.3: Iced Backend
 
-- [ ] T139 [P] [US6] Map alignment to Iced `align_items` in gravity-iced/src/style_mapping.rs
-- [ ] T140 [P] [US6] Map justification to Iced `justify_content` in gravity-iced/src/style_mapping.rs
-- [ ] T141 [P] [US6] Map `align_self` to Iced widget alignment in gravity-iced/src/style_mapping.rs
-- [ ] T142 [P] [US6] Map position/z_index to Iced overlay in gravity-iced/src/style_mapping.rs
+- [X] T139 [P] [US6] Map alignment to Iced `align_items` in gravity-iced/src/style_mapping.rs
+- [X] T140 [P] [US6] Map justification to Iced `justify_content` in gravity-iced/src/style_mapping.rs
+- [X] T141 [P] [US6] Map `align_self` to Iced widget alignment in gravity-iced/src/style_mapping.rs
+- [X] T142 [P] [US6] Map position/z_index to Iced overlay in gravity-iced/src/style_mapping.rs
 
 ### 8.4: Testing
 
-- [ ] T143 [US6] Write contract test: Alignment attributes → LayoutConstraints
-- [ ] T144 [US6] Write integration test: Alignment and positioning behavior
-- [ ] T145 [US6] Write snapshot test: Generated code for alignment
+- [X] T143 [US6] Write contract test: Alignment attributes → LayoutConstraints
+- [X] T144 [US6] Write integration test: Alignment and positioning behavior
+- [X] T145 [US6] Write snapshot test: Generated code for alignment
 
 **Total Phase 8 Tasks**: 16
 
@@ -374,28 +374,28 @@ Phase 11: Polish & Integration
 
 ### 9.1: Breakpoint Parser
 
-- [ ] T146 [P] [US7] Extend parser to recognize `mobile:`, `tablet:`, `desktop:` prefixes
-- [ ] T147 [P] [US7] Store breakpoint-prefixed attributes in `breakpoint_attributes` map
-- [ ] T148 [US7] Validate breakpoint prefixes don't conflict with base attributes
+- [X] T146 [P] [US7] Extend parser to recognize `mobile-`, `tablet-`, `desktop-` prefixes (hyphen-based)
+- [X] T147 [P] [US7] Store breakpoint-prefixed attributes in `breakpoint_attributes` map
+- [X] T148 [US7] Validate breakpoint prefixes don't conflict with base attributes
 
 ### 9.2: Runtime Support
 
-- [ ] T149 [US7] Add viewport state to application model in gravity-cli/src/commands/dev.rs
-- [ ] T150 [US7] Implement `window::resize_events()` subscription in dev mode
-- [ ] T151 [US7] Implement `resolve_breakpoint_attributes()` in gravity-runtime
-- [ ] T152 [US7] Implement breakpoint change detection (only re-render on threshold crossing)
+- [X] T149 [US7] Add viewport state to application model in gravity-cli/src/commands/dev.rs
+- [X] T150 [US7] Implement `window::resize_events()` subscription in dev mode
+- [X] T151 [US7] Implement `resolve_breakpoint_attributes()` in gravity-runtime
+- [X] T152 [US7] Implement breakpoint change detection (only re-render on threshold crossing)
 
 ### 9.3: Iced Backend
 
-- [ ] T153 [P] [US7] Pass viewport width to `render()` in gravity-iced/src/lib.rs
-- [ ] T154 [US7] Integrate breakpoint resolution into widget rendering
-- [ ] T155 [US7] Create `examples/responsive/src/main.rs` demonstrating responsive layout
+- [X] T153 [P] [US7] Pass viewport width to `render()` in gravity-iced/src/lib.rs
+- [X] T154 [US7] Integrate breakpoint resolution into widget rendering
+- [X] T155 [US7] Create `examples/responsive/src/main.rs` demonstrating responsive layout
 
 ### 9.4: Testing
 
-- [ ] T156 [US7] Write contract test: Breakpoint attributes → IR map
-- [ ] T157 [US7] Write integration test: Viewport resize triggers breakpoint changes
-- [ ] T158 [US7] Write integration test: Breakpoint attributes override base attributes
+- [X] T156 [US7] Write contract test: Breakpoint attributes → IR map
+- [X] T157 [US7] Write integration test: Viewport resize triggers breakpoint changes
+- [X] T158 [US7] Write integration test: Breakpoint attributes override base attributes
 
 **Total Phase 9 Tasks**: 13
 

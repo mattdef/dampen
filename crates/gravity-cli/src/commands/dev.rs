@@ -1,8 +1,10 @@
 //! Dev command - runs app with hot-reload
 
+use gravity_core::ir::layout::Breakpoint;
 use gravity_core::{AttributeValue, EventKind, HandlerRegistry, InterpolatedPart, WidgetNode};
-use gravity_runtime::{ErrorOverlay, HotReloadInterpreter};
+use gravity_runtime::{resolve_tree_breakpoint_attributes, ErrorOverlay, HotReloadInterpreter};
 use iced::time;
+use iced::window;
 use iced::{Element, Subscription, Task};
 use std::fs;
 use std::path::PathBuf;
@@ -61,6 +63,9 @@ pub fn execute(args: &DevArgs) -> Result<(), String> {
         error_overlay: None,
         verbose: args.verbose,
         last_modified: None,
+        viewport_width: 800.0, // Default window width
+        current_breakpoint: Breakpoint::from_viewport_width(800.0),
+        previous_breakpoint: None,
     }));
 
     // Load initial document
@@ -103,6 +108,12 @@ struct DevState {
     error_overlay: Option<ErrorOverlay>,
     verbose: bool,
     last_modified: Option<std::time::SystemTime>,
+    /// Current viewport width in pixels
+    viewport_width: f32,
+    /// Current breakpoint based on viewport width
+    current_breakpoint: Breakpoint,
+    /// Previous breakpoint for change detection
+    previous_breakpoint: Option<Breakpoint>,
 }
 
 /// Application state
@@ -117,6 +128,7 @@ enum Message {
     ReloadComplete(Result<(), String>),
     DismissError,
     Tick,
+    WindowResized(f32),
 }
 
 fn update(state: &mut State, message: Message) -> Task<Message> {
@@ -172,18 +184,44 @@ fn update(state: &mut State, message: Message) -> Task<Message> {
             let mut dev_state = state.state.lock().unwrap();
             dev_state.error_overlay = None;
         }
+        Message::WindowResized(width) => {
+            #[allow(clippy::unwrap_used)]
+            let mut dev_state = state.state.lock().unwrap();
+
+            // Update viewport width
+            dev_state.viewport_width = width;
+
+            // Calculate new breakpoint
+            let new_breakpoint = Breakpoint::from_viewport_width(width);
+
+            // Store previous breakpoint for change detection
+            dev_state.previous_breakpoint = Some(dev_state.current_breakpoint);
+
+            // Update current breakpoint
+            dev_state.current_breakpoint = new_breakpoint;
+
+            if dev_state.verbose {
+                eprintln!(
+                    "[DEV] Window resized to {}px, breakpoint: {:?}",
+                    width, new_breakpoint
+                );
+            }
+        }
     }
     Task::none()
 }
 
-fn view(state: &State) -> Element<Message> {
-    #[allow(clippy::unwrap_used)]
-    let dev_state = state.state.lock().unwrap();
-
-    // Clone the data we need before releasing the lock
-    let error_overlay = dev_state.error_overlay.clone();
-    let doc = dev_state.interpreter.document().cloned();
-    drop(dev_state); // Release lock
+fn view(state: &State) -> Element<'_, Message> {
+    // Clone the data we need while holding the lock
+    let (error_overlay, doc, viewport_width) = {
+        #[allow(clippy::unwrap_used)]
+        let dev_state = state.state.lock().unwrap();
+        (
+            dev_state.error_overlay.clone(),
+            dev_state.interpreter.document().cloned(),
+            dev_state.viewport_width,
+        )
+    };
 
     // Show error overlay if present
     if let Some(overlay) = error_overlay {
@@ -225,7 +263,11 @@ fn view(state: &State) -> Element<Message> {
 
     // Render the UI from the document
     if let Some(doc) = doc {
-        render_widget_tree(&doc.root)
+        // Resolve breakpoint attributes for the entire tree
+        let resolved_root = resolve_tree_breakpoint_attributes(&doc.root, viewport_width);
+
+        // Render with resolved attributes
+        render_widget_tree(&resolved_root)
     } else {
         iced::widget::container(iced::widget::text("No document loaded").size(20)).into()
     }
@@ -233,7 +275,11 @@ fn view(state: &State) -> Element<Message> {
 
 fn subscription(_state: &State) -> Subscription<Message> {
     // Subscribe to periodic ticks for file checking (every 200ms)
-    time::every(std::time::Duration::from_millis(200)).map(|_| Message::Tick)
+    // Subscribe to window resize events
+    Subscription::batch([
+        time::every(std::time::Duration::from_millis(200)).map(|_| Message::Tick),
+        window::resize_events().map(|(_id, size)| Message::WindowResized(size.width)),
+    ])
 }
 
 fn reload_file(state: Arc<Mutex<DevState>>) -> Task<Message> {
@@ -280,14 +326,20 @@ fn reload_file(state: Arc<Mutex<DevState>>) -> Task<Message> {
 
 /// Render a widget tree using Iced widgets
 fn render_widget_tree(node: &WidgetNode) -> Element<'static, Message> {
+    // Get layout attributes from the node
+    let width = node.layout.as_ref().and_then(|l| l.width.as_ref());
+    let height = node.layout.as_ref().and_then(|l| l.height.as_ref());
+    let _padding = node.layout.as_ref().and_then(|l| l.padding.as_ref());
+    let spacing = node.layout.as_ref().and_then(|l| l.spacing);
+
     match node.kind {
         gravity_core::WidgetKind::Text => {
             let value = node
                 .attributes
                 .get("value")
-                .and_then(|attr| match attr {
-                    AttributeValue::Static(s) => Some(s.clone()),
-                    AttributeValue::Binding(_) => Some("[binding]".to_string()),
+                .map(|attr| match attr {
+                    AttributeValue::Static(s) => s.clone(),
+                    AttributeValue::Binding(_) => "[binding]".to_string(),
                     AttributeValue::Interpolated(parts) => {
                         let mut s = String::new();
                         for part in parts {
@@ -296,33 +348,40 @@ fn render_widget_tree(node: &WidgetNode) -> Element<'static, Message> {
                                 InterpolatedPart::Binding(_) => s.push_str("[binding]"),
                             }
                         }
-                        Some(s)
+                        s
                     }
                 })
                 .unwrap_or_else(|| "No value".to_string());
 
-            iced::widget::text(value).into()
+            let text_widget = iced::widget::text(value);
+
+            // Apply width/height if specified
+            apply_size_constraints(text_widget.into(), width, height)
         }
         gravity_core::WidgetKind::Button => {
             let label = node
                 .attributes
                 .get("label")
-                .and_then(|attr| match attr {
-                    AttributeValue::Static(s) => Some(s.clone()),
-                    _ => Some("[button]".to_string()),
+                .map(|attr| match attr {
+                    AttributeValue::Static(s) => s.clone(),
+                    _ => "[button]".to_string(),
                 })
                 .unwrap_or_else(|| "Button".to_string());
 
             // Check for click handler
             let has_handler = node.events.iter().any(|e| e.event == EventKind::Click);
 
-            if has_handler {
-                iced::widget::button(iced::widget::text(label))
-                    .on_press(Message::Tick) // Placeholder
-                    .into()
+            let btn = if has_handler {
+                iced::widget::button(iced::widget::text(label)).on_press(Message::Tick)
+            // Placeholder
             } else {
-                iced::widget::button(iced::widget::text(label)).into()
-            }
+                iced::widget::button(iced::widget::text(label))
+            };
+
+            // Note: Padding handling simplified for dev mode
+            // In production, use gravity-iced style_mapping for full support
+
+            apply_size_constraints(btn.into(), width, height)
         }
         gravity_core::WidgetKind::Column => {
             let children: Vec<Element<Message>> = node
@@ -331,7 +390,15 @@ fn render_widget_tree(node: &WidgetNode) -> Element<'static, Message> {
                 .map(|child| render_widget_tree(child))
                 .collect();
 
-            iced::widget::column(children).into()
+            let mut col = iced::widget::column(children);
+
+            // Apply spacing
+            if let Some(s) = spacing {
+                col = col.spacing(s);
+            }
+
+            // Note: Padding handling simplified
+            apply_size_constraints(col.into(), width, height)
         }
         gravity_core::WidgetKind::Row => {
             let children: Vec<Element<Message>> = node
@@ -340,11 +407,76 @@ fn render_widget_tree(node: &WidgetNode) -> Element<'static, Message> {
                 .map(|child| render_widget_tree(child))
                 .collect();
 
-            iced::widget::row(children).into()
+            let mut row = iced::widget::row(children);
+
+            // Apply spacing
+            if let Some(s) = spacing {
+                row = row.spacing(s);
+            }
+
+            // Note: Padding handling simplified
+            apply_size_constraints(row.into(), width, height)
+        }
+        gravity_core::WidgetKind::Container => {
+            let children: Vec<Element<Message>> = node
+                .children
+                .iter()
+                .map(|child| render_widget_tree(child))
+                .collect();
+
+            // Container wraps its children in a column for now
+            let mut container = iced::widget::column(children);
+
+            // Apply spacing
+            if let Some(s) = spacing {
+                container = container.spacing(s);
+            }
+
+            // Note: Padding handling simplified
+            apply_size_constraints(container.into(), width, height)
         }
         _ => {
             // For unsupported widgets, show a placeholder
-            iced::widget::text(format!("[{:?}]", node.kind)).into()
+            let text = iced::widget::text(format!("[{:?}]", node.kind));
+            apply_size_constraints(text.into(), width, height)
         }
     }
+}
+
+/// Helper to apply size constraints to a widget
+fn apply_size_constraints(
+    widget: Element<'static, Message>,
+    width: Option<&gravity_core::ir::layout::Length>,
+    height: Option<&gravity_core::ir::layout::Length>,
+) -> Element<'static, Message> {
+    use gravity_core::ir::layout::Length;
+
+    // Convert Length to Iced Length
+    let iced_width = match width {
+        Some(Length::Fixed(pixels)) => iced::Length::Fixed(*pixels),
+        Some(Length::Fill) => iced::Length::Fill,
+        Some(Length::Shrink) => iced::Length::Shrink,
+        Some(Length::FillPortion(n)) => iced::Length::FillPortion(*n as u16),
+        Some(Length::Percentage(_p)) => {
+            // Percentage needs to be calculated based on parent, which Iced handles
+            // For now, treat as Fill
+            iced::Length::Fill
+        }
+        None => iced::Length::Shrink,
+    };
+
+    let iced_height = match height {
+        Some(Length::Fixed(pixels)) => iced::Length::Fixed(*pixels),
+        Some(Length::Fill) => iced::Length::Fill,
+        Some(Length::Shrink) => iced::Length::Shrink,
+        Some(Length::FillPortion(n)) => iced::Length::FillPortion(*n as u16),
+        Some(Length::Percentage(_p)) => iced::Length::Fill,
+        None => iced::Length::Shrink,
+    };
+
+    // Apply size to widget using container wrapper
+    iced::widget::container(widget)
+        .width(iced_width)
+        .height(iced_height)
+        .into()
 }

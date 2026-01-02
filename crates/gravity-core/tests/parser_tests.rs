@@ -1161,3 +1161,96 @@ fn test_parse_direction() {
     let layout = doc.root.layout.as_ref().unwrap();
     assert_eq!(layout.direction, Some(Direction::HorizontalReverse));
 }
+
+#[test]
+fn test_parse_position_attributes() {
+    let xml = r#"<container position="absolute" top="10" right="20" bottom="30" left="40" z_index="100" />"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+
+    use gravity_core::ir::layout::Position;
+    assert_eq!(layout.position, Some(Position::Absolute));
+    assert_eq!(layout.top, Some(10.0));
+    assert_eq!(layout.right, Some(20.0));
+    assert_eq!(layout.bottom, Some(30.0));
+    assert_eq!(layout.left, Some(40.0));
+    assert_eq!(layout.z_index, Some(100));
+}
+
+#[test]
+fn test_parse_position_relative() {
+    let xml = r#"<container position="relative" top="5" left="5" />"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+
+    use gravity_core::ir::layout::Position;
+    assert_eq!(layout.position, Some(Position::Relative));
+    assert_eq!(layout.top, Some(5.0));
+    assert_eq!(layout.left, Some(5.0));
+    assert_eq!(layout.right, None);
+    assert_eq!(layout.bottom, None);
+    assert_eq!(layout.z_index, None);
+}
+
+#[test]
+fn test_parse_position_partial_offsets() {
+    let xml = r#"<container position="absolute" top="10" right="20" />"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+
+    use gravity_core::ir::layout::Position;
+    assert_eq!(layout.position, Some(Position::Absolute));
+    assert_eq!(layout.top, Some(10.0));
+    assert_eq!(layout.right, Some(20.0));
+    assert_eq!(layout.bottom, None);
+    assert_eq!(layout.left, None);
+}
+
+#[test]
+fn test_parse_position_with_alignment() {
+    let xml = r#"<container position="absolute" top="10" align_items="center" />"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+
+    use gravity_core::ir::layout::Position;
+    assert_eq!(layout.position, Some(Position::Absolute));
+    assert_eq!(layout.top, Some(10.0));
+    assert_eq!(layout.align_items, Some(Alignment::Center));
+}
+
+#[test]
+fn test_parse_invalid_position() {
+    let xml = r#"<container position="fixed" />"#;
+
+    let result = parse(xml);
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_parse_position_without_offsets() {
+    // Position without offsets should fail validation
+    let xml = r#"<container position="absolute" />"#;
+
+    let result = parse(xml);
+    assert!(result.is_err());
+}

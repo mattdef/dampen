@@ -1,17 +1,21 @@
 use gravity_core::{parse, AttributeValue, WidgetKind, WidgetNode};
 use gravity_iced::style_mapping::{map_length, map_padding};
+use gravity_runtime::resolve_tree_breakpoint_attributes;
 use iced::widget::{button, column, container, row, text};
-use iced::{Element, Padding, Task};
+use iced::{window, Element, Padding, Subscription, Task};
 
 #[derive(Clone, Debug)]
 pub enum Message {
     Left,
     Center,
     Right,
+    WindowResized(f32),
 }
 
 pub struct AppState {
     document: gravity_core::GravityDocument,
+    viewport_width: f32,
+    resolved_document: Option<gravity_core::GravityDocument>,
 }
 
 impl AppState {
@@ -33,17 +37,43 @@ impl AppState {
             gravity_core::GravityDocument::default()
         });
 
-        Self { document }
+        Self {
+            document,
+            viewport_width: 800.0, // Default window size
+            resolved_document: None,
+        }
     }
 }
 
 fn update(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
-        Message::Left => println!("Left"),
-        Message::Center => println!("Center"),
-        Message::Right => println!("Right"),
+        Message::Left => println!("Left button clicked"),
+        Message::Center => println!("Center button clicked"),
+        Message::Right => println!("Right button clicked"),
+        Message::WindowResized(width) => {
+            state.viewport_width = width;
+            // Update resolved document
+            let resolved = resolve_tree_breakpoint_attributes(&state.document.root, width);
+            let mut new_doc = state.document.clone();
+            new_doc.root = resolved;
+            state.resolved_document = Some(new_doc);
+            println!("Window resized to {}px", width);
+        }
+    }
+    // Initialize resolved document on first update
+    if state.resolved_document.is_none() {
+        let resolved =
+            resolve_tree_breakpoint_attributes(&state.document.root, state.viewport_width);
+        let mut new_doc = state.document.clone();
+        new_doc.root = resolved;
+        state.resolved_document = Some(new_doc);
     }
     Task::none()
+}
+
+fn subscription(_state: &AppState) -> Subscription<Message> {
+    // Subscribe to window resize events
+    window::resize_events().map(|(_id, size)| Message::WindowResized(size.width))
 }
 
 fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
@@ -162,10 +192,18 @@ fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
     }
 }
 
-fn view(state: &AppState) -> Element<Message> {
-    render_node(&state.document.root)
+fn view(state: &AppState) -> Element<'_, Message> {
+    // Use the resolved document
+    if let Some(ref doc) = state.resolved_document {
+        render_node(&doc.root)
+    } else {
+        // Fallback to unresolved
+        render_node(&state.document.root)
+    }
 }
 
 pub fn main() -> iced::Result {
-    iced::application(AppState::new, update, view).run()
+    iced::application(AppState::new, update, view)
+        .subscription(subscription)
+        .run()
 }

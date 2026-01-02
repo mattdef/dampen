@@ -58,3 +58,14 @@ tarpaulin-report.html
 # Temporary files
 *.tmp
 *.temp
+
+# Gravity state files
+.gravity-state.json
+
+# Example build artifacts
+examples/*/target/
+examples/*/Cargo.lock
+
+# Generated files
+crates/*/src/**/generated/
+**/ui_generated.rs

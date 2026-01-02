@@ -122,8 +122,9 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         }
     };
 
-    // Parse attributes
+    // Parse attributes - separate breakpoint-prefixed from regular
     let mut attributes = std::collections::HashMap::new();
+    let mut breakpoint_attributes = std::collections::HashMap::new();
     let mut events = Vec::new();
     let mut id = None;
 
@@ -162,10 +163,34 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
             }
         }
 
+        // Check for breakpoint-prefixed attributes (e.g., "mobile-spacing", "tablet-width")
+        // Note: We use hyphen instead of colon to avoid XML namespace issues
+        if let Some((prefix, attr_name)) = name.split_once('-') {
+            if let Ok(breakpoint) = crate::ir::layout::Breakpoint::parse(prefix) {
+                // Store in breakpoint_attributes map
+                let attr_value = parse_attribute_value(value, get_span(node, source))?;
+                breakpoint_attributes
+                    .entry(breakpoint)
+                    .or_insert_with(HashMap::new)
+                    .insert(attr_name.to_string(), attr_value);
+                continue;
+            }
+        }
+
         // Parse attribute value (check for bindings)
         let attr_value = parse_attribute_value(value, get_span(node, source))?;
         attributes.insert(name.to_string(), attr_value);
     }
+
+    // Extract class attribute into classes field
+    let classes = if let Some(AttributeValue::Static(class_attr)) = attributes.get("class") {
+        class_attr
+            .split_whitespace()
+            .map(|s| s.to_string())
+            .collect()
+    } else {
+        Vec::new()
+    };
 
     // Parse children
     let mut children = Vec::new();
@@ -199,8 +224,8 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         style,
         layout,
         theme_ref: None,
-        classes: Vec::new(),
-        breakpoint_attributes: HashMap::new(),
+        classes,
+        breakpoint_attributes,
     })
 }
 
@@ -223,8 +248,8 @@ fn parse_gravity_document(root: Node, source: &str) -> Result<GravityDocument, P
             "themes" => {
                 // Parse themes section
                 for theme_node in child.children() {
-                    if theme_node.node_type() == NodeType::Element {
-                        if theme_node.tag_name().name() == "theme" {
+                    if theme_node.node_type() == NodeType::Element
+                        && theme_node.tag_name().name() == "theme" {
                             let theme = crate::parser::theme_parser::parse_theme_from_node(
                                 theme_node, source,
                             )?;
@@ -234,14 +259,14 @@ fn parse_gravity_document(root: Node, source: &str) -> Result<GravityDocument, P
                                 .unwrap_or_else(|| "default".to_string());
                             themes.insert(name, theme);
                         }
-                    }
                 }
             }
-            "style_classes" | "classes" => {
+            "style_classes" | "classes" | "styles" => {
                 // Parse style classes
                 for class_node in child.children() {
                     if class_node.node_type() == NodeType::Element {
-                        if class_node.tag_name().name() == "class" {
+                        let tag = class_node.tag_name().name();
+                        if tag == "class" || tag == "style" {
                             let class = crate::parser::theme_parser::parse_style_class_from_node(
                                 class_node, source,
                             )?;
@@ -406,8 +431,8 @@ fn parse_layout_attributes(
 ) -> Result<Option<crate::ir::layout::LayoutConstraints>, String> {
     use crate::ir::layout::LayoutConstraints;
     use crate::parser::style_parser::{
-        parse_alignment, parse_constraint, parse_justification, parse_length_attr,
-        parse_padding_attr, parse_spacing,
+        parse_alignment, parse_constraint, parse_float_attr, parse_int_attr, parse_justification,
+        parse_length_attr, parse_padding_attr, parse_spacing,
     };
 
     let mut layout = LayoutConstraints::default();
@@ -490,6 +515,39 @@ fn parse_layout_attributes(
     // Parse direction
     if let Some(AttributeValue::Static(value)) = attributes.get("direction") {
         layout.direction = Some(crate::ir::layout::Direction::parse(value)?);
+        has_any = true;
+    }
+
+    // Parse position
+    if let Some(AttributeValue::Static(value)) = attributes.get("position") {
+        layout.position = Some(crate::ir::layout::Position::parse(value)?);
+        has_any = true;
+    }
+
+    // Parse position offsets
+    if let Some(AttributeValue::Static(value)) = attributes.get("top") {
+        layout.top = Some(parse_float_attr(value, "top")?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("right") {
+        layout.right = Some(parse_float_attr(value, "right")?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("bottom") {
+        layout.bottom = Some(parse_float_attr(value, "bottom")?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("left") {
+        layout.left = Some(parse_float_attr(value, "left")?);
+        has_any = true;
+    }
+
+    // Parse z-index
+    if let Some(AttributeValue::Static(value)) = attributes.get("z_index") {
+        layout.z_index = Some(parse_int_attr(value, "z_index")?);
         has_any = true;
     }
 

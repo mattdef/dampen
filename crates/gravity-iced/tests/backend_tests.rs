@@ -258,3 +258,106 @@ fn test_message_handler_invocation() {
     // Handler should be set up correctly
     assert!(true);
 }
+
+#[test]
+fn test_layout_with_alignment() {
+    use gravity_core::ir::layout::{Alignment, Justification, LayoutConstraints};
+    use gravity_iced::style_mapping::map_layout_constraints;
+
+    let layout = LayoutConstraints {
+        align_items: Some(Alignment::Center),
+        justify_content: Some(Justification::SpaceBetween),
+        ..Default::default()
+    };
+
+    let iced_layout = map_layout_constraints(&layout);
+    assert!(iced_layout.align_items.is_some());
+    assert!(iced_layout.justify_content.is_some());
+}
+
+#[test]
+fn test_layout_with_position() {
+    use gravity_core::ir::layout::{LayoutConstraints, Position};
+    use gravity_iced::style_mapping::map_layout_constraints;
+
+    let layout = LayoutConstraints {
+        position: Some(Position::Absolute),
+        top: Some(10.0),
+        right: Some(20.0),
+        bottom: Some(30.0),
+        left: Some(40.0),
+        z_index: Some(100),
+        ..Default::default()
+    };
+
+    let iced_layout = map_layout_constraints(&layout);
+    assert_eq!(iced_layout.position, Some(Position::Absolute));
+    assert_eq!(iced_layout.top, Some(10.0));
+    assert_eq!(iced_layout.right, Some(20.0));
+    assert_eq!(iced_layout.bottom, Some(30.0));
+    assert_eq!(iced_layout.left, Some(40.0));
+    assert_eq!(iced_layout.z_index, Some(100));
+}
+
+#[test]
+fn test_position_helper_functions() {
+    use gravity_core::ir::layout::Position;
+    use gravity_iced::style_mapping::{get_z_index, has_positioning, IcedLayout};
+
+    // Test has_positioning with position
+    let layout_with_pos = IcedLayout {
+        position: Some(Position::Absolute),
+        top: Some(10.0),
+        ..Default::default()
+    };
+    assert!(has_positioning(&layout_with_pos));
+
+    // Test has_positioning without position
+    let layout_without_pos = IcedLayout::default();
+    assert!(!has_positioning(&layout_without_pos));
+
+    // Test get_z_index
+    let layout_with_z = IcedLayout {
+        z_index: Some(50),
+        ..Default::default()
+    };
+    assert_eq!(get_z_index(&layout_with_z), 50);
+
+    // Test get_z_index default
+    let layout_no_z = IcedLayout::default();
+    assert_eq!(get_z_index(&layout_no_z), 0);
+}
+
+#[test]
+fn test_layout_with_combined_attributes() {
+    use gravity_core::ir::layout::{Alignment, Justification, LayoutConstraints, Position};
+    use gravity_iced::style_mapping::map_layout_constraints;
+
+    let layout = LayoutConstraints {
+        width: Some(gravity_core::ir::layout::Length::Fixed(300.0)),
+        height: Some(gravity_core::ir::layout::Length::Fixed(200.0)),
+        padding: Some(gravity_core::ir::layout::Padding {
+            top: 10.0,
+            right: 10.0,
+            bottom: 10.0,
+            left: 10.0,
+        }),
+        align_items: Some(Alignment::Center),
+        justify_content: Some(Justification::Start),
+        position: Some(Position::Relative),
+        top: Some(5.0),
+        z_index: Some(10),
+        ..Default::default()
+    };
+
+    let iced_layout = map_layout_constraints(&layout);
+    
+    // Verify all attributes are mapped
+    assert!(iced_layout.width != iced::Length::Shrink); // Has fixed width
+    assert!(iced_layout.height != iced::Length::Shrink); // Has fixed height
+    assert!(iced_layout.align_items.is_some());
+    assert!(iced_layout.justify_content.is_some());
+    assert_eq!(iced_layout.position, Some(Position::Relative));
+    assert_eq!(iced_layout.top, Some(5.0));
+    assert_eq!(iced_layout.z_index, Some(10));
+}

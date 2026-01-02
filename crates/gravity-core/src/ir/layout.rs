@@ -31,6 +31,14 @@ pub struct LayoutConstraints {
 
     /// Layout direction
     pub direction: Option<Direction>,
+
+    /// Positioning
+    pub position: Option<Position>,
+    pub top: Option<f32>,
+    pub right: Option<f32>,
+    pub bottom: Option<f32>,
+    pub left: Option<f32>,
+    pub z_index: Option<i32>,
 }
 
 impl LayoutConstraints {
@@ -93,6 +101,21 @@ impl LayoutConstraints {
         if let Some(Length::Percentage(p)) = self.height {
             if !(0.0..=100.0).contains(&p) {
                 return Err(format!("percentage must be 0.0-100.0, got {}", p));
+            }
+        }
+
+        // Position-related validation
+        if self.position.is_some() {
+            // If position is set, at least one offset should be provided
+            if self.top.is_none()
+                && self.right.is_none()
+                && self.bottom.is_none()
+                && self.left.is_none()
+            {
+                return Err(
+                    "position requires at least one offset (top, right, bottom, or left)"
+                        .to_string(),
+                );
             }
         }
 
@@ -325,6 +348,29 @@ impl Direction {
             "vertical" => Ok(Direction::Vertical),
             "vertical_reverse" => Ok(Direction::VerticalReverse),
             _ => Err(format!("Invalid direction: '{}'. Expected horizontal, horizontal_reverse, vertical, or vertical_reverse", s)),
+        }
+    }
+}
+
+/// Position type for widget positioning
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Position {
+    /// Relative to normal flow (default)
+    Relative,
+    /// Absolute positioning relative to nearest positioned ancestor
+    Absolute,
+}
+
+impl Position {
+    /// Parse from string
+    pub fn parse(s: &str) -> Result<Self, String> {
+        match s.trim().to_lowercase().as_str() {
+            "relative" => Ok(Position::Relative),
+            "absolute" => Ok(Position::Absolute),
+            _ => Err(format!(
+                "Invalid position: '{}'. Expected relative or absolute",
+                s
+            )),
         }
     }
 }

@@ -3,7 +3,7 @@
 //! This module maps Gravity's backend-agnostic style types to Iced-specific
 //! style types.
 
-use gravity_core::ir::layout::{Alignment, Justification, LayoutConstraints, Length};
+use gravity_core::ir::layout::{Alignment, Justification, LayoutConstraints, Length, Position};
 use gravity_core::ir::style::{Background, Color, StyleProperties};
 use iced::border::Radius;
 
@@ -25,6 +25,12 @@ pub fn map_layout_constraints(layout: &LayoutConstraints) -> IcedLayout {
         padding: map_padding(layout),
         align_items: layout.align_items.map(|a| map_alignment(a)),
         justify_content: layout.justify_content.map(|j| map_justification(j)),
+        position: layout.position,
+        top: layout.top,
+        right: layout.right,
+        bottom: layout.bottom,
+        left: layout.left,
+        z_index: layout.z_index,
     }
 }
 
@@ -78,6 +84,25 @@ pub fn map_justification(justification: Justification) -> iced::Alignment {
     }
 }
 
+/// Check if layout requires special positioning handling
+///
+/// Returns true if the layout has position offsets that need special handling
+pub fn has_positioning(layout: &IcedLayout) -> bool {
+    layout.position.is_some()
+        || layout.top.is_some()
+        || layout.right.is_some()
+        || layout.bottom.is_some()
+        || layout.left.is_some()
+        || layout.z_index.is_some()
+}
+
+/// Get the z-index for layering widgets
+///
+/// Higher z-index values should be rendered on top
+pub fn get_z_index(layout: &IcedLayout) -> i32 {
+    layout.z_index.unwrap_or(0)
+}
+
 /// Map StyleProperties to Iced container Style
 pub fn map_style_properties(style: &StyleProperties) -> iced::widget::container::Style {
     let mut container_style = iced::widget::container::Style::default();
@@ -108,8 +133,12 @@ pub fn map_style_properties(style: &StyleProperties) -> iced::widget::container:
         };
     }
 
-    // Opacity would need to be applied at the widget level
-    // Transform would need special handling
+    // Opacity: Handled via color alpha channels in Iced 0.14
+    // (e.g., background color with alpha, text color with alpha)
+    // No direct opacity field in container::Style
+
+    // Transform: Not supported in Iced 0.14 container::Style
+    // Would require custom widget wrapper (Phase 10)
 
     container_style
 }
@@ -118,15 +147,44 @@ pub fn map_style_properties(style: &StyleProperties) -> iced::widget::container:
 pub fn map_background(background: &Background) -> iced::Background {
     match background {
         Background::Color(color) => iced::Background::Color(map_color(color)),
-        Background::Gradient(_gradient) => {
-            // Iced supports gradients, but we need to map them
-            // For now, return a default color
-            iced::Background::Color(iced::Color::WHITE)
-        }
-        Background::Image { path, fit } => {
+        Background::Gradient(gradient) => iced::Background::Gradient(map_gradient(gradient)),
+        Background::Image { path: _, fit: _ } => {
             // Iced doesn't have built-in image backgrounds
-            // This would need special handling
-            iced::Background::Color(iced::Color::WHITE)
+            // This would need special handling (e.g., loading image as texture)
+            // For now, return transparent
+            iced::Background::Color(iced::Color::TRANSPARENT)
+        }
+    }
+}
+
+/// Map Gravity Gradient to Iced Gradient
+pub fn map_gradient(gradient: &gravity_core::ir::style::Gradient) -> iced::Gradient {
+    match gradient {
+        gravity_core::ir::style::Gradient::Linear { angle, stops } => {
+            // Convert angle from degrees to radians
+            let radians = angle * (std::f32::consts::PI / 180.0);
+
+            // Create Iced Linear gradient
+            let mut iced_linear = iced::gradient::Linear::new(iced::Radians(radians));
+
+            // Add color stops (Iced supports up to 8)
+            for stop in stops.iter().take(8) {
+                iced_linear = iced_linear.add_stop(stop.offset, map_color(&stop.color));
+            }
+
+            iced::Gradient::Linear(iced_linear)
+        }
+        gravity_core::ir::style::Gradient::Radial { shape: _, stops } => {
+            // Iced 0.14 only supports linear gradients
+            // Convert to linear as fallback
+            let radians = 0.0;
+            let mut iced_linear = iced::gradient::Linear::new(iced::Radians(radians));
+
+            for stop in stops.iter().take(8) {
+                iced_linear = iced_linear.add_stop(stop.offset, map_color(&stop.color));
+            }
+
+            iced::Gradient::Linear(iced_linear)
         }
     }
 }
@@ -146,6 +204,12 @@ pub struct IcedLayout {
     pub padding: iced::Padding,
     pub align_items: Option<iced::Alignment>,
     pub justify_content: Option<iced::Alignment>,
+    pub position: Option<Position>,
+    pub top: Option<f32>,
+    pub right: Option<f32>,
+    pub bottom: Option<f32>,
+    pub left: Option<f32>,
+    pub z_index: Option<i32>,
 }
 
 impl Default for IcedLayout {
@@ -156,6 +220,12 @@ impl Default for IcedLayout {
             padding: iced::Padding::new(0.0),
             align_items: None,
             justify_content: None,
+            position: None,
+            top: None,
+            right: None,
+            bottom: None,
+            left: None,
+            z_index: None,
         }
     }
 }

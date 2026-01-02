@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gravity>
+    <themes>
+        <theme name="light">
+            <palette 
+                primary="#3498db" 
+                secondary="#2ecc71" 
+                background="#ecf0f1" 
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c" />
+            <typography 
+                font_family="Inter, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="24"
+                font_weight="normal"
+                line_height="1.5" />
+            <spacing unit="8" />
+        </theme>
+        
+        <theme name="dark">
+            <palette 
+                primary="#5dade2" 
+                secondary="#58d68d" 
+                background="#2c3e50" 
+                surface="#34495e"
+                text="#ecf0f1"
+                text_secondary="#bdc3c7"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c" />
+            <typography 
+                font_family="Inter, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="24"
+                font_weight="normal"
+                line_height="1.5" />
+            <spacing unit="8" />
+        </theme>
+        
+        <theme name="custom">
+            <palette 
+                primary="#e74c3c" 
+                secondary="#e67e22" 
+                background="#ecf0f1" 
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#c0392b" />
+            <typography 
+                font_family="Georgia, serif"
+                font_size_base="18"
+                font_size_small="14"
+                font_size_large="28"
+                font_weight="bold"
+                line_height="1.6" />
+            <spacing unit="12" />
+        </theme>
+    </themes>
+    
+    <global_theme name="light" />
+    
+    <column padding="40" spacing="20">
+        <text value="Theme Switching Demo" size="32" weight="bold" />
+        <text value="Current theme colors will be applied to all widgets" size="16" color="#7f8c8d" />
+        
+        <container padding="20" background="#ffffff" border_radius="8" border_width="1" border_color="#e0e0e0">
+            <column spacing="15">
+                <text value="Theme Controls" size="20" weight="bold" />
+                <row spacing="10">
+                    <button label="Light Theme" on_click="switch_light" background="#3498db" color="#ffffff" padding="12 24" border_radius="6" />
+                    <button label="Dark Theme" on_click="switch_dark" background="#34495e" color="#ecf0f1" padding="12 24" border_radius="6" />
+                    <button label="Custom Theme" on_click="switch_custom" background="#e74c3c" color="#ffffff" padding="12 24" border_radius="6" />
+                </row>
+            </column>
+        </container>
+        
+        <container padding="20" background="#ffffff" border_radius="8" border_width="1" border_color="#e0e0e0">
+            <column spacing="15">
+                <text value="Counter" size="20" weight="bold" />
+                <text value="Count: {count}" size="24" color="#3498db" />
+                <row spacing="10">
+                    <button label="Increment (+)" on_click="increment" background="#27ae60" color="#ffffff" padding="12 24" border_radius="6" />
+                    <button label="Decrement (-)" on_click="decrement" background="#e74c3c" color="#ffffff" padding="12 24" border_radius="6" />
+                </row>
+            </column>
+        </container>
+        
+        <text value="State is preserved when switching themes!" size="14" color="#7f8c8d" />
+    </column>
+</gravity>

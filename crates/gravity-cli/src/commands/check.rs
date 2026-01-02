@@ -139,7 +139,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
             eprintln!("  {}", error);
         }
         // Return the first error for exit code purposes
-        return Err(errors.remove(0));
+        Err(errors.remove(0))
     } else {
         if args.verbose {
             eprintln!("✓ All files passed validation");
@@ -208,7 +208,7 @@ fn validate_widget_node(
     }
 
     // Validate attribute bindings
-    for (_attr_name, attr_value) in &node.attributes {
+    for attr_value in node.attributes.values() {
         validate_attribute_value(
             attr_value,
             file_path,

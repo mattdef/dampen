@@ -143,6 +143,18 @@ pub fn parse_percentage(s: &str) -> Result<f32, String> {
     Ok(value)
 }
 
+/// Parse float attribute value
+pub fn parse_float_attr(s: &str, attr_name: &str) -> Result<f32, String> {
+    s.parse()
+        .map_err(|_| format!("Invalid float value for {}: '{}'", attr_name, s))
+}
+
+/// Parse int attribute value
+pub fn parse_int_attr(s: &str, attr_name: &str) -> Result<i32, String> {
+    s.parse()
+        .map_err(|_| format!("Invalid int value for {}: '{}'", attr_name, s))
+}
+
 /// Build StyleProperties from individual attribute values
 pub fn build_style_properties(
     background: Option<Background>,

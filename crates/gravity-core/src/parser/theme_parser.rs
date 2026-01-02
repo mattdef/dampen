@@ -317,26 +317,27 @@ fn split_state_prefix(key: &str) -> Option<(&str, &str)> {
 /// Parse a theme node from XML
 pub fn parse_theme_from_node(
     node: roxmltree::Node,
-    source: &str,
+    _source: &str,
 ) -> Result<Theme, crate::parser::error::ParseError> {
     use crate::parser::error::{ParseError, ParseErrorKind};
-    
-    let name = node.attribute("name")
+
+    let name = node
+        .attribute("name")
         .map(|s| s.to_string())
         .unwrap_or_else(|| "default".to_string());
-    
+
     let mut palette_attrs = HashMap::new();
     let mut typography_attrs = HashMap::new();
     let mut spacing_unit = None;
-    
+
     // Parse child elements
     for child in node.children() {
         if child.node_type() != roxmltree::NodeType::Element {
             continue;
         }
-        
+
         let tag = child.tag_name().name();
-        
+
         if tag == "palette" {
             for attr in child.attributes() {
                 palette_attrs.insert(attr.name().to_string(), attr.value().to_string());
@@ -351,7 +352,7 @@ pub fn parse_theme_from_node(
             }
         }
     }
-    
+
     // Validate required palette colors
     let required_colors = ["primary", "secondary", "background", "text"];
     for color in &required_colors {
@@ -364,30 +365,33 @@ pub fn parse_theme_from_node(
             });
         }
     }
-    
+
     // Parse using existing function
-    let theme = parse_theme(name, &palette_attrs, &typography_attrs, spacing_unit)
-        .map_err(|e| ParseError {
-            kind: ParseErrorKind::InvalidValue,
-            message: format!("Failed to parse theme: {}", e),
-            span: crate::ir::Span::default(),
-            suggestion: None,
+    let theme =
+        parse_theme(name, &palette_attrs, &typography_attrs, spacing_unit).map_err(|e| {
+            ParseError {
+                kind: ParseErrorKind::InvalidValue,
+                message: format!("Failed to parse theme: {}", e),
+                span: crate::ir::Span::default(),
+                suggestion: None,
+            }
         })?;
-    
+
     Ok(theme)
 }
 
 /// Parse a style class node from XML
 pub fn parse_style_class_from_node(
     node: roxmltree::Node,
-    source: &str,
+    _source: &str,
 ) -> Result<StyleClass, crate::parser::error::ParseError> {
     use crate::parser::error::{ParseError, ParseErrorKind};
-    
-    let name = node.attribute("name")
+
+    let name = node
+        .attribute("name")
         .map(|s| s.to_string())
         .unwrap_or_default();
-    
+
     if name.is_empty() {
         return Err(ParseError {
             kind: ParseErrorKind::InvalidValue,
@@ -396,23 +400,23 @@ pub fn parse_style_class_from_node(
             suggestion: None,
         });
     }
-    
+
     // Collect all attributes
     let mut base_attrs = HashMap::new();
     let mut extends = Vec::new();
     let mut state_variants_raw: HashMap<WidgetState, HashMap<String, String>> = HashMap::new();
     let mut layout = None;
-    
+
     for attr in node.attributes() {
         let key = attr.name();
         let value = attr.value();
-        
+
         // Check for extends
         if key == "extends" {
             extends = value.split_whitespace().map(|s| s.to_string()).collect();
             continue;
         }
-        
+
         // Check for state variants
         if let Some((prefix, attr_name)) = split_state_prefix(key) {
             let state = WidgetState::from_prefix(prefix).ok_or_else(|| ParseError {
@@ -421,77 +425,112 @@ pub fn parse_style_class_from_node(
                 span: crate::ir::Span::default(),
                 suggestion: None,
             })?;
-            
-            let state_attr = state_variants_raw.entry(state).or_insert_with(HashMap::new);
+
+            let state_attr = state_variants_raw.entry(state).or_default();
             state_attr.insert(attr_name.to_string(), value.to_string());
             continue;
         }
-        
+
         // Check for layout attributes
         let layout_attr_names = [
-            "width", "height", "min_width", "max_width", "min_height", "max_height",
-            "padding", "spacing", "align_items", "justify_content", "align_self", "direction",
+            "width",
+            "height",
+            "min_width",
+            "max_width",
+            "min_height",
+            "max_height",
+            "padding",
+            "spacing",
+            "align_items",
+            "justify_content",
+            "align_self",
+            "direction",
         ];
-        
+
         if layout_attr_names.contains(&key) {
             base_attrs.insert(key.to_string(), value.to_string());
             continue;
         }
-        
+
         // Regular style attribute
         base_attrs.insert(key.to_string(), value.to_string());
     }
-    
+
     // Parse layout if any layout attributes present
     if base_attrs.keys().any(|k| {
-        matches!(k.as_str(),
-            "width" | "height" | "min_width" | "max_width" | "min_height" | "max_height" |
-            "padding" | "spacing" | "align_items" | "justify_content" | "align_self" | "direction"
+        matches!(
+            k.as_str(),
+            "width"
+                | "height"
+                | "min_width"
+                | "max_width"
+                | "min_height"
+                | "max_height"
+                | "padding"
+                | "spacing"
+                | "align_items"
+                | "justify_content"
+                | "align_self"
+                | "direction"
         )
     }) {
-        layout = parse_layout_constraints(&base_attrs)
-            .map_err(|e| ParseError {
-                kind: ParseErrorKind::InvalidValue,
-                message: format!("Failed to parse layout: {}", e),
-                span: crate::ir::Span::default(),
-                suggestion: None,
-            })?;
-        
+        layout = parse_layout_constraints(&base_attrs).map_err(|e| ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!("Failed to parse layout: {}", e),
+            span: crate::ir::Span::default(),
+            suggestion: None,
+        })?;
+
         // Remove layout attributes from base_attrs
-        let layout_keys: Vec<String> = base_attrs.keys()
-            .filter(|k| matches!(k.as_str(),
-                "width" | "height" | "min_width" | "max_width" | "min_height" | "max_height" |
-                "padding" | "spacing" | "align_items" | "justify_content" | "align_self" | "direction"
-            ))
+        let layout_keys: Vec<String> = base_attrs
+            .keys()
+            .filter(|k| {
+                matches!(
+                    k.as_str(),
+                    "width"
+                        | "height"
+                        | "min_width"
+                        | "max_width"
+                        | "min_height"
+                        | "max_height"
+                        | "padding"
+                        | "spacing"
+                        | "align_items"
+                        | "justify_content"
+                        | "align_self"
+                        | "direction"
+                )
+            })
             .cloned()
             .collect();
-        
+
         for key in layout_keys {
             base_attrs.remove(&key);
         }
     }
-    
+
     // Parse state variants into StyleProperties
     let mut state_variants = HashMap::new();
     for (state, state_attrs) in state_variants_raw {
-        let style = parse_style_properties_from_attrs(&state_attrs)
-            .map_err(|e| ParseError {
-                kind: ParseErrorKind::InvalidValue,
-                message: format!("Failed to parse state variant for {:?}: {}", state, e),
-                span: crate::ir::Span::default(),
-                suggestion: None,
-            })?;
-        state_variants.insert(state, style);
-    }
-    
-    // Parse using existing function
-    let class = parse_style_class(name, &base_attrs, extends, state_variants, layout)
-        .map_err(|e| ParseError {
+        let style = parse_style_properties_from_attrs(&state_attrs).map_err(|e| ParseError {
             kind: ParseErrorKind::InvalidValue,
-            message: format!("Failed to parse style class: {}", e),
+            message: format!("Failed to parse state variant for {:?}: {}", state, e),
             span: crate::ir::Span::default(),
             suggestion: None,
         })?;
-    
+        state_variants.insert(state, style);
+    }
+
+    // Parse using existing function
+    let class =
+        parse_style_class(name, &base_attrs, extends, state_variants, layout).map_err(|e| {
+            ParseError {
+                kind: ParseErrorKind::InvalidValue,
+                message: format!("Failed to parse style class: {}", e),
+                span: crate::ir::Span::default(),
+                suggestion: None,
+            }
+        })?;
+
     Ok(class)
 }
