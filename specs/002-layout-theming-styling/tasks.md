@@ -182,28 +182,28 @@ Phase 11: Polish & Integration
 
 ### 4.1: Parser Implementation
 
-- [ ] T067 [P] [US2] Extend parser to handle `fill_portion(n)` syntax
-- [ ] T068 [P] [US2] Extend parser to handle percentage-based sizing (`width="50%"`)
-- [ ] T069 [P] [US2] Extend parser to handle `fill` and `shrink` keywords
+- [X] T067 [P] [US2] Extend parser to handle `fill_portion(n)` syntax
+- [X] T068 [P] [US2] Extend parser to handle percentage-based sizing (`width="50%"`)
+- [X] T069 [P] [US2] Extend parser to handle `fill` and `shrink` keywords
 
 ### 4.2: Resolution Logic
 
-- [ ] T070 [US2] Implement `resolve_flex_sizing()` in gravity-core to calculate fill distribution
-- [ ] T071 [US2] Implement constraint enforcement (min/max) in layout resolution
+- [X] T070 [US2] Implement `resolve_flex_sizing()` in gravity-core to calculate fill distribution
+- [X] T071 [US2] Implement constraint enforcement (min/max) in layout resolution
 
 ### 4.3: Iced Backend
 
-- [ ] T072 [P] [US2] Map `Fill` length to Iced `Length::Fill` in gravity-iced/src/style_mapping.rs
-- [ ] T073 [P] [US2] Map `Shrink` length to Iced `Length::Shrink` in gravity-iced/src/style_mapping.rs
-- [ ] T074 [P] [US2] Map `FillPortion(n)` to Iced `Length::FillPortion(n)` in gravity-iced/src/style_mapping.rs
-- [ ] T075 [P] [US2] Map `Percentage(n)` to Iced `Length::Units` with calculation in gravity-iced/src/style_mapping.rs
-- [ ] T076 [US2] Create `examples/responsive/src/main.rs` demonstrating flexible sizing
+- [X] T072 [P] [US2] Map `Fill` length to Iced `Length::Fill` in gravity-iced/src/style_mapping.rs
+- [X] T073 [P] [US2] Map `Shrink` length to Iced `Length::Shrink` in gravity-iced/src/style_mapping.rs
+- [X] T074 [P] [US2] Map `FillPortion(n)` to Iced `Length::FillPortion(n)` in gravity-iced/src/style_mapping.rs
+- [X] T075 [P] [US2] Map `Percentage(n)` to Iced `Length::Units` with calculation in gravity-iced/src/style_mapping.rs
+- [X] T076 [US2] Create `examples/responsive/src/main.rs` demonstrating flexible sizing
 
 ### 4.4: Testing
 
-- [ ] T077 [US2] Write contract test: Flex sizing attributes → IR Length enum
-- [ ] T078 [US2] Write integration test: Window resize triggers fill/shrink behavior
-- [ ] T079 [US2] Write snapshot test: Generated code for flex sizing
+- [X] T077 [US2] Write contract test: Flex sizing attributes → IR Length enum
+- [X] T078 [US2] Write integration test: Window resize triggers fill/shrink behavior
+- [X] T079 [US2] Write snapshot test: Generated code for flex sizing
 
 **Total Phase 4 Tasks**: 13
 

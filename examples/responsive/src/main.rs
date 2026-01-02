@@ -1,6 +1,7 @@
-use gravity_core::{parse, WidgetNode, WidgetKind, AttributeValue};
-use iced::widget::{column, text, button, row};
-use iced::{Element, Task};
+use gravity_core::{parse, AttributeValue, WidgetKind, WidgetNode};
+use gravity_iced::style_mapping::{map_length, map_padding};
+use iced::widget::{button, column, container, row, text};
+use iced::{Element, Padding, Task};
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -22,7 +23,8 @@ impl AppState {
                 eprintln!("Error: Failed to read UI file: {}", e);
                 r#"<column padding="40" spacing="20">
                     <text value="Error: Could not load ui/main.gravity" size="18" />
-                </column>"#.to_string()
+                </column>"#
+                    .to_string()
             }
         };
 
@@ -45,20 +47,43 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
 }
 
 fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
+    // Get layout from structured field, fallback to attributes for backward compatibility
+    let width = node
+        .layout
+        .as_ref()
+        .and_then(|l| l.width.as_ref())
+        .map(|w| map_length(&Some(w.clone())))
+        .unwrap_or(iced::Length::Shrink);
+
+    let height = node
+        .layout
+        .as_ref()
+        .and_then(|l| l.height.as_ref())
+        .map(|h| map_length(&Some(h.clone())))
+        .unwrap_or(iced::Length::Shrink);
+
+    let padding = node
+        .layout
+        .as_ref()
+        .map(|l| map_padding(l))
+        .unwrap_or(Padding::new(0.0));
+
     match node.kind {
         WidgetKind::Text => {
             let value = match node.attributes.get("value") {
                 Some(AttributeValue::Static(v)) => v.clone(),
                 _ => String::new(),
             };
-            text(value).into()
+            let text_widget = text(value).width(width).height(height);
+            container(text_widget).padding(padding).into()
         }
         WidgetKind::Button => {
             let label = match node.attributes.get("label") {
                 Some(AttributeValue::Static(l)) => l.clone(),
                 _ => String::new(),
             };
-            let msg = if let Some(AttributeValue::Static(handler)) = node.attributes.get("on_click") {
+            let msg = if let Some(AttributeValue::Static(handler)) = node.attributes.get("on_click")
+            {
                 match handler.as_str() {
                     "left" => Message::Left,
                     "center" => Message::Center,
@@ -68,29 +93,70 @@ fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
             } else {
                 Message::Center
             };
-            button(text(label)).on_press(msg).into()
+            let btn = button(text(label))
+                .on_press(msg)
+                .width(width)
+                .height(height);
+            container(btn).padding(padding).into()
         }
         WidgetKind::Column => {
-            let children: Vec<_> = node.children.iter()
+            let spacing = node.layout.as_ref().and_then(|l| l.spacing).unwrap_or(0.0);
+
+            let children: Vec<_> = node
+                .children
+                .iter()
                 .map(|child| render_node(child))
                 .collect();
-            column(children).into()
+
+            let col = column(children)
+                .spacing(spacing as f32)
+                .width(width)
+                .height(height);
+
+            container(col).padding(padding).into()
         }
         WidgetKind::Row => {
-            let children: Vec<_> = node.children.iter()
+            let spacing = node.layout.as_ref().and_then(|l| l.spacing).unwrap_or(0.0);
+
+            let children: Vec<_> = node
+                .children
+                .iter()
                 .map(|child| render_node(child))
                 .collect();
-            row(children).into()
+
+            let row_widget = row(children)
+                .spacing(spacing as f32)
+                .width(width)
+                .height(height);
+
+            container(row_widget).padding(padding).into()
         }
         WidgetKind::Container => {
-            let children: Vec<_> = node.children.iter()
+            let children: Vec<_> = node
+                .children
+                .iter()
                 .map(|child| render_node(child))
                 .collect();
-            if children.is_empty() {
-                text("").into()
+
+            let mut container_widget = if children.is_empty() {
+                container(text(""))
             } else {
-                children.into_iter().next().unwrap()
+                container(children.into_iter().next().unwrap())
+            };
+
+            container_widget = container_widget
+                .width(width)
+                .height(height)
+                .padding(padding);
+
+            // Apply style if present
+            if let Some(style) = &node.style {
+                use gravity_iced::style_mapping::map_style_properties;
+                let iced_style = map_style_properties(style);
+                container_widget = container_widget.style(move |_theme| iced_style);
             }
+
+            container_widget.into()
         }
         _ => column(Vec::new()).into(),
     }

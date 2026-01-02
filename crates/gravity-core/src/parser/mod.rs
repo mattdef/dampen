@@ -63,14 +63,14 @@ pub fn parse(xml: &str) -> Result<GravityDocument, ParseError> {
 
     // Check if root is <gravity> wrapper
     let root_tag = root.tag_name().name();
-    
+
     if root_tag == "gravity" {
         // Parse <gravity> document with themes and widgets
         parse_gravity_document(root, xml)
     } else {
         // Parse direct widget (backward compatibility)
         let root_widget = parse_node(root, xml)?;
-        
+
         Ok(GravityDocument {
             version: SchemaVersion { major: 1, minor: 0 },
             root: root_widget,
@@ -175,6 +175,20 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         }
     }
 
+    // Parse layout and style attributes into structured fields
+    let layout = parse_layout_attributes(&attributes).map_err(|e| ParseError {
+        kind: ParseErrorKind::InvalidValue,
+        message: e,
+        span: get_span(node, source),
+        suggestion: None,
+    })?;
+    let style = parse_style_attributes(&attributes).map_err(|e| ParseError {
+        kind: ParseErrorKind::InvalidValue,
+        message: e,
+        span: get_span(node, source),
+        suggestion: None,
+    })?;
+
     Ok(WidgetNode {
         kind,
         id,
@@ -182,8 +196,8 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         events,
         children,
         span: get_span(node, source),
-        style: None,
-        layout: None,
+        style,
+        layout,
         theme_ref: None,
         classes: Vec::new(),
         breakpoint_attributes: HashMap::new(),
@@ -204,15 +218,18 @@ fn parse_gravity_document(root: Node, source: &str) -> Result<GravityDocument, P
         }
 
         let tag_name = child.tag_name().name();
-        
+
         match tag_name {
             "themes" => {
                 // Parse themes section
                 for theme_node in child.children() {
                     if theme_node.node_type() == NodeType::Element {
                         if theme_node.tag_name().name() == "theme" {
-                            let theme = crate::parser::theme_parser::parse_theme_from_node(theme_node, source)?;
-                            let name = theme_node.attribute("name")
+                            let theme = crate::parser::theme_parser::parse_theme_from_node(
+                                theme_node, source,
+                            )?;
+                            let name = theme_node
+                                .attribute("name")
                                 .map(|s| s.to_string())
                                 .unwrap_or_else(|| "default".to_string());
                             themes.insert(name, theme);
@@ -225,7 +242,9 @@ fn parse_gravity_document(root: Node, source: &str) -> Result<GravityDocument, P
                 for class_node in child.children() {
                     if class_node.node_type() == NodeType::Element {
                         if class_node.tag_name().name() == "class" {
-                            let class = crate::parser::theme_parser::parse_style_class_from_node(class_node, source)?;
+                            let class = crate::parser::theme_parser::parse_style_class_from_node(
+                                class_node, source,
+                            )?;
                             style_classes.insert(class.name.clone(), class);
                         }
                     }
@@ -268,7 +287,6 @@ fn parse_gravity_document(root: Node, source: &str) -> Result<GravityDocument, P
         global_theme,
     })
 }
-
 
 /// Parse attribute value, detecting binding expressions
 fn parse_attribute_value(value: &str, span: Span) -> Result<AttributeValue, ParseError> {
@@ -380,4 +398,189 @@ fn calculate_line_col(source: &str, offset: usize) -> (u32, u32) {
     }
 
     (line, col)
+}
+
+/// Parse layout-related attributes from the attributes map
+fn parse_layout_attributes(
+    attributes: &HashMap<String, AttributeValue>,
+) -> Result<Option<crate::ir::layout::LayoutConstraints>, String> {
+    use crate::ir::layout::LayoutConstraints;
+    use crate::parser::style_parser::{
+        parse_alignment, parse_constraint, parse_justification, parse_length_attr,
+        parse_padding_attr, parse_spacing,
+    };
+
+    let mut layout = LayoutConstraints::default();
+    let mut has_any = false;
+
+    // Parse width
+    if let Some(AttributeValue::Static(value)) = attributes.get("width") {
+        layout.width = Some(parse_length_attr(value)?);
+        has_any = true;
+    }
+
+    // Parse height
+    if let Some(AttributeValue::Static(value)) = attributes.get("height") {
+        layout.height = Some(parse_length_attr(value)?);
+        has_any = true;
+    }
+
+    // Parse min/max constraints
+    if let Some(AttributeValue::Static(value)) = attributes.get("min_width") {
+        layout.min_width = Some(parse_constraint(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("max_width") {
+        layout.max_width = Some(parse_constraint(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("min_height") {
+        layout.min_height = Some(parse_constraint(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("max_height") {
+        layout.max_height = Some(parse_constraint(value)?);
+        has_any = true;
+    }
+
+    // Parse padding
+    if let Some(AttributeValue::Static(value)) = attributes.get("padding") {
+        layout.padding = Some(parse_padding_attr(value)?);
+        has_any = true;
+    }
+
+    // Parse spacing
+    if let Some(AttributeValue::Static(value)) = attributes.get("spacing") {
+        layout.spacing = Some(parse_spacing(value)?);
+        has_any = true;
+    }
+
+    // Parse alignment
+    if let Some(AttributeValue::Static(value)) = attributes.get("align_items") {
+        layout.align_items = Some(parse_alignment(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("justify_content") {
+        layout.justify_content = Some(parse_justification(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("align_self") {
+        layout.align_self = Some(parse_alignment(value)?);
+        has_any = true;
+    }
+
+    // Parse align shorthand (sets both align_items and justify_content)
+    if let Some(AttributeValue::Static(value)) = attributes.get("align") {
+        let alignment = parse_alignment(value)?;
+        layout.align_items = Some(alignment);
+        layout.justify_content = Some(match alignment {
+            crate::ir::layout::Alignment::Start => crate::ir::layout::Justification::Start,
+            crate::ir::layout::Alignment::Center => crate::ir::layout::Justification::Center,
+            crate::ir::layout::Alignment::End => crate::ir::layout::Justification::End,
+            crate::ir::layout::Alignment::Stretch => crate::ir::layout::Justification::Center,
+        });
+        has_any = true;
+    }
+
+    // Parse direction
+    if let Some(AttributeValue::Static(value)) = attributes.get("direction") {
+        layout.direction = Some(crate::ir::layout::Direction::parse(value)?);
+        has_any = true;
+    }
+
+    // Validate the layout
+    if has_any {
+        layout
+            .validate()
+            .map_err(|e| format!("Layout validation failed: {}", e))?;
+        Ok(Some(layout))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Parse style-related attributes from the attributes map
+fn parse_style_attributes(
+    attributes: &HashMap<String, AttributeValue>,
+) -> Result<Option<crate::ir::style::StyleProperties>, String> {
+    use crate::parser::style_parser::{
+        build_border, build_style_properties, parse_background_attr, parse_border_color,
+        parse_border_radius, parse_border_style, parse_border_width, parse_color_attr,
+        parse_opacity, parse_shadow_attr, parse_transform,
+    };
+
+    let mut background = None;
+    let mut color = None;
+    let mut border_width = None;
+    let mut border_color = None;
+    let mut border_radius = None;
+    let mut border_style = None;
+    let mut shadow = None;
+    let mut opacity = None;
+    let mut transform = None;
+    let mut has_any = false;
+
+    // Parse background
+    if let Some(AttributeValue::Static(value)) = attributes.get("background") {
+        background = Some(parse_background_attr(value)?);
+        has_any = true;
+    }
+
+    // Parse color
+    if let Some(AttributeValue::Static(value)) = attributes.get("color") {
+        color = Some(parse_color_attr(value)?);
+        has_any = true;
+    }
+
+    // Parse border attributes
+    if let Some(AttributeValue::Static(value)) = attributes.get("border_width") {
+        border_width = Some(parse_border_width(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("border_color") {
+        border_color = Some(parse_border_color(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("border_radius") {
+        border_radius = Some(parse_border_radius(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("border_style") {
+        border_style = Some(parse_border_style(value)?);
+        has_any = true;
+    }
+
+    // Parse shadow
+    if let Some(AttributeValue::Static(value)) = attributes.get("shadow") {
+        shadow = Some(parse_shadow_attr(value)?);
+        has_any = true;
+    }
+
+    // Parse opacity
+    if let Some(AttributeValue::Static(value)) = attributes.get("opacity") {
+        opacity = Some(parse_opacity(value)?);
+        has_any = true;
+    }
+
+    // Parse transform
+    if let Some(AttributeValue::Static(value)) = attributes.get("transform") {
+        transform = Some(parse_transform(value)?);
+        has_any = true;
+    }
+
+    if has_any {
+        let border = build_border(border_width, border_color, border_radius, border_style)?;
+        let style = build_style_properties(background, color, border, shadow, opacity, transform)?;
+        Ok(Some(style))
+    } else {
+        Ok(None)
+    }
 }

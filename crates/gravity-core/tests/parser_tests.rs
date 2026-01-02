@@ -1018,3 +1018,146 @@ fn test_parse_all_literal_types() {
         _ => panic!("Expected binding"),
     }
 }
+
+use gravity_core::ir::layout::{Alignment, Direction, Justification, Length};
+use gravity_core::ir::style::Background;
+
+#[test]
+fn test_parse_flex_sizing_attributes() {
+    let xml = "<column><row width=\"fill\" height=\"shrink\" /><container width=\"fill_portion(3)\" /><container width=\"50%\" height=\"75%\" /></column>";
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    // Test fill and shrink
+    let row = &doc.root.children[0];
+    assert!(row.layout.is_some());
+    let layout = row.layout.as_ref().unwrap();
+    assert_eq!(layout.width, Some(Length::Fill));
+    assert_eq!(layout.height, Some(Length::Shrink));
+
+    // Test fill_portion
+    let container1 = &doc.root.children[1];
+    assert!(container1.layout.is_some());
+    let layout1 = container1.layout.as_ref().unwrap();
+    assert_eq!(layout1.width, Some(Length::FillPortion(3)));
+
+    // Test percentage
+    let container2 = &doc.root.children[2];
+    assert!(container2.layout.is_some());
+    let layout2 = container2.layout.as_ref().unwrap();
+    assert_eq!(layout2.width, Some(Length::Percentage(50.0)));
+    assert_eq!(layout2.height, Some(Length::Percentage(75.0)));
+}
+
+#[test]
+fn test_parse_style_attributes() {
+    let xml = "<container background=\"#ff0000\" border_width=\"2\" border_color=\"#000000\" border_radius=\"8\" opacity=\"0.5\" />";
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.style.is_some());
+    let style = doc.root.style.as_ref().unwrap();
+
+    // Check background
+    assert!(style.background.is_some());
+    if let Background::Color(color) = style.background.as_ref().unwrap() {
+        assert_eq!(color.r, 1.0);
+        assert_eq!(color.g, 0.0);
+        assert_eq!(color.b, 0.0);
+        assert_eq!(color.a, 1.0);
+    } else {
+        panic!("Expected color background");
+    }
+
+    // Check border
+    assert!(style.border.is_some());
+    let border = style.border.as_ref().unwrap();
+    assert_eq!(border.width, 2.0);
+    assert_eq!(border.color.r, 0.0);
+    assert_eq!(border.radius.top_left, 8.0);
+
+    // Check opacity
+    assert_eq!(style.opacity, Some(0.5));
+}
+
+#[test]
+fn test_parse_combined_layout_and_style() {
+    let xml = "<column padding=\"40\" spacing=\"20\" width=\"fill\" background=\"#ffffff\"><text value=\"Test\" /></column>";
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    // Check layout
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+    assert_eq!(layout.padding.as_ref().unwrap().top, 40.0);
+    assert_eq!(layout.spacing, Some(20.0));
+    assert_eq!(layout.width, Some(Length::Fill));
+
+    // Check style
+    assert!(doc.root.style.is_some());
+    let style = doc.root.style.as_ref().unwrap();
+    assert!(style.background.is_some());
+}
+
+#[test]
+fn test_parse_min_max_constraints() {
+    let xml = "<container width=\"fill\" min_width=\"300\" max_width=\"600\" />";
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+    assert_eq!(layout.width, Some(Length::Fill));
+    assert_eq!(layout.min_width, Some(300.0));
+    assert_eq!(layout.max_width, Some(600.0));
+}
+
+#[test]
+fn test_parse_alignment_attributes() {
+    let xml = "<row align_items=\"center\" justify_content=\"space_between\" align_self=\"end\" />";
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+    assert_eq!(layout.align_items, Some(Alignment::Center));
+    assert_eq!(layout.justify_content, Some(Justification::SpaceBetween));
+    assert_eq!(layout.align_self, Some(Alignment::End));
+}
+
+#[test]
+fn test_parse_align_shorthand() {
+    let xml = "<column align=\"center\" />";
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+    assert_eq!(layout.align_items, Some(Alignment::Center));
+    assert_eq!(layout.justify_content, Some(Justification::Center));
+}
+
+#[test]
+fn test_parse_direction() {
+    let xml = "<row direction=\"horizontal_reverse\" />";
+
+    let result = parse(xml);
+    assert!(result.is_ok());
+    let doc = result.unwrap();
+
+    assert!(doc.root.layout.is_some());
+    let layout = doc.root.layout.as_ref().unwrap();
+    assert_eq!(layout.direction, Some(Direction::HorizontalReverse));
+}
