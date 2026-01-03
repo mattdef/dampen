@@ -105,9 +105,16 @@ pub fn get_z_index(layout: &IcedLayout) -> i32 {
 
 /// Map StyleProperties to Iced container Style
 pub fn map_style_properties(style: &StyleProperties) -> iced::widget::container::Style {
-    let mut container_style = iced::widget::container::Style::default();
+    // Start with a transparent container (no background)
+    let mut container_style = iced::widget::container::Style {
+        background: None,
+        text_color: None,
+        border: iced::Border::default(),
+        shadow: iced::Shadow::default(),
+        snap: false,
+    };
 
-    // Map background
+    // Map background - only if explicitly set
     if let Some(bg) = &style.background {
         container_style.background = Some(map_background(bg));
     }
