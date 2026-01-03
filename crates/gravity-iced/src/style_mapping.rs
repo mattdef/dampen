@@ -119,8 +119,10 @@ pub fn map_style_properties(style: &StyleProperties) -> iced::widget::container:
         container_style.background = Some(map_background(bg));
     }
 
-    // Map text color (this would be applied to text widgets, not container)
-    // For now, we'll store it in a custom field if needed
+    // Map text color - this affects all text widgets inside the container
+    if let Some(color) = &style.color {
+        container_style.text_color = Some(map_color(color));
+    }
 
     // Map border
     if let Some(border) = &style.border {

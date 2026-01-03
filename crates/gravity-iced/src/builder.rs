@@ -304,7 +304,59 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
 
-        iced::widget::text(value).into()
+        let mut text_widget = iced::widget::text(value);
+
+        // Resolve and apply text styles
+        let resolved_style = match (self.resolve_class_styles(node), &node.style) {
+            (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
+            (Some(class_style), None) => Some(class_style),
+            (None, Some(node_style)) => Some(node_style.clone()),
+            (None, None) => None,
+        };
+
+        // Apply color from styles
+        if let Some(style_props) = resolved_style {
+            if let Some(ref color) = style_props.color {
+                text_widget = text_widget.color(iced::Color {
+                    r: color.r,
+                    g: color.g,
+                    b: color.b,
+                    a: color.a,
+                });
+            }
+        }
+
+        // Check for direct attributes (size, weight, color) that override styles
+        if let Some(color_attr) = node.attributes.get("color") {
+            let color_str = self.evaluate_attribute(color_attr);
+            if let Some(color) = parse_color(&color_str) {
+                text_widget = text_widget.color(iced::Color {
+                    r: color.r,
+                    g: color.g,
+                    b: color.b,
+                    a: color.a,
+                });
+            }
+        }
+
+        if let Some(size_attr) = node.attributes.get("size") {
+            let size_str = self.evaluate_attribute(size_attr);
+            if let Ok(size) = size_str.parse::<f32>() {
+                text_widget = text_widget.size(size);
+            }
+        }
+
+        if let Some(weight_attr) = node.attributes.get("weight") {
+            let weight_str = self.evaluate_attribute(weight_attr);
+            if weight_str == "bold" {
+                text_widget = text_widget.font(iced::Font {
+                    weight: iced::font::Weight::Bold,
+                    ..Default::default()
+                });
+            }
+        }
+
+        text_widget.into()
     }
 
     fn build_button(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
@@ -531,6 +583,34 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     {
         iced::widget::column(vec![]).into()
     }
+}
+
+/// Parse a color string (#RRGGBB or #RGB format)
+fn parse_color(color_str: &str) -> Option<gravity_core::ir::style::Color> {
+    let hex = color_str.trim().trim_start_matches('#');
+
+    let (r, g, b) = if hex.len() == 6 {
+        // #RRGGBB
+        let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+        let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+        let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+        (r, g, b)
+    } else if hex.len() == 3 {
+        // #RGB -> #RRGGBB
+        let r = u8::from_str_radix(&hex[0..1], 16).ok()?;
+        let g = u8::from_str_radix(&hex[1..2], 16).ok()?;
+        let b = u8::from_str_radix(&hex[2..3], 16).ok()?;
+        (r * 17, g * 17, b * 17) // Expand to full range
+    } else {
+        return None;
+    };
+
+    Some(gravity_core::ir::style::Color {
+        r: r as f32 / 255.0,
+        g: g as f32 / 255.0,
+        b: b as f32 / 255.0,
+        a: 1.0,
+    })
 }
 
 /// Merge two StyleProperties, with the second one taking precedence
