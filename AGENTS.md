@@ -4,6 +4,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 
 ## Active Technologies
 - File-based (XML UI definitions, optional separate style files), serialized state in `.gravity-state.json` (002-layout-theming-styling)
+- Rust Edition 2024, Stable Rust (no nightly features) (003-widget-builder)
+- N/A (runtime interpretation, no persistence required) (003-widget-builder)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
@@ -306,6 +308,7 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 | Runtime memory (dev) | < 50MB baseline |
 
 ## Recent Changes
+- 003-widget-builder: Added Rust Edition 2024, Stable Rust (no nightly features)
 - 002-layout-theming-styling: Added Rust Edition 2024, MSRV stable (no nightly features in public API)
 
 - **Phase 5 Complete**: User Story 5 - Derive Bindable Model from Rust Struct
@@ -316,7 +319,6 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
   - Working `todo-app` example demonstrating bindings
   - All tests passing (14 tests total), clippy clean
 
-- **Phase 4 Complete**: User Story 3 - Connect UI Events to Typed Handlers
   - Implemented `#[ui_handler]` attribute macro with signature validation
   - Created `HandlerRegistry` with support for simple, value, and command handlers
   - Added Iced backend integration for event dispatch
