@@ -182,8 +182,11 @@ pub struct StyleClass {
     pub layout: Option<LayoutConstraints>,
     /// Inherit from other classes
     pub extends: Vec<String>,
-    /// State-specific overrides
+    /// State-specific overrides (single states)
     pub state_variants: HashMap<WidgetState, StyleProperties>,
+    /// Combined state overrides (e.g., hover:active)
+    #[serde(default)]
+    pub combined_state_variants: HashMap<StateSelector, StyleProperties>,
 }
 
 impl StyleClass {
@@ -218,6 +221,13 @@ impl StyleClass {
             style
                 .validate()
                 .map_err(|e| format!("Invalid style for state {:?}: {}", state, e))?;
+        }
+
+        // Validate combined state variants
+        for (selector, style) in &self.combined_state_variants {
+            style
+                .validate()
+                .map_err(|e| format!("Invalid style for state selector {:?}: {}", selector, e))?;
         }
 
         // Verify all extended classes exist
@@ -278,7 +288,7 @@ impl StyleClass {
 }
 
 /// Widget interaction state
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord)]
 pub enum WidgetState {
     Hover,
     Focus,
@@ -295,6 +305,53 @@ impl WidgetState {
             "active" => Some(WidgetState::Active),
             "disabled" => Some(WidgetState::Disabled),
             _ => None,
+        }
+    }
+}
+
+/// State selector for style matching - can be single or combined states
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum StateSelector {
+    /// Single state (e.g., "hover")
+    Single(WidgetState),
+    /// Combined states that must all be active (e.g., "hover:active")
+    /// Sorted for consistent comparison
+    Combined(Vec<WidgetState>),
+}
+
+impl StateSelector {
+    /// Create a single state selector
+    pub fn single(state: WidgetState) -> Self {
+        StateSelector::Single(state)
+    }
+
+    /// Create a combined state selector from multiple states
+    pub fn combined(mut states: Vec<WidgetState>) -> Self {
+        if states.len() == 1 {
+            StateSelector::Single(states[0])
+        } else {
+            // Sort for consistent comparison
+            states.sort();
+            states.dedup(); // Remove duplicates
+            StateSelector::Combined(states)
+        }
+    }
+
+    /// Check if this selector matches the given active states
+    pub fn matches(&self, active_states: &[WidgetState]) -> bool {
+        match self {
+            StateSelector::Single(state) => active_states.contains(state),
+            StateSelector::Combined(required_states) => {
+                required_states.iter().all(|s| active_states.contains(s))
+            }
+        }
+    }
+
+    /// Get specificity for cascade resolution (more specific = higher number)
+    pub fn specificity(&self) -> usize {
+        match self {
+            StateSelector::Single(_) => 1,
+            StateSelector::Combined(states) => states.len(),
         }
     }
 }

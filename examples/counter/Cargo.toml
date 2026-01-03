@@ -18,6 +18,3 @@ dev = ["gravity-runtime"]
 [[bin]]
 name = "counter"
 path = "src/main.rs"
-
-[workspace]
-# Exclude from main workspace

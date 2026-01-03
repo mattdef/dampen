@@ -5,10 +5,16 @@ edition = "2021"
 
 [dependencies]
 gravity-core = { path = "../../crates/gravity-core" }
+gravity-macros = { path = "../../crates/gravity-macros" }
 gravity-runtime = { path = "../../crates/gravity-runtime" }
 gravity-iced = { path = "../../crates/gravity-iced" }
 iced = { workspace = true }
+serde = { workspace = true }
 
 [[bin]]
 name = "styling"
 path = "src/main.rs"
+
+[[bin]]
+name = "state-demo"
+path = "src/state_demo.rs"

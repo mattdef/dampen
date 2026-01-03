@@ -3,42 +3,48 @@ use gravity_core::{
     WidgetKind, WidgetNode,
 };
 use gravity_macros::{ui_handler, UiModel};
-use iced::font::Weight;
 use iced::widget::{button, column, container, row, text};
-use iced::{Border, Color, Element, Font, Length, Padding, Task};
+use iced::{Border, Color, Element, Length, Padding, Task};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 /// Application model with UiModel macro for data binding
-#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
-struct Model {
-    count: i32,
+#[derive(UiModel, Serialize, Deserialize, Clone, Debug)]
+pub struct Model {
+    click_count: i32,
+    last_message: String,
+}
+
+impl Default for Model {
+    fn default() -> Self {
+        Self {
+            click_count: 0,
+            last_message: String::from("No interactions yet"),
+        }
+    }
 }
 
 /// Messages for the application
 #[derive(Clone, Debug)]
-enum Message {
+pub enum Message {
     Handler(String, Option<String>),
 }
 
 /// Event handlers using ui_handler macro
 #[ui_handler]
-fn increment(model: &mut Model) {
-    model.count += 1;
-}
-
-#[ui_handler]
-fn decrement(model: &mut Model) {
-    model.count -= 1;
+fn click(model: &mut Model) {
+    model.click_count += 1;
+    model.last_message = format!("Button clicked! Count: {}", model.click_count);
 }
 
 #[ui_handler]
 fn reset(model: &mut Model) {
-    model.count = 0;
+    model.click_count = 0;
+    model.last_message = String::from("Counter reset!");
 }
 
 /// Global application state
-struct AppState {
+pub struct AppState {
     model: Model,
     document: gravity_core::GravityDocument,
     handler_registry: HandlerRegistry,
@@ -46,13 +52,13 @@ struct AppState {
 
 impl AppState {
     fn new() -> Self {
-        let ui_path = std::path::PathBuf::from("examples/styling/ui/main.gravity");
+        let ui_path = std::path::PathBuf::from("examples/styling/ui/state_demo.gravity");
         let xml = match std::fs::read_to_string(&ui_path) {
             Ok(content) => content,
             Err(e) => {
                 eprintln!("Error: Failed to read UI file: {}", e);
                 r#"<column padding="40" spacing="20">
-                    <text value="Error: Could not load ui/main.gravity" size="18" />
+                    <text value="Error: Could not load ui/state_demo.gravity" size="18" />
                 </column>"#
                     .to_string()
             }
@@ -65,14 +71,9 @@ impl AppState {
 
         let handler_registry = HandlerRegistry::new();
 
-        handler_registry.register_simple("increment", |model: &mut dyn Any| {
+        handler_registry.register_simple("click", |model: &mut dyn Any| {
             let model = model.downcast_mut::<Model>().unwrap();
-            increment(model);
-        });
-
-        handler_registry.register_simple("decrement", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<Model>().unwrap();
-            decrement(model);
+            click(model);
         });
 
         handler_registry.register_simple("reset", |model: &mut dyn Any| {
@@ -105,8 +106,7 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
 // Helper functions to convert Gravity IR types to Iced types
 // ============================================================================
 
-/// Convert Gravity Color to Iced Color
-fn to_iced_color(color: &gravity_core::ir::style::Color) -> Color {
+fn to_iced_color(color: &gravity_core::Color) -> Color {
     Color {
         r: color.r,
         g: color.g,
@@ -115,22 +115,17 @@ fn to_iced_color(color: &gravity_core::ir::style::Color) -> Color {
     }
 }
 
-/// Convert Gravity Length to Iced Length
-fn to_iced_length(length: &gravity_core::ir::layout::Length) -> Length {
+fn to_iced_length(length: &gravity_core::Length) -> Length {
     match length {
-        gravity_core::ir::layout::Length::Fixed(pixels) => Length::Fixed(*pixels),
-        gravity_core::ir::layout::Length::Fill => Length::Fill,
-        gravity_core::ir::layout::Length::Shrink => Length::Shrink,
-        gravity_core::ir::layout::Length::FillPortion(n) => Length::FillPortion(*n as u16),
-        gravity_core::ir::layout::Length::Percentage(pct) => {
-            // Iced doesn't have percentage, approximate with FillPortion
-            Length::FillPortion((pct / 10.0).max(1.0) as u16)
-        }
+        gravity_core::Length::Fixed(pixels) => Length::Fixed(*pixels),
+        gravity_core::Length::Fill => Length::Fill,
+        gravity_core::Length::Shrink => Length::Shrink,
+        gravity_core::Length::FillPortion(n) => Length::FillPortion(*n as u16),
+        gravity_core::Length::Percentage(pct) => Length::FillPortion((pct / 10.0).max(1.0) as u16),
     }
 }
 
-/// Convert Gravity Padding to Iced Padding
-fn to_iced_padding(padding: &gravity_core::ir::layout::Padding) -> Padding {
+fn to_iced_padding(padding: &gravity_core::Padding) -> Padding {
     Padding {
         top: padding.top,
         right: padding.right,
@@ -139,8 +134,7 @@ fn to_iced_padding(padding: &gravity_core::ir::layout::Padding) -> Padding {
     }
 }
 
-/// Convert Gravity BorderRadius to Iced Radius
-fn to_iced_radius(radius: &gravity_core::ir::style::BorderRadius) -> iced::border::Radius {
+fn to_iced_radius(radius: &gravity_core::BorderRadius) -> iced::border::Radius {
     iced::border::Radius {
         top_left: radius.top_left,
         top_right: radius.top_right,
@@ -170,7 +164,6 @@ fn render_node<'a>(
 }
 
 fn render_text<'a>(node: &'a WidgetNode, model: &'a Model) -> Element<'a, Message> {
-    // Evaluate value with binding support
     let value = match node.attributes.get("value") {
         Some(AttributeValue::Static(v)) => v.clone(),
         Some(AttributeValue::Binding(expr)) => match evaluate_binding_expr(expr, model) {
@@ -202,79 +195,34 @@ fn render_text<'a>(node: &'a WidgetNode, model: &'a Model) -> Element<'a, Messag
         }
     }
 
-    // Apply size from attributes (not in IR yet)
+    // Size and weight from attributes (not in IR yet)
     if let Some(AttributeValue::Static(size_str)) = node.attributes.get("size") {
         if let Ok(size) = size_str.parse::<f32>() {
             txt = txt.size(size);
         }
     }
 
-    // Apply weight from attributes (not in IR yet)
-    if let Some(AttributeValue::Static(weight_str)) = node.attributes.get("weight") {
-        let weight = match weight_str.as_str() {
-            "bold" => Weight::Bold,
-            "light" => Weight::Light,
-            "semibold" => Weight::Semibold,
-            _ => Weight::Normal,
-        };
-        txt = txt.font(Font {
-            weight,
-            ..Font::DEFAULT
-        });
-    }
-
     txt.into()
 }
 
 fn render_button<'a>(node: &'a WidgetNode, model: &'a Model) -> Element<'a, Message> {
-    // Evaluate label with binding support
     let label = match node.attributes.get("label") {
         Some(AttributeValue::Static(l)) => l.clone(),
-        Some(AttributeValue::Binding(expr)) => match evaluate_binding_expr(expr, model) {
-            Ok(v) => v.to_display_string(),
-            Err(_) => "[error]".to_string(),
-        },
-        Some(AttributeValue::Interpolated(parts)) => {
-            let mut result = String::new();
-            for part in parts {
-                match part {
-                    InterpolatedPart::Literal(l) => result.push_str(l),
-                    InterpolatedPart::Binding(expr) => match evaluate_binding_expr(expr, model) {
-                        Ok(v) => result.push_str(&v.to_display_string()),
-                        Err(_) => result.push_str("[error]"),
-                    },
-                }
-            }
-            result
-        }
-        None => String::new(),
+        _ => String::new(),
     };
 
-    // Find click handler from events (already parsed!)
     let on_click = node
         .events
         .iter()
         .find(|e| e.event == EventKind::Click)
         .map(|e| e.handler.clone());
 
-    let mut btn = button(text(label));
-
-    // Apply handler
+    let btn = button(text(label));
     if let Some(handler_name) = on_click {
-        btn = btn.on_press(Message::Handler(handler_name, None));
+        btn.on_press(Message::Handler(handler_name, None)).into()
+    } else {
+        btn.into()
     }
-
-    // Apply layout from node.layout (already parsed!)
-    if let Some(ref layout) = node.layout {
-        if let Some(ref width) = layout.width {
-            btn = btn.width(to_iced_length(width));
-        }
-        if let Some(ref padding) = layout.padding {
-            btn = btn.padding(to_iced_padding(padding));
-        }
-    }
-
-    btn.into()
 }
 
 fn render_column<'a>(
@@ -297,9 +245,6 @@ fn render_column<'a>(
         }
         if let Some(spacing) = layout.spacing {
             col = col.spacing(spacing);
-        }
-        if let Some(ref width) = layout.width {
-            col = col.width(to_iced_length(width));
         }
     }
 
@@ -327,9 +272,6 @@ fn render_row<'a>(
         if let Some(spacing) = layout.spacing {
             r = r.spacing(spacing);
         }
-        if let Some(ref width) = layout.width {
-            r = r.width(to_iced_length(width));
-        }
     }
 
     r.into()
@@ -356,20 +298,16 @@ fn render_container<'a>(
         if let Some(ref width) = layout.width {
             cont = cont.width(to_iced_length(width));
         }
-        if let Some(ref height) = layout.height {
-            cont = cont.height(to_iced_length(height));
-        }
     }
 
     // Apply style from node.style (already parsed!)
     if let Some(ref style) = node.style {
-        let has_style =
-            style.background.is_some() || style.border.is_some() || style.opacity.is_some();
+        let has_style = style.background.is_some() || style.border.is_some();
 
         if has_style {
             let bg = style.background.as_ref().and_then(|bg| match bg {
-                gravity_core::ir::style::Background::Color(c) => Some(to_iced_color(c)),
-                _ => None, // Gradients not yet supported in this simple renderer
+                gravity_core::Background::Color(c) => Some(to_iced_color(c)),
+                _ => None,
             });
 
             let (border_width, border_color, border_radius) = if let Some(ref border) = style.border

@@ -411,7 +411,7 @@ Phase 11: Polish & Integration
 
 - [X] T159 [P] [US8] Extend parser to recognize `hover:`, `focus:`, `active:`, `disabled:` prefixes
 - [X] T160 [P] [US8] Store state-prefixed styles in `StyleClass.state_variants`
-- [ ] T161 [P] [US8] Support combined states (e.g., `hover:active:background`)
+- [X] T161 [P] [US8] Support combined states (e.g., `hover:active:background`)
 
 ### 10.2: State Management
 
@@ -423,7 +423,7 @@ Phase 11: Polish & Integration
 
 - [X] T165 [P] [US8] Map Iced widget states to Gravity states in gravity-iced/src/widgets/styled.rs
 - [X] T166 [P] [US8] Apply state styles dynamically in `styled` wrapper widget
-- [ ] T167 [US8] Create `examples/styling/src/state_demo.rs` demonstrating state transitions
+- [X] T167 [US8] Create `examples/styling/src/state_demo.rs` demonstrating state transitions
 
 ### 10.4: Testing
 

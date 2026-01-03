@@ -17,7 +17,8 @@ pub use style::{
     StyleProperties, Transform,
 };
 pub use theme::{
-    FontWeight, SpacingScale, StyleClass, Theme, ThemePalette, Typography, WidgetState,
+    FontWeight, SpacingScale, StateSelector, StyleClass, Theme, ThemePalette, Typography,
+    WidgetState,
 };
 
 /// A complete parsed Gravity UI document.

@@ -108,6 +108,7 @@ pub fn parse_style_class(
     base_attrs: &HashMap<String, String>,
     extends: Vec<String>,
     state_variants: HashMap<WidgetState, StyleProperties>,
+    combined_state_variants: HashMap<crate::ir::theme::StateSelector, StyleProperties>,
     layout: Option<LayoutConstraints>,
 ) -> Result<StyleClass, String> {
     let style = parse_style_properties_from_attrs(base_attrs)?;
@@ -118,6 +119,7 @@ pub fn parse_style_class(
         layout,
         extends,
         state_variants,
+        combined_state_variants,
     };
 
     Ok(class)
@@ -266,52 +268,123 @@ pub fn parse_layout_constraints(
 }
 
 /// Parse state-prefixed attributes into state variants
+/// Returns both single and combined state variants
 pub fn parse_state_variants(
     attrs: &HashMap<String, String>,
-) -> Result<HashMap<WidgetState, StyleProperties>, String> {
-    let mut variants: HashMap<WidgetState, HashMap<String, String>> = HashMap::new();
+) -> Result<
+    (
+        HashMap<WidgetState, StyleProperties>,
+        HashMap<crate::ir::theme::StateSelector, StyleProperties>,
+    ),
+    String,
+> {
+    use crate::ir::theme::StateSelector;
+
+    let mut single_variants: HashMap<WidgetState, HashMap<String, String>> = HashMap::new();
+    let mut combined_variants: HashMap<StateSelector, HashMap<String, String>> = HashMap::new();
 
     for (key, value) in attrs {
         // Check if key has state prefix
         if let Some((prefix, attr_name)) = split_state_prefix(key) {
-            let state = WidgetState::from_prefix(prefix)
-                .ok_or_else(|| format!("Invalid state prefix: {}", prefix))?;
-
-            variants
-                .entry(state)
-                .or_default()
-                .insert(attr_name.to_string(), value.to_string());
+            // Try to parse as combined states first
+            if let Some(states) = parse_combined_states(prefix) {
+                if states.len() == 1 {
+                    // Single state
+                    single_variants
+                        .entry(states[0])
+                        .or_default()
+                        .insert(attr_name.to_string(), value.to_string());
+                } else {
+                    // Combined states
+                    let selector = StateSelector::combined(states);
+                    combined_variants
+                        .entry(selector)
+                        .or_default()
+                        .insert(attr_name.to_string(), value.to_string());
+                }
+            } else {
+                return Err(format!("Invalid state prefix: {}", prefix));
+            }
         }
     }
 
-    // Parse each state's properties
-    let mut result = HashMap::new();
-    for (state, state_attrs) in variants {
+    // Parse each single state's properties
+    let mut single_result = HashMap::new();
+    for (state, state_attrs) in single_variants {
         let style = parse_style_properties_from_attrs(&state_attrs)?;
-        result.insert(state, style);
+        single_result.insert(state, style);
     }
 
-    Ok(result)
+    // Parse each combined state's properties
+    let mut combined_result = HashMap::new();
+    for (selector, state_attrs) in combined_variants {
+        let style = parse_style_properties_from_attrs(&state_attrs)?;
+        combined_result.insert(selector, style);
+    }
+
+    Ok((single_result, combined_result))
 }
 
 /// Split a state-prefixed attribute name
 /// e.g., "hover:background" -> Some(("hover", "background"))
+/// Also handles combined states: "hover:active:background" -> Some(("hover:active", "background"))
 fn split_state_prefix(key: &str) -> Option<(&str, &str)> {
-    // Handle combined states: "hover:active:background"
-    if let Some(idx) = key.find(':') {
-        let prefix = &key[..idx];
-        let rest = &key[idx + 1..];
+    // Find all colons
+    let colons: Vec<usize> = key.match_indices(':').map(|(i, _)| i).collect();
 
-        // Check if rest also has state prefix (combined states)
-        if rest.contains(':') {
-            // For now, we only support single state prefixes
-            // Combined states like "hover:active:background" would need recursive parsing
+    if colons.is_empty() {
+        return None;
+    }
+
+    // The attribute name is after the last colon
+    let last_colon = *colons.last().unwrap();
+    let attr_name = &key[last_colon + 1..];
+
+    // Check if what comes after the last colon looks like an attribute name
+    // (not a state name like "hover", "active", etc.)
+    let potential_states = &key[..last_colon];
+
+    // Split potential states by ':'
+    let state_parts: Vec<&str> = potential_states.split(':').collect();
+
+    // Verify all parts except the last are valid state names
+    let all_valid_states = state_parts.iter().all(|&s| {
+        matches!(
+            s.trim().to_lowercase().as_str(),
+            "hover" | "focus" | "active" | "disabled"
+        )
+    });
+
+    if all_valid_states && !state_parts.is_empty() {
+        // Return the combined state prefix and attribute name
+        return Some((potential_states, attr_name));
+    }
+
+    None
+}
+
+/// Parse combined state prefix into individual states
+/// e.g., "hover:active" -> vec![WidgetState::Hover, WidgetState::Active]
+fn parse_combined_states(prefix: &str) -> Option<Vec<WidgetState>> {
+    let parts: Vec<&str> = prefix.split(':').collect();
+    let mut states = Vec::new();
+
+    for part in parts {
+        if let Some(state) = WidgetState::from_prefix(part) {
+            // Avoid duplicates
+            if !states.contains(&state) {
+                states.push(state);
+            }
+        } else {
             return None;
         }
-
-        return Some((prefix, rest));
     }
-    None
+
+    if states.is_empty() {
+        None
+    } else {
+        Some(states)
+    }
 }
 
 /// Parse a theme node from XML
@@ -405,6 +478,10 @@ pub fn parse_style_class_from_node(
     let mut base_attrs = HashMap::new();
     let mut extends = Vec::new();
     let mut state_variants_raw: HashMap<WidgetState, HashMap<String, String>> = HashMap::new();
+    let mut combined_state_variants_raw: HashMap<
+        crate::ir::theme::StateSelector,
+        HashMap<String, String>,
+    > = HashMap::new();
     let mut layout = None;
 
     for attr in node.attributes() {
@@ -419,15 +496,26 @@ pub fn parse_style_class_from_node(
 
         // Check for state variants (prefixed attributes)
         if let Some((prefix, attr_name)) = split_state_prefix(key) {
-            let state = WidgetState::from_prefix(prefix).ok_or_else(|| ParseError {
-                kind: ParseErrorKind::InvalidValue,
-                message: format!("Invalid state prefix: {}", prefix),
-                span: crate::ir::Span::default(),
-                suggestion: None,
-            })?;
-
-            let state_attr = state_variants_raw.entry(state).or_default();
-            state_attr.insert(attr_name.to_string(), value.to_string());
+            // Try to parse as combined states
+            if let Some(states) = parse_combined_states(prefix) {
+                if states.len() == 1 {
+                    // Single state
+                    let state_attr = state_variants_raw.entry(states[0]).or_default();
+                    state_attr.insert(attr_name.to_string(), value.to_string());
+                } else {
+                    // Combined states
+                    let selector = crate::ir::theme::StateSelector::combined(states);
+                    let state_attr = combined_state_variants_raw.entry(selector).or_default();
+                    state_attr.insert(attr_name.to_string(), value.to_string());
+                }
+            } else {
+                return Err(ParseError {
+                    kind: ParseErrorKind::InvalidValue,
+                    message: format!("Invalid state prefix: {}", prefix),
+                    span: crate::ir::Span::default(),
+                    suggestion: None,
+                });
+            }
             continue;
         }
 
@@ -562,16 +650,36 @@ pub fn parse_style_class_from_node(
         state_variants.insert(state, style);
     }
 
-    // Parse using existing function
-    let class =
-        parse_style_class(name, &base_attrs, extends, state_variants, layout).map_err(|e| {
-            ParseError {
-                kind: ParseErrorKind::InvalidValue,
-                message: format!("Failed to parse style class: {}", e),
-                span: crate::ir::Span::default(),
-                suggestion: None,
-            }
+    // Parse combined state variants into StyleProperties
+    let mut combined_state_variants = HashMap::new();
+    for (selector, state_attrs) in combined_state_variants_raw {
+        let style = parse_style_properties_from_attrs(&state_attrs).map_err(|e| ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!(
+                "Failed to parse combined state variant for {:?}: {}",
+                selector, e
+            ),
+            span: crate::ir::Span::default(),
+            suggestion: None,
         })?;
+        combined_state_variants.insert(selector, style);
+    }
+
+    // Parse using existing function
+    let class = parse_style_class(
+        name,
+        &base_attrs,
+        extends,
+        state_variants,
+        combined_state_variants,
+        layout,
+    )
+    .map_err(|e| ParseError {
+        kind: ParseErrorKind::InvalidValue,
+        message: format!("Failed to parse style class: {}", e),
+        span: crate::ir::Span::default(),
+        suggestion: None,
+    })?;
 
     Ok(class)
 }

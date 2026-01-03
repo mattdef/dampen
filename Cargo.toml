@@ -6,6 +6,11 @@ members = [
     "crates/gravity-runtime",
     "crates/gravity-iced",
     "crates/gravity-cli",
+    "examples/class-demo",
+    "examples/hello-world",
+    "examples/counter",
+    "examples/hot-reload-test",
+    "examples/todo-app",
     "examples/styling",
     "examples/responsive",
 ]
