@@ -6,7 +6,7 @@ members = [
     "crates/gravity-runtime",
     "crates/gravity-iced",
     "crates/gravity-cli",
-    "examples/class-demo",
+    "examples/builder-demo",
     "examples/hello-world",
     "examples/counter",
     "examples/hot-reload-test",

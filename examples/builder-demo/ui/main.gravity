@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gravity>
+    <themes>
+        <theme name="demo">
+            <palette 
+                primary="#6366f1" 
+                secondary="#8b5cf6"
+                background="#f8fafc" 
+                surface="#ffffff"
+                text="#1e293b" />
+            <spacing unit="12" />
+        </theme>
+    </themes>
+    
+    <style_classes>
+        <style name="card" 
+            padding="20" 
+            border_radius="8" 
+            border_width="1" 
+            border_color="#e2e8f0"
+            background="{theme.surface}">
+            <hover background="#f1f5f9" />
+        </style>
+        
+        <style name="primary-btn" 
+            padding="12 24" 
+            border_radius="6" 
+            background="{theme.primary}"
+            color="#ffffff">
+            <hover background="#4f46e5" />
+            <active background="#4338ca" />
+        </style>
+        
+        <style name="secondary-btn" 
+            padding="12 24" 
+            border_radius="6" 
+            background="{theme.secondary}"
+            color="#ffffff">
+            <hover background="#7c3aed" />
+            <active background="#6d28d9" />
+        </style>
+    </style_classes>
+    
+    <global_theme name="demo" />
+    
+    <column padding="40" spacing="20" align="center">
+        <!-- Header -->
+        <text value="Gravity Builder Demo" size="32" weight="bold" color="{theme.primary}" />
+        <text value="Demonstrating automatic widget building with bindings and events" size="16" color="#64748b" />
+        
+        <!-- Counter Card -->
+        <container width="fill" padding="20">
+            <column spacing="16" align="center">
+                <text value="Counter: {count}" size="48" weight="bold" color="{theme.text}" />
+                <text value="Double: {count * 2}" size="18" color="#64748b" />
+                
+                <row spacing="12">
+                    <button class="primary-btn" label="Increment" on_click="increment" />
+                    <button class="secondary-btn" label="Decrement" on_click="decrement" />
+                    <button class="card" label="Reset" on_click="reset" />
+                </row>
+            </column>
+        </container>
+        
+        <!-- Text Input Card -->
+        <container width="fill" padding="20">
+            <column spacing="12">
+                <text value="Text Input Demo" size="20" weight="bold" />
+                <text_input 
+                    value="{user_text}"
+                    on_input="update_text"
+                    placeholder="Type something..."
+                />
+                <text value="You typed: {user_text}" size="14" color="#64748b" />
+                <text value="Length: {user_text.len()} characters" size="14" color="#64748b" />
+            </column>
+        </container>
+        
+        <!-- List Card -->
+        <container width="fill" padding="20">
+            <column spacing="12">
+                <text value="List Manager" size="20" weight="bold" />
+                <row spacing="8">
+                    <text_input 
+                        value="{new_item}"
+                        on_input="update_new_item"
+                        placeholder="New item name..."
+                        width="fill"
+                    />
+                    <button class="primary-btn" label="Add" on_click="add_item" enabled="{new_item.len() > 0}" />
+                </row>
+                
+                <column spacing="6">
+                    <text value="{if items.len() == 0 then 'No items yet!' else ''}" color="#64748b" />
+                    <text value="Total items: {items.len()}" size="14" weight="bold" />
+                </column>
+                
+                <row spacing="8">
+                    <button class="secondary-btn" label="Clear All" on_click="clear_all" enabled="{items.len() > 0}" />
+                    <button class="card" label="Clear Completed" on_click="clear_completed" enabled="{completed_count > 0}" />
+                </row>
+            </column>
+        </container>
+        
+        <!-- Status Card -->
+        <container width="fill" padding="20">
+            <column spacing="8" align="center">
+                <text value="Status" size="18" weight="bold" />
+                <text value="Session started: {start_time}" size="12" color="#64748b" />
+                <text value="Total clicks: {total_clicks}" size="14" color="{theme.secondary}" />
+                <text value="{if count > 10 then 'Great job! Counter is over 10!' else 'Keep clicking...'}" 
+                      size="14" 
+                      color="{if count > 10 then '#10b981' else '#64748b'}" />
+            </column>
+        </container>
+    </column>
+</gravity>
