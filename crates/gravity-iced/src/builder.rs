@@ -333,6 +333,66 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             }
         }
 
+        // Resolve and apply button styles using button-specific style function
+        let resolved_style = match (self.resolve_class_styles(node), &node.style) {
+            (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
+            (Some(class_style), None) => Some(class_style),
+            (None, Some(node_style)) => Some(node_style.clone()),
+            (None, None) => None,
+        };
+
+        if let Some(style_props) = resolved_style {
+            btn = btn.style(move |_theme, _status| {
+                use iced::widget::button;
+                use iced::{Background, Border, Color};
+
+                let mut style = button::Style::default();
+
+                // Apply background color
+                if let Some(ref bg) = style_props.background {
+                    if let gravity_core::ir::style::Background::Color(ref color) = bg {
+                        style.background = Some(Background::Color(Color {
+                            r: color.r,
+                            g: color.g,
+                            b: color.b,
+                            a: color.a,
+                        }));
+                    }
+                }
+
+                // Apply text color
+                if let Some(ref text_color) = style_props.color {
+                    style.text_color = Color {
+                        r: text_color.r,
+                        g: text_color.g,
+                        b: text_color.b,
+                        a: text_color.a,
+                    };
+                }
+
+                // Apply border
+                if let Some(ref border) = style_props.border {
+                    style.border = Border {
+                        color: Color {
+                            r: border.color.r,
+                            g: border.color.g,
+                            b: border.color.b,
+                            a: border.color.a,
+                        },
+                        width: border.width,
+                        radius: iced::border::Radius {
+                            top_left: border.radius.top_left,
+                            top_right: border.radius.top_right,
+                            bottom_right: border.radius.bottom_right,
+                            bottom_left: border.radius.bottom_left,
+                        },
+                    };
+                }
+
+                style
+            });
+        }
+
         btn.into()
     }
 
