@@ -123,8 +123,9 @@
     <!-- Set Global Theme -->
     <global_theme name="light" />
     
-    <!-- Main UI -->
-    <column padding="40" spacing="30">
+    <!-- Main UI wrapped in scrollable -->
+    <scrollable>
+        <column padding="40" spacing="30">
         <!-- Header Section -->
         <column spacing="15">
             <text 
@@ -383,5 +384,6 @@
                 </column>
             </column>
         </container>
-    </column>
+        </column>
+    </scrollable>
 </gravity>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gravity>
+    <column padding="20" spacing="20">
+        <text value="Title 1" size="20" />
+        
+        <container background="#ffffff" padding="20">
+            <column spacing="15">
+                <text value="Section Title" size="18" />
+                <container background="#3498db" padding="10" width="200">
+                    <text value="Blue box" color="#ffffff" />
+                </container>
+                <container background="#2ecc71" padding="10" width="fill">
+                    <text value="Green box" color="#ffffff" />
+                </container>
+            </column>
+        </container>
+    </column>
+</gravity>

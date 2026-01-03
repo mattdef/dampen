@@ -239,6 +239,49 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         Some(merged_style)
     }
 
+    /// Resolve layout constraints from class names
+    fn resolve_class_layout(
+        &self,
+        node: &WidgetNode,
+    ) -> Option<gravity_core::ir::layout::LayoutConstraints> {
+        if node.classes.is_empty() {
+            return None;
+        }
+
+        let style_classes = self.style_classes?;
+
+        // Merge layouts from all classes (in order)
+        let mut merged_layout: Option<gravity_core::ir::layout::LayoutConstraints> = None;
+
+        for class_name in &node.classes {
+            if let Some(style_class) = style_classes.get(class_name) {
+                if let Some(class_layout) = &style_class.layout {
+                    merged_layout = Some(match merged_layout {
+                        Some(existing) => merge_layouts(existing, class_layout),
+                        None => class_layout.clone(),
+                    });
+                }
+            }
+        }
+
+        merged_layout
+    }
+
+    /// Resolve complete layout (class layouts + node layout)
+    fn resolve_layout(
+        &self,
+        node: &WidgetNode,
+    ) -> Option<gravity_core::ir::layout::LayoutConstraints> {
+        match (self.resolve_class_layout(node), &node.layout) {
+            (Some(class_layout), Some(node_layout)) => {
+                Some(merge_layouts(class_layout, node_layout))
+            }
+            (Some(class_layout), None) => Some(class_layout),
+            (None, Some(node_layout)) => Some(node_layout.clone()),
+            (None, None) => None,
+        }
+    }
+
     /// Apply style and layout to a widget
     fn apply_style_layout<'b, W>(
         &self,
@@ -261,29 +304,51 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             (None, None) => None,
         };
 
-        let has_layout = node.layout.is_some();
+        // Resolve layouts: use the helper to avoid duplication
+        let resolved_layout = self.resolve_layout(node);
+
+        // Check if we need to wrap in a container
+        // We only wrap if there's style OR layout properties that need a container
+        // (spacing doesn't need a container wrapper - it's applied to the widget itself)
+        let needs_container_for_layout = if let Some(layout) = &resolved_layout {
+            layout.width.is_some()
+                || layout.height.is_some()
+                || layout.padding.is_some()
+                || layout.align_items.is_some()
+                || layout.min_width.is_some()
+                || layout.max_width.is_some()
+                || layout.min_height.is_some()
+                || layout.max_height.is_some()
+        } else {
+            false
+        };
+
         let has_style = resolved_style.is_some();
 
-        if !has_layout && !has_style {
+        if !needs_container_for_layout && !has_style {
             return element;
         }
 
         let mut container = container(element);
 
-        // Apply layout
-        if let Some(layout) = &node.layout {
+        // Apply layout constraints (includes padding, width, height, etc.)
+        if let Some(layout) = &resolved_layout {
             let iced_layout = map_layout_constraints(layout);
-            container = container
-                .width(iced_layout.width)
-                .height(iced_layout.height)
-                .padding(iced_layout.padding);
 
+            // Apply width/height/padding/alignment
+            if layout.width.is_some() {
+                container = container.width(iced_layout.width);
+            }
+            if layout.height.is_some() {
+                container = container.height(iced_layout.height);
+            }
+            container = container.padding(iced_layout.padding);
             if let Some(align) = iced_layout.align_items {
                 container = container.align_y(align);
             }
         }
 
-        // Apply resolved style
+        // Apply resolved style (visual properties)
         if let Some(style) = resolved_style {
             let iced_style = map_style_properties(&style);
             container = container.style(move |_theme| iced_style);
@@ -458,7 +523,24 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             .map(|child| self.build_widget(child))
             .collect();
 
-        let column = iced::widget::column(children);
+        let mut column = iced::widget::column(children);
+
+        // Apply spacing and width/height from resolved layout
+        if let Some(layout) = self.resolve_layout(node) {
+            if let Some(spacing) = layout.spacing {
+                column = column.spacing(spacing);
+            }
+            // Apply width and height directly to the column
+            if layout.width.is_some() {
+                let iced_layout = map_layout_constraints(&layout);
+                column = column.width(iced_layout.width);
+            }
+            if layout.height.is_some() {
+                let iced_layout = map_layout_constraints(&layout);
+                column = column.height(iced_layout.height);
+            }
+        }
+
         self.apply_style_layout(column, node)
     }
 
@@ -472,7 +554,24 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             .map(|child| self.build_widget(child))
             .collect();
 
-        let row = iced::widget::row(children);
+        let mut row = iced::widget::row(children);
+
+        // Apply spacing and width/height from resolved layout
+        if let Some(layout) = self.resolve_layout(node) {
+            if let Some(spacing) = layout.spacing {
+                row = row.spacing(spacing);
+            }
+            // Apply width and height directly to the row
+            if layout.width.is_some() {
+                let iced_layout = map_layout_constraints(&layout);
+                row = row.width(iced_layout.width);
+            }
+            if layout.height.is_some() {
+                let iced_layout = map_layout_constraints(&layout);
+                row = row.height(iced_layout.height);
+            }
+        }
+
         self.apply_style_layout(row, node)
     }
 
@@ -480,11 +579,27 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     where
         Message: Clone + 'static,
     {
-        if let Some(first_child) = node.children.first() {
-            let child = self.build_widget(first_child);
-            self.apply_style_layout(child, node)
-        } else {
-            self.apply_style_layout(iced::widget::text(""), node)
+        // Container can have multiple children - wrap them in a column if needed
+        match node.children.len() {
+            0 => {
+                // Empty container - use empty space
+                self.apply_style_layout(iced::widget::Space::new(), node)
+            }
+            1 => {
+                // Single child - use it directly
+                let child = self.build_widget(&node.children[0]);
+                self.apply_style_layout(child, node)
+            }
+            _ => {
+                // Multiple children - wrap in a column
+                let children: Vec<_> = node
+                    .children
+                    .iter()
+                    .map(|child| self.build_widget(child))
+                    .collect();
+                let column = iced::widget::column(children);
+                self.apply_style_layout(column, node)
+            }
         }
     }
 
@@ -627,5 +742,34 @@ fn merge_styles(
         shadow: override_style.shadow.clone().or(base.shadow),
         opacity: override_style.opacity.or(base.opacity),
         transform: override_style.transform.clone().or(base.transform),
+    }
+}
+
+/// Merge two LayoutConstraints, with the second one taking precedence
+fn merge_layouts(
+    base: gravity_core::ir::layout::LayoutConstraints,
+    override_layout: &gravity_core::ir::layout::LayoutConstraints,
+) -> gravity_core::ir::layout::LayoutConstraints {
+    use gravity_core::ir::layout::LayoutConstraints;
+
+    LayoutConstraints {
+        width: override_layout.width.clone().or(base.width),
+        height: override_layout.height.clone().or(base.height),
+        min_width: override_layout.min_width.or(base.min_width),
+        max_width: override_layout.max_width.or(base.max_width),
+        min_height: override_layout.min_height.or(base.min_height),
+        max_height: override_layout.max_height.or(base.max_height),
+        padding: override_layout.padding.clone().or(base.padding),
+        spacing: override_layout.spacing.or(base.spacing),
+        align_items: override_layout.align_items.or(base.align_items),
+        justify_content: override_layout.justify_content.or(base.justify_content),
+        align_self: override_layout.align_self.or(base.align_self),
+        direction: override_layout.direction.or(base.direction),
+        position: override_layout.position.or(base.position),
+        top: override_layout.top.or(base.top),
+        right: override_layout.right.or(base.right),
+        bottom: override_layout.bottom.or(base.bottom),
+        left: override_layout.left.or(base.left),
+        z_index: override_layout.z_index.or(base.z_index),
     }
 }
