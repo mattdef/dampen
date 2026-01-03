@@ -96,8 +96,8 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
 
 /// View function using GravityWidgetBuilder
 fn view(state: &AppState) -> Element<'_, Message> {
-    GravityWidgetBuilder::new(
-        &state.document.root,
+    GravityWidgetBuilder::from_document(
+        &state.document,
         &state.model,
         Some(&state.handler_registry),
     )

@@ -11,8 +11,10 @@ use gravity_core::binding::UiBindable;
 use gravity_core::expr::evaluate_binding_expr;
 use gravity_core::handler::HandlerRegistry;
 use gravity_core::ir::node::{AttributeValue, InterpolatedPart, WidgetNode};
+use gravity_core::ir::theme::StyleClass;
 use gravity_core::ir::WidgetKind;
 use iced::{Element, Renderer, Theme};
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 /// Builder for creating Iced widgets from Gravity markup
@@ -20,6 +22,7 @@ pub struct GravityWidgetBuilder<'a, Message> {
     node: &'a WidgetNode,
     model: &'a dyn UiBindable,
     handler_registry: Option<&'a HandlerRegistry>,
+    style_classes: Option<&'a HashMap<String, StyleClass>>,
     verbose: bool,
     message_factory: Box<dyn Fn(&str) -> Message + 'a>,
     state_manager: Arc<Mutex<WidgetStateManager>>,
@@ -36,6 +39,24 @@ impl<'a> GravityWidgetBuilder<'a, HandlerMessage> {
             node,
             model,
             handler_registry,
+            style_classes: None,
+            verbose: false,
+            message_factory: Box::new(|name| HandlerMessage::Handler(name.to_string(), None)),
+            state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
+        }
+    }
+
+    /// Create a new widget builder from a complete GravityDocument
+    pub fn from_document(
+        document: &'a gravity_core::GravityDocument,
+        model: &'a dyn UiBindable,
+        handler_registry: Option<&'a HandlerRegistry>,
+    ) -> Self {
+        Self {
+            node: &document.root,
+            model,
+            handler_registry,
+            style_classes: Some(&document.style_classes),
             verbose: false,
             message_factory: Box::new(|name| HandlerMessage::Handler(name.to_string(), None)),
             state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
@@ -58,10 +79,17 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             node,
             model,
             handler_registry,
+            style_classes: None,
             verbose: false,
             message_factory: Box::new(message_factory),
             state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
         }
+    }
+
+    /// Add style classes to the builder
+    pub fn with_style_classes(mut self, style_classes: &'a HashMap<String, StyleClass>) -> Self {
+        self.style_classes = Some(style_classes);
+        self
     }
 
     /// Get access to the state manager (for event handlers)
@@ -178,6 +206,39 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         None
     }
 
+    /// Resolve styles from class names
+    fn resolve_class_styles(
+        &self,
+        node: &WidgetNode,
+    ) -> Option<gravity_core::ir::style::StyleProperties> {
+        if node.classes.is_empty() {
+            return None;
+        }
+
+        let style_classes = self.style_classes?;
+
+        // Merge styles from all classes (in order)
+        let mut merged_style = gravity_core::ir::style::StyleProperties::default();
+
+        for class_name in &node.classes {
+            if let Some(style_class) = style_classes.get(class_name) {
+                // Merge the base style from this class
+                merged_style = merge_styles(merged_style, &style_class.style);
+
+                if self.verbose {
+                    eprintln!(
+                        "[GravityWidgetBuilder] Applied class '{}' to widget",
+                        class_name
+                    );
+                }
+            } else if self.verbose {
+                eprintln!("[GravityWidgetBuilder] Class '{}' not found", class_name);
+            }
+        }
+
+        Some(merged_style)
+    }
+
     /// Apply style and layout to a widget
     fn apply_style_layout<'b, W>(
         &self,
@@ -192,8 +253,16 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
 
         let element: Element<'a, Message, Theme, Renderer> = widget.into();
 
+        // Resolve styles: class styles first, then node styles override
+        let resolved_style = match (self.resolve_class_styles(node), &node.style) {
+            (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
+            (Some(class_style), None) => Some(class_style),
+            (None, Some(node_style)) => Some(node_style.clone()),
+            (None, None) => None,
+        };
+
         let has_layout = node.layout.is_some();
-        let has_style = node.style.is_some();
+        let has_style = resolved_style.is_some();
 
         if !has_layout && !has_style {
             return element;
@@ -214,9 +283,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             }
         }
 
-        // Apply style
-        if let Some(style) = &node.style {
-            let iced_style = map_style_properties(style);
+        // Apply resolved style
+        if let Some(style) = resolved_style {
+            let iced_style = map_style_properties(&style);
             container = container.style(move |_theme| iced_style);
         }
 
@@ -401,5 +470,22 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         Message: Clone + 'static,
     {
         iced::widget::column(vec![]).into()
+    }
+}
+
+/// Merge two StyleProperties, with the second one taking precedence
+fn merge_styles(
+    base: gravity_core::ir::style::StyleProperties,
+    override_style: &gravity_core::ir::style::StyleProperties,
+) -> gravity_core::ir::style::StyleProperties {
+    use gravity_core::ir::style::StyleProperties;
+
+    StyleProperties {
+        background: override_style.background.clone().or(base.background),
+        color: override_style.color.clone().or(base.color),
+        border: override_style.border.clone().or(base.border),
+        shadow: override_style.shadow.clone().or(base.shadow),
+        opacity: override_style.opacity.or(base.opacity),
+        transform: override_style.transform.clone().or(base.transform),
     }
 }
