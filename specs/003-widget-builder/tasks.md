@@ -194,22 +194,22 @@ This achieves the same goal: centralized, reusable conversions.
 
 ### 5.1: Architecture Validation
 
-- [ ] T080 [US2] Audit all examples for interpretation logic
-- [ ] T081 [US2] Document any remaining manual rendering code
-- [ ] T082 [US2] Refactor any remaining manual code to use builder
+- [X] T080 [US2] Audit all examples for interpretation logic
+- [X] T081 [US2] Document any remaining manual rendering code
+- [X] T082 [US2] Refactor any remaining manual code to use builder
 
 ### 5.2: Extensibility
 
-- [ ] T083 [US2] Test adding new widget type to IR
-- [ ] T084 [US2] Verify only builder.rs needs updating
-- [ ] T085 [US2] Verify examples don't need changes
-- [ ] T086 [US2] Document extension pattern for future widgets
+- [X] T083 [US2] Test adding new widget type to IR
+- [X] T084 [US2] Verify only builder.rs needs updating
+- [X] T085 [US2] Verify examples don't need changes
+- [X] T086 [US2] Document extension pattern for future widgets
 
 ### 5.3: Backend Abstraction
 
-- [ ] T087 [US2] Verify no Iced types leak into gravity-core
-- [ ] T088 [US2] Verify builder is only in gravity-iced
-- [ ] T089 [US2] Document pattern for alternative backends
+- [X] T087 [US2] Verify no Iced types leak into gravity-core
+- [X] T088 [US2] Verify builder is only in gravity-iced
+- [X] T089 [US2] Document pattern for alternative backends
 
 ---
 

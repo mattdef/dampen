@@ -1,16 +1,22 @@
-use gravity_core::{parse, WidgetNode, WidgetKind, AttributeValue};
-use iced::widget::{column, text, button};
+use gravity_core::{parse, HandlerRegistry};
+use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
+use gravity_macros::UiModel;
 use iced::{Element, Task};
+use serde::{Deserialize, Serialize};
+use std::any::Any;
 
-/// Messages for the application
-#[derive(Clone, Debug)]
-enum Message {
-    Greet,
-}
+/// Application model (empty for this example)
+#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
+struct Model;
+
+/// Messages for the application (using HandlerMessage from gravity-iced)
+type Message = HandlerMessage;
 
 /// Application state
 struct AppState {
+    model: Model,
     document: gravity_core::GravityDocument,
+    handler_registry: HandlerRegistry,
 }
 
 impl AppState {
@@ -18,59 +24,45 @@ impl AppState {
         // Load and parse the XML file
         let xml = include_str!("../ui/main.gravity");
         let document = parse(xml).expect("Failed to parse XML");
-        
-        Self { document }
+
+        // Create handler registry
+        let handler_registry = HandlerRegistry::new();
+
+        // Register greet handler
+        handler_registry.register_simple("greet", |_model: &mut dyn Any| {
+            println!("Button clicked!");
+        });
+
+        Self {
+            model: Model::default(),
+            document,
+            handler_registry,
+        }
     }
 }
 
 /// Update function
-fn update(_state: &mut AppState, message: Message) -> Task<Message> {
+fn update(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
-        Message::Greet => {
-            println!("Button clicked!");
+        HandlerMessage::Handler(handler_name, _value) => {
+            if let Some(gravity_core::HandlerEntry::Simple(h)) =
+                state.handler_registry.get(&handler_name)
+            {
+                h(&mut state.model);
+            }
         }
     }
     Task::none()
 }
 
-/// Helper to render a widget node
-fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
-    match node.kind {
-        WidgetKind::Text => {
-            let value = match node.attributes.get("value") {
-                Some(AttributeValue::Static(v)) => v.clone(),
-                _ => String::new(),
-            };
-            text(value).into()
-        }
-        WidgetKind::Button => {
-            let label = match node.attributes.get("label") {
-                Some(AttributeValue::Static(l)) => l.clone(),
-                _ => String::new(),
-            };
-            button(text(label))
-                .on_press(Message::Greet)
-                .into()
-        }
-        WidgetKind::Column => {
-            let children: Vec<_> = node.children.iter()
-                .map(|child| render_node(child))
-                .collect();
-            column(children).into()
-        }
-        WidgetKind::Row => {
-            let children: Vec<_> = node.children.iter()
-                .map(|child| render_node(child))
-                .collect();
-            iced::widget::row(children).into()
-        }
-        _ => column(Vec::new()).into(),
-    }
-}
-
-/// View function
-fn view(state: &AppState) -> Element<Message> {
-    render_node(&state.document.root)
+/// View function using GravityWidgetBuilder
+fn view(state: &AppState) -> Element<'_, Message> {
+    GravityWidgetBuilder::new(
+        &state.document.root,
+        &state.model,
+        Some(&state.handler_registry),
+    )
+    .build()
 }
 
 pub fn main() -> iced::Result {
