@@ -1,10 +1,7 @@
-use gravity_core::{
-    evaluate_binding_expr, parse, AttributeValue, EventKind, HandlerRegistry, InterpolatedPart,
-    WidgetKind, WidgetNode,
-};
+use gravity_core::{parse, HandlerRegistry};
+use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use gravity_macros::{ui_handler, UiModel};
-use iced::widget::{button, column, container, row, text};
-use iced::{Border, Color, Element, Length, Padding, Task};
+use iced::{Element, Task};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 
@@ -24,11 +21,8 @@ impl Default for Model {
     }
 }
 
-/// Messages for the application
-#[derive(Clone, Debug)]
-pub enum Message {
-    Handler(String, Option<String>),
-}
+/// Messages for the application (using HandlerMessage from gravity-iced)
+pub type Message = HandlerMessage;
 
 /// Event handlers using ui_handler macro
 #[ui_handler]
@@ -91,7 +85,7 @@ impl AppState {
 
 fn update(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
-        Message::Handler(handler_name, _value) => {
+        HandlerMessage::Handler(handler_name, _value) => {
             if let Some(gravity_core::HandlerEntry::Simple(h)) =
                 state.handler_registry.get(&handler_name)
             {
@@ -102,244 +96,14 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
     Task::none()
 }
 
-// ============================================================================
-// Helper functions to convert Gravity IR types to Iced types
-// ============================================================================
-
-fn to_iced_color(color: &gravity_core::Color) -> Color {
-    Color {
-        r: color.r,
-        g: color.g,
-        b: color.b,
-        a: color.a,
-    }
-}
-
-fn to_iced_length(length: &gravity_core::Length) -> Length {
-    match length {
-        gravity_core::Length::Fixed(pixels) => Length::Fixed(*pixels),
-        gravity_core::Length::Fill => Length::Fill,
-        gravity_core::Length::Shrink => Length::Shrink,
-        gravity_core::Length::FillPortion(n) => Length::FillPortion(*n as u16),
-        gravity_core::Length::Percentage(pct) => Length::FillPortion((pct / 10.0).max(1.0) as u16),
-    }
-}
-
-fn to_iced_padding(padding: &gravity_core::Padding) -> Padding {
-    Padding {
-        top: padding.top,
-        right: padding.right,
-        bottom: padding.bottom,
-        left: padding.left,
-    }
-}
-
-fn to_iced_radius(radius: &gravity_core::BorderRadius) -> iced::border::Radius {
-    iced::border::Radius {
-        top_left: radius.top_left,
-        top_right: radius.top_right,
-        bottom_right: radius.bottom_right,
-        bottom_left: radius.bottom_left,
-    }
-}
-
-// ============================================================================
-// Rendering functions
-// ============================================================================
-
-#[allow(clippy::only_used_in_recursion)]
-fn render_node<'a>(
-    node: &'a WidgetNode,
-    model: &'a Model,
-    _handler_registry: &'a HandlerRegistry,
-) -> Element<'a, Message> {
-    match node.kind {
-        WidgetKind::Text => render_text(node, model),
-        WidgetKind::Button => render_button(node, model),
-        WidgetKind::Column => render_column(node, model, _handler_registry),
-        WidgetKind::Row => render_row(node, model, _handler_registry),
-        WidgetKind::Container => render_container(node, model, _handler_registry),
-        _ => text("").into(),
-    }
-}
-
-fn render_text<'a>(node: &'a WidgetNode, model: &'a Model) -> Element<'a, Message> {
-    let value = match node.attributes.get("value") {
-        Some(AttributeValue::Static(v)) => v.clone(),
-        Some(AttributeValue::Binding(expr)) => match evaluate_binding_expr(expr, model) {
-            Ok(v) => v.to_display_string(),
-            Err(_) => "[error]".to_string(),
-        },
-        Some(AttributeValue::Interpolated(parts)) => {
-            let mut result = String::new();
-            for part in parts {
-                match part {
-                    InterpolatedPart::Literal(l) => result.push_str(l),
-                    InterpolatedPart::Binding(expr) => match evaluate_binding_expr(expr, model) {
-                        Ok(v) => result.push_str(&v.to_display_string()),
-                        Err(_) => result.push_str("[error]"),
-                    },
-                }
-            }
-            result
-        }
-        None => String::new(),
-    };
-
-    let mut txt = text(value);
-
-    // Apply style from node.style (already parsed!)
-    if let Some(ref style) = node.style {
-        if let Some(ref color) = style.color {
-            txt = txt.color(to_iced_color(color));
-        }
-    }
-
-    // Size and weight from attributes (not in IR yet)
-    if let Some(AttributeValue::Static(size_str)) = node.attributes.get("size") {
-        if let Ok(size) = size_str.parse::<f32>() {
-            txt = txt.size(size);
-        }
-    }
-
-    txt.into()
-}
-
-fn render_button<'a>(node: &'a WidgetNode, model: &'a Model) -> Element<'a, Message> {
-    let label = match node.attributes.get("label") {
-        Some(AttributeValue::Static(l)) => l.clone(),
-        _ => String::new(),
-    };
-
-    let on_click = node
-        .events
-        .iter()
-        .find(|e| e.event == EventKind::Click)
-        .map(|e| e.handler.clone());
-
-    let btn = button(text(label));
-    if let Some(handler_name) = on_click {
-        btn.on_press(Message::Handler(handler_name, None)).into()
-    } else {
-        btn.into()
-    }
-}
-
-fn render_column<'a>(
-    node: &'a WidgetNode,
-    model: &'a Model,
-    handler_registry: &'a HandlerRegistry,
-) -> Element<'a, Message> {
-    let children: Vec<_> = node
-        .children
-        .iter()
-        .map(|child| render_node(child, model, handler_registry))
-        .collect();
-
-    let mut col = column(children);
-
-    // Apply layout from node.layout (already parsed!)
-    if let Some(ref layout) = node.layout {
-        if let Some(ref padding) = layout.padding {
-            col = col.padding(to_iced_padding(padding));
-        }
-        if let Some(spacing) = layout.spacing {
-            col = col.spacing(spacing);
-        }
-    }
-
-    col.into()
-}
-
-fn render_row<'a>(
-    node: &'a WidgetNode,
-    model: &'a Model,
-    handler_registry: &'a HandlerRegistry,
-) -> Element<'a, Message> {
-    let children: Vec<_> = node
-        .children
-        .iter()
-        .map(|child| render_node(child, model, handler_registry))
-        .collect();
-
-    let mut r = row(children);
-
-    // Apply layout from node.layout (already parsed!)
-    if let Some(ref layout) = node.layout {
-        if let Some(ref padding) = layout.padding {
-            r = r.padding(to_iced_padding(padding));
-        }
-        if let Some(spacing) = layout.spacing {
-            r = r.spacing(spacing);
-        }
-    }
-
-    r.into()
-}
-
-fn render_container<'a>(
-    node: &'a WidgetNode,
-    model: &'a Model,
-    handler_registry: &'a HandlerRegistry,
-) -> Element<'a, Message> {
-    let child = if !node.children.is_empty() {
-        render_node(&node.children[0], model, handler_registry)
-    } else {
-        text("").into()
-    };
-
-    let mut cont = container(child);
-
-    // Apply layout from node.layout (already parsed!)
-    if let Some(ref layout) = node.layout {
-        if let Some(ref padding) = layout.padding {
-            cont = cont.padding(to_iced_padding(padding));
-        }
-        if let Some(ref width) = layout.width {
-            cont = cont.width(to_iced_length(width));
-        }
-    }
-
-    // Apply style from node.style (already parsed!)
-    if let Some(ref style) = node.style {
-        let has_style = style.background.is_some() || style.border.is_some();
-
-        if has_style {
-            let bg = style.background.as_ref().and_then(|bg| match bg {
-                gravity_core::Background::Color(c) => Some(to_iced_color(c)),
-                _ => None,
-            });
-
-            let (border_width, border_color, border_radius) = if let Some(ref border) = style.border
-            {
-                (
-                    border.width,
-                    to_iced_color(&border.color),
-                    to_iced_radius(&border.radius),
-                )
-            } else {
-                (0.0, Color::TRANSPARENT, iced::border::Radius::default())
-            };
-
-            cont = cont.style(move |_theme| container::Style {
-                background: bg.map(iced::Background::Color),
-                border: Border {
-                    width: border_width,
-                    color: border_color,
-                    radius: border_radius,
-                },
-                text_color: None,
-                shadow: iced::Shadow::default(),
-                snap: false,
-            });
-        }
-    }
-
-    cont.into()
-}
-
+/// View function using GravityWidgetBuilder
 fn view(state: &AppState) -> Element<'_, Message> {
-    render_node(&state.document.root, &state.model, &state.handler_registry)
+    GravityWidgetBuilder::new(
+        &state.document.root,
+        &state.model,
+        Some(&state.handler_registry),
+    )
+    .build()
 }
 
 pub fn main() -> iced::Result {
