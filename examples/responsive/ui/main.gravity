@@ -1,85 +1,138 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <gravity>
-    <column padding="40" spacing="20">
-        <text value="Responsive Breakpoints Demo" size="32" weight="bold" color="#2c3e50" />
-        <text value="Resize the window to see responsive changes!" size="16" color="#7f8c8d" />
-        
-        <!-- Responsive spacing- Different spacing per breakpoint -->
-        <column 
-            spacing="30" 
-            mobile-spacing="10" 
-            tablet-spacing="20" 
-            desktop-spacing="40"
-            background="#e8f4f8" 
-            padding="20"
-            border_radius="8">
-            <text value="Responsive Spacing" size="20" weight="bold" color="#3498db" />
-            <text value="Mobile- 10px | Tablet- 20px | Desktop- 40px" size="14" />
-            <text value="Try resizing the window to see spacing change!" size="12" />
-        </column>
-        
-        <!-- Responsive width- Stack on mobile, row on desktop -->
-        <container 
-            width="fill" 
-            padding="20" 
-            background="#ffffff" 
-            border_width="2"
-            border_color="#2c3e50"
-            border_radius="8">
-            <text value="Responsive Layout Pattern" size="18" weight="bold" />
-            <column spacing="15">
-                <text value="On mobile (<640px)- Vertical stack" size="14" />
-                <text value="On tablet (640-1024px)- Mixed" size="14" />
-                <text value="On desktop (≥1024px)- Horizontal row" size="14" />
+    <scrollable>
+        <column padding="40" spacing="20">
+            <text
+                value="Responsive Breakpoints Demo"
+                size="32"
+                weight="bold"
+                color="#2c3e50"
+            />
+            <text
+                value="Resize the window to see responsive changes!"
+                size="16"
+                color="#7f8c8d"
+            />
+
+            <!-- Responsive spacing- Different spacing per breakpoint -->
+            <column
+                spacing="30"
+                mobile-spacing="10"
+                tablet-spacing="20"
+                desktop-spacing="40"
+                background="#e8f4f8"
+                padding="20"
+                border_radius="8"
+            >
+                <text
+                    value="Responsive Spacing"
+                    size="20"
+                    weight="bold"
+                    color="#3498db"
+                />
+                <text
+                    value="Mobile- 10px | Tablet- 20px | Desktop- 40px"
+                    size="14"
+                />
+                <text
+                    value="Try resizing the window to see spacing change!"
+                    size="12"
+                />
             </column>
-        </container>
-        
-        <!-- Responsive padding -->
-        <container 
-            background="#d5dbdb" 
-            padding="40"
-            mobile-padding="10"
-            tablet-padding="20"
-            desktop-padding="40"
-            border_radius="8">
-            <text value="Responsive Padding" size="18" weight="bold" />
-            <text value="Mobile- 10px | Tablet- 20px | Desktop- 40px" size="14" />
-        </container>
-        
-        <!-- Buttons with responsive sizing -->
-        <row spacing="10" align_items="center" mobile-direction="vertical">
-            <button label="Small" width="80" mobile-width="fill" />
-            <button label="Medium" width="120" mobile-width="fill" />
-            <button label="Large" width="160" mobile-width="fill" />
-        </row>
-        
-        <!-- Responsive container with min/max -->
-        <container 
-            width="fill"
-            min_width="200"
-            max_width="800"
-            mobile-max_width="400"
-            desktop-min_width="600"
-            padding="20"
-            background="#f8f9fa"
-            border_radius="8">
-            <text value="Responsive Constraints" size="18" weight="bold" />
-            <text value="Base- min 200, max 800" size="12" />
-            <text value="Mobile- max 400" size="12" />
-            <text value="Desktop- min 600" size="12" />
-        </container>
-        
-        <!-- Visual breakpoint indicator -->
-        <container 
-            width="fill" 
-            padding="30"
-            background="#2c3e50"
-            border_radius="12">
-            <text value="Current Breakpoint-" size="20" weight="bold" color="#ffffff" />
-            <text value="Resize window to see it change!" size="16" color="#ecf0f1" />
-            <text value="Mobile- < 640px" size="12" color="#95a5a6" />
-            <text value="Tablet- 640px - 1024px" size="12" color="#95a5a6" />
-            <text value="Desktop- ≥ 1024px" size="12" color="#95a5a6" />
-        </container>
-    </column>
+
+            <!-- Responsive width- Stack on mobile, row on desktop -->
+            <container
+                width="fill"
+                padding="20"
+                background="#ffffff"
+                border_width="2"
+                border_color="#2c3e50"
+                border_radius="8"
+            >
+                <text
+                    value="Responsive Layout Pattern"
+                    size="18"
+                    weight="bold"
+                />
+                <column spacing="15">
+                    <text
+                        value="On mobile (&lt;640px)- Vertical stack"
+                        size="14"
+                    />
+                    <text value="On tablet (640-1024px)- Mixed" size="14" />
+                    <text
+                        value="On desktop (≥1024px)- Horizontal row"
+                        size="14"
+                    />
+                </column>
+            </container>
+
+            <!-- Responsive padding -->
+            <container
+                background="#d5dbdb"
+                padding="40"
+                mobile-padding="10"
+                tablet-padding="20"
+                desktop-padding="40"
+                border_radius="8"
+            >
+                <text value="Responsive Padding" size="18" weight="bold" />
+                <text
+                    value="Mobile- 10px | Tablet- 20px | Desktop- 40px"
+                    size="14"
+                />
+            </container>
+
+            <!-- Buttons with responsive sizing -->
+            <row spacing="10" align_items="center" mobile-direction="vertical">
+                <button label="Small" width="80" mobile-width="fill" />
+                <button label="Medium" width="120" mobile-width="fill" />
+                <button label="Large" width="160" mobile-width="fill" />
+            </row>
+
+            <!-- Responsive container with min/max -->
+            <container
+                width="fill"
+                min_width="200"
+                max_width="800"
+                mobile-max_width="400"
+                desktop-min_width="600"
+                padding="20"
+                background="#f8f9fa"
+                border_radius="8"
+            >
+                <text value="Responsive Constraints" size="18" weight="bold" />
+                <text value="Base- min 200, max 800" size="12" />
+                <text value="Mobile- max 400" size="12" />
+                <text value="Desktop- min 600" size="12" />
+            </container>
+
+            <!-- Visual breakpoint indicator -->
+            <container
+                width="fill"
+                padding="30"
+                background="#2c3e50"
+                border_radius="12"
+            >
+                <text
+                    value="Current Breakpoint-"
+                    size="20"
+                    weight="bold"
+                    color="#ffffff"
+                />
+                <text
+                    value="Resize window to see it change!"
+                    size="16"
+                    color="#ecf0f1"
+                />
+                <text value="Mobile- &lt; 640px" size="12" color="#95a5a6" />
+                <text
+                    value="Tablet- 640px - 1024px"
+                    size="12"
+                    color="#95a5a6"
+                />
+                <text value="Desktop- ≥ 1024px" size="12" color="#95a5a6" />
+            </container>
+        </column>
+    </scrollable>
 </gravity>
