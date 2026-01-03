@@ -36,27 +36,31 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Verify project structure and existing files
-- [ ] T002 Create `crates/gravity-iced/src/builder.rs` (empty file)
-- [ ] T003 Create `crates/gravity-iced/src/convert.rs` (empty file)
-- [ ] T004 Update `crates/gravity-iced/src/lib.rs` to export builder
+- [X] T001 Verify project structure and existing files
+- [X] T002 Create `crates/gravity-iced/src/builder.rs` (empty file)
+- [X] T003 Create `crates/gravity-iced/src/convert.rs` (empty file)
+- [X] T004 Update `crates/gravity-iced/src/lib.rs` to export builder
 
 ---
 
 ## Phase 2: Foundational (Prerequisites for All User Stories)
 
-- [ ] T005 [P] Implement `From<StyleProperties>` for `iced::widget::container::Style` in convert.rs
-- [ ] T006 [P] Implement `From<Length>` for `iced::Length` in convert.rs
-- [ ] T007 [P] Implement `From<Color>` for `iced::Color` in convert.rs
-- [ ] T008 [P] Implement `From<Background>` for `iced::Background` in convert.rs
-- [ ] T009 [P] Implement `From<Border>` for `iced::Border` in convert.rs
-- [ ] T010 [P] Implement `From<Shadow>` for `iced::Shadow` in convert.rs
-- [ ] T011 [P] Implement `From<Padding>` for `iced::Padding` in convert.rs
-- [ ] T012 [P] Implement `From<BorderRadius>` for `iced::border::Radius` in convert.rs
-- [ ] T013 [P] Implement `From<Transform>` for Iced transform (if available) or document limitation
-- [ ] T014 Implement `GravityWidgetBuilder::new()` constructor in builder.rs
-- [ ] T015 Implement `GravityWidgetBuilder::with_verbose()` configuration method
-- [ ] T016 Implement `GravityWidgetBuilder::build()` entry point
+- [X] T005 [P] Implement `From<StyleProperties>` for `iced::widget::container::Style` in convert.rs
+- [X] T006 [P] Implement `From<Length>` for `iced::Length` in convert.rs
+- [X] T007 [P] Implement `From<Color>` for `iced::Color` in convert.rs
+- [X] T008 [P] Implement `From<Background>` for `iced::Background` in convert.rs
+- [X] T009 [P] Implement `From<Border>` for `iced::Border` in convert.rs
+- [X] T010 [P] Implement `From<Shadow>` for `iced::Shadow` in convert.rs
+- [X] T011 [P] Implement `From<Padding>` for `iced::Padding` in convert.rs
+- [X] T012 [P] Implement `From<BorderRadius>` for `iced::border::Radius` in convert.rs
+- [X] T013 [P] Implement `From<Transform>` for Iced transform (if available) or document limitation
+- [X] T014 Implement `GravityWidgetBuilder::new()` constructor in builder.rs
+- [X] T015 Implement `GravityWidgetBuilder::with_verbose()` configuration method
+- [X] T016 Implement `GravityWidgetBuilder::build()` entry point
+
+**Note**: T005-T013: Due to Rust orphan rules, From traits cannot be implemented for external types.
+Instead, we re-export existing mapping functions from style_mapping.rs via convert.rs.
+This achieves the same goal: centralized, reusable conversions.
 
 ---
 
