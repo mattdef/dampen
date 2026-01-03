@@ -6,15 +6,17 @@
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://rust-lang.org)
 
-**A declarative UI framework for Rust with Iced backend, featuring hot-reload development and production code generation.**
+**A declarative UI framework for Rust with Iced backend, featuring hot-reload development, advanced styling, and production code generation.**
 
 Gravity allows you to define your UI in XML and render it through Iced, with support for:
 - ✅ **Declarative XML UI definitions**
 - ✅ **Hot-reload development mode** (<500ms updates)
-- ✅ **Production code generation** (zero runtime overhead)
+- ✅ **Advanced styling system** (themes, classes, state-based styles)
+- ✅ **Responsive design** with breakpoints (mobile, tablet, desktop)
 - ✅ **Type-safe event handlers and bindings**
 - ✅ **Expression evaluation** in UI attributes
-- ✅ **Multiple Iced widgets** (text, buttons, inputs, layouts, etc.)
+- ✅ **Production code generation** (zero runtime overhead)
+- ✅ **Complete Iced widget support** (text, buttons, inputs, layouts, etc.)
 
 ## Quick Start
 
@@ -114,6 +116,68 @@ Define your entire UI in XML:
 </column>
 ```
 
+### Advanced Styling System
+
+**Themes** for consistent design:
+
+```xml
+<themes>
+    <theme name="custom">
+        <palette 
+            primary="#3498db" 
+            secondary="#2ecc71"
+            background="#ecf0f1"
+            text="#2c3e50" />
+        <typography font_family="Inter, sans-serif" font_size_base="16" />
+        <spacing unit="8" />
+    </theme>
+</themes>
+<global_theme name="custom" />
+```
+
+**Style Classes** for reusable styles:
+
+```xml
+<style_classes>
+    <style name="btn_primary" 
+        background="#3498db"
+        color="#ffffff"
+        padding="12 24"
+        border_radius="6">
+        <hover background="#2980b9" />
+        <active background="#21618c" />
+        <disabled opacity="0.5" />
+    </style>
+</style_classes>
+
+<button class="btn_primary" label="Click Me" on_click="handler" />
+```
+
+**State-Based Styling** with hover, active, focus, and disabled states:
+
+```xml
+<button 
+    background="#3498db"
+    hover_background="#2980b9"
+    active_background="#21618c"
+    disabled_opacity="0.5"
+    label="Interactive Button" />
+```
+
+**Responsive Design** with breakpoints:
+
+```xml
+<column 
+    mobile:spacing="10"
+    tablet:spacing="15"
+    desktop:spacing="20">
+    <text 
+        mobile:size="18"
+        desktop:size="32"
+        value="Responsive Text" />
+</column>
+```
+
 ### Type-Safe Handlers
 
 ```rust
@@ -190,7 +254,7 @@ View IR tree or generated code for debugging.
 crates/
 ├── gravity-core/      # Parser, IR, traits (backend-agnostic)
 ├── gravity-macros/    # #[derive(UiModel)], #[ui_handler]
-├── gravity-runtime/   # Hot-reload interpreter, file watcher
+├── gravity-runtime/   # Hot-reload, file watcher, breakpoints, theme manager
 ├── gravity-iced/      # Iced backend implementation
 └── gravity-cli/       # Developer CLI (dev, build, check, inspect)
 
@@ -198,12 +262,16 @@ examples/
 ├── hello-world/       # Minimal static example
 ├── counter/           # Interactive handlers
 ├── todo-app/          # Full bindings example
-└── full-demo/         # Complete showcase (coming soon)
+├── styling/           # Themes, classes, state-based styles
+├── responsive/        # Responsive design with breakpoints
+├── builder-demo/      # Custom widget patterns
+└── hot-reload-test/   # Hot-reload development workflow
 ```
 
 ## Documentation
 
 - **[Quick Start Guide](docs/QUICKSTART.md)** - Detailed getting started
+- **[Styling Guide](docs/STYLING.md)** - Themes, classes, state-based styles, and responsive design
 - **[XML Schema Reference](docs/XML_SCHEMA.md)** - All widgets and attributes
 - **[API Documentation](https://docs.rs/gravity-core)** - Full rustdoc
 - **[Examples](examples/)** - Progressive example projects
@@ -212,17 +280,20 @@ examples/
 
 ```bash
 # Development server with hot-reload
-gravity dev --ui ui --file main.gravity
+gravity dev --ui ui --file main.gravity --verbose
 
 # Generate production code
 gravity build --ui ui --output src/ui_generated.rs
 
-# Validate without running
+# Validate UI files without running
 gravity check --ui ui
 
 # Inspect IR or generated code
 gravity inspect --file ui/main.gravity
-gravity inspect --file ui/main.gravity --codegen
+gravity inspect --file ui/main.gravity --codegen --handlers increment,decrement
+
+# Create new project (coming soon)
+gravity new my-app --template counter
 ```
 
 ## Performance
@@ -234,18 +305,21 @@ gravity inspect --file ui/main.gravity --codegen
 
 ## Requirements
 
-- Rust 1.75 or later
-- Edition 2021 (2024 when stable)
-- No nightly features in public API
+- Rust 1.75 or later (stable)
+- Edition 2021 (Edition 2024 compatibility planned)
+- No nightly features required
 
 ## Examples
 
 See the [examples directory](examples/) for progressive demonstrations:
 
 1. **hello-world** - Static UI rendering
-2. **counter** - Interactive state management
+2. **counter** - Interactive state management with handlers
 3. **todo-app** - Full data binding with lists
-4. **full-demo** - All features showcase (coming soon)
+4. **styling** - Advanced styling with themes, classes, and state-based styles
+5. **responsive** - Responsive design with breakpoints
+6. **builder-demo** - Custom widget builder patterns
+7. **hot-reload-test** - Hot-reload development workflow
 
 ## Contributing
 
@@ -270,16 +344,20 @@ at your option.
 - ✅ Phase 6: Hot-reload development
 - ✅ Phase 7-8: Production mode (Codegen and validation)
 - ✅ Phase 9: Complete widget support
-- ✅ Phase 10: Debug tools (Inspect command)
-- 🚧 Phase 11: Polish and release preparation
+- ✅ Phase 10: Advanced styling (Themes, classes, state-based styles)
+- ✅ Phase 11: Responsive design (Breakpoints)
+- ✅ Phase 12: Debug tools (Inspect command)
+- 🚧 Phase 13: Polish and release preparation
 
 ## Roadmap
 
 - [ ] Full documentation site
 - [ ] LSP server for IDE integration
-- [ ] More advanced widgets (canvas, charts)
-- [ ] Theming system
-- [ ] Subscription support
+- [ ] More advanced widgets (canvas, charts, svg)
+- [ ] Animation system
+- [ ] Subscription support (async streams)
+- [ ] Custom widget API
+- [ ] Performance profiling tools
 - [ ] Crates.io publication
 
 ## Support
