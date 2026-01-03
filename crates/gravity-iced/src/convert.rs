@@ -4,21 +4,13 @@
 //! for use in the GravityWidgetBuilder.
 
 pub use crate::style_mapping::{
-    map_background,
-    map_border_radius,
-    map_color,
-    map_length,
-    map_padding,
-    map_style_properties,
-    map_layout_constraints,
-    map_alignment,
-    map_justification,
-    map_gradient,
-    has_positioning,
-    get_z_index,
-    IcedLayout,
+    get_z_index, has_positioning, map_alignment, map_background, map_border_radius, map_color,
+    map_gradient, map_justification, map_layout_constraints, map_length, map_padding,
+    map_style_properties, IcedLayout,
 };
 
 // Re-export IR types for convenience
 pub use gravity_core::ir::layout::{Alignment, Justification, LayoutConstraints, Length, Padding};
-pub use gravity_core::ir::style::{Background, Border, BorderRadius, Color, Shadow, StyleProperties, Transform};
+pub use gravity_core::ir::style::{
+    Background, Border, BorderRadius, Color, Shadow, StyleProperties, Transform,
+};

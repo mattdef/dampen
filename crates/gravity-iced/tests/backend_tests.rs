@@ -351,7 +351,7 @@ fn test_layout_with_combined_attributes() {
     };
 
     let iced_layout = map_layout_constraints(&layout);
-    
+
     // Verify all attributes are mapped
     assert!(iced_layout.width != iced::Length::Shrink); // Has fixed width
     assert!(iced_layout.height != iced::Length::Shrink); // Has fixed height

@@ -4,13 +4,16 @@
 //! parsed Gravity UI definitions into Iced widgets with full support for
 //! bindings, events, styles, and layouts.
 
-use gravity_core::ir::node::{WidgetNode, AttributeValue, InterpolatedPart};
-use gravity_core::ir::WidgetKind;
-use gravity_core::binding::UiBindable;
-use gravity_core::handler::HandlerRegistry;
-use gravity_core::expr::evaluate_binding_expr;
-use iced::{Element, Renderer, Theme};
 use crate::convert::{map_layout_constraints, map_style_properties};
+use crate::state::WidgetStateManager;
+use crate::HandlerMessage;
+use gravity_core::binding::UiBindable;
+use gravity_core::expr::evaluate_binding_expr;
+use gravity_core::handler::HandlerRegistry;
+use gravity_core::ir::node::{AttributeValue, InterpolatedPart, WidgetNode};
+use gravity_core::ir::WidgetKind;
+use iced::{Element, Renderer, Theme};
+use std::sync::{Arc, Mutex};
 
 /// Builder for creating Iced widgets from Gravity markup
 pub struct GravityWidgetBuilder<'a, Message> {
@@ -18,11 +21,12 @@ pub struct GravityWidgetBuilder<'a, Message> {
     model: &'a dyn UiBindable,
     handler_registry: Option<&'a HandlerRegistry>,
     verbose: bool,
-    _phantom: std::marker::PhantomData<Message>,
+    message_factory: Box<dyn Fn(&str) -> Message + 'a>,
+    state_manager: Arc<Mutex<WidgetStateManager>>,
 }
 
-impl<'a, Message> GravityWidgetBuilder<'a, Message> {
-    /// Create a new widget builder
+impl<'a> GravityWidgetBuilder<'a, HandlerMessage> {
+    /// Create a new widget builder using HandlerMessage
     pub fn new(
         node: &'a WidgetNode,
         model: &'a dyn UiBindable,
@@ -33,8 +37,36 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             model,
             handler_registry,
             verbose: false,
-            _phantom: std::marker::PhantomData,
+            message_factory: Box::new(|name| HandlerMessage::Handler(name.to_string(), None)),
+            state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
         }
+    }
+}
+
+impl<'a, Message> GravityWidgetBuilder<'a, Message> {
+    /// Create a new widget builder with custom message factory
+    pub fn new_with_factory<F>(
+        node: &'a WidgetNode,
+        model: &'a dyn UiBindable,
+        handler_registry: Option<&'a HandlerRegistry>,
+        message_factory: F,
+    ) -> Self
+    where
+        F: Fn(&str) -> Message + 'a,
+    {
+        Self {
+            node,
+            model,
+            handler_registry,
+            verbose: false,
+            message_factory: Box::new(message_factory),
+            state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
+        }
+    }
+
+    /// Get access to the state manager (for event handlers)
+    pub fn state_manager(&self) -> Arc<Mutex<WidgetStateManager>> {
+        self.state_manager.clone()
     }
 
     /// Enable or disable verbose logging
@@ -81,22 +113,23 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     fn evaluate_attribute(&self, attr: &AttributeValue) -> String {
         match attr {
             AttributeValue::Static(value) => value.clone(),
-            AttributeValue::Binding(expr) => {
-                match evaluate_binding_expr(expr, self.model) {
-                    Ok(value) => {
-                        if self.verbose {
-                            eprintln!("[GravityWidgetBuilder] Binding evaluated to: {}", value.to_display_string());
-                        }
-                        value.to_display_string()
+            AttributeValue::Binding(expr) => match evaluate_binding_expr(expr, self.model) {
+                Ok(value) => {
+                    if self.verbose {
+                        eprintln!(
+                            "[GravityWidgetBuilder] Binding evaluated to: {}",
+                            value.to_display_string()
+                        );
                     }
-                    Err(e) => {
-                        if self.verbose {
-                            eprintln!("[GravityWidgetBuilder] Binding error: {}", e);
-                        }
-                        String::new()
-                    }
+                    value.to_display_string()
                 }
-            }
+                Err(e) => {
+                    if self.verbose {
+                        eprintln!("[GravityWidgetBuilder] Binding error: {}", e);
+                    }
+                    String::new()
+                }
+            },
             AttributeValue::Interpolated(parts) => {
                 let mut result = String::new();
                 for part in parts {
@@ -107,7 +140,10 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
                                 Ok(value) => result.push_str(&value.to_display_string()),
                                 Err(e) => {
                                     if self.verbose {
-                                        eprintln!("[GravityWidgetBuilder] Interpolated binding error: {}", e);
+                                        eprintln!(
+                                            "[GravityWidgetBuilder] Interpolated binding error: {}",
+                                            e
+                                        );
                                     }
                                 }
                             }
@@ -129,20 +165,25 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
                 if self.verbose {
                     eprintln!("[GravityWidgetBuilder] Handler '{}' found", handler_name);
                 }
-                // For MVP, we'll need a way to convert handler name to Message
-                // This will be handled in Phase 3 with proper message generation
-                return None;
+                return Some((self.message_factory)(handler_name));
             }
         }
-        
+
         if self.verbose {
-            eprintln!("[GravityWidgetBuilder] Handler '{}' not found", handler_name);
+            eprintln!(
+                "[GravityWidgetBuilder] Handler '{}' not found",
+                handler_name
+            );
         }
         None
     }
 
     /// Apply style and layout to a widget
-    fn apply_style_layout<'b, W>(&self, widget: W, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn apply_style_layout<'b, W>(
+        &self,
+        widget: W,
+        node: &WidgetNode,
+    ) -> Element<'a, Message, Theme, Renderer>
     where
         W: Into<Element<'a, Message, Theme, Renderer>>,
         Message: Clone + 'static,
@@ -150,7 +191,7 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         use iced::widget::container;
 
         let element: Element<'a, Message, Theme, Renderer> = widget.into();
-        
+
         let has_layout = node.layout.is_some();
         let has_style = node.style.is_some();
 
@@ -167,7 +208,7 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
                 .width(iced_layout.width)
                 .height(iced_layout.height)
                 .padding(iced_layout.padding);
-            
+
             if let Some(align) = iced_layout.align_items {
                 container = container.align_y(align);
             }
@@ -183,15 +224,17 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     }
 
     // Widget builders - will be fully implemented in Phase 3
-    
+
     fn build_text(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
     where
         Message: Clone + 'static,
     {
-        let value = node.attributes.get("value")
+        let value = node
+            .attributes
+            .get("value")
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
-        
+
         iced::widget::text(value).into()
     }
 
@@ -199,23 +242,41 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     where
         Message: Clone + 'static,
     {
-        let label = node.attributes.get("label")
+        let label = node
+            .attributes
+            .get("label")
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
-        
-        // In Phase 3, we'll properly connect events
-        iced::widget::button(iced::widget::text(label)).into()
+
+        // Get handler from events
+        let on_click = node
+            .events
+            .iter()
+            .find(|e| e.event == gravity_core::EventKind::Click)
+            .map(|e| e.handler.clone());
+
+        let mut btn = iced::widget::button(iced::widget::text(label));
+
+        // Connect event if handler exists
+        if let Some(handler_name) = on_click {
+            if let Some(message) = self.get_handler_message(&handler_name) {
+                btn = btn.on_press(message);
+            }
+        }
+
+        btn.into()
     }
 
     fn build_column(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
     where
         Message: Clone + 'static,
     {
-        let children: Vec<_> = node.children
+        let children: Vec<_> = node
+            .children
             .iter()
             .map(|child| self.build_widget(child))
             .collect();
-        
+
         let column = iced::widget::column(children);
         self.apply_style_layout(column, node)
     }
@@ -224,11 +285,12 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     where
         Message: Clone + 'static,
     {
-        let children: Vec<_> = node.children
+        let children: Vec<_> = node
+            .children
             .iter()
             .map(|child| self.build_widget(child))
             .collect();
-        
+
         let row = iced::widget::row(children);
         self.apply_style_layout(row, node)
     }
@@ -303,11 +365,12 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     where
         Message: Clone + 'static,
     {
-        let children: Vec<_> = node.children
+        let children: Vec<_> = node
+            .children
             .iter()
             .map(|child| self.build_widget(child))
             .collect();
-        
+
         // Stack is not directly available, use column as placeholder
         iced::widget::column(children).into()
     }

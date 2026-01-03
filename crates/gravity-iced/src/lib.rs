@@ -1,5 +1,7 @@
 //! Gravity Iced - Iced Backend Implementation
 
+pub mod builder;
+pub mod convert;
 pub mod state;
 pub mod style_mapping;
 pub mod theme_adapter;
@@ -8,6 +10,16 @@ pub mod widgets;
 use gravity_core::{AttributeValue, Backend, EventKind, InterpolatedPart, WidgetKind, WidgetNode};
 use iced::widget::{button, column, row, text};
 use iced::{Element, Renderer, Theme};
+
+/// Standard message type for handler-based applications
+#[derive(Clone, Debug, PartialEq)]
+pub enum HandlerMessage {
+    /// Simple handler with optional payload
+    Handler(String, Option<String>),
+}
+
+// Re-export builder
+pub use builder::GravityWidgetBuilder;
 
 /// Iced backend implementation
 pub struct IcedBackend {
@@ -442,6 +454,3 @@ fn format_interpolated(parts: &[InterpolatedPart]) -> String {
     }
     result
 }
-
-pub mod builder;
-pub mod convert;
