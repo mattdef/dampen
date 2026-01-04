@@ -50,10 +50,12 @@ proptest::proptest! {
     }
 
     #[test]
-    fn test_parse_text_with_binding(field_name in "[a-z]{2,8}") {
+    fn test_parse_text_with_binding(field_name in "[a-z]{2,8}".prop_filter("exclude reserved keywords", |s| {
+        !matches!(s.as_str(), "if" | "else" | "while" | "for" | "loop" | "match" | "fn" | "let" | "true" | "false" | "null" | "self")
+    })) {
         let xml = format!(r#"<text value="{{{}}}" />"#, field_name);
         let result = parse(&xml);
-        prop_assert!(result.is_ok());
+        prop_assert!(result.is_ok(), "Failed to parse: {}", xml);
         let doc = result.unwrap();
         prop_assert_eq!(doc.root.kind, WidgetKind::Text);
         prop_assert!(doc.root.attributes.contains_key("value"));

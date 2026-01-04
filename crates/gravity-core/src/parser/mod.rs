@@ -112,6 +112,12 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "toggler" => WidgetKind::Toggler,
         "space" => WidgetKind::Space,
         "rule" => WidgetKind::Rule,
+        "combobox" => WidgetKind::ComboBox,
+        "progress_bar" => WidgetKind::ProgressBar,
+        "tooltip" => WidgetKind::Tooltip,
+        "grid" => WidgetKind::Grid,
+        "canvas" => WidgetKind::Canvas,
+        "float" => WidgetKind::Float,
         _ => {
             return Err(ParseError {
                 kind: ParseErrorKind::UnknownWidget,
@@ -249,16 +255,16 @@ fn parse_gravity_document(root: Node, source: &str) -> Result<GravityDocument, P
                 // Parse themes section
                 for theme_node in child.children() {
                     if theme_node.node_type() == NodeType::Element
-                        && theme_node.tag_name().name() == "theme" {
-                            let theme = crate::parser::theme_parser::parse_theme_from_node(
-                                theme_node, source,
-                            )?;
-                            let name = theme_node
-                                .attribute("name")
-                                .map(|s| s.to_string())
-                                .unwrap_or_else(|| "default".to_string());
-                            themes.insert(name, theme);
-                        }
+                        && theme_node.tag_name().name() == "theme"
+                    {
+                        let theme =
+                            crate::parser::theme_parser::parse_theme_from_node(theme_node, source)?;
+                        let name = theme_node
+                            .attribute("name")
+                            .map(|s| s.to_string())
+                            .unwrap_or_else(|| "default".to_string());
+                        themes.insert(name, theme);
+                    }
                 }
             }
             "style_classes" | "classes" | "styles" => {
@@ -311,6 +317,42 @@ fn parse_gravity_document(root: Node, source: &str) -> Result<GravityDocument, P
         style_classes,
         global_theme,
     })
+}
+
+/// Parse comma-separated list into Vec<String>
+pub fn parse_comma_separated(value: &str) -> Vec<String> {
+    value
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect()
+}
+
+/// Parse a simple enum value (case-insensitive) and return the matched variant
+pub fn parse_enum_value<T: std::str::FromStr>(
+    value: &str,
+    valid_variants: &[&str],
+) -> Result<T, String>
+where
+    T: std::fmt::Display,
+{
+    let normalized = value.trim().to_lowercase();
+    for variant in valid_variants.iter() {
+        if variant.to_lowercase() == normalized {
+            return T::from_str(variant).map_err(|_| {
+                format!(
+                    "Failed to parse '{}' as {}",
+                    variant,
+                    std::any::type_name::<T>()
+                )
+            });
+        }
+    }
+    Err(format!(
+        "Invalid value '{}'. Valid options: {}",
+        value,
+        valid_variants.join(", ")
+    ))
 }
 
 /// Parse attribute value, detecting binding expressions

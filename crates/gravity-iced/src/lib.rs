@@ -440,6 +440,12 @@ pub fn render<'a>(
             // For custom widgets, return empty
             backend.column(Vec::new())
         }
+        WidgetKind::ComboBox => backend.column(Vec::new()),
+        WidgetKind::ProgressBar => backend.column(Vec::new()),
+        WidgetKind::Tooltip => backend.column(Vec::new()),
+        WidgetKind::Grid => backend.column(Vec::new()),
+        WidgetKind::Canvas => backend.column(Vec::new()),
+        WidgetKind::Float => backend.column(Vec::new()),
     }
 }
 

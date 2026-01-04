@@ -39,7 +39,7 @@ pub use breakpoint::{
 };
 pub use interpreter::{DispatchError, HotReloadInterpreter, Interpreter, ReloadResult};
 pub use overlay::{ErrorOverlay, OverlayManager};
-pub use state::{RuntimeState, StateMigration, StateRestoration};
+pub use state::{GravityRuntimeState, RuntimeState, StateMigration, StateRestoration};
 pub use style_cascade::{merge_styles, resolve_layout, StyleCascade};
 pub use theme_manager::ThemeManager;
 pub use watcher::{FileEvent, FileWatcher};

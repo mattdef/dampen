@@ -12,6 +12,7 @@ members = [
     "examples/hot-reload-test",
     "examples/todo-app",
     "examples/styling",
+    "examples/widget-showcase",
     "examples/responsive",
 ]
 
@@ -50,7 +51,7 @@ proc-macro2 = "1.0"
 clap = { version = "4.0", features = ["derive"] }
 
 # UI Backend
-iced = { version = "0.14", features = ["tokio"] }
+iced = { version = "0.14", features = ["tokio", "canvas", "image"] }
 
 # Error handling
 thiserror = "1.0"

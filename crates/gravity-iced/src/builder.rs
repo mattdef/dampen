@@ -18,8 +18,9 @@
 //! use gravity_core::{parse, HandlerRegistry};
 //! use gravity_iced::GravityWidgetBuilder;
 //! use gravity_macros::UiModel;
+//! use serde::{Deserialize, Serialize};
 //!
-//! #[derive(UiModel, Clone)]
+//! #[derive(UiModel, Serialize, Deserialize, Clone)]
 //! struct Model { count: i32 }
 //!
 //! let xml = r#"<text value="{count}" />"#;
@@ -151,8 +152,9 @@ impl<'a> GravityWidgetBuilder<'a, HandlerMessage> {
     /// use gravity_core::{parse, HandlerRegistry};
     /// use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
     /// use gravity_macros::UiModel;
+    /// use serde::{Deserialize, Serialize};
     ///
-    /// #[derive(UiModel, Clone)]
+    /// #[derive(UiModel, Serialize, Deserialize, Clone)]
     /// struct Model { count: i32 }
     ///
     /// let xml = r#"<text value="Hello" />"#;
@@ -199,8 +201,9 @@ impl<'a> GravityWidgetBuilder<'a, HandlerMessage> {
     /// use gravity_core::parse;
     /// use gravity_iced::GravityWidgetBuilder;
     /// use gravity_macros::UiModel;
+    /// use serde::{Deserialize, Serialize};
     ///
-    /// #[derive(UiModel, Clone)]
+    /// #[derive(UiModel, Serialize, Deserialize, Clone)]
     /// struct Model { count: i32 }
     ///
     /// let xml = r#"<gravity><themes>...</themes><column>...</column></gravity>"#;
@@ -249,8 +252,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     /// use gravity_core::{parse, HandlerRegistry};
     /// use gravity_iced::GravityWidgetBuilder;
     /// use gravity_macros::UiModel;
+    /// use serde::{Deserialize, Serialize};
     ///
-    /// #[derive(UiModel, Clone)]
+    /// #[derive(UiModel, Serialize, Deserialize, Clone)]
     /// struct Model { count: i32 }
     ///
     /// #[derive(Clone, Debug)]
@@ -354,6 +358,8 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     /// # Example
     ///
     /// ```rust
+    /// use gravity_iced::GravityWidgetBuilder;
+    ///
     /// let builder = GravityWidgetBuilder::new(/* ... */)
     ///     .with_verbose(true);  // Enable debug output
     /// ```
@@ -424,6 +430,12 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             WidgetKind::Rule => self.build_rule(node),
             WidgetKind::Svg => self.build_svg(node),
             WidgetKind::Custom(_) => self.build_custom(node),
+            WidgetKind::ComboBox => todo!("ComboBox not yet implemented"),
+            WidgetKind::ProgressBar => todo!("ProgressBar not yet implemented"),
+            WidgetKind::Tooltip => todo!("Tooltip not yet implemented"),
+            WidgetKind::Grid => todo!("Grid not yet implemented"),
+            WidgetKind::Canvas => todo!("Canvas not yet implemented"),
+            WidgetKind::Float => todo!("Float not yet implemented"),
         }
     }
 

@@ -1,0 +1,12 @@
+[package]
+name = "widget-showcase"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+gravity-core = { path = "../../crates/gravity-core" }
+gravity-iced = { path = "../../crates/gravity-iced" }
+gravity-macros = { path = "../../crates/gravity-macros" }
+iced = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }

@@ -495,6 +495,7 @@ fn test_circular_dependency_detection() {
         &HashMap::new(),
         vec!["b".to_string()],
         HashMap::new(),
+        HashMap::new(),
         None,
     )
     .unwrap();
@@ -503,6 +504,7 @@ fn test_circular_dependency_detection() {
         "b".to_string(),
         &HashMap::new(),
         vec!["a".to_string()],
+        HashMap::new(),
         HashMap::new(),
         None,
     )
@@ -547,6 +549,7 @@ fn test_inheritance_depth_limit() {
             name.clone(),
             &HashMap::new(),
             extends.clone(),
+            HashMap::new(),
             HashMap::new(),
             None,
         )
