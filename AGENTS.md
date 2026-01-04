@@ -6,6 +6,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 - File-based (XML UI definitions, optional separate style files), serialized state in `.gravity-state.json` (002-layout-theming-styling)
 - Rust Edition 2024, Stable Rust (no nightly features) (003-widget-builder)
 - N/A (runtime interpretation, no persistence required) (003-widget-builder)
+- Rust Edition 2024, MSRV 1.75 + Iced 0.14+ (already in workspace) (004-advanced-widgets-todo)
+- JSON state files via serde_json (existing pattern) (004-advanced-widgets-todo)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
@@ -308,10 +310,10 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 | Runtime memory (dev) | < 50MB baseline |
 
 ## Recent Changes
+- 004-advanced-widgets-todo: Added Rust Edition 2024, MSRV 1.75 + Iced 0.14+ (already in workspace)
 - 003-widget-builder: Added Rust Edition 2024, Stable Rust (no nightly features)
 - 002-layout-theming-styling: Added Rust Edition 2024, MSRV stable (no nightly features in public API)
 
-- **Phase 5 Complete**: User Story 5 - Derive Bindable Model from Rust Struct
   - Implemented `#[derive(UiModel)]` macro with field accessors
   - Created `UiBindable` trait and `BindingValue` enum
   - Implemented expression evaluator for field access, method calls, binary ops, conditionals
