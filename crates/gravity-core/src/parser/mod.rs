@@ -81,6 +81,86 @@ pub fn parse(xml: &str) -> Result<GravityDocument, ParseError> {
     }
 }
 
+/// Validate widget-specific required attributes
+fn validate_widget_attributes(
+    kind: &WidgetKind,
+    attributes: &std::collections::HashMap<String, AttributeValue>,
+    span: Span,
+) -> Result<(), ParseError> {
+    match kind {
+        WidgetKind::ComboBox | WidgetKind::PickList => {
+            // Check for required 'options' attribute
+            if let Some(AttributeValue::Static(options_value)) = attributes.get("options") {
+                if options_value.trim().is_empty() {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::MissingAttribute,
+                        message: format!(
+                            "{:?} widget requires 'options' attribute to be non-empty",
+                            kind
+                        ),
+                        span,
+                        suggestion: Some(
+                            "Add a comma-separated list: options=\"Option1,Option2\"".to_string(),
+                        ),
+                    });
+                }
+            } else {
+                return Err(ParseError {
+                    kind: ParseErrorKind::MissingAttribute,
+                    message: format!("{:?} widget requires 'options' attribute", kind),
+                    span,
+                    suggestion: Some(
+                        "Add options attribute: options=\"Option1,Option2\"".to_string(),
+                    ),
+                });
+            }
+        }
+        WidgetKind::Canvas => {
+            // Check for required 'width' and 'height' attributes
+            if !attributes.contains_key("width") {
+                return Err(ParseError {
+                    kind: ParseErrorKind::MissingAttribute,
+                    message: format!("{:?} widget requires 'width' attribute", kind),
+                    span,
+                    suggestion: Some("Add width attribute: width=\"400\"".to_string()),
+                });
+            }
+            if !attributes.contains_key("height") {
+                return Err(ParseError {
+                    kind: ParseErrorKind::MissingAttribute,
+                    message: format!("{:?} widget requires 'height' attribute", kind),
+                    span,
+                    suggestion: Some("Add height attribute: height=\"200\"".to_string()),
+                });
+            }
+        }
+        WidgetKind::Grid => {
+            // Check for required 'columns' attribute
+            if !attributes.contains_key("columns") {
+                return Err(ParseError {
+                    kind: ParseErrorKind::MissingAttribute,
+                    message: format!("{:?} widget requires 'columns' attribute", kind),
+                    span,
+                    suggestion: Some("Add columns attribute: columns=\"5\"".to_string()),
+                });
+            }
+        }
+        WidgetKind::Tooltip => {
+            // Check for required 'message' attribute
+            if !attributes.contains_key("message") {
+                return Err(ParseError {
+                    kind: ParseErrorKind::MissingAttribute,
+                    message: format!("{:?} widget requires 'message' attribute", kind),
+                    span,
+                    suggestion: Some("Add message attribute: message=\"Help text\"".to_string()),
+                });
+            }
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
 /// Parse a single XML node into a WidgetNode
 fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     // Only process element nodes
@@ -219,6 +299,9 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         span: get_span(node, source),
         suggestion: None,
     })?;
+
+    // Validate widget-specific required attributes
+    validate_widget_attributes(&kind, &attributes, get_span(node, source))?;
 
     Ok(WidgetNode {
         kind,

@@ -1,2 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<text value="ComboBox Widget Showcase - Coming Soon!" />
+<?xml version="1.0"?>
+<column padding="20" spacing="10">
+    <text value="ComboBox Widget" size="24" weight="bold" />
+    <text value="Select a category:" size="14" />
+    <combobox
+        options="Work,Personal,Shopping,Health,Entertainment"
+        selected="{category}"
+        placeholder="Choose category..."
+    />
+    <row spacing="10">
+        <button label="Selected:" />
+        <text value=" {category}" size="14" />
+    </row>
+</column>

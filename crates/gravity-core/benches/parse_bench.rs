@@ -8,7 +8,7 @@ fn bench_parse_1000_widgets(c: &mut Criterion) {
         xml.push_str(&format!("<text value=\"Widget {}\" />", i));
     }
     xml.push_str("</column></gravity>");
-    
+
     c.bench_function("parse_1000_widgets", |b| {
         b.iter(|| {
             let result = parse(black_box(&xml));

@@ -243,7 +243,6 @@ fn test_resolve_with_binding_expressions() {
 }
 
 #[test]
-
 #[test]
 fn test_resolve_empty_breakpoint_attributes() {
     let xml = "<column spacing=\"10\">...</column>";

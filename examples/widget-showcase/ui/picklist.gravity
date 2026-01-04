@@ -1,2 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<text value="PickList Widget Showcase - Coming Soon!" />
+<?xml version="1.0"?>
+<column padding="20" spacing="10">
+    <text value="PickList Widget" size="24" weight="bold" />
+    <text value="Filter tasks:" size="14" />
+    <pick_list
+        options="All,Active,Completed"
+        selected="{filter}"
+        placeholder="Show all tasks..."
+    />
+    <row spacing="10">
+        <button label="Filter:" />
+        <text value=" {filter}" size="14" />
+    </row>
+</column>

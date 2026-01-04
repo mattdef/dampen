@@ -77,29 +77,29 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T024 [P] [US1] Contract test for ComboBox XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T025 [P] [US1] Contract test for PickList XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T026 [P] [US1] Contract test for ComboBox with all attributes in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T027 [P] [US1] Contract test for PickList with all attributes in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T028 [P] [US1] Contract test for ComboBox missing required attributes in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T029 [P] [US1] Contract test for PickList missing required attributes in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T030 [P] [US1] Integration test for ComboBox rendering in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
-- [ ] T031 [P] [US1] Integration test for PickList rendering in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
-- [ ] T032 [P] [US1] Integration test for ComboBox event handling in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
-- [ ] T033 [P] [US1] Integration test for PickList event handling in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T024 [P] [US1] Contract test for ComboBox XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T025 [P] [US1] Contract test for PickList XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T026 [P] [US1] Contract test for ComboBox with all attributes in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T027 [P] [US1] Contract test for PickList with all attributes in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T028 [P] [US1] Contract test for ComboBox missing required attributes in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T029 [P] [US1] Contract test for PickList missing required attributes in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T030 [P] [US1] Integration test for ComboBox rendering in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T031 [P] [US1] Integration test for PickList rendering in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T032 [P] [US1] Integration test for ComboBox event handling in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T033 [P] [US1] Integration test for PickList event handling in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
 
 ### Implementation for User Story 1
 
-- [ ] T034 [P] [US1] Implement ComboBox attribute parsing (options, selected, placeholder, on_select) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
-- [ ] T035 [P] [US1] Implement PickList attribute parsing (options, selected, placeholder, on_select) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
-- [ ] T036 [US1] Implement ComboBox rendering with state management in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T037 [US1] Implement PickList rendering in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T038 [US1] Add ComboBox event handler connection (on_select) in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T039 [US1] Add PickList event handler connection (on_select) in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T040 [P] [US1] Create minimal ComboBox example in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/combobox.gravity
-- [ ] T041 [P] [US1] Create minimal PickList example in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/picklist.gravity
-- [ ] T042 [US1] Verify hot-reload works with ComboBox state persistence
-- [ ] T043 [US1] Verify hot-reload works with PickList
+- [X] T034 [P] [US1] Implement ComboBox attribute parsing (options, selected, placeholder, on_select) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
+- [X] T035 [P] [US1] Implement PickList attribute parsing (options, selected, placeholder, on_select) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
+- [X] T036 [US1] Implement ComboBox rendering with state management in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T037 [US1] Implement PickList rendering in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T038 [US1] Add ComboBox event handler connection (on_select) in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T039 [US1] Add PickList event handler connection (on_select) in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T040 [P] [US1] Create minimal ComboBox example in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/combobox.gravity
+- [X] T041 [P] [US1] Create minimal PickList example in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/picklist.gravity
+- [X] T042 [US1] Verify hot-reload works with ComboBox state persistence
+- [X] T043 [US1] Verify hot-reload works with PickList
 
 **Checkpoint**: ComboBox and PickList should be fully functional and testable independently. Run all US1 tests.
 
