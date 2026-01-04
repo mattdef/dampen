@@ -116,7 +116,7 @@ fn validate_widget_attributes(
             }
         }
         WidgetKind::Canvas => {
-            // Check for required 'width' and 'height' attributes
+            // Check for required 'width' attribute
             if !attributes.contains_key("width") {
                 return Err(ParseError {
                     kind: ParseErrorKind::MissingAttribute,
@@ -125,6 +125,7 @@ fn validate_widget_attributes(
                     suggestion: Some("Add width attribute: width=\"400\"".to_string()),
                 });
             }
+            // Check for required 'height' attribute
             if !attributes.contains_key("height") {
                 return Err(ParseError {
                     kind: ParseErrorKind::MissingAttribute,
@@ -132,6 +133,49 @@ fn validate_widget_attributes(
                     span,
                     suggestion: Some("Add height attribute: height=\"200\"".to_string()),
                 });
+            }
+            // Check for required 'program' attribute
+            if !attributes.contains_key("program") {
+                return Err(ParseError {
+                    kind: ParseErrorKind::MissingAttribute,
+                    message: format!("{:?} widget requires 'program' attribute", kind),
+                    span,
+                    suggestion: Some("Add program attribute: program=\"{{chart}}\"".to_string()),
+                });
+            }
+
+            // Validate width size range [50, 4000]
+            if let Some(AttributeValue::Static(width_str)) = attributes.get("width") {
+                if let Ok(width) = width_str.parse::<u32>() {
+                    if width < 50 || width > 4000 {
+                        return Err(ParseError {
+                            kind: ParseErrorKind::InvalidValue,
+                            message: format!(
+                                "Canvas width must be between 50 and 4000 pixels, found {}",
+                                width
+                            ),
+                            span,
+                            suggestion: Some("Use width value between 50 and 4000".to_string()),
+                        });
+                    }
+                }
+            }
+
+            // Validate height size range [50, 4000]
+            if let Some(AttributeValue::Static(height_str)) = attributes.get("height") {
+                if let Ok(height) = height_str.parse::<u32>() {
+                    if height < 50 || height > 4000 {
+                        return Err(ParseError {
+                            kind: ParseErrorKind::InvalidValue,
+                            message: format!(
+                                "Canvas height must be between 50 and 4000 pixels, found {}",
+                                height
+                            ),
+                            span,
+                            suggestion: Some("Use height value between 50 and 4000".to_string()),
+                        });
+                    }
+                }
             }
         }
         WidgetKind::Grid => {
@@ -143,6 +187,22 @@ fn validate_widget_attributes(
                     span,
                     suggestion: Some("Add columns attribute: columns=\"5\"".to_string()),
                 });
+            }
+            // Validate columns value range [1, 20]
+            if let Some(AttributeValue::Static(cols)) = attributes.get("columns") {
+                if let Ok(cols_num) = cols.parse::<u32>() {
+                    if cols_num < 1 || cols_num > 20 {
+                        return Err(ParseError {
+                            kind: ParseErrorKind::InvalidValue,
+                            message: format!(
+                                "Grid columns must be between 1 and 20, found {}",
+                                cols_num
+                            ),
+                            span,
+                            suggestion: Some("Use columns value between 1 and 20".to_string()),
+                        });
+                    }
+                }
             }
         }
         WidgetKind::Tooltip => {
@@ -180,6 +240,22 @@ fn validate_tooltip_children(children: &[WidgetNode], span: Span) -> Result<(), 
             ),
             span,
             suggestion: Some("Wrap only one widget in <tooltip></tooltip>".to_string()),
+        });
+    }
+    Ok(())
+}
+
+/// Validate Canvas widget has no children (is a leaf widget)
+fn validate_canvas_children(children: &[WidgetNode], span: Span) -> Result<(), ParseError> {
+    if !children.is_empty() {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!(
+                "Canvas widget cannot have children, found {}",
+                children.len()
+            ),
+            span,
+            suggestion: Some("Canvas is a leaf widget - remove child elements".to_string()),
         });
     }
     Ok(())
@@ -313,6 +389,11 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     // Validate Tooltip has exactly one child
     if kind == WidgetKind::Tooltip {
         validate_tooltip_children(&children, get_span(node, source))?;
+    }
+
+    // Validate Canvas has no children (leaf widget)
+    if kind == WidgetKind::Canvas {
+        validate_canvas_children(&children, get_span(node, source))?;
     }
 
     // Parse layout and style attributes into structured fields

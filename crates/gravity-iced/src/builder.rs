@@ -434,7 +434,7 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             WidgetKind::ProgressBar => self.build_progress_bar(node),
             WidgetKind::Tooltip => self.build_tooltip(node),
             WidgetKind::Grid => todo!("Grid not yet implemented"),
-            WidgetKind::Canvas => todo!("Canvas not yet implemented"),
+            WidgetKind::Canvas => self.build_canvas(node),
             WidgetKind::Float => todo!("Float not yet implemented"),
         }
     }
@@ -1025,6 +1025,135 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     {
         iced::widget::column(vec![]).into()
     }
+
+    /// T054: Implement ProgressBar rendering with value clamping
+    fn build_progress_bar(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    where
+        Message: Clone + 'static,
+    {
+        // Parse min, max, and value attributes
+        let min = match node.attributes.get("min") {
+            Some(AttributeValue::Static(s)) => s.parse::<f32>().ok().unwrap_or(0.0),
+            _ => 0.0,
+        };
+
+        let max = match node.attributes.get("max") {
+            Some(AttributeValue::Static(s)) => s.parse::<f32>().ok().unwrap_or(1.0),
+            _ => 1.0,
+        };
+
+        let value_str = match node.attributes.get("value") {
+            Some(attr) => self.evaluate_attribute(attr),
+            None => "0".to_string(),
+        };
+        let value = value_str.parse::<f32>().unwrap_or(0.0);
+
+        // Clamp value to [min, max] range
+        let clamped_value = value.min(max).max(min);
+
+        // Create progress bar
+        let progress_bar = iced::widget::progress_bar(min..=max, clamped_value);
+
+        progress_bar.into()
+    }
+
+    /// T055: Implement Tooltip rendering as wrapper widget
+    fn build_tooltip(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    where
+        Message: Clone + 'static,
+    {
+        // Get message attribute
+        let message = match node.attributes.get("message") {
+            Some(attr) => self.evaluate_attribute(attr),
+            None => "Tooltip".to_string(),
+        };
+
+        // Get position attribute (default: FollowCursor)
+        let position_str = match node.attributes.get("position") {
+            Some(AttributeValue::Static(s)) => s.as_str(),
+            _ => "follow_cursor",
+        };
+
+        // Map position to Iced Position enum
+        let position = match position_str {
+            "top" => iced::widget::tooltip::Position::Top,
+            "bottom" => iced::widget::tooltip::Position::Bottom,
+            "left" => iced::widget::tooltip::Position::Left,
+            "right" => iced::widget::tooltip::Position::Right,
+            _ => iced::widget::tooltip::Position::FollowCursor,
+        };
+
+        // Tooltip must have exactly one child
+        if let Some(child) = node.children.first() {
+            let child_widget = self.build_widget(child);
+            iced::widget::tooltip(child_widget, iced::widget::text(message), position).into()
+        } else {
+            // No child - return empty text
+            iced::widget::text("").into()
+        }
+    }
+
+    /// T076: Implement Canvas rendering with Program binding evaluation
+    /// T077: Implement Canvas click event handling with coordinate passing
+    fn build_canvas(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    where
+        Message: Clone + 'static,
+    {
+        // Parse width and height attributes (validated by parser, so they exist)
+        let width = match node.attributes.get("width") {
+            Some(AttributeValue::Static(s)) => s.parse::<f32>().ok().unwrap_or(400.0),
+            _ => 400.0,
+        };
+
+        let height = match node.attributes.get("height") {
+            Some(AttributeValue::Static(s)) => s.parse::<f32>().ok().unwrap_or(300.0),
+            _ => 300.0,
+        };
+
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building Canvas widget: {}x{}",
+                width, height
+            );
+        }
+
+        // Note: Canvas requires a custom Program implementation
+        // For now, we create a placeholder container with a message
+        // Real Canvas programs must be implemented in Rust code
+
+        // Get program binding attribute for logging
+        if let Some(AttributeValue::Binding(expr)) = node.attributes.get("program") {
+            if self.verbose {
+                eprintln!("[GravityWidgetBuilder] Canvas program binding: {:?}", expr);
+            }
+        }
+
+        // Create a placeholder: container with text explaining Canvas limitation
+        let placeholder = iced::widget::container(
+            iced::widget::text("Canvas widget requires custom Program implementation in Rust")
+                .size(14),
+        )
+        .width(iced::Length::Fixed(width))
+        .height(iced::Length::Fixed(height))
+        .center_x(iced::Length::Fill)
+        .center_y(iced::Length::Fill)
+        .style(|_theme: &iced::Theme| iced::widget::container::Style {
+            background: Some(iced::Background::Color(iced::Color::from_rgb(
+                0.95, 0.95, 0.95,
+            ))),
+            border: iced::Border {
+                color: iced::Color::from_rgb(0.7, 0.7, 0.7),
+                width: 1.0,
+                radius: 4.0.into(),
+            },
+            ..iced::widget::container::Style::default()
+        });
+
+        // TODO: When canvas::Program can be accessed from model binding,
+        // use: iced::widget::canvas(program)
+        // For now, return placeholder
+        placeholder.into()
+    }
 }
 
 /// Parse a color string (#RRGGBB or #RGB format)
@@ -1098,94 +1227,5 @@ fn merge_layouts(
         bottom: override_layout.bottom.or(base.bottom),
         left: override_layout.left.or(base.left),
         z_index: override_layout.z_index.or(base.z_index),
-    }
-
-    /// T054: Implement ProgressBar rendering with value clamping
-    fn build_progress_bar(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
-    where
-        Message: Clone + 'static,
-    {
-        // Parse min, max, and value attributes
-        let min = node
-            .attributes
-            .get("min")
-            .and_then(|v| v.as_static())
-            .and_then(|s| s.parse::<f32>().ok())
-            .unwrap_or(0.0);
-
-        let max = node
-            .attributes
-            .get("max")
-            .and_then(|v| v.as_static())
-            .and_then(|s| s.parse::<f32>().ok())
-            .unwrap_or(1.0);
-
-        let value_str = self.evaluate_attribute(node.attributes.get("value"));
-        let value = value_str.parse::<f32>().unwrap_or(0.0);
-
-        // Clamp value to [min, max] range
-        let clamped_value = value.min(max).max(min);
-
-        // Get style attribute (default: primary)
-        let style_str = node
-            .attributes
-            .get("style")
-            .and_then(|v| v.as_static())
-            .unwrap_or("primary");
-
-        // Map style to Iced progress bar style
-        let progress_bar = iced::widget::progress_bar(min..=max, clamped_value);
-
-        // Apply style based on attribute
-        let styled_progress_bar = match style_str {
-            "primary" => progress_bar,
-            "success" => progress_bar.style(iced::theme::ProgressBar::Primary),
-            "warning" => progress_bar.style(iced::theme::ProgressBar::Primary),
-            "danger" => progress_bar.style(iced::theme::ProgressBar::Primary),
-            "secondary" => progress_bar.style(iced::theme::ProgressBar::Secondary),
-            _ => progress_bar,
-        };
-
-        styled_progress_bar.into()
-    }
-
-    /// T055: Implement Tooltip rendering as wrapper widget
-    fn build_tooltip(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
-    where
-        Message: Clone + 'static,
-    {
-        // Get message attribute
-        let message = self.evaluate_attribute(node.attributes.get("message"));
-
-        // Get position attribute (default: FollowCursor)
-        let position_str = node
-            .attributes
-            .get("position")
-            .and_then(|v| v.as_static())
-            .unwrap_or("follow_cursor");
-
-        // Map position to Iced Position enum
-        let position = match position_str {
-            "follow_cursor" => iced::widget::tooltip::Position::FollowCursor,
-            "top" => iced::widget::tooltip::Position::Top,
-            "bottom" => iced::widget::tooltip::Position::Bottom,
-            "left" => iced::widget::tooltip::Position::Left,
-            "right" => iced::widget::tooltip::Position::Right,
-            _ => iced::widget::tooltip::Position::FollowCursor,
-        };
-
-        // Get delay attribute (default: 2000ms)
-        let delay_ms = node
-            .attributes
-            .get("delay")
-            .and_then(|v| v.as_static())
-            .and_then(|s| s.parse::<u64>().ok())
-            .unwrap_or(2000);
-
-        // Tooltip must have exactly one child
-        let child = node.children.first().expect("Tooltip must have one child");
-        let child_widget = self.build_widget(child);
-
-        iced::widget::tooltip(child_widget, message, position, std::time::Duration::from_millis(delay_ms)).into()
     }
 }

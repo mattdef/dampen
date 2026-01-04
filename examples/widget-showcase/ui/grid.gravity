@@ -1,2 +1,89 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<text value="Grid Widget Showcase - Coming Soon!" />
+<container padding="40">
+    <column spacing="20">
+        <text value="Grid Widget Showcase" size="28" weight="bold" />
+        <text value="Multi-column layouts for tables and responsive grids" size="14" />
+
+        <rule />
+
+        <text value="Task List Grid (5 columns)" size="18" weight="bold" />
+        <text value="Grid layout showing task properties in a spreadsheet-like table" size="12" />
+
+        <grid columns="5" spacing="10" padding="20">
+            <!-- Header Row -->
+            <text value="Task" weight="bold" size="14" />
+            <text value="Category" weight="bold" size="14" />
+            <text value="Priority" weight="bold" size="14" />
+            <text value="Due Date" weight="bold" size="14" />
+            <text value="Status" weight="bold" size="14" />
+
+            <!-- Row 1 -->
+            <text value="Design new feature" size="13" />
+            <text value="Work" size="13" />
+            <text value="High" size="13" color="#d32f2f" />
+            <text value="2026-01-15" size="13" />
+            <text value="In Progress" size="13" color="#f59e0b" />
+
+            <!-- Row 2 -->
+            <text value="Review PRs" size="13" />
+            <text value="Work" size="13" />
+            <text value="Medium" size="13" color="#f39c12" />
+            <text value="2026-01-16" size="13" />
+            <text value="Pending" size="13" color="#6366f1" />
+
+            <!-- Row 3 -->
+            <text value="Update docs" size="13" />
+            <text value="Documentation" size="13" />
+            <text value="Low" size="13" color="#27ae60" />
+            <text value="2026-01-20" size="13" />
+            <text value="Done" size="13" color="#27ae60" />
+
+            <!-- Row 4 -->
+            <text value="Write tests" size="13" />
+            <text value="Quality" size="13" />
+            <text value="High" size="13" color="#d32f2f" />
+            <text value="2026-01-22" size="13" />
+            <text value="In Progress" size="13" color="#f59e0b" />
+
+            <!-- Row 5 -->
+            <text value="Fix bug" size="13" />
+            <text value="Bugfix" size="13" />
+            <text value="Critical" size="13" color="#c0392b" />
+            <text value="2026-01-18" size="13" />
+            <text value="Pending" size="13" color="#6366f1" />
+        </grid>
+
+        <rule />
+
+        <text value="Image Grid (3 columns)" size="18" weight="bold" />
+
+        <grid columns="3" spacing="15" padding="20">
+            <text value="Feature A" size="14" weight="bold" />
+            <text value="Description of feature A goes here" size="12" />
+            <button label="Details" />
+
+            <text value="Feature B" size="14" weight="bold" />
+            <text value="Description of feature B goes here" size="12" />
+            <button label="Details" />
+
+            <text value="Feature C" size="14" weight="bold" />
+            <text value="Description of feature C goes here" size="12" />
+            <button label="Details" />
+
+            <text value="Feature D" size="14" weight="bold" />
+            <text value="Description of feature D goes here" size="12" />
+            <button label="Details" />
+        </grid>
+
+        <rule />
+
+        <text value="Responsive Icons Grid (4 columns)" size="18" weight="bold" />
+
+        <grid columns="4" spacing="10">
+            <text value="Dashboard" size="12" />
+            <text value="Reports" size="12" />
+            <text value="Settings" size="12" />
+            <text value="Help" size="12" />
+        </grid>
+    </column>
+</container>

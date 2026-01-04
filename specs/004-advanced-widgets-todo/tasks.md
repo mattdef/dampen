@@ -146,19 +146,19 @@
 
 ### Tests for User Story 3
 
-- [ ] T061 [P] [US3] Contract test for Grid XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T062 [P] [US3] Contract test for Grid with varying child counts in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T063 [P] [US3] Contract test for Grid column validation (min 1, max 20) in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T064 [P] [US3] Integration test for Grid rendering and layout in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
-- [ ] T065 [P] [US3] Integration test for Grid wrapping behavior in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T061 [P] [US3] Contract test for Grid XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T062 [P] [US3] Contract test for Grid with varying child counts in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T063 [P] [US3] Contract test for Grid column validation (min 1, max 20) in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T064 [P] [US3] Integration test for Grid rendering and layout in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T065 [P] [US3] Integration test for Grid wrapping behavior in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
 
 ### Implementation for User Story 3
 
-- [ ] T066 [US3] Implement Grid attribute parsing (columns, spacing, padding) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
-- [ ] T067 [US3] Implement Grid rendering with multi-column layout in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T068 [US3] Implement Grid child widget collection and recursion in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T069 [P] [US3] Create Grid example with 5-column task table in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/grid.gravity
-- [ ] T070 [US3] Verify hot-reload works with Grid layout changes
+- [X] T066 [US3] Implement Grid attribute parsing (columns, spacing, padding) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
+- [X] T067 [US3] Implement Grid rendering with multi-column layout in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T068 [US3] Implement Grid child widget collection and recursion in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T069 [P] [US3] Create Grid example with 5-column task table in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/grid.gravity
+- [X] T070 [US3] Verify hot-reload works with Grid layout changes
 
 **Checkpoint**: Grid should render multi-column layouts correctly. Run all US3 tests.
 
@@ -172,19 +172,19 @@
 
 ### Tests for User Story 4
 
-- [ ] T071 [P] [US4] Contract test for Canvas XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T072 [P] [US4] Contract test for Canvas size validation (min 50px, max 4000px) in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T073 [P] [US4] Integration test for Canvas rendering with Program trait in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
-- [ ] T074 [P] [US4] Integration test for Canvas click event handling in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T071 [P] [US4] Contract test for Canvas XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T072 [P] [US4] Contract test for Canvas size validation (min 50px, max 4000px) in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T073 [P] [US4] Integration test for Canvas rendering with Program trait in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T074 [P] [US4] Integration test for Canvas click event handling in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
 
 ### Implementation for User Story 4
 
-- [ ] T075 [US4] Implement Canvas attribute parsing (width, height, program, on_click) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
-- [ ] T076 [US4] Implement Canvas rendering with Program binding evaluation in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T077 [US4] Implement Canvas click event handling with coordinate passing in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T078 [P] [US4] Create simple Canvas example with drawing in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/canvas.gravity
-- [ ] T079 [P] [US4] Create Canvas Program implementation for simple chart in /home/matt/Documents/Dev/gravity/examples/widget-showcase/src/main.rs
-- [ ] T080 [US4] Verify hot-reload works with Canvas program changes
+- [X] T075 [US4] Implement Canvas attribute parsing (width, height, program, on_click) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
+- [X] T076 [US4] Implement Canvas rendering with Program binding evaluation in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T077 [US4] Implement Canvas click event handling with coordinate passing in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T078 [P] [US4] Create simple Canvas example with drawing in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/canvas.gravity
+- [X] T079 [P] [US4] Create Canvas Program implementation for simple chart in /home/matt/Documents/Dev/gravity/examples/widget-showcase/src/main.rs
+- [X] T080 [US4] Verify hot-reload works with Canvas program changes
 
 **Checkpoint**: Canvas should render custom graphics correctly. Run all US4 tests.
 

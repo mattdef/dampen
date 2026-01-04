@@ -444,3 +444,439 @@ fn parse_tooltip_with_delay() {
         "Delay attribute should be 1000ms"
     );
 }
+
+/// T061: Contract test for Grid XML parsing
+#[test]
+fn parse_grid_basic() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <grid columns="3" spacing="10">
+        <text value="Item 1" />
+        <text value="Item 2" />
+        <text value="Item 3" />
+    </grid>
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok(), "Should parse valid grid");
+    let doc = result.unwrap();
+
+    let grid = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::Grid))
+        .expect("Should have grid child");
+
+    assert_eq!(grid.children.len(), 3, "Should have 3 child widgets");
+    assert_eq!(grid.attributes.len(), 2);
+    assert!(
+        matches!(grid.attributes.get("columns"), Some(AttributeValue::Static(s)) if s == "3"),
+        "Columns attribute should be 3"
+    );
+    assert!(
+        matches!(grid.attributes.get("spacing"), Some(AttributeValue::Static(s)) if s == "10"),
+        "Spacing attribute should be 10"
+    );
+}
+
+/// T062: Contract test for Grid with varying child counts
+#[test]
+fn parse_grid_varying_children() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <grid columns="2" spacing="5" padding="10">
+        <text value="A" />
+        <text value="B" />
+        <text value="C" />
+    </grid>
+</column>"#;
+
+    let result = parse(xml);
+    assert!(
+        result.is_ok(),
+        "Should parse grid with 3 children and 2 columns"
+    );
+    let doc = result.unwrap();
+
+    let grid = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::Grid))
+        .expect("Should have grid child");
+
+    assert_eq!(grid.children.len(), 3, "Should have 3 child widgets");
+    assert!(
+        matches!(grid.attributes.get("columns"), Some(AttributeValue::Static(s)) if s == "2"),
+        "Columns attribute should be 2"
+    );
+    assert!(
+        matches!(grid.attributes.get("spacing"), Some(AttributeValue::Static(s)) if s == "5"),
+        "Spacing attribute should be 5"
+    );
+    assert!(
+        matches!(grid.attributes.get("padding"), Some(AttributeValue::Static(s)) if s == "10"),
+        "Padding attribute should be 10"
+    );
+}
+
+/// T063: Contract test for Grid column validation (min 1, max 20)
+#[test]
+fn parse_grid_columns_validation() {
+    let xml_min = r#"<?xml version="1.0"?>
+<column>
+    <grid columns="0">
+        <text value="Test" />
+    </grid>
+</column>"#;
+
+    let result_min = parse(xml_min);
+    assert!(result_min.is_err(), "Should fail when columns < 1");
+
+    let xml_max = r#"<?xml version="1.0"?>
+<column>
+    <grid columns="21">
+        <text value="Test" />
+    </grid>
+</column>"#;
+
+    let result_max = parse(xml_max);
+    assert!(result_max.is_err(), "Should fail when columns > 20");
+
+    let xml_valid = r#"<?xml version="1.0"?>
+<column>
+    <grid columns="5">
+        <text value="Test" />
+    </grid>
+</column>"#;
+
+    let result_valid = parse(xml_valid);
+    assert!(
+        result_valid.is_ok(),
+        "Should succeed when columns in [1, 20] range"
+    );
+}
+
+/// Test: Grid with no children should parse
+#[test]
+fn parse_grid_no_children() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <grid columns="3" />
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok(), "Should parse grid with no children");
+    let doc = result.unwrap();
+
+    let grid = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::Grid))
+        .expect("Should have grid child");
+
+    assert_eq!(grid.children.len(), 0, "Should have 0 child widgets");
+}
+
+/// Test: Grid missing columns attribute should error
+#[test]
+fn parse_grid_missing_columns_errors() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <grid spacing="10">
+        <text value="Test" />
+    </grid>
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_err(), "Should fail when columns is missing");
+    let err = result.unwrap_err();
+    assert!(
+        err.to_string().to_lowercase().contains("columns"),
+        "Error should mention columns"
+    );
+}
+
+// ============================================================================
+// Canvas Widget Tests (T071-T072)
+// ============================================================================
+
+/// T071: Contract test for Canvas XML parsing
+#[test]
+fn parse_canvas_basic() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="400" height="200" program="{statistics_chart}" />
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok(), "Should parse valid canvas");
+    let doc = result.unwrap();
+
+    // Find canvas child
+    let canvas = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::Canvas))
+        .expect("Should have canvas child");
+
+    assert!(
+        matches!(canvas.attributes.get("width"), Some(AttributeValue::Static(s)) if s == "400"),
+        "Width attribute should be 400"
+    );
+    assert!(
+        matches!(canvas.attributes.get("height"), Some(AttributeValue::Static(s)) if s == "200"),
+        "Height attribute should be 200"
+    );
+    assert!(
+        matches!(canvas.attributes.get("program"), Some(AttributeValue::Binding(_))),
+        "Program attribute should be a binding"
+    );
+}
+
+/// T071: Contract test for Canvas with all attributes
+#[test]
+fn parse_canvas_with_all_attributes() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <canvas 
+        width="800" 
+        height="600" 
+        program="{chart_program}"
+        on_click="handle_canvas_click"
+    />
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok(), "Should parse canvas with all attributes");
+    let doc = result.unwrap();
+
+    let canvas = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::Canvas))
+        .expect("Should have canvas child");
+
+    assert!(
+        matches!(canvas.attributes.get("width"), Some(AttributeValue::Static(s)) if s == "800"),
+        "Width should be 800"
+    );
+    assert!(
+        matches!(canvas.attributes.get("height"), Some(AttributeValue::Static(s)) if s == "600"),
+        "Height should be 600"
+    );
+    assert!(
+        matches!(canvas.attributes.get("program"), Some(AttributeValue::Binding(_))),
+        "Program should be a binding"
+    );
+
+    // Check event handler
+    assert_eq!(canvas.events.len(), 1, "Should have one event handler");
+    let event = &canvas.events[0];
+    assert!(
+        matches!(event.event, EventKind::Click),
+        "Event should be Click"
+    );
+    assert_eq!(event.handler, "handle_canvas_click");
+}
+
+/// T072: Contract test for Canvas size validation (min 50px, max 4000px)
+#[test]
+fn parse_canvas_size_validation_min() {
+    // Test width too small
+    let xml_width_small = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="40" height="200" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml_width_small);
+    assert!(
+        result.is_err(),
+        "Should fail when width < 50px"
+    );
+    let err = result.unwrap_err();
+    assert!(
+        err.to_string().to_lowercase().contains("width") 
+            || err.to_string().contains("50"),
+        "Error should mention width or minimum size: {}",
+        err
+    );
+
+    // Test height too small
+    let xml_height_small = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="200" height="40" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml_height_small);
+    assert!(
+        result.is_err(),
+        "Should fail when height < 50px"
+    );
+}
+
+/// T072: Contract test for Canvas size validation (max)
+#[test]
+fn parse_canvas_size_validation_max() {
+    // Test width too large
+    let xml_width_large = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="5000" height="200" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml_width_large);
+    assert!(
+        result.is_err(),
+        "Should fail when width > 4000px"
+    );
+    let err = result.unwrap_err();
+    assert!(
+        err.to_string().to_lowercase().contains("width")
+            || err.to_string().contains("4000"),
+        "Error should mention width or maximum size: {}",
+        err
+    );
+
+    // Test height too large
+    let xml_height_large = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="200" height="5000" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml_height_large);
+    assert!(
+        result.is_err(),
+        "Should fail when height > 4000px"
+    );
+}
+
+/// T072: Contract test for Canvas size validation (valid range)
+#[test]
+fn parse_canvas_size_validation_valid() {
+    // Test minimum valid size
+    let xml_min = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="50" height="50" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml_min);
+    assert!(
+        result.is_ok(),
+        "Should succeed when width and height are exactly 50px"
+    );
+
+    // Test maximum valid size
+    let xml_max = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="4000" height="4000" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml_max);
+    assert!(
+        result.is_ok(),
+        "Should succeed when width and height are exactly 4000px"
+    );
+
+    // Test typical size
+    let xml_typical = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="800" height="600" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml_typical);
+    assert!(
+        result.is_ok(),
+        "Should succeed for typical canvas size"
+    );
+}
+
+/// T072: Contract test for Canvas missing required attributes
+#[test]
+fn parse_canvas_missing_width_errors() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <canvas height="200" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml);
+    assert!(
+        result.is_err(),
+        "Should fail when width is missing"
+    );
+    let err = result.unwrap_err();
+    assert!(
+        err.to_string().to_lowercase().contains("width"),
+        "Error should mention width: {}",
+        err
+    );
+}
+
+/// T072: Contract test for Canvas missing height
+#[test]
+fn parse_canvas_missing_height_errors() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="400" program="{chart}" />
+</column>"#;
+
+    let result = parse(xml);
+    assert!(
+        result.is_err(),
+        "Should fail when height is missing"
+    );
+    let err = result.unwrap_err();
+    assert!(
+        err.to_string().to_lowercase().contains("height"),
+        "Error should mention height: {}",
+        err
+    );
+}
+
+/// T072: Contract test for Canvas missing program
+#[test]
+fn parse_canvas_missing_program_errors() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="400" height="200" />
+</column>"#;
+
+    let result = parse(xml);
+    assert!(
+        result.is_err(),
+        "Should fail when program is missing"
+    );
+    let err = result.unwrap_err();
+    assert!(
+        err.to_string().to_lowercase().contains("program"),
+        "Error should mention program: {}",
+        err
+    );
+}
+
+/// T071: Contract test for Canvas children not allowed
+#[test]
+fn parse_canvas_with_children_errors() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <canvas width="400" height="200" program="{chart}">
+        <text value="Invalid child" />
+    </canvas>
+</column>"#;
+
+    let result = parse(xml);
+    assert!(
+        result.is_err(),
+        "Should fail when canvas has children"
+    );
+    let err = result.unwrap_err();
+    assert!(
+        err.to_string().to_lowercase().contains("canvas")
+            || err.to_string().to_lowercase().contains("child"),
+        "Error should mention canvas or children: {}",
+        err
+    );
+}
