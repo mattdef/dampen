@@ -268,16 +268,14 @@ pub fn parse_layout_constraints(
 }
 
 /// Parse state-prefixed attributes into state variants
+/// Type alias for state variant maps
+pub type StateVariantMaps = (
+    HashMap<WidgetState, StyleProperties>,
+    HashMap<crate::ir::theme::StateSelector, StyleProperties>,
+);
+
 /// Returns both single and combined state variants
-pub fn parse_state_variants(
-    attrs: &HashMap<String, String>,
-) -> Result<
-    (
-        HashMap<WidgetState, StyleProperties>,
-        HashMap<crate::ir::theme::StateSelector, StyleProperties>,
-    ),
-    String,
-> {
+pub fn parse_state_variants(attrs: &HashMap<String, String>) -> Result<StateVariantMaps, String> {
     use crate::ir::theme::StateSelector;
 
     let mut single_variants: HashMap<WidgetState, HashMap<String, String>> = HashMap::new();
@@ -332,12 +330,11 @@ fn split_state_prefix(key: &str) -> Option<(&str, &str)> {
     // Find all colons
     let colons: Vec<usize> = key.match_indices(':').map(|(i, _)| i).collect();
 
-    if colons.is_empty() {
-        return None;
-    }
-
     // The attribute name is after the last colon
-    let last_colon = *colons.last().unwrap();
+    let last_colon = match colons.last() {
+        Some(&pos) => pos,
+        None => return None,
+    };
     let attr_name = &key[last_colon + 1..];
 
     // Check if what comes after the last colon looks like an attribute name

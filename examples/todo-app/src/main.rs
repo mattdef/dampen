@@ -1,103 +1,379 @@
 use gravity_core::{parse, HandlerRegistry};
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use gravity_macros::{ui_handler, UiModel};
-use iced::{Element, Task};
+use iced::widget::canvas;
+use iced::{Color, Element, Point, Rectangle, Renderer, Task, Theme};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 
-/// Application state
-#[derive(UiModel, Debug, Clone, Serialize, Deserialize, Default)]
-struct Model {
-    items: Vec<String>,
-    items_done: Vec<bool>,
-    new_item_text: String,
-    selected_category: String,
-    priority: i32,
-    dark_mode: bool,
-    completed_count: i32,
-    pending_count: i32,
+// ============================================================================
+// Data Models (T092-T094)
+// ============================================================================
+
+/// Priority level for todo items
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Priority {
+    Low,
+    Medium,
+    High,
 }
 
-/// Messages (using HandlerMessage from gravity-iced)
+impl Priority {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Priority::Low => "Low",
+            Priority::Medium => "Medium",
+            Priority::High => "High",
+        }
+    }
+
+    pub fn icon_path(&self) -> &str {
+        match self {
+            Priority::Low => "assets/priority-low.svg",
+            Priority::Medium => "assets/priority-medium.svg",
+            Priority::High => "assets/priority-high.svg",
+        }
+    }
+}
+
+impl Default for Priority {
+    fn default() -> Self {
+        Priority::Medium
+    }
+}
+
+impl std::fmt::Display for Priority {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+/// Filter for displaying todos
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TodoFilter {
+    All,
+    Active,
+    Completed,
+}
+
+impl TodoFilter {
+    pub fn as_str(&self) -> &str {
+        match self {
+            TodoFilter::All => "All",
+            TodoFilter::Active => "Active",
+            TodoFilter::Completed => "Completed",
+        }
+    }
+
+    pub fn matches(&self, completed: bool) -> bool {
+        match self {
+            TodoFilter::All => true,
+            TodoFilter::Active => !completed,
+            TodoFilter::Completed => completed,
+        }
+    }
+}
+
+impl Default for TodoFilter {
+    fn default() -> Self {
+        TodoFilter::All
+    }
+}
+
+impl std::fmt::Display for TodoFilter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+/// Individual todo item
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TodoItem {
+    pub id: usize,
+    pub text: String,
+    pub category: String,
+    pub priority: Priority,
+    pub completed: bool,
+}
+
+impl TodoItem {
+    pub fn new(id: usize, text: String, category: String, priority: Priority) -> Self {
+        Self {
+            id,
+            text,
+            category,
+            priority,
+            completed: false,
+        }
+    }
+}
+
+// ============================================================================
+// Canvas Program for Statistics Chart (T106-T108)
+// ============================================================================
+
+/// Statistics chart showing 7-day completion trend
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct StatisticsChart {
+    pub completion_history: Vec<f32>, // Last 7 days percentages
+}
+
+impl canvas::Program<Message> for StatisticsChart {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &(),
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: iced::mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+
+        // Draw axes
+        let x_axis = canvas::Path::line(
+            Point::new(30.0, bounds.height - 30.0),
+            Point::new(bounds.width - 10.0, bounds.height - 30.0),
+        );
+        frame.stroke(
+            &x_axis,
+            canvas::Stroke::default()
+                .with_width(2.0)
+                .with_color(Color::from_rgb(0.5, 0.5, 0.5)),
+        );
+
+        let y_axis = canvas::Path::line(
+            Point::new(30.0, 10.0),
+            Point::new(30.0, bounds.height - 30.0),
+        );
+        frame.stroke(
+            &y_axis,
+            canvas::Stroke::default()
+                .with_width(2.0)
+                .with_color(Color::from_rgb(0.5, 0.5, 0.5)),
+        );
+
+        // Draw data points
+        if !self.completion_history.is_empty() {
+            let data_width = bounds.width - 40.0;
+            let data_height = bounds.height - 40.0;
+            let point_spacing = data_width / (self.completion_history.len() as f32).max(1.0);
+
+            for (i, &percentage) in self.completion_history.iter().enumerate() {
+                let x = 30.0 + (i as f32 * point_spacing);
+                let y = (bounds.height - 30.0) - (percentage.min(1.0) * data_height);
+
+                let circle = canvas::Path::circle(Point::new(x, y), 4.0);
+                frame.fill(&circle, Color::from_rgb(0.2, 0.6, 1.0));
+            }
+        }
+
+        vec![frame.into_geometry()]
+    }
+}
+
+// ============================================================================
+// Application Model (T095)
+// ============================================================================
+
+/// Main application state
+#[derive(UiModel, Debug, Clone, Serialize, Deserialize)]
+pub struct TodoAppModel {
+    // Todo items (skipped from bindings - use computed properties instead)
+    #[ui_skip]
+    pub items: Vec<TodoItem>,
+
+    // Current filter (use string representation for bindings)
+    #[ui_skip]
+    pub current_filter: TodoFilter,
+
+    // UI state
+    pub new_item_text: String,
+    pub selected_category: String,
+
+    // Use string representation for priority bindings
+    #[ui_skip]
+    pub selected_priority: Priority,
+
+    pub dark_mode: bool,
+
+    // Computed properties (using i64 for binding compatibility)
+    pub completed_count: i64,
+    pub pending_count: i64,
+    pub completion_percentage: f32,
+
+    // Next ID for new items (using i64 for binding compatibility)
+    pub next_id: i64,
+
+    // Canvas data (for statistics chart)
+    #[ui_skip]
+    pub statistics_chart: StatisticsChart,
+}
+
+impl TodoAppModel {
+    /// Get string representation of current filter for bindings
+    pub fn current_filter_str(&self) -> String {
+        self.current_filter.to_string()
+    }
+
+    /// Get string representation of selected priority for bindings
+    pub fn selected_priority_str(&self) -> String {
+        self.selected_priority.to_string()
+    }
+}
+
+impl Default for TodoAppModel {
+    fn default() -> Self {
+        Self {
+            items: Vec::new(),
+            current_filter: TodoFilter::All,
+            new_item_text: String::new(),
+            selected_category: "Personal".to_string(),
+            selected_priority: Priority::Medium,
+            dark_mode: false,
+            completed_count: 0,
+            pending_count: 0,
+            completion_percentage: 0.0,
+            next_id: 1,
+            statistics_chart: StatisticsChart::default(),
+        }
+    }
+}
+
+impl TodoAppModel {
+    /// Update computed counts (T105)
+    pub fn update_counts(&mut self) {
+        self.completed_count = self.items.iter().filter(|i| i.completed).count() as i64;
+        self.pending_count = (self.items.len() as i64) - self.completed_count;
+
+        self.completion_percentage = if self.items.is_empty() {
+            0.0
+        } else {
+            (self.completed_count as f32 / self.items.len() as f32) * 100.0
+        };
+    }
+
+    /// Get filtered items based on current filter
+    pub fn filtered_items(&self) -> Vec<&TodoItem> {
+        self.items
+            .iter()
+            .filter(|item| self.current_filter.matches(item.completed))
+            .collect()
+    }
+}
+
+// ============================================================================
+// Messages
+// ============================================================================
+
 type Message = HandlerMessage;
 
-/// Event handlers
+// ============================================================================
+// Event Handlers (T096-T104)
+// ============================================================================
+
 #[ui_handler]
-fn add_item(model: &mut Model) {
+fn add_item(model: &mut TodoAppModel) {
     if !model.new_item_text.is_empty() {
-        model.items.push(model.new_item_text.clone());
-        model.items_done.push(false);
+        let item = TodoItem::new(
+            model.next_id as usize,
+            model.new_item_text.clone(),
+            model.selected_category.clone(),
+            model.selected_priority,
+        );
+        model.items.push(item);
+        model.next_id += 1;
         model.new_item_text.clear();
-        model.pending_count += 1;
+        model.update_counts();
         println!(
-            "Added: {} (Category: {}, Priority: {})",
-            model.items.last().unwrap(),
+            "Added item: {} (Category: {}, Priority: {})",
+            model.items.last().unwrap().text,
             model.selected_category,
-            model.priority
+            model.selected_priority
         );
     }
 }
 
 #[ui_handler]
-fn clear_all(model: &mut Model) {
+fn toggle_item(model: &mut TodoAppModel, id: i64) {
+    let id = id as usize;
+    if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
+        item.completed = !item.completed;
+    }
+    model.update_counts();
+    println!("Toggled item {}", id);
+}
+
+#[ui_handler]
+fn delete_item(model: &mut TodoAppModel, id: i64) {
+    let id = id as usize;
+    model.items.retain(|i| i.id != id);
+    model.update_counts();
+    println!("Deleted item {}", id);
+}
+
+#[ui_handler]
+fn clear_all(model: &mut TodoAppModel) {
     let count = model.items.len();
     model.items.clear();
-    model.items_done.clear();
-    model.completed_count = 0;
-    model.pending_count = 0;
+    model.update_counts();
     println!("Cleared {} items", count);
 }
 
 #[ui_handler]
-fn clear_completed(model: &mut Model) {
-    let mut new_items = Vec::new();
-    let mut new_done = Vec::new();
-    let mut completed = 0;
-    let mut pending = 0;
-
-    for (i, item) in model.items.iter().enumerate() {
-        if !model.items_done[i] {
-            new_items.push(item.clone());
-            new_done.push(false);
-            pending += 1;
-        } else {
-            completed += 1;
-        }
-    }
-
-    model.items = new_items;
-    model.items_done = new_done;
-    model.completed_count = completed;
-    model.pending_count = pending;
-    println!("Cleared completed items");
+fn clear_completed(model: &mut TodoAppModel) {
+    let before = model.items.len();
+    model.items.retain(|i| !i.completed);
+    model.update_counts();
+    println!("Cleared {} completed items", before - model.items.len());
 }
 
 #[ui_handler]
-fn update_new_item(model: &mut Model, value: String) {
-    model.new_item_text = value;
-}
-
-#[ui_handler]
-fn select_category(model: &mut Model, value: String) {
-    println!("Category selected: {}", value);
+fn update_category(model: &mut TodoAppModel, value: String) {
     model.selected_category = value;
+    println!("Selected category: {}", model.selected_category);
 }
 
 #[ui_handler]
-fn update_priority(model: &mut Model, value: f32) {
-    model.priority = value as i32;
-    println!("Priority updated: {}", model.priority);
+fn update_priority(model: &mut TodoAppModel, value: String) {
+    model.selected_priority = match value.as_str() {
+        "Low" => Priority::Low,
+        "Medium" => Priority::Medium,
+        "High" => Priority::High,
+        _ => Priority::Medium,
+    };
+    println!("Selected priority: {}", model.selected_priority);
 }
 
 #[ui_handler]
-fn toggle_dark_mode(model: &mut Model) {
+fn apply_filter(model: &mut TodoAppModel, value: String) {
+    model.current_filter = match value.as_str() {
+        "All" => TodoFilter::All,
+        "Active" => TodoFilter::Active,
+        "Completed" => TodoFilter::Completed,
+        _ => TodoFilter::All,
+    };
+    println!("Applied filter: {}", model.current_filter);
+}
+
+#[ui_handler]
+fn toggle_dark_mode(model: &mut TodoAppModel) {
     model.dark_mode = !model.dark_mode;
     println!("Dark mode: {}", model.dark_mode);
 }
 
-/// Global state
+#[ui_handler]
+fn update_new_item(model: &mut TodoAppModel, value: String) {
+    model.new_item_text = value;
+}
+
+// ============================================================================
+// Application State (T117-T119)
+// ============================================================================
+
 struct AppState {
-    model: Model,
+    model: TodoAppModel,
     document: gravity_core::GravityDocument,
     handler_registry: HandlerRegistry,
 }
@@ -109,31 +385,32 @@ impl AppState {
 
         let handler_registry = HandlerRegistry::new();
 
-        // Register handlers
+        // Register simple handlers
         handler_registry.register_simple("add_item", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<Model>().unwrap();
+            let model = model.downcast_mut::<TodoAppModel>().unwrap();
             add_item(model);
         });
 
         handler_registry.register_simple("clear_all", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<Model>().unwrap();
+            let model = model.downcast_mut::<TodoAppModel>().unwrap();
             clear_all(model);
         });
 
         handler_registry.register_simple("clear_completed", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<Model>().unwrap();
+            let model = model.downcast_mut::<TodoAppModel>().unwrap();
             clear_completed(model);
         });
 
         handler_registry.register_simple("toggle_dark_mode", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<Model>().unwrap();
+            let model = model.downcast_mut::<TodoAppModel>().unwrap();
             toggle_dark_mode(model);
         });
 
+        // Register handlers with values
         handler_registry.register_with_value(
             "update_new_item",
             |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<Model>().unwrap();
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
                 if let Ok(text) = value.downcast::<String>() {
                     update_new_item(model, *text);
                 }
@@ -141,11 +418,11 @@ impl AppState {
         );
 
         handler_registry.register_with_value(
-            "select_category",
+            "update_category",
             |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<Model>().unwrap();
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
                 if let Ok(text) = value.downcast::<String>() {
-                    select_category(model, *text);
+                    update_category(model, *text);
                 }
             },
         );
@@ -153,15 +430,45 @@ impl AppState {
         handler_registry.register_with_value(
             "update_priority",
             |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<Model>().unwrap();
-                if let Ok(num) = value.downcast::<f32>() {
-                    update_priority(model, *num);
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
+                if let Ok(text) = value.downcast::<String>() {
+                    update_priority(model, *text);
+                }
+            },
+        );
+
+        handler_registry.register_with_value(
+            "apply_filter",
+            |model: &mut dyn Any, value: Box<dyn Any>| {
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
+                if let Ok(text) = value.downcast::<String>() {
+                    apply_filter(model, *text);
+                }
+            },
+        );
+
+        handler_registry.register_with_value(
+            "toggle_item",
+            |model: &mut dyn Any, value: Box<dyn Any>| {
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
+                if let Ok(id) = value.downcast::<i64>() {
+                    toggle_item(model, *id);
+                }
+            },
+        );
+
+        handler_registry.register_with_value(
+            "delete_item",
+            |model: &mut dyn Any, value: Box<dyn Any>| {
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
+                if let Ok(id) = value.downcast::<i64>() {
+                    delete_item(model, *id);
                 }
             },
         );
 
         Self {
-            model: Model::default(),
+            model: TodoAppModel::default(),
             document,
             handler_registry,
         }

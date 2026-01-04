@@ -147,7 +147,7 @@ fn validate_widget_attributes(
             // Validate width size range [50, 4000]
             if let Some(AttributeValue::Static(width_str)) = attributes.get("width") {
                 if let Ok(width) = width_str.parse::<u32>() {
-                    if width < 50 || width > 4000 {
+                    if !(50..=4000).contains(&width) {
                         return Err(ParseError {
                             kind: ParseErrorKind::InvalidValue,
                             message: format!(
@@ -164,7 +164,7 @@ fn validate_widget_attributes(
             // Validate height size range [50, 4000]
             if let Some(AttributeValue::Static(height_str)) = attributes.get("height") {
                 if let Ok(height) = height_str.parse::<u32>() {
-                    if height < 50 || height > 4000 {
+                    if !(50..=4000).contains(&height) {
                         return Err(ParseError {
                             kind: ParseErrorKind::InvalidValue,
                             message: format!(
@@ -191,7 +191,7 @@ fn validate_widget_attributes(
             // Validate columns value range [1, 20]
             if let Some(AttributeValue::Static(cols)) = attributes.get("columns") {
                 if let Ok(cols_num) = cols.parse::<u32>() {
-                    if cols_num < 1 || cols_num > 20 {
+                    if !(1..=20).contains(&cols_num) {
                         return Err(ParseError {
                             kind: ParseErrorKind::InvalidValue,
                             message: format!(
@@ -522,12 +522,9 @@ pub fn parse_comma_separated(value: &str) -> Vec<String> {
 }
 
 /// Parse a simple enum value (case-insensitive) and return the matched variant
-pub fn parse_enum_value<T: std::str::FromStr>(
-    value: &str,
-    valid_variants: &[&str],
-) -> Result<T, String>
+pub fn parse_enum_value<T>(value: &str, valid_variants: &[&str]) -> Result<T, String>
 where
-    T: std::fmt::Display,
+    T: std::str::FromStr + std::fmt::Display,
 {
     let normalized = value.trim().to_lowercase();
     for variant in valid_variants.iter() {

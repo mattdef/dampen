@@ -632,7 +632,10 @@ fn parse_canvas_basic() {
         "Height attribute should be 200"
     );
     assert!(
-        matches!(canvas.attributes.get("program"), Some(AttributeValue::Binding(_))),
+        matches!(
+            canvas.attributes.get("program"),
+            Some(AttributeValue::Binding(_))
+        ),
         "Program attribute should be a binding"
     );
 }
@@ -670,7 +673,10 @@ fn parse_canvas_with_all_attributes() {
         "Height should be 600"
     );
     assert!(
-        matches!(canvas.attributes.get("program"), Some(AttributeValue::Binding(_))),
+        matches!(
+            canvas.attributes.get("program"),
+            Some(AttributeValue::Binding(_))
+        ),
         "Program should be a binding"
     );
 
@@ -694,14 +700,10 @@ fn parse_canvas_size_validation_min() {
 </column>"#;
 
     let result = parse(xml_width_small);
-    assert!(
-        result.is_err(),
-        "Should fail when width < 50px"
-    );
+    assert!(result.is_err(), "Should fail when width < 50px");
     let err = result.unwrap_err();
     assert!(
-        err.to_string().to_lowercase().contains("width") 
-            || err.to_string().contains("50"),
+        err.to_string().to_lowercase().contains("width") || err.to_string().contains("50"),
         "Error should mention width or minimum size: {}",
         err
     );
@@ -713,10 +715,7 @@ fn parse_canvas_size_validation_min() {
 </column>"#;
 
     let result = parse(xml_height_small);
-    assert!(
-        result.is_err(),
-        "Should fail when height < 50px"
-    );
+    assert!(result.is_err(), "Should fail when height < 50px");
 }
 
 /// T072: Contract test for Canvas size validation (max)
@@ -729,14 +728,10 @@ fn parse_canvas_size_validation_max() {
 </column>"#;
 
     let result = parse(xml_width_large);
-    assert!(
-        result.is_err(),
-        "Should fail when width > 4000px"
-    );
+    assert!(result.is_err(), "Should fail when width > 4000px");
     let err = result.unwrap_err();
     assert!(
-        err.to_string().to_lowercase().contains("width")
-            || err.to_string().contains("4000"),
+        err.to_string().to_lowercase().contains("width") || err.to_string().contains("4000"),
         "Error should mention width or maximum size: {}",
         err
     );
@@ -748,10 +743,7 @@ fn parse_canvas_size_validation_max() {
 </column>"#;
 
     let result = parse(xml_height_large);
-    assert!(
-        result.is_err(),
-        "Should fail when height > 4000px"
-    );
+    assert!(result.is_err(), "Should fail when height > 4000px");
 }
 
 /// T072: Contract test for Canvas size validation (valid range)
@@ -788,10 +780,7 @@ fn parse_canvas_size_validation_valid() {
 </column>"#;
 
     let result = parse(xml_typical);
-    assert!(
-        result.is_ok(),
-        "Should succeed for typical canvas size"
-    );
+    assert!(result.is_ok(), "Should succeed for typical canvas size");
 }
 
 /// T072: Contract test for Canvas missing required attributes
@@ -803,10 +792,7 @@ fn parse_canvas_missing_width_errors() {
 </column>"#;
 
     let result = parse(xml);
-    assert!(
-        result.is_err(),
-        "Should fail when width is missing"
-    );
+    assert!(result.is_err(), "Should fail when width is missing");
     let err = result.unwrap_err();
     assert!(
         err.to_string().to_lowercase().contains("width"),
@@ -824,10 +810,7 @@ fn parse_canvas_missing_height_errors() {
 </column>"#;
 
     let result = parse(xml);
-    assert!(
-        result.is_err(),
-        "Should fail when height is missing"
-    );
+    assert!(result.is_err(), "Should fail when height is missing");
     let err = result.unwrap_err();
     assert!(
         err.to_string().to_lowercase().contains("height"),
@@ -845,10 +828,7 @@ fn parse_canvas_missing_program_errors() {
 </column>"#;
 
     let result = parse(xml);
-    assert!(
-        result.is_err(),
-        "Should fail when program is missing"
-    );
+    assert!(result.is_err(), "Should fail when program is missing");
     let err = result.unwrap_err();
     assert!(
         err.to_string().to_lowercase().contains("program"),
@@ -868,10 +848,7 @@ fn parse_canvas_with_children_errors() {
 </column>"#;
 
     let result = parse(xml);
-    assert!(
-        result.is_err(),
-        "Should fail when canvas has children"
-    );
+    assert!(result.is_err(), "Should fail when canvas has children");
     let err = result.unwrap_err();
     assert!(
         err.to_string().to_lowercase().contains("canvas")

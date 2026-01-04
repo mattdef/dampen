@@ -39,9 +39,9 @@ cargo run -p counter
 ---
 
 ### 3. Todo App (`todo-app/`)
-**Complete application with bindings**
+**Modern application with advanced widgets** ⭐ **NEW: Advanced Widget Showcase**
 
-Full-featured todo list with add, complete, and delete functionality.
+Full-featured todo application demonstrating ProgressBar, Canvas, Tooltip, PickList, and Image widgets with category management, priority levels, and completion tracking.
 
 ```bash
 cargo run -p todo-app
@@ -49,15 +49,63 @@ cargo run -p todo-app
 
 **What you'll learn:**
 - `#[derive(UiModel)]` for data binding
-- List rendering
-- Complex state management
+- **ProgressBar** for visual progress tracking
+- **Canvas** with custom `canvas::Program` for statistics visualization
+- **Tooltip** for contextual help
+- **PickList** for dropdown selections
+- **Image** widgets for priority indicators
+- Complex state management with computed properties
 - Event handlers with parameters
-- Input widgets
+- CRUD operations (Create, Read, Update, Delete)
+- Category and priority management
+- Data filtering and statistics
+
+**Featured Widgets:**
+- ProgressBar (completion tracking)
+- Canvas (7-day trend chart)
+- Tooltip (help text on buttons)
+- PickList (category, priority, filter dropdowns)
+- Image (priority icons)
+- Toggler (dark mode)
+- Standard widgets (Text, Button, TextInput, Row, Column, Scrollable, Rule)
+
+See [todo-app/README.md](todo-app/README.md) for detailed feature documentation.
 
 ---
 
-### 4. Styling (`styling/`)
-**Comprehensive styling showcase** ⭐ **START HERE FOR FULL REFERENCE**
+### 4. Widget Showcase (`widget-showcase/`)
+**Comprehensive widget reference** 📚 **NEW: Complete Widget Catalog**
+
+Individual examples for each Gravity widget type with feature demonstrations.
+
+```bash
+cargo run -p widget-showcase
+```
+
+**What you'll learn:**
+- All available Gravity widgets
+- Widget-specific attributes and features
+- Event handling patterns for each widget
+- Best practices and usage examples
+- Testing widget implementations
+
+**Included Widgets:**
+- ProgressBar (with all style variants)
+- Tooltip (all positions and delays)
+- Canvas (custom drawing examples)
+- PickList (dropdown selections)
+- ComboBox (searchable dropdown - XML only)
+- Grid (multi-column layouts - XML only)
+- Float (positioned overlays - XML only)
+
+**Note**: Some widgets (ComboBox, Grid, Float) have XML examples but rendering is not yet implemented.
+
+See [widget-showcase/README.md](widget-showcase/README.md) for detailed widget documentation.
+
+---
+
+### 6. Styling (`styling/`)
+**Comprehensive styling showcase** ⭐ **START HERE FOR STYLING REFERENCE**
 
 Complete demonstration of ALL layout, sizing, theming, and styling features.
 
@@ -88,7 +136,7 @@ cargo run --bin state-demo
 
 ---
 
-### 5. Responsive (`responsive/`)
+### 7. Responsive (`responsive/`)
 **Responsive layouts with breakpoints**
 
 Demonstrates responsive design with mobile/tablet/desktop breakpoints.
@@ -105,7 +153,7 @@ cargo run -p responsive
 
 ---
 
-### 6. Hot Reload Test (`hot-reload-test/`)
+### 8. Hot Reload Test (`hot-reload-test/`)
 **Development workflow demo**
 
 Tests hot-reload functionality for rapid UI iteration.
@@ -122,7 +170,7 @@ cargo run -p hot-reload-test
 
 ---
 
-### 7. Class Demo (`class-demo/`)
+### 9. Builder Demo (`builder-demo/`)
 **Style classes and inheritance**
 
 Advanced styling with reusable style classes and inheritance.
@@ -141,18 +189,24 @@ cargo run -p class-demo
 
 ## Feature Comparison Matrix
 
-| Feature | hello-world | counter | todo-app | styling | responsive | hot-reload |
-|---------|-------------|---------|----------|---------|------------|------------|
-| **Basic Widgets** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Event Handlers** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Data Binding** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Layout Attributes** | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| **Inline Styles** | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| **Theming** | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| **Style Classes** | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| **State Variants** | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
-| **Breakpoints** | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| **Hot Reload** | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Feature | hello | counter | todo-app | showcase | styling | responsive | hot-reload |
+|---------|-------|---------|----------|----------|---------|------------|------------|
+| **Basic Widgets** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Advanced Widgets** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **ProgressBar** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Canvas** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Tooltip** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **PickList** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Image** | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Event Handlers** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Data Binding** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Layout Attributes** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| **Inline Styles** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| **Theming** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| **Style Classes** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| **State Variants** | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| **Breakpoints** | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| **Hot Reload** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ## Learning Path
 

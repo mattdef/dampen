@@ -398,7 +398,10 @@ fn test_build_canvas_basic() {
         "Height should be 200"
     );
     assert!(
-        matches!(canvas.attributes.get("program"), Some(AttributeValue::Binding(_))),
+        matches!(
+            canvas.attributes.get("program"),
+            Some(AttributeValue::Binding(_))
+        ),
         "Program should be a binding expression"
     );
 
@@ -468,7 +471,7 @@ fn test_build_canvas_with_click_event() {
 
     // Verify click event is registered
     assert_eq!(canvas.events.len(), 1, "Should have one event handler");
-    
+
     let event = &canvas.events[0];
     assert!(
         matches!(event.event, EventKind::Click),
@@ -518,9 +521,10 @@ fn test_build_canvas_with_all_properties() {
     );
 
     // Verify program binding
-    assert!(
-        matches!(canvas.attributes.get("program"), Some(AttributeValue::Binding(_)))
-    );
+    assert!(matches!(
+        canvas.attributes.get("program"),
+        Some(AttributeValue::Binding(_))
+    ));
 
     // Verify event
     assert_eq!(canvas.events.len(), 1);

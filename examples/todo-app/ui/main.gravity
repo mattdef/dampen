@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <container padding="20">
     <scrollable>
-        <column spacing="15">
-            <!-- Header with title and toggle -->
-            <row spacing="10" align="center">
-                <text value="Todo List" size="28" weight="bold" />
+        <column spacing="20">
+            <!-- Header with title and dark mode toggle (T109) -->
+            <row spacing="15" align="center">
+                <text value="Modern Todo App" size="32" weight="bold" />
                 <space />
                 <toggler
                     label="Dark Mode"
@@ -15,77 +15,159 @@
 
             <rule />
 
-            <!-- Stats -->
-            <column spacing="5">
-                <text value="Total Items: {items.len()}" />
-                <text value="Completed: {completed_count}" />
-                <text value="Pending: {pending_count}" />
+            <!-- Statistics Section with ProgressBar and Canvas (T110) -->
+            <column spacing="10">
+                <text value="Statistics" size="20" weight="bold" />
+                
+                <!-- Progress Bar showing completion percentage -->
+                <row spacing="10" align="center">
+                    <text value="Overall Progress:" />
+                    <progress_bar 
+                        min="0" 
+                        max="100" 
+                        value="{completion_percentage}"
+                        style="success"
+                    />
+                    <text value="{completion_percentage}%" />
+                </row>
+
+                <!-- Statistics about items -->
+                <row spacing="15">
+                    <text value="Total: {items.len()}" />
+                    <text value="Active: {pending_count}" />
+                    <text value="Completed: {completed_count}" />
+                </row>
+
+                <!-- Canvas for 7-day trend visualization -->
+                <canvas 
+                    width="400" 
+                    height="200" 
+                    program="{statistics_chart}"
+                />
             </column>
 
             <rule />
 
-            <!-- Add Item Section -->
-            <text value="Add New Item" size="18" weight="bold" />
-            <row spacing="10">
-                <text_input
-                    value="{new_item_text}"
-                    on_input="update_new_item"
-                    placeholder="Enter todo item..."
-                />
-                <button
-                    label="Add"
-                    on_click="add_item"
-                    enabled="{new_item_text.len() > 0}"
-                />
-            </row>
+            <!-- Add Task Form with ComboBox and PickList (T111) -->
+            <column spacing="10">
+                <text value="Add New Task" size="20" weight="bold" />
+                
+                <row spacing="10">
+                    <text_input
+                        value="{new_item_text}"
+                        on_input="update_new_item"
+                        placeholder="Enter task description..."
+                    />
+                    <tooltip message="Add this task to your list" position="top">
+                        <button
+                            label="Add Task"
+                            on_click="add_item"
+                            enabled="{new_item_text.len() > 0}"
+                        />
+                    </tooltip>
+                </row>
 
-            <!-- Category and Priority -->
-            <row spacing="10">
-                <pick_list
-                    options="Work,Personal,Shopping,Other"
-                    selected="{selected_category}"
-                    on_select="select_category"
-                />
-                <text value="Priority: {priority}" />
-            </row>
+                <!-- Category and Priority Selection -->
+                <row spacing="15">
+                    <column spacing="5">
+                        <text value="Category:" />
+                        <pick_list 
+                            options="Work,Personal,Shopping,Health,Finance,Other"
+                            selected="{selected_category}"
+                            on_select="update_category"
+                        />
+                    </column>
 
-            <slider
-                min="1"
-                max="5"
-                value="{priority}"
-                on_change="update_priority"
-            />
+                    <column spacing="5">
+                        <text value="Priority:" />
+                        <pick_list 
+                            options="Low,Medium,High"
+                            selected="{selected_priority_str()}"
+                            on_select="update_priority"
+                        />
+                    </column>
+
+                    <column spacing="5">
+                        <text value="Filter:" />
+                        <pick_list 
+                            options="All,Active,Completed"
+                            selected="{current_filter_str()}"
+                            on_select="apply_filter"
+                        />
+                    </column>
+                </row>
+            </column>
 
             <rule />
 
-            <!-- Todo List -->
-            <text value="Your Todos" size="18" weight="bold" />
+            <!-- Task List with Grid Layout (T112) -->
+            <column spacing="10">
+                <text value="Your Tasks" size="20" weight="bold" />
+                
+                <!-- Show message if no items -->
+                <text
+                    value="{if items.len() == 0 then 'No tasks yet! Add one above to get started.' else ''}"
+                />
 
-            <!-- Show if list is empty -->
-            <text
-                value="{if items.len() == 0 then 'No items yet! Add one above.' else ''}"
-            />
+                <!-- Task list header (Grid would go here once implemented) -->
+                <row spacing="10">
+                    <text value="Status" weight="bold" />
+                    <text value="Task" weight="bold" />
+                    <text value="Category" weight="bold" />
+                    <text value="Priority" weight="bold" />
+                    <text value="Actions" weight="bold" />
+                </row>
 
-            <!-- Placeholder for list items (would need runtime support for dynamic lists) -->
-            <text
-                value="Items: {items.len()} (list rendering with checkboxes would go here)"
-            />
+                <!-- TODO: Task items would go here -->
+                <!-- For now, showing placeholder since we don't have dynamic list rendering -->
+                <text value="(Task list with checkboxes would be rendered here)" />
+                <text value="Filtered items: {items.len()}" />
+            </column>
 
             <rule />
 
-            <!-- Actions -->
+            <!-- Actions with Tooltips (T113) -->
             <row spacing="10">
-                <button
-                    label="Clear All"
-                    on_click="clear_all"
-                    enabled="{items.len() > 0}"
-                />
-                <button
-                    label="Clear Completed"
-                    on_click="clear_completed"
-                    enabled="{completed_count > 0}"
-                />
+                <tooltip message="Remove all tasks from your list" position="top">
+                    <button
+                        label="Clear All"
+                        on_click="clear_all"
+                        enabled="{items.len() > 0}"
+                    />
+                </tooltip>
+
+                <tooltip message="Remove only completed tasks" position="top">
+                    <button
+                        label="Clear Completed"
+                        on_click="clear_completed"
+                        enabled="{completed_count > 0}"
+                    />
+                </tooltip>
+
+                <space />
+
+                <text value="Total Tasks: {items.len()}" />
             </row>
+
+            <!-- Priority Icons Example (T114) -->
+            <column spacing="10">
+                <text value="Priority Indicators:" size="16" weight="bold" />
+                <row spacing="20">
+                    <column spacing="5" align="center">
+                        <image path="assets/priority-low.svg" width="32" height="32" />
+                        <text value="Low" />
+                    </column>
+                    <column spacing="5" align="center">
+                        <image path="assets/priority-medium.svg" width="32" height="32" />
+                        <text value="Medium" />
+                    </column>
+                    <column spacing="5" align="center">
+                        <image path="assets/priority-high.svg" width="32" height="32" />
+                        <text value="High" />
+                    </column>
+                </row>
+            </column>
+
         </column>
     </scrollable>
 </container>

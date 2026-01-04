@@ -21,12 +21,17 @@ impl GravityRuntimeState {
         }
     }
 
+    /// Get or create widget state for a specific widget ID
+    ///
+    /// # Panics
+    /// Panics if there's a type mismatch when downcasting the stored state
+    #[allow(clippy::panic)]
     pub fn get_or_create_state<T: Default + 'static>(&mut self, widget_id: &str) -> &mut T {
         self.widget_states
             .entry(widget_id.to_string())
             .or_insert_with(|| Box::new(T::default()))
             .downcast_mut::<T>()
-            .expect("Type mismatch in widget state")
+            .unwrap_or_else(|| panic!("Type mismatch in widget state for widget_id: {}", widget_id))
     }
 
     pub fn generate_widget_id(&self) -> String {

@@ -693,10 +693,11 @@ fn test_parse_all_event_types() {
         <button on_click="click" />
         <button on_press="press" />
         <button on_release="release" />
+        <checkbox on_change="change" />
         <text_input on_input="input" />
         <text_input on_change="change" />
         <text_input on_submit="submit" />
-        <pick_list on_select="select" />
+        <pick_list options="Option1,Option2" on_select="select" />
         <toggler on_toggle="toggle" />
         <slider on_change="change" />
         <scrollable on_scroll="scroll" />
