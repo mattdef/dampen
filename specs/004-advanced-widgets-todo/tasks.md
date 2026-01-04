@@ -113,26 +113,26 @@
 
 ### Tests for User Story 2
 
-- [ ] T044 [P] [US2] Contract test for ProgressBar XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T045 [P] [US2] Contract test for Tooltip XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T046 [P] [US2] Contract test for ProgressBar with style variants in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T047 [P] [US2] Contract test for Tooltip with position variants in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T048 [P] [US2] Contract test for Tooltip child count validation (must be 1) in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
-- [ ] T049 [P] [US2] Integration test for ProgressBar rendering with value clamping in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
-- [ ] T050 [P] [US2] Integration test for Tooltip rendering and positioning in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
-- [ ] T051 [P] [US2] Integration test for Image widget verification in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T044 [P] [US2] Contract test for ProgressBar XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T045 [P] [US2] Contract test for Tooltip XML parsing in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T046 [P] [US2] Contract test for ProgressBar with style variants in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T047 [P] [US2] Contract test for Tooltip with position variants in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T048 [P] [US2] Contract test for Tooltip child count validation (must be 1) in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/widget_parsing_tests.rs
+- [X] T049 [P] [US2] Integration test for ProgressBar rendering with value clamping in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T050 [P] [US2] Integration test for Tooltip rendering and positioning in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
+- [X] T051 [P] [US2] Integration test for Image widget verification in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/widget_rendering_tests.rs
 
 ### Implementation for User Story 2
 
-- [ ] T052 [P] [US2] Implement ProgressBar attribute parsing (min, max, value, style) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
-- [ ] T053 [P] [US2] Implement Tooltip attribute parsing (message, position, delay) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
-- [ ] T054 [US2] Implement ProgressBar rendering with value clamping in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T055 [US2] Implement Tooltip rendering as wrapper widget in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T056 [US2] Verify Image widget implementation and add tests if needed in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
-- [ ] T057 [P] [US2] Create ProgressBar example with all styles in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/progressbar.gravity
-- [ ] T058 [P] [US2] Create Tooltip example with all positions in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/tooltip.gravity
-- [ ] T059 [P] [US2] Create placeholder priority icons (low, medium, high) in /home/matt/Documents/Dev/gravity/examples/todo-app/assets/
-- [ ] T060 [US2] Verify hot-reload works with ProgressBar and Tooltip
+- [X] T052 [P] [US2] Implement ProgressBar attribute parsing (min, max, value, style) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
+- [X] T053 [P] [US2] Implement Tooltip attribute parsing (message, position, delay) in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/parser/mod.rs
+- [X] T054 [US2] Implement ProgressBar rendering with value clamping in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T055 [US2] Implement Tooltip rendering as wrapper widget in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T056 [US2] Verify Image widget implementation and add tests if needed in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [X] T057 [P] [US2] Create ProgressBar example with all styles in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/progressbar.gravity
+- [X] T058 [P] [US2] Create Tooltip example with all positions in /home/matt/Documents/Dev/gravity/examples/widget-showcase/ui/tooltip.gravity
+- [X] T059 [P] [US2] Create placeholder priority icons (low, medium, high) in /home/matt/Documents/Dev/gravity/examples/todo-app/assets/
+- [X] T060 [US2] Verify hot-reload works with ProgressBar and Tooltip
 
 **Checkpoint**: ProgressBar, Tooltip, and Image should be fully functional. Run all US2 tests.
 

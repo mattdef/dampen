@@ -431,8 +431,8 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
             WidgetKind::Svg => self.build_svg(node),
             WidgetKind::Custom(_) => self.build_custom(node),
             WidgetKind::ComboBox => todo!("ComboBox not yet implemented"),
-            WidgetKind::ProgressBar => todo!("ProgressBar not yet implemented"),
-            WidgetKind::Tooltip => todo!("Tooltip not yet implemented"),
+            WidgetKind::ProgressBar => self.build_progress_bar(node),
+            WidgetKind::Tooltip => self.build_tooltip(node),
             WidgetKind::Grid => todo!("Grid not yet implemented"),
             WidgetKind::Canvas => todo!("Canvas not yet implemented"),
             WidgetKind::Float => todo!("Float not yet implemented"),
@@ -1098,5 +1098,94 @@ fn merge_layouts(
         bottom: override_layout.bottom.or(base.bottom),
         left: override_layout.left.or(base.left),
         z_index: override_layout.z_index.or(base.z_index),
+    }
+
+    /// T054: Implement ProgressBar rendering with value clamping
+    fn build_progress_bar(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    where
+        Message: Clone + 'static,
+    {
+        // Parse min, max, and value attributes
+        let min = node
+            .attributes
+            .get("min")
+            .and_then(|v| v.as_static())
+            .and_then(|s| s.parse::<f32>().ok())
+            .unwrap_or(0.0);
+
+        let max = node
+            .attributes
+            .get("max")
+            .and_then(|v| v.as_static())
+            .and_then(|s| s.parse::<f32>().ok())
+            .unwrap_or(1.0);
+
+        let value_str = self.evaluate_attribute(node.attributes.get("value"));
+        let value = value_str.parse::<f32>().unwrap_or(0.0);
+
+        // Clamp value to [min, max] range
+        let clamped_value = value.min(max).max(min);
+
+        // Get style attribute (default: primary)
+        let style_str = node
+            .attributes
+            .get("style")
+            .and_then(|v| v.as_static())
+            .unwrap_or("primary");
+
+        // Map style to Iced progress bar style
+        let progress_bar = iced::widget::progress_bar(min..=max, clamped_value);
+
+        // Apply style based on attribute
+        let styled_progress_bar = match style_str {
+            "primary" => progress_bar,
+            "success" => progress_bar.style(iced::theme::ProgressBar::Primary),
+            "warning" => progress_bar.style(iced::theme::ProgressBar::Primary),
+            "danger" => progress_bar.style(iced::theme::ProgressBar::Primary),
+            "secondary" => progress_bar.style(iced::theme::ProgressBar::Secondary),
+            _ => progress_bar,
+        };
+
+        styled_progress_bar.into()
+    }
+
+    /// T055: Implement Tooltip rendering as wrapper widget
+    fn build_tooltip(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    where
+        Message: Clone + 'static,
+    {
+        // Get message attribute
+        let message = self.evaluate_attribute(node.attributes.get("message"));
+
+        // Get position attribute (default: FollowCursor)
+        let position_str = node
+            .attributes
+            .get("position")
+            .and_then(|v| v.as_static())
+            .unwrap_or("follow_cursor");
+
+        // Map position to Iced Position enum
+        let position = match position_str {
+            "follow_cursor" => iced::widget::tooltip::Position::FollowCursor,
+            "top" => iced::widget::tooltip::Position::Top,
+            "bottom" => iced::widget::tooltip::Position::Bottom,
+            "left" => iced::widget::tooltip::Position::Left,
+            "right" => iced::widget::tooltip::Position::Right,
+            _ => iced::widget::tooltip::Position::FollowCursor,
+        };
+
+        // Get delay attribute (default: 2000ms)
+        let delay_ms = node
+            .attributes
+            .get("delay")
+            .and_then(|v| v.as_static())
+            .and_then(|s| s.parse::<u64>().ok())
+            .unwrap_or(2000);
+
+        // Tooltip must have exactly one child
+        let child = node.children.first().expect("Tooltip must have one child");
+        let child_widget = self.build_widget(child);
+
+        iced::widget::tooltip(child_widget, message, position, std::time::Duration::from_millis(delay_ms)).into()
     }
 }

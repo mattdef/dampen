@@ -161,6 +161,30 @@ fn validate_widget_attributes(
     Ok(())
 }
 
+/// Validate Tooltip widget has exactly one child
+fn validate_tooltip_children(children: &[WidgetNode], span: Span) -> Result<(), ParseError> {
+    if children.is_empty() {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: "Tooltip widget must have exactly one child widget".to_string(),
+            span,
+            suggestion: Some("Wrap a single widget in <tooltip></tooltip>".to_string()),
+        });
+    }
+    if children.len() > 1 {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!(
+                "Tooltip widget must have exactly one child, found {}",
+                children.len()
+            ),
+            span,
+            suggestion: Some("Wrap only one widget in <tooltip></tooltip>".to_string()),
+        });
+    }
+    Ok(())
+}
+
 /// Parse a single XML node into a WidgetNode
 fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     // Only process element nodes
@@ -286,8 +310,13 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         }
     }
 
+    // Validate Tooltip has exactly one child
+    if kind == WidgetKind::Tooltip {
+        validate_tooltip_children(&children, get_span(node, source))?;
+    }
+
     // Parse layout and style attributes into structured fields
-    let layout = parse_layout_attributes(&attributes).map_err(|e| ParseError {
+    let layout = parse_layout_attributes(&kind, &attributes).map_err(|e| ParseError {
         kind: ParseErrorKind::InvalidValue,
         message: e,
         span: get_span(node, source),
@@ -552,6 +581,7 @@ fn calculate_line_col(source: &str, offset: usize) -> (u32, u32) {
 
 /// Parse layout-related attributes from the attributes map
 fn parse_layout_attributes(
+    kind: &WidgetKind,
     attributes: &HashMap<String, AttributeValue>,
 ) -> Result<Option<crate::ir::layout::LayoutConstraints>, String> {
     use crate::ir::layout::LayoutConstraints;
@@ -643,10 +673,12 @@ fn parse_layout_attributes(
         has_any = true;
     }
 
-    // Parse position
-    if let Some(AttributeValue::Static(value)) = attributes.get("position") {
-        layout.position = Some(crate::ir::layout::Position::parse(value)?);
-        has_any = true;
+    // Parse position (skip for Tooltip - it has its own position attribute)
+    if !matches!(kind, WidgetKind::Tooltip) {
+        if let Some(AttributeValue::Static(value)) = attributes.get("position") {
+            layout.position = Some(crate::ir::layout::Position::parse(value)?);
+            has_any = true;
+        }
     }
 
     // Parse position offsets

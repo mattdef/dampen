@@ -1,2 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<text value="ProgressBar Widget Showcase - Coming Soon!" />
+<column padding="40" spacing="30">
+    <text value="ProgressBar Widget Showcase" size="32" weight="bold" />
+    
+    <text value="Primary Style (Default)" size="18" />
+    <progress_bar min="0" max="100" value="{primary_progress}" style="primary" />
+    <text value="{primary_progress}%" size="14" color="#666666" />
+    
+    <text value="Success Style" size="18" />
+    <progress_bar min="0" max="100" value="{success_progress}" style="success" />
+    <text value="{success_progress}%" size="14" color="#666666" />
+    
+    <text value="Warning Style" size="18" />
+    <progress_bar min="0" max="100" value="{warning_progress}" style="warning" />
+    <text value="{warning_progress}%" size="14" color="#666666" />
+    
+    <text value="Danger Style" size="18" />
+    <progress_bar min="0" max="100" value="{danger_progress}" style="danger" />
+    <text value="{danger_progress}%" size="14" color="#666666" />
+    
+    <text value="Secondary Style" size="18" />
+    <progress_bar min="0" max="100" value="{secondary_progress}" style="secondary" />
+    <text value="{secondary_progress}%" size="14" color="#666666" />
+    
+    <text value="Custom Range (0-50)" size="18" />
+    <progress_bar min="0" max="50" value="{custom_progress}" style="primary" />
+    <text value="{custom_progress}/50" size="14" color="#666666" />
+    
+    <row spacing="10">
+        <button label="Reset" on_click="reset_progress" />
+        <button label="Increment" on_click="increment_progress" />
+    </row>
+</column>

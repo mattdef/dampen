@@ -235,3 +235,212 @@ fn parse_combobox_many_options() {
 
     assert!(combobox.attributes.get("options").is_some());
 }
+
+/// T044: Contract test for ProgressBar XML parsing
+#[test]
+fn parse_progressbar_basic() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <progress_bar min="0" max="100" value="{percent}" />
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok(), "Should parse valid progress_bar");
+    let doc = result.unwrap();
+
+    let progressbar = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::ProgressBar))
+        .expect("Should have progress_bar child");
+
+    assert_eq!(progressbar.attributes.len(), 3);
+    assert!(
+        matches!(progressbar.attributes.get("min"), Some(AttributeValue::Static(s)) if s == "0")
+    );
+    assert!(
+        matches!(progressbar.attributes.get("max"), Some(AttributeValue::Static(s)) if s == "100")
+    );
+    assert!(progressbar.attributes.get("value").is_some());
+}
+
+/// T045: Contract test for Tooltip XML parsing
+#[test]
+fn parse_tooltip_basic() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <tooltip message="Help text">
+        <button label="Action" />
+    </tooltip>
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok(), "Should parse valid tooltip");
+    let doc = result.unwrap();
+
+    let tooltip = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::Tooltip))
+        .expect("Should have tooltip child");
+
+    assert_eq!(tooltip.children.len(), 1);
+    assert!(
+        matches!(tooltip.attributes.get("message"), Some(AttributeValue::Static(s)) if s == "Help text")
+    );
+}
+
+/// T046: Contract test for ProgressBar with style variants
+#[test]
+fn parse_progressbar_with_style() {
+    let styles = ["primary", "success", "warning", "danger", "secondary"];
+
+    for style in styles {
+        let xml = format!(
+            r#"<?xml version="1.0"?>
+<column>
+    <progress_bar value="50" style="{}" />
+</column>"#,
+            style
+        );
+
+        let result = parse(&xml);
+        assert!(
+            result.is_ok(),
+            "Should parse progress_bar with style: {}",
+            style
+        );
+        let doc = result.unwrap();
+
+        let progressbar = doc
+            .root
+            .children
+            .iter()
+            .find(|c| matches!(c.kind, WidgetKind::ProgressBar))
+            .expect("Should have progress_bar child");
+
+        assert!(
+            matches!(progressbar.attributes.get("style"), Some(AttributeValue::Static(s)) if s == style),
+            "Style attribute should match: {}",
+            style
+        );
+    }
+}
+
+/// T047: Contract test for Tooltip with position variants
+#[test]
+fn parse_tooltip_with_position() {
+    let positions = ["follow_cursor", "top", "bottom", "left", "right"];
+
+    for position in positions {
+        let xml = format!(
+            r#"<?xml version="1.0"?>
+<column>
+    <tooltip message="Tip" position="{}">
+        <text value="Hover me" />
+    </tooltip>
+</column>"#,
+            position
+        );
+
+        let result = parse(&xml);
+        let doc = result.expect(&format!("Should parse tooltip with position: {}", position));
+
+        let tooltip = doc
+            .root
+            .children
+            .iter()
+            .find(|c| matches!(c.kind, WidgetKind::Tooltip))
+            .expect("Should have tooltip child");
+
+        assert!(
+            matches!(tooltip.attributes.get("position"), Some(AttributeValue::Static(s)) if s == position),
+            "Position attribute should match: {}",
+            position
+        );
+    }
+}
+
+/// T048: Contract test for Tooltip child count validation
+#[test]
+fn parse_tooltip_must_have_exactly_one_child() {
+    // Test with no children
+    let xml_empty = r#"<?xml version="1.0"?>
+<column>
+    <tooltip message="Tip" />
+</column>"#;
+
+    let result_empty = parse(xml_empty);
+    assert!(
+        result_empty.is_err(),
+        "Should fail when tooltip has no children"
+    );
+
+    // Test with multiple children
+    let xml_multiple = r#"<?xml version="1.0"?>
+<column>
+    <tooltip message="Tip">
+        <text value="First" />
+        <text value="Second" />
+    </tooltip>
+</column>"#;
+
+    let result_multiple = parse(xml_multiple);
+    assert!(
+        result_multiple.is_err(),
+        "Should fail when tooltip has multiple children"
+    );
+}
+
+/// Additional test: ProgressBar with default values (no min/max)
+#[test]
+fn parse_progressbar_defaults() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <progress_bar value="{progress}" />
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok(), "Should parse progress_bar with defaults");
+    let doc = result.unwrap();
+
+    let progressbar = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::ProgressBar))
+        .expect("Should have progress_bar child");
+
+    assert!(progressbar.attributes.get("value").is_some());
+    assert!(progressbar.attributes.get("min").is_none());
+    assert!(progressbar.attributes.get("max").is_none());
+}
+
+/// Additional test: Tooltip with delay attribute
+#[test]
+fn parse_tooltip_with_delay() {
+    let xml = r#"<?xml version="1.0"?>
+<column>
+    <tooltip message="Tip" delay="1000">
+        <button label="Hover" />
+    </tooltip>
+</column>"#;
+
+    let result = parse(xml);
+    assert!(result.is_ok(), "Should parse tooltip with delay");
+    let doc = result.unwrap();
+
+    let tooltip = doc
+        .root
+        .children
+        .iter()
+        .find(|c| matches!(c.kind, WidgetKind::Tooltip))
+        .expect("Should have tooltip child");
+
+    assert!(
+        matches!(tooltip.attributes.get("delay"), Some(AttributeValue::Static(s)) if s == "1000"),
+        "Delay attribute should be 1000ms"
+    );
+}
