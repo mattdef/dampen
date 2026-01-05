@@ -58,6 +58,7 @@ tarpaulin-report.html
 # Temporary files
 *.tmp
 *.temp
+*temp.*
 
 # Gravity state files
 .gravity-state.json
