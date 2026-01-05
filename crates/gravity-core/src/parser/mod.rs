@@ -368,9 +368,11 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
                     let handler = value[..colon_pos].to_string();
                     let param_str = &value[colon_pos + 1..];
 
+                    // Remove surrounding braces if present: {item.id} -> item.id
+                    let param_clean = param_str.trim_matches('{').trim_matches('}');
+
                     // Parse parameter as binding expression
-                    // Use tokenize_binding_expr with position info
-                    match crate::expr::tokenize_binding_expr(param_str, 0, 1, 1) {
+                    match crate::expr::tokenize_binding_expr(param_clean, 0, 1, 1) {
                         Ok(expr) => (handler, Some(expr)),
                         Err(_) => {
                             // If parsing fails, treat the whole string as handler name

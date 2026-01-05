@@ -337,45 +337,16 @@ impl<'a> GravityWidgetBuilder<'a> {
         self
     }
 
-    /// Get access to the state manager for event handlers
+    /// Enable verbose logging for debugging
     ///
-    /// The state manager tracks widget state (hover, active, disabled) and
-    /// can be used by event handlers to update UI state.
-    ///
-    /// # Returns
-    ///
-    /// A thread-safe reference to the widget state manager
+    /// This prints detailed information about widget building,
+    /// event handler attachment, and parameter evaluation.
     ///
     /// # Example
     ///
     /// ```rust
-    /// let builder = GravityWidgetBuilder::new(/* ... */);
-    /// let manager = builder.state_manager();
-    /// // Use manager in event handlers
-    /// ```
-    pub fn state_manager(&self) -> Arc<Mutex<WidgetStateManager>> {
-        self.state_manager.clone()
-    }
-
-    /// Enable or disable verbose logging for debugging
-    ///
-    /// When enabled, the builder will log:
-    /// - Binding evaluation results
-    /// - Event handler connections
-    /// - Style and layout applications
-    /// - Errors and warnings
-    ///
-    /// # Arguments
-    ///
-    /// * `verbose` - `true` to enable logging, `false` to disable
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use gravity_iced::GravityWidgetBuilder;
-    ///
     /// let builder = GravityWidgetBuilder::new(/* ... */)
-    ///     .with_verbose(true);  // Enable debug output
+    ///     .verbose(true);
     /// ```
     pub fn with_verbose(mut self, verbose: bool) -> Self {
         self.verbose = verbose;
@@ -426,6 +397,9 @@ impl<'a> GravityWidgetBuilder<'a> {
     where
         HandlerMessage: Clone + 'static,
     {
+        if self.verbose {
+            eprintln!("[GravityWidgetBuilder] Building widget: {:?}", node.kind);
+        }
         match node.kind {
             WidgetKind::Text => self.build_text(node),
             WidgetKind::Button => self.build_button(node),
@@ -859,11 +833,29 @@ impl<'a> GravityWidgetBuilder<'a> {
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
 
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building button with label: '{}'",
+                label
+            );
+        }
+
         // Get handler from events
         let on_click_event = node
             .events
             .iter()
             .find(|e| e.event == gravity_core::EventKind::Click);
+
+        if self.verbose {
+            if let Some(event) = &on_click_event {
+                eprintln!(
+                    "[GravityWidgetBuilder] Button has click event: handler={}, param={:?}",
+                    event.handler, event.param
+                );
+            } else {
+                eprintln!("[GravityWidgetBuilder] Button has no click event");
+            }
+        }
 
         let mut btn = iced::widget::button(iced::widget::text(label));
 
@@ -953,23 +945,23 @@ impl<'a> GravityWidgetBuilder<'a> {
                 let param_value = if let Some(param_expr) = &event_binding.param {
                     // Try context first (for {item.id} in for loop)
                     if let Some(value) = self.resolve_from_context(param_expr) {
-                        let result = Some(value.to_display_string());
                         if self.verbose {
                             eprintln!(
-                                "[GravityWidgetBuilder] Button param evaluated: {:?}",
-                                result
+                                "[GravityWidgetBuilder] Button param from context: {:?} -> {}",
+                                param_expr,
+                                value.to_display_string()
                             );
                         }
-                        result
+                        Some(value.to_display_string())
                     } else {
                         // Fallback to model evaluation
                         match evaluate_binding_expr(param_expr, self.model) {
                             Ok(value) => {
-                                let result = Some(value.to_display_string());
                                 if self.verbose {
-                                    eprintln!("[GravityWidgetBuilder] Button param evaluated (model): {:?}", result);
+                                    eprintln!("[GravityWidgetBuilder] Button param from model: {:?} -> {}", 
+                                             param_expr, value.to_display_string());
                                 }
-                                result
+                                Some(value.to_display_string())
                             }
                             Err(e) => {
                                 if self.verbose {
@@ -980,10 +972,31 @@ impl<'a> GravityWidgetBuilder<'a> {
                         }
                     }
                 } else {
+                    if self.verbose {
+                        eprintln!("[GravityWidgetBuilder] Button has no param");
+                    }
                     None
                 };
 
-                btn = btn.on_press(HandlerMessage::Handler(handler_name, param_value));
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] Button: Attaching on_press with handler '{}', param: {:?}",
+                             handler_name, param_value);
+                }
+
+                // Clone param_value explicitly before creating HandlerMessage
+                let param_cloned = param_value.clone();
+                let handler_cloned = handler_name.clone();
+
+                // Pass the HandlerMessage directly (on_press doesn't support closures)
+                btn = btn.on_press(HandlerMessage::Handler(handler_cloned, param_cloned));
+            } else {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] Button: No handler_registry, cannot attach on_press");
+                }
+            }
+        } else {
+            if self.verbose {
+                eprintln!("[GravityWidgetBuilder] Button: No on_click event found");
             }
         }
 
@@ -1101,6 +1114,13 @@ impl<'a> GravityWidgetBuilder<'a> {
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
 
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building text_input: placeholder='{}', value='{}'",
+                placeholder, value
+            );
+        }
+
         // Get handler from events
         let on_input = node
             .events
@@ -1108,14 +1128,35 @@ impl<'a> GravityWidgetBuilder<'a> {
             .find(|e| e.event == gravity_core::EventKind::Input)
             .map(|e| e.handler.clone());
 
+        if self.verbose {
+            if let Some(handler) = &on_input {
+                eprintln!(
+                    "[GravityWidgetBuilder] TextInput has input event: handler={}",
+                    handler
+                );
+            } else {
+                eprintln!("[GravityWidgetBuilder] TextInput has no input event");
+            }
+        }
+
         let mut text_input = iced::widget::text_input(&placeholder, &value);
 
         // Connect event if handler exists
         if let Some(handler_name) = on_input {
             if self.handler_registry.is_some() {
+                if self.verbose {
+                    eprintln!(
+                        "[GravityWidgetBuilder] TextInput: Attaching on_input with handler '{}'",
+                        handler_name
+                    );
+                }
                 text_input = text_input.on_input(move |input_value| {
                     HandlerMessage::Handler(handler_name.clone(), Some(input_value))
                 });
+            } else {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] TextInput: No handler_registry, cannot attach on_input");
+                }
             }
         }
 
@@ -1145,11 +1186,29 @@ impl<'a> GravityWidgetBuilder<'a> {
 
         let is_checked = checked_str == "true" || checked_str == "1";
 
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building checkbox: label='{}', checked={}",
+                label, is_checked
+            );
+        }
+
         // Get handler from events
         let on_toggle_event = node
             .events
             .iter()
             .find(|e| e.event == gravity_core::EventKind::Toggle);
+
+        if self.verbose {
+            if let Some(event) = &on_toggle_event {
+                eprintln!(
+                    "[GravityWidgetBuilder] Checkbox has toggle event: handler={}, param={:?}",
+                    event.handler, event.param
+                );
+            } else {
+                eprintln!("[GravityWidgetBuilder] Checkbox has no toggle event");
+            }
+        }
 
         let mut checkbox = iced::widget::checkbox(is_checked);
 
@@ -1162,22 +1221,22 @@ impl<'a> GravityWidgetBuilder<'a> {
                 let param_value = if let Some(param_expr) = &event_binding.param {
                     // Evaluate the parameter expression with context
                     if let Some(value) = self.resolve_from_context(param_expr) {
-                        let result = Some(value.to_display_string());
                         if self.verbose {
                             eprintln!(
-                                "[GravityWidgetBuilder] Checkbox param evaluated: {:?}",
-                                result
+                                "[GravityWidgetBuilder] Checkbox param from context: {:?} -> {}",
+                                param_expr,
+                                value.to_display_string()
                             );
                         }
-                        result
+                        Some(value.to_display_string())
                     } else {
                         match evaluate_binding_expr(param_expr, self.model) {
                             Ok(value) => {
-                                let result = Some(value.to_display_string());
                                 if self.verbose {
-                                    eprintln!("[GravityWidgetBuilder] Checkbox param evaluated (model): {:?}", result);
+                                    eprintln!("[GravityWidgetBuilder] Checkbox param from model: {:?} -> {}", 
+                                             param_expr, value.to_display_string());
                                 }
-                                result
+                                Some(value.to_display_string())
                             }
                             Err(e) => {
                                 if self.verbose {
@@ -1188,8 +1247,16 @@ impl<'a> GravityWidgetBuilder<'a> {
                         }
                     }
                 } else {
+                    if self.verbose {
+                        eprintln!("[GravityWidgetBuilder] Checkbox has no param");
+                    }
                     None
                 };
+
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] Checkbox: Attaching on_toggle with handler '{}', param: {:?}",
+                             handler_name, param_value);
+                }
 
                 checkbox = checkbox.on_toggle(move |new_checked| {
                     HandlerMessage::Handler(
@@ -1203,6 +1270,10 @@ impl<'a> GravityWidgetBuilder<'a> {
                         }),
                     )
                 });
+            } else {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] Checkbox: No handler_registry, cannot attach on_toggle");
+                }
             }
         }
 
@@ -1308,6 +1379,13 @@ impl<'a> GravityWidgetBuilder<'a> {
             options.iter().find(|o| *o == &selected_str).cloned()
         };
 
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building pick_list: options={:?}, selected={:?}",
+                options, selected
+            );
+        }
+
         // Get handler from events
         let on_select = node
             .events
@@ -1315,38 +1393,32 @@ impl<'a> GravityWidgetBuilder<'a> {
             .find(|e| e.event == gravity_core::EventKind::Select)
             .map(|e| e.handler.clone());
 
-        // For Iced pick_list, it requires options as Vec<T>, selected as Option<T>, and on_select as Fn(T) -> Message
-        // But since options is Vec<String>, and selected is Option<String>, but Iced pick_list expects T: Clone + ToString + PartialEq
-        // String implements that.
-        // But the constructor is pick_list(options, selected, on_select)
-        // But in Iced 0.14, pick_list is pick_list(options: Vec<T>, selected: Option<T>, on_select: impl Fn(T) -> Message)
-        // But wait, it takes placeholder separately? No, in the helper, it's pick_list(options, selected, on_select)
-        // But in the research, it has placeholder.
-
-        // Let me check Iced docs. From research: PickList::new(options, selected, Fn(T) -> Message)
-
-        // But for placeholder, perhaps it's not in the basic, or I need to use the full API.
-
-        // For simplicity, use pick_list(options, selected, on_select)
-
-        // But if no placeholder, ok.
-
-        // But the spec has placeholder.
-
-        // Perhaps Iced pick_list doesn't have placeholder, or I need to handle it differently.
-
-        // From the research: "Shows placeholder when nothing selected"
-
-        // Perhaps use the placeholder as the selected if none.
-
-        // But for now, implement without placeholder, as Iced may not have it.
+        if self.verbose {
+            if let Some(handler) = &on_select {
+                eprintln!(
+                    "[GravityWidgetBuilder] PickList has select event: handler={}",
+                    handler
+                );
+            } else {
+                eprintln!("[GravityWidgetBuilder] PickList has no select event");
+            }
+        }
 
         let pick_list = if let Some(handler_name) = on_select {
             if self.handler_registry.is_some() {
+                if self.verbose {
+                    eprintln!(
+                        "[GravityWidgetBuilder] PickList: Attaching on_select with handler '{}'",
+                        handler_name
+                    );
+                }
                 iced::widget::pick_list(options, selected, move |selected_value| {
                     HandlerMessage::Handler(handler_name.clone(), Some(selected_value))
                 })
             } else {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] PickList: No handler_registry, cannot attach on_select");
+                }
                 iced::widget::pick_list(options, selected, |_| {
                     HandlerMessage::Handler("dummy".to_string(), None)
                 })
@@ -1384,6 +1456,13 @@ impl<'a> GravityWidgetBuilder<'a> {
 
         let is_active = active_str == "true" || active_str == "1";
 
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building toggler: label='{}', active={}",
+                label, is_active
+            );
+        }
+
         // Get handler from events
         let on_toggle = node
             .events
@@ -1391,11 +1470,28 @@ impl<'a> GravityWidgetBuilder<'a> {
             .find(|e| e.event == gravity_core::EventKind::Toggle)
             .map(|e| e.handler.clone());
 
+        if self.verbose {
+            if let Some(handler) = &on_toggle {
+                eprintln!(
+                    "[GravityWidgetBuilder] Toggler has toggle event: handler={}",
+                    handler
+                );
+            } else {
+                eprintln!("[GravityWidgetBuilder] Toggler has no toggle event");
+            }
+        }
+
         let mut toggler = iced::widget::toggler(is_active);
 
         // Connect event if handler exists
         if let Some(handler_name) = on_toggle {
             if self.handler_registry.is_some() {
+                if self.verbose {
+                    eprintln!(
+                        "[GravityWidgetBuilder] Toggler: Attaching on_toggle with handler '{}'",
+                        handler_name
+                    );
+                }
                 toggler = toggler.on_toggle(move |new_active| {
                     HandlerMessage::Handler(
                         handler_name.clone(),
@@ -1406,6 +1502,10 @@ impl<'a> GravityWidgetBuilder<'a> {
                         }),
                     )
                 });
+            } else {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] Toggler: No handler_registry, cannot attach on_toggle");
+                }
             }
         }
 

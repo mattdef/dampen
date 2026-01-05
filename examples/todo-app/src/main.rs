@@ -303,8 +303,6 @@ impl TodoAppModel {
         if let Ok(data) = serde_json::to_string_pretty(self) {
             if let Err(e) = std::fs::write(path, data) {
                 eprintln!("Failed to save tasks: {}", e);
-            } else {
-                println!("Saved {} tasks to {:?}", self.items.len(), path);
             }
         }
     }
@@ -524,10 +522,11 @@ struct AppState {
     document: gravity_core::GravityDocument,
     handler_registry: HandlerRegistry,
     save_path: PathBuf,
+    verbose: bool,
 }
 
 impl AppState {
-    fn new() -> Self {
+    fn new(verbose: bool) -> Self {
         let xml = include_str!("../ui/main.gravity");
         let document = parse(xml).expect("Failed to parse XML");
 
@@ -689,6 +688,7 @@ impl AppState {
             document,
             handler_registry,
             save_path,
+            verbose,
         }
     }
 }
@@ -697,6 +697,9 @@ impl AppState {
 fn update(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
         HandlerMessage::Handler(name, value_opt) => {
+            if state.verbose {
+                println!("[Update] Handler: {} with value: {:?}", name, value_opt);
+            }
             if let Some(value) = value_opt {
                 // Try handler with value first
                 if let Some(gravity_core::HandlerEntry::WithValue(h)) =
@@ -732,11 +735,19 @@ fn view(state: &AppState) -> Element<'_, Message> {
         &state.model,
         Some(&state.handler_registry),
     )
+    .with_verbose(state.verbose)
     .build()
 }
 
 pub fn main() -> iced::Result {
-    iced::application(AppState::new, update, view)
+    let args: Vec<String> = std::env::args().collect();
+    let verbose = args.contains(&"--verbose".to_string());
+
+    if verbose {
+        println!("Verbose mode enabled");
+    }
+
+    iced::application(move || AppState::new(verbose), update, view)
         .theme(|state: &AppState| {
             if state.model.dark_mode {
                 Theme::Dark

@@ -1,21 +1,37 @@
 {
-  "items": [],
-  "filtered_items_cache": [],
+  "items": [
+    {
+      "id": 1,
+      "text": "tache 1",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": true
+    }
+  ],
+  "filtered_items_cache": [
+    {
+      "id": 1,
+      "text": "tache 1",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": true
+    }
+  ],
   "current_filter": "All",
   "new_item_text": "",
-  "selected_category": "Personal",
-  "selected_priority": "Medium",
+  "selected_category": "Work",
+  "selected_priority": "High",
   "dark_mode": true,
-  "editing_id": -1,
-  "edit_text": "",
+  "editing_id": 2,
+  "edit_text": "Tache 2",
   "search_text": "",
-  "completed_count": 0,
+  "completed_count": 1,
   "pending_count": 0,
-  "completion_percentage": 0.0,
-  "items_len": 0,
-  "selected_priority_display": "Medium",
+  "completion_percentage": 100.0,
+  "items_len": 1,
+  "selected_priority_display": "High",
   "current_filter_display": "All",
-  "next_id": 1,
+  "next_id": 3,
   "statistics_chart": {
     "completion_history": []
   }
