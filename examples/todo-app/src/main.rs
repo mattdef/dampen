@@ -560,5 +560,13 @@ fn view(state: &AppState) -> Element<'_, Message> {
 }
 
 pub fn main() -> iced::Result {
-    iced::application(AppState::new, update, view).run()
+    iced::application(AppState::new, update, view)
+        .theme(|state: &AppState| {
+            if state.model.dark_mode {
+                Theme::Dark
+            } else {
+                Theme::Light
+            }
+        })
+        .run()
 }
