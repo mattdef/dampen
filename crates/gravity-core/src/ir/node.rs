@@ -48,6 +48,8 @@ pub enum WidgetKind {
     Grid,
     Canvas,
     Float,
+    // Control flow
+    For,
     Custom(String),
 }
 

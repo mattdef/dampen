@@ -98,6 +98,7 @@ pub trait UiBindable {
 /// * `Float` - Decimal numbers
 /// * `Bool` - Boolean values
 /// * `List` - Collections of values
+/// * `Object` - Key-value mappings (for structs/records)
 /// * `None` - Absence of value
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum BindingValue {
@@ -111,6 +112,8 @@ pub enum BindingValue {
     Bool(bool),
     /// List of values
     List(Vec<BindingValue>),
+    /// Object/record with named fields
+    Object(std::collections::HashMap<String, BindingValue>),
     /// No value (null/none)
     None,
 }
@@ -135,6 +138,7 @@ impl BindingValue {
             BindingValue::Float(f) => f.to_string(),
             BindingValue::Bool(b) => b.to_string(),
             BindingValue::List(l) => format!("[{} items]", l.len()),
+            BindingValue::Object(map) => format!("{{Object with {} fields}}", map.len()),
             BindingValue::None => String::new(),
         }
     }
@@ -157,6 +161,7 @@ impl BindingValue {
             BindingValue::Integer(i) => *i != 0,
             BindingValue::Float(f) => *f != 0.0,
             BindingValue::List(l) => !l.is_empty(),
+            BindingValue::Object(map) => !map.is_empty(),
             BindingValue::None => false,
         }
     }
@@ -166,6 +171,16 @@ impl BindingValue {
     /// Convenience method for converting types that implement `ToBindingValue`.
     pub fn from_value<T: ToBindingValue>(value: &T) -> Self {
         value.to_binding_value()
+    }
+
+    /// Get a field from an Object binding value
+    ///
+    /// Returns `None` if this is not an Object or the field doesn't exist.
+    pub fn get_field(&self, field_name: &str) -> Option<BindingValue> {
+        match self {
+            BindingValue::Object(map) => map.get(field_name).cloned(),
+            _ => None,
+        }
     }
 }
 
@@ -250,5 +265,16 @@ impl<T: ToBindingValue> ToBindingValue for Option<T> {
             Some(v) => v.to_binding_value(),
             None => BindingValue::None,
         }
+    }
+}
+
+/// Convert `HashMap<String, T>` to `BindingValue::Object`
+impl<T: ToBindingValue> ToBindingValue for std::collections::HashMap<String, T> {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::Object(
+            self.iter()
+                .map(|(k, v)| (k.clone(), v.to_binding_value()))
+                .collect(),
+        )
     }
 }

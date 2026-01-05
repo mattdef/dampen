@@ -54,7 +54,7 @@
 use crate::convert::{map_layout_constraints, map_style_properties};
 use crate::state::WidgetStateManager;
 use crate::HandlerMessage;
-use gravity_core::binding::UiBindable;
+use gravity_core::binding::{BindingValue, UiBindable};
 use gravity_core::expr::evaluate_binding_expr;
 use gravity_core::handler::HandlerRegistry;
 use gravity_core::ir::node::{AttributeValue, InterpolatedPart, WidgetNode};
@@ -63,6 +63,7 @@ use gravity_core::ir::WidgetKind;
 #[allow(unused_imports)]
 use iced::widget::{checkbox, image, pick_list, slider, text_input, toggler};
 use iced::{Element, Renderer, Theme};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -137,6 +138,10 @@ pub struct GravityWidgetBuilder<'a> {
 
     /// Shared state manager for widget state tracking
     state_manager: Arc<Mutex<WidgetStateManager>>,
+
+    /// Binding context stack for <for> loop variables
+    /// Each context maps variable names to their BindingValues
+    binding_context: RefCell<Vec<HashMap<String, BindingValue>>>,
 }
 
 impl<'a> GravityWidgetBuilder<'a> {
@@ -185,6 +190,7 @@ impl<'a> GravityWidgetBuilder<'a> {
                 HandlerMessage::Handler(name.to_string(), value)
             }),
             state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
+            binding_context: RefCell::new(Vec::new()),
         }
     }
 
@@ -236,6 +242,7 @@ impl<'a> GravityWidgetBuilder<'a> {
                 HandlerMessage::Handler(name.to_string(), value)
             }),
             state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
+            binding_context: RefCell::new(Vec::new()),
         }
     }
 }
@@ -300,6 +307,7 @@ impl<'a> GravityWidgetBuilder<'a> {
             verbose: false,
             message_factory: Box::new(message_factory),
             state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
+            binding_context: RefCell::new(Vec::new()),
         }
     }
 
@@ -439,9 +447,10 @@ impl<'a> GravityWidgetBuilder<'a> {
             WidgetKind::ComboBox => todo!("ComboBox not yet implemented"),
             WidgetKind::ProgressBar => self.build_progress_bar(node),
             WidgetKind::Tooltip => self.build_tooltip(node),
-            WidgetKind::Grid => todo!("Grid not yet implemented"),
+            WidgetKind::Grid => self.build_grid(node),
             WidgetKind::Canvas => self.build_canvas(node),
             WidgetKind::Float => todo!("Float not yet implemented"),
+            WidgetKind::For => self.build_for(node),
         }
     }
 
@@ -463,37 +472,48 @@ impl<'a> GravityWidgetBuilder<'a> {
     fn evaluate_attribute(&self, attr: &AttributeValue) -> String {
         match attr {
             AttributeValue::Static(value) => value.clone(),
-            AttributeValue::Binding(expr) => match evaluate_binding_expr(expr, self.model) {
-                Ok(value) => {
-                    if self.verbose {
-                        eprintln!(
-                            "[GravityWidgetBuilder] Binding evaluated to: {}",
-                            value.to_display_string()
-                        );
-                    }
+            AttributeValue::Binding(expr) => {
+                // Try context first, then model
+                if let Some(value) = self.resolve_from_context(expr) {
                     value.to_display_string()
-                }
-                Err(e) => {
-                    if self.verbose {
-                        eprintln!("[GravityWidgetBuilder] Binding error: {}", e);
+                } else {
+                    match evaluate_binding_expr(expr, self.model) {
+                        Ok(value) => {
+                            if self.verbose {
+                                eprintln!(
+                                    "[GravityWidgetBuilder] Binding evaluated to: {}",
+                                    value.to_display_string()
+                                );
+                            }
+                            value.to_display_string()
+                        }
+                        Err(e) => {
+                            if self.verbose {
+                                eprintln!("[GravityWidgetBuilder] Binding error: {}", e);
+                            }
+                            String::new()
+                        }
                     }
-                    String::new()
                 }
-            },
+            }
             AttributeValue::Interpolated(parts) => {
                 let mut result = String::new();
                 for part in parts {
                     match part {
                         InterpolatedPart::Literal(lit) => result.push_str(lit),
                         InterpolatedPart::Binding(expr) => {
-                            match evaluate_binding_expr(expr, self.model) {
-                                Ok(value) => result.push_str(&value.to_display_string()),
-                                Err(e) => {
-                                    if self.verbose {
-                                        eprintln!(
-                                            "[GravityWidgetBuilder] Interpolated binding error: {}",
-                                            e
-                                        );
+                            if let Some(value) = self.resolve_from_context(expr) {
+                                result.push_str(&value.to_display_string());
+                            } else {
+                                match evaluate_binding_expr(expr, self.model) {
+                                    Ok(value) => result.push_str(&value.to_display_string()),
+                                    Err(e) => {
+                                        if self.verbose {
+                                            eprintln!(
+                                                "[GravityWidgetBuilder] Interpolated binding error: {}",
+                                                e
+                                            );
+                                        }
                                     }
                                 }
                             }
@@ -502,6 +522,78 @@ impl<'a> GravityWidgetBuilder<'a> {
                 }
                 result
             }
+        }
+    }
+
+    /// Push a new binding context for loop variables
+    ///
+    /// Used by <for> widgets to make loop variables accessible in nested widgets.
+    ///
+    /// # Arguments
+    ///
+    /// * `var_name` - Name of the loop variable (e.g., "item")
+    /// * `value` - Current value for this iteration
+    fn push_context(&self, var_name: &str, value: BindingValue) {
+        let mut ctx = HashMap::new();
+        ctx.insert(var_name.to_string(), value);
+        self.binding_context.borrow_mut().push(ctx);
+    }
+
+    /// Pop the most recent binding context
+    fn pop_context(&self) {
+        self.binding_context.borrow_mut().pop();
+    }
+
+    /// Try to resolve a binding expression from the context stack
+    ///
+    /// Returns None if the expression doesn't reference a context variable.
+    fn resolve_from_context(
+        &self,
+        binding_expr: &gravity_core::expr::BindingExpr,
+    ) -> Option<BindingValue> {
+        use gravity_core::expr::Expr;
+
+        match &binding_expr.expr {
+            Expr::FieldAccess(field_access) => {
+                if let Some(first_segment) = field_access.path.first() {
+                    // Search context stack in reverse (innermost first)
+                    for context in self.binding_context.borrow().iter().rev() {
+                        if let Some(value) = context.get(first_segment.as_str()) {
+                            // Handle nested access like {item.text}
+                            if field_access.path.len() == 1 {
+                                return Some(value.clone());
+                            } else {
+                                // Resolve nested path on the context value
+                                return self.resolve_nested_field(value, &field_access.path[1..]);
+                            }
+                        }
+                    }
+                }
+                None
+            }
+            _ => None, // Other expression types not supported in context
+        }
+    }
+
+    /// Resolve nested field access on a BindingValue (e.g., item.text)
+    fn resolve_nested_field(&self, value: &BindingValue, path: &[String]) -> Option<BindingValue> {
+        if path.is_empty() {
+            return Some(value.clone());
+        }
+
+        match value {
+            BindingValue::Object(map) => {
+                if let Some(field_value) = map.get(&path[0]) {
+                    if path.len() == 1 {
+                        Some(field_value.clone())
+                    } else {
+                        self.resolve_nested_field(field_value, &path[1..])
+                    }
+                } else {
+                    None
+                }
+            }
+            _ => None,
         }
     }
 
@@ -1243,9 +1335,11 @@ impl<'a> GravityWidgetBuilder<'a> {
     ///
     /// No events - display only widget
     fn build_image(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        // Support both 'src' (standard) and 'path' (legacy) attributes
         let src = node
             .attributes
             .get("src")
+            .or_else(|| node.attributes.get("path"))
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
 
@@ -1312,7 +1406,17 @@ impl<'a> GravityWidgetBuilder<'a> {
     where
         HandlerMessage: Clone + 'static,
     {
-        iced::widget::text("─").into()
+        // Create a horizontal rule using a container with a border
+        iced::widget::container(iced::widget::text(""))
+            .width(iced::Length::Fill)
+            .height(iced::Length::Fixed(1.0))
+            .style(|_theme: &iced::Theme| iced::widget::container::Style {
+                background: Some(iced::Background::Color(iced::Color::from_rgb(
+                    0.7, 0.7, 0.7,
+                ))),
+                ..Default::default()
+            })
+            .into()
     }
 
     fn build_svg(&self, _node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
@@ -1456,6 +1560,150 @@ impl<'a> GravityWidgetBuilder<'a> {
         // use: iced::widget::canvas(program)
         // For now, return placeholder
         placeholder.into()
+    }
+
+    /// Build a <for> loop widget
+    ///
+    /// Iterates over a collection and renders the child widgets for each item,
+    /// with the loop variable available in the binding context.
+    ///
+    /// # Example XML
+    ///
+    /// ```xml
+    /// <for each="item" in="{items}">
+    ///     <text value="{item.text}" />
+    /// </for>
+    /// ```
+    fn build_for(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
+    where
+        HandlerMessage: Clone + 'static,
+    {
+        // Get variable name
+        let var_name = match node.attributes.get("each") {
+            Some(AttributeValue::Static(name)) => name.clone(),
+            _ => {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] For loop missing 'each' attribute");
+                }
+                return iced::widget::column(vec![]).into();
+            }
+        };
+
+        // Evaluate collection binding
+        let collection_values = match node.attributes.get("in") {
+            Some(AttributeValue::Binding(expr)) => {
+                // Try context first, then model
+                let binding_result = if let Some(ctx_value) = self.resolve_from_context(expr) {
+                    Ok(ctx_value)
+                } else {
+                    evaluate_binding_expr(expr, self.model)
+                };
+
+                match binding_result {
+                    Ok(BindingValue::List(items)) => items,
+                    Ok(other) => {
+                        if self.verbose {
+                            eprintln!(
+                                "[GravityWidgetBuilder] For loop 'in' is not a list: {:?}",
+                                other
+                            );
+                        }
+                        return iced::widget::column(vec![]).into();
+                    }
+                    Err(e) => {
+                        if self.verbose {
+                            eprintln!("[GravityWidgetBuilder] For loop evaluation error: {}", e);
+                        }
+                        return iced::widget::column(vec![]).into();
+                    }
+                }
+            }
+            _ => {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] For loop missing 'in' binding");
+                }
+                return iced::widget::column(vec![]).into();
+            }
+        };
+
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] For loop rendering {} items as '{}'",
+                collection_values.len(),
+                var_name
+            );
+        }
+
+        // Render children for each item
+        let mut rendered_children = Vec::new();
+
+        for (index, item_value) in collection_values.iter().enumerate() {
+            // Push context
+            self.push_context(&var_name, item_value.clone());
+            self.push_context("index", BindingValue::Integer(index as i64));
+
+            // Render all template children
+            for child in &node.children {
+                rendered_children.push(self.build_widget(child));
+            }
+
+            // Pop context
+            self.pop_context(); // index
+            self.pop_context(); // item
+        }
+
+        // Return as column
+        iced::widget::column(rendered_children).into()
+    }
+
+    /// Build a grid widget
+    ///
+    /// Creates a grid layout by grouping children into rows based on the `columns` attribute.
+    ///
+    /// # Example XML
+    ///
+    /// ```xml
+    /// <grid columns="3" spacing="10">
+    ///     <text value="Cell 1" />
+    ///     <text value="Cell 2" />
+    ///     <text value="Cell 3" />
+    ///     <text value="Cell 4" />
+    /// </grid>
+    /// ```
+    fn build_grid(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
+    where
+        HandlerMessage: Clone + 'static,
+    {
+        // Parse columns attribute (validated by parser, so it exists)
+        let columns = match node.attributes.get("columns") {
+            Some(AttributeValue::Static(s)) => s.parse::<usize>().unwrap_or(1),
+            _ => 1,
+        };
+
+        // Parse spacing attribute
+        let spacing = match node.attributes.get("spacing") {
+            Some(attr) => self.evaluate_attribute(attr).parse::<f32>().unwrap_or(10.0),
+            None => 10.0,
+        };
+
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building Grid: {} columns, spacing {}",
+                columns, spacing
+            );
+        }
+
+        // Group child nodes into rows and build widgets
+        let mut rows = Vec::new();
+
+        for chunk in node.children.chunks(columns) {
+            let row_widgets: Vec<_> = chunk.iter().map(|child| self.build_widget(child)).collect();
+
+            let row = iced::widget::row(row_widgets).spacing(spacing);
+            rows.push(row.into());
+        }
+
+        iced::widget::column(rows).spacing(spacing).into()
     }
 }
 

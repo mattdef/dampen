@@ -33,7 +33,7 @@
 
                 <!-- Statistics about items -->
                 <row spacing="15">
-                    <text value="Total: {items.len()}" />
+                    <text value="Total: {items_len}" />
                     <text value="Active: {pending_count}" />
                     <text value="Completed: {completed_count}" />
                 </row>
@@ -100,28 +100,33 @@
 
             <rule />
 
-            <!-- Task List with Grid Layout (T112) -->
+            <!-- Task List with Grid Layout and Dynamic Rendering (T112) -->
             <column spacing="10">
                 <text value="Your Tasks" size="20" weight="bold" />
                 
                 <!-- Show message if no items -->
                 <text
-                    value="{if items.len() == 0 then 'No tasks yet! Add one above to get started.' else ''}"
+                    value="{if items_len == 0 then 'No tasks yet! Add one above to get started.' else ''}"
                 />
 
-                <!-- Task list header (Grid would go here once implemented) -->
-                <row spacing="10">
+                <!-- Task list as grid with header and dynamic rows -->
+                <grid columns="4" spacing="10">
+                    <!-- Header row -->
                     <text value="Status" weight="bold" />
                     <text value="Task" weight="bold" />
                     <text value="Category" weight="bold" />
                     <text value="Priority" weight="bold" />
-                    <text value="Actions" weight="bold" />
-                </row>
+                    
+                    <!-- Dynamic task rows using <for> loop -->
+                    <for each="item" in="{items}">
+                        <checkbox checked="{item.completed}" />
+                        <text value="{item.text}" />
+                        <text value="{item.category}" />
+                        <text value="{item.priority}" />
+                    </for>
+                </grid>
 
-                <!-- TODO: Task items would go here -->
-                <!-- For now, showing placeholder since we don't have dynamic list rendering -->
-                <text value="(Task list with checkboxes would be rendered here)" />
-                <text value="Filtered items: {items.len()}" />
+                <text value="Total: {items_len} tasks" />
             </column>
 
             <rule />
@@ -132,7 +137,7 @@
                     <button
                         label="Clear All"
                         on_click="clear_all"
-                        enabled="{items.len() > 0}"
+                        enabled="{items_len > 0}"
                     />
                 </tooltip>
 
@@ -146,7 +151,7 @@
 
                 <space />
 
-                <text value="Total Tasks: {items.len()}" />
+                <text value="Total Tasks: {items_len}" />
             </row>
 
             <!-- Priority Icons Example (T114) -->

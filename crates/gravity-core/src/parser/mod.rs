@@ -216,6 +216,27 @@ fn validate_widget_attributes(
                 });
             }
         }
+        WidgetKind::For => {
+            // Check for required 'each' attribute
+            if !attributes.contains_key("each") {
+                return Err(ParseError {
+                    kind: ParseErrorKind::MissingAttribute,
+                    message: "For loop requires 'each' attribute to name the loop variable"
+                        .to_string(),
+                    span,
+                    suggestion: Some("Add each attribute: each=\"item\"".to_string()),
+                });
+            }
+            // Check for required 'in' attribute
+            if !attributes.contains_key("in") {
+                return Err(ParseError {
+                    kind: ParseErrorKind::MissingAttribute,
+                    message: "For loop requires 'in' attribute with collection binding".to_string(),
+                    span,
+                    suggestion: Some("Add in attribute: in=\"{items}\"".to_string()),
+                });
+            }
+        }
         _ => {}
     }
     Ok(())
@@ -298,6 +319,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "grid" => WidgetKind::Grid,
         "canvas" => WidgetKind::Canvas,
         "float" => WidgetKind::Float,
+        "for" => WidgetKind::For,
         _ => {
             return Err(ParseError {
                 kind: ParseErrorKind::UnknownWidget,

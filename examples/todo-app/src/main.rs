@@ -1,10 +1,11 @@
-use gravity_core::{parse, HandlerRegistry};
+use gravity_core::{parse, BindingValue, HandlerRegistry, ToBindingValue};
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use gravity_macros::{ui_handler, UiModel};
 use iced::widget::canvas;
 use iced::{Color, Element, Point, Rectangle, Renderer, Task, Theme};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
+use std::collections::HashMap;
 
 // ============================================================================
 // Data Models (T092-T094)
@@ -45,6 +46,12 @@ impl Default for Priority {
 impl std::fmt::Display for Priority {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_str())
+    }
+}
+
+impl ToBindingValue for Priority {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::String(self.to_string())
     }
 }
 
@@ -105,6 +112,21 @@ impl TodoItem {
             priority,
             completed: false,
         }
+    }
+}
+
+impl ToBindingValue for TodoItem {
+    fn to_binding_value(&self) -> BindingValue {
+        let mut map = HashMap::new();
+        map.insert("id".to_string(), BindingValue::Integer(self.id as i64));
+        map.insert("text".to_string(), BindingValue::String(self.text.clone()));
+        map.insert(
+            "category".to_string(),
+            BindingValue::String(self.category.clone()),
+        );
+        map.insert("priority".to_string(), self.priority.to_binding_value());
+        map.insert("completed".to_string(), BindingValue::Bool(self.completed));
+        BindingValue::Object(map)
     }
 }
 
@@ -180,8 +202,7 @@ impl canvas::Program<Message> for StatisticsChart {
 /// Main application state
 #[derive(UiModel, Debug, Clone, Serialize, Deserialize)]
 pub struct TodoAppModel {
-    // Todo items (skipped from bindings - use computed properties instead)
-    #[ui_skip]
+    // Todo items - exposed as BindingValue::List for <for> loops
     pub items: Vec<TodoItem>,
 
     // Current filter (use string representation for bindings)
@@ -202,6 +223,7 @@ pub struct TodoAppModel {
     pub completed_count: i64,
     pub pending_count: i64,
     pub completion_percentage: f32,
+    pub items_len: i64,
 
     // Next ID for new items (using i64 for binding compatibility)
     pub next_id: i64,
@@ -235,6 +257,7 @@ impl Default for TodoAppModel {
             completed_count: 0,
             pending_count: 0,
             completion_percentage: 0.0,
+            items_len: 0,
             next_id: 1,
             statistics_chart: StatisticsChart::default(),
         }
@@ -244,8 +267,9 @@ impl Default for TodoAppModel {
 impl TodoAppModel {
     /// Update computed counts (T105)
     pub fn update_counts(&mut self) {
+        self.items_len = self.items.len() as i64;
         self.completed_count = self.items.iter().filter(|i| i.completed).count() as i64;
-        self.pending_count = (self.items.len() as i64) - self.completed_count;
+        self.pending_count = self.items_len - self.completed_count;
 
         self.completion_percentage = if self.items.is_empty() {
             0.0
