@@ -362,9 +362,29 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
             };
 
             if let Some(event) = event_kind {
+                // Parse handler name and optional parameter
+                // Syntax: "handler_name" or "handler_name:{expression}"
+                let (handler_name, param) = if let Some(colon_pos) = value.find(':') {
+                    let handler = value[..colon_pos].to_string();
+                    let param_str = &value[colon_pos + 1..];
+
+                    // Parse parameter as binding expression
+                    // Use tokenize_binding_expr with position info
+                    match crate::expr::tokenize_binding_expr(param_str, 0, 1, 1) {
+                        Ok(expr) => (handler, Some(expr)),
+                        Err(_) => {
+                            // If parsing fails, treat the whole string as handler name
+                            (value.to_string(), None)
+                        }
+                    }
+                } else {
+                    (value.to_string(), None)
+                };
+
                 events.push(EventBinding {
                     event,
-                    handler: value.to_string(),
+                    handler: handler_name,
+                    param,
                     span: get_span(node, source),
                 });
                 continue;

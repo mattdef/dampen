@@ -205,6 +205,9 @@ pub struct TodoAppModel {
     // Todo items - exposed as BindingValue::List for <for> loops
     pub items: Vec<TodoItem>,
 
+    // Filtered items cache (updated when items or filter changes)
+    pub filtered_items_cache: Vec<TodoItem>,
+
     // Current filter (use string representation for bindings)
     #[ui_skip]
     pub current_filter: TodoFilter,
@@ -224,6 +227,10 @@ pub struct TodoAppModel {
     pub pending_count: i64,
     pub completion_percentage: f32,
     pub items_len: i64,
+
+    // String representations for PickList bindings
+    pub selected_priority_display: String,
+    pub current_filter_display: String,
 
     // Next ID for new items (using i64 for binding compatibility)
     pub next_id: i64,
@@ -249,6 +256,7 @@ impl Default for TodoAppModel {
     fn default() -> Self {
         Self {
             items: Vec::new(),
+            filtered_items_cache: Vec::new(),
             current_filter: TodoFilter::All,
             new_item_text: String::new(),
             selected_category: "Personal".to_string(),
@@ -258,6 +266,8 @@ impl Default for TodoAppModel {
             pending_count: 0,
             completion_percentage: 0.0,
             items_len: 0,
+            selected_priority_display: "Medium".to_string(),
+            current_filter_display: "All".to_string(),
             next_id: 1,
             statistics_chart: StatisticsChart::default(),
         }
@@ -276,6 +286,8 @@ impl TodoAppModel {
         } else {
             (self.completed_count as f32 / self.items.len() as f32) * 100.0
         };
+
+        self.update_filtered_items();
     }
 
     /// Get filtered items based on current filter
@@ -284,6 +296,17 @@ impl TodoAppModel {
             .iter()
             .filter(|item| self.current_filter.matches(item.completed))
             .collect()
+    }
+
+    /// Update filtered items property (for binding)
+    /// Called after any filter or items change
+    fn update_filtered_items(&mut self) {
+        self.filtered_items_cache = self
+            .items
+            .iter()
+            .filter(|item| self.current_filter.matches(item.completed))
+            .cloned()
+            .collect();
     }
 }
 
@@ -367,6 +390,7 @@ fn update_priority(model: &mut TodoAppModel, value: String) {
         "High" => Priority::High,
         _ => Priority::Medium,
     };
+    model.selected_priority_display = value;
     println!("Selected priority: {}", model.selected_priority);
 }
 
@@ -378,6 +402,8 @@ fn apply_filter(model: &mut TodoAppModel, value: String) {
         "Completed" => TodoFilter::Completed,
         _ => TodoFilter::All,
     };
+    model.current_filter_display = value;
+    model.update_filtered_items();
     println!("Applied filter: {}", model.current_filter);
 }
 

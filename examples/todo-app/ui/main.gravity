@@ -82,7 +82,7 @@
                         <text value="Priority:" />
                         <pick_list 
                             options="Low,Medium,High"
-                            selected="{selected_priority_str()}"
+                            selected="{selected_priority_display}"
                             on_select="update_priority"
                         />
                     </column>
@@ -91,7 +91,7 @@
                         <text value="Filter:" />
                         <pick_list 
                             options="All,Active,Completed"
-                            selected="{current_filter_str()}"
+                            selected="{current_filter_display}"
                             on_select="apply_filter"
                         />
                     </column>
@@ -118,8 +118,8 @@
                     <text value="Priority" weight="bold" />
                     
                     <!-- Dynamic task rows using <for> loop -->
-                    <for each="item" in="{items}">
-                        <checkbox checked="{item.completed}" />
+                    <for each="item" in="{filtered_items_cache}">
+                        <checkbox checked="{item.completed}" on_toggle="toggle_item:{item.id}" />
                         <text value="{item.text}" />
                         <text value="{item.category}" />
                         <text value="{item.priority}" />

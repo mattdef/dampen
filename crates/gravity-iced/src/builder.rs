@@ -1094,24 +1094,42 @@ impl<'a> GravityWidgetBuilder<'a> {
         let is_checked = checked_str == "true" || checked_str == "1";
 
         // Get handler from events
-        let on_toggle = node
+        let on_toggle_event = node
             .events
             .iter()
-            .find(|e| e.event == gravity_core::EventKind::Toggle)
-            .map(|e| e.handler.clone());
+            .find(|e| e.event == gravity_core::EventKind::Toggle);
 
         let mut checkbox = iced::widget::checkbox(is_checked);
 
         // Connect event if handler exists
-        if let Some(handler_name) = on_toggle {
+        if let Some(event_binding) = on_toggle_event {
             if self.handler_registry.is_some() {
+                let handler_name = event_binding.handler.clone();
+
+                // Evaluate parameter if present, otherwise use toggle state
+                let param_value = if let Some(param_expr) = &event_binding.param {
+                    // Evaluate the parameter expression with context
+                    if let Some(value) = self.resolve_from_context(param_expr) {
+                        Some(value.to_display_string())
+                    } else {
+                        match evaluate_binding_expr(param_expr, self.model) {
+                            Ok(value) => Some(value.to_display_string()),
+                            Err(_) => None,
+                        }
+                    }
+                } else {
+                    None
+                };
+
                 checkbox = checkbox.on_toggle(move |new_checked| {
                     HandlerMessage::Handler(
                         handler_name.clone(),
-                        Some(if new_checked {
-                            "true".to_string()
-                        } else {
-                            "false".to_string()
+                        param_value.clone().or_else(|| {
+                            Some(if new_checked {
+                                "true".to_string()
+                            } else {
+                                "false".to_string()
+                            })
                         }),
                     )
                 });

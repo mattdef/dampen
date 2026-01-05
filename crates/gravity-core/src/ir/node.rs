@@ -166,6 +166,8 @@ pub enum FloatPosition {
 pub struct EventBinding {
     pub event: EventKind,
     pub handler: String,
+    /// Optional parameter expression (e.g., for on_click="delete:{item.id}")
+    pub param: Option<crate::expr::BindingExpr>,
     pub span: Span,
 }
 
