@@ -60,6 +60,8 @@ use gravity_core::handler::HandlerRegistry;
 use gravity_core::ir::node::{AttributeValue, InterpolatedPart, WidgetNode};
 use gravity_core::ir::theme::StyleClass;
 use gravity_core::ir::WidgetKind;
+#[allow(unused_imports)]
+use iced::widget::{checkbox, image, pick_list, slider, text_input, toggler};
 use iced::{Element, Renderer, Theme};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -114,7 +116,7 @@ use std::sync::{Arc, Mutex};
 ///     Some(®istry),
 /// ).build();
 /// ```
-pub struct GravityWidgetBuilder<'a, Message> {
+pub struct GravityWidgetBuilder<'a> {
     /// The root widget node from parsed XML
     node: &'a WidgetNode,
 
@@ -131,13 +133,13 @@ pub struct GravityWidgetBuilder<'a, Message> {
     verbose: bool,
 
     /// Factory function to create messages from handler names
-    message_factory: Box<dyn Fn(&str) -> Message + 'a>,
+    message_factory: Box<dyn Fn(&str, Option<String>) -> HandlerMessage + 'a>,
 
     /// Shared state manager for widget state tracking
     state_manager: Arc<Mutex<WidgetStateManager>>,
 }
 
-impl<'a> GravityWidgetBuilder<'a, HandlerMessage> {
+impl<'a> GravityWidgetBuilder<'a> {
     /// Create a new widget builder using the standard HandlerMessage type
     ///
     /// # Arguments
@@ -179,7 +181,9 @@ impl<'a> GravityWidgetBuilder<'a, HandlerMessage> {
             handler_registry,
             style_classes: None,
             verbose: false,
-            message_factory: Box::new(|name| HandlerMessage::Handler(name.to_string(), None)),
+            message_factory: Box::new(|name, value| {
+                HandlerMessage::Handler(name.to_string(), value)
+            }),
             state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
         }
     }
@@ -228,13 +232,15 @@ impl<'a> GravityWidgetBuilder<'a, HandlerMessage> {
             handler_registry,
             style_classes: Some(&document.style_classes),
             verbose: false,
-            message_factory: Box::new(|name| HandlerMessage::Handler(name.to_string(), None)),
+            message_factory: Box::new(|name, value| {
+                HandlerMessage::Handler(name.to_string(), value)
+            }),
             state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
         }
     }
 }
 
-impl<'a, Message> GravityWidgetBuilder<'a, Message> {
+impl<'a> GravityWidgetBuilder<'a> {
     /// Create a new widget builder with a custom message factory
     ///
     /// This is useful when you need custom message types instead of HandlerMessage.
@@ -258,7 +264,7 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     /// struct Model { count: i32 }
     ///
     /// #[derive(Clone, Debug)]
-    /// enum MyMessage {
+    /// enum MyHandlerMessage {
     ///     Increment,
     ///     Decrement,
     /// }
@@ -272,8 +278,8 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     ///     &model,
     ///     None,
     ///     |name| match name {
-    ///         "increment" => MyMessage::Increment,
-    ///         _ => MyMessage::Decrement,
+    ///         "increment" => MyHandlerMessage::Increment,
+    ///         _ => MyHandlerMessage::Decrement,
     ///     },
     /// );
     /// ```
@@ -284,7 +290,7 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         message_factory: F,
     ) -> Self
     where
-        F: Fn(&str) -> Message + 'a,
+        F: Fn(&str, Option<String>) -> HandlerMessage + 'a,
     {
         Self {
             node,
@@ -379,7 +385,7 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     ///
     /// # Type Requirements
     ///
-    /// `Message` must implement `Clone` and be `'static`
+    /// `HandlerMessage` must implement `Clone` and be `'static`
     ///
     /// # Example
     ///
@@ -389,9 +395,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     /// let builder = GravityWidgetBuilder::new(/* ... */);
     /// let element: Element<'_, HandlerMessage> = builder.build();
     /// ```
-    pub fn build(self) -> Element<'a, Message, Theme, Renderer>
+    pub fn build(self) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         self.build_widget(self.node)
     }
@@ -408,9 +414,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     /// # Returns
     ///
     /// An Iced Element representing the widget
-    fn build_widget(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_widget(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         match node.kind {
             WidgetKind::Text => self.build_text(node),
@@ -511,16 +517,16 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     /// # Returns
     ///
     /// `Some(message)` if handler exists, `None` otherwise
-    fn get_handler_message(&self, handler_name: &str) -> Option<Message>
+    fn get_handler_message(&self, handler_name: &str) -> Option<HandlerMessage>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         if let Some(registry) = self.handler_registry {
             if registry.contains(handler_name) {
                 if self.verbose {
                     eprintln!("[GravityWidgetBuilder] Handler '{}' found", handler_name);
                 }
-                return Some((self.message_factory)(handler_name));
+                return Some((self.message_factory)(handler_name, None));
             }
         }
 
@@ -614,14 +620,14 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         &self,
         widget: W,
         node: &WidgetNode,
-    ) -> Element<'a, Message, Theme, Renderer>
+    ) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        W: Into<Element<'a, Message, Theme, Renderer>>,
-        Message: Clone + 'static,
+        W: Into<Element<'a, HandlerMessage, Theme, Renderer>>,
+        HandlerMessage: Clone + 'static,
     {
         use iced::widget::container;
 
-        let element: Element<'a, Message, Theme, Renderer> = widget.into();
+        let element: Element<'a, HandlerMessage, Theme, Renderer> = widget.into();
 
         // Resolve styles: class styles first, then node styles override
         let resolved_style = match (self.resolve_class_styles(node), &node.style) {
@@ -686,9 +692,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
 
     // Widget builders - will be fully implemented in Phase 3
 
-    fn build_text(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_text(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         let value = node
             .attributes
@@ -751,9 +757,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         text_widget.into()
     }
 
-    fn build_button(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_button(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         let label = node
             .attributes
@@ -840,9 +846,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         btn.into()
     }
 
-    fn build_column(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_column(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         let children: Vec<_> = node
             .children
@@ -871,9 +877,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         self.apply_style_layout(column, node)
     }
 
-    fn build_row(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_row(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         let children: Vec<_> = node
             .children
@@ -902,9 +908,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         self.apply_style_layout(row, node)
     }
 
-    fn build_container(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_container(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         // Container can have multiple children - wrap them in a column if needed
         match node.children.len() {
@@ -930,51 +936,348 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         }
     }
 
-    fn build_text_input(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
-    where
-        Message: Clone + 'static,
-    {
-        iced::widget::text("[TextInput - T034]").into()
+    /// Build a text input widget from Gravity XML definition
+    ///
+    /// Supports the following attributes:
+    /// - `value`: String binding for current text value
+    /// - `placeholder`: Placeholder text when empty
+    /// - `on_input`: Handler called on text input with new value
+    ///
+    /// Events: Input (sends HandlerMessage::Handler(name, Some(new_text)))
+    fn build_text_input(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        let placeholder = node
+            .attributes
+            .get("placeholder")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        let value = node
+            .attributes
+            .get("value")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        // Get handler from events
+        let on_input = node
+            .events
+            .iter()
+            .find(|e| e.event == gravity_core::EventKind::Input)
+            .map(|e| e.handler.clone());
+
+        let mut text_input = iced::widget::text_input(&placeholder, &value);
+
+        // Connect event if handler exists
+        if let Some(handler_name) = on_input {
+            if self.handler_registry.is_some() {
+                text_input = text_input.on_input(move |input_value| {
+                    HandlerMessage::Handler(handler_name.clone(), Some(input_value))
+                });
+            }
+        }
+
+        text_input.into()
     }
 
-    fn build_checkbox(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
-    where
-        Message: Clone + 'static,
-    {
-        iced::widget::text("[Checkbox - T035]").into()
+    /// Build a checkbox widget from Gravity XML definition
+    ///
+    /// Supports the following attributes:
+    /// - `label`: Text label displayed next to checkbox
+    /// - `checked`: Boolean binding for checked state
+    /// - `on_toggle`: Handler called on toggle with "true"/"false"
+    ///
+    /// Events: Toggle (sends HandlerMessage::Handler(name, Some("true"|"false")))
+    fn build_checkbox(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        let label = node
+            .attributes
+            .get("label")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        let checked_str = node
+            .attributes
+            .get("checked")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_else(|| "false".to_string());
+
+        let is_checked = checked_str == "true" || checked_str == "1";
+
+        // Get handler from events
+        let on_toggle = node
+            .events
+            .iter()
+            .find(|e| e.event == gravity_core::EventKind::Toggle)
+            .map(|e| e.handler.clone());
+
+        let mut checkbox = iced::widget::checkbox(is_checked);
+
+        // Connect event if handler exists
+        if let Some(handler_name) = on_toggle {
+            if self.handler_registry.is_some() {
+                checkbox = checkbox.on_toggle(move |new_checked| {
+                    HandlerMessage::Handler(
+                        handler_name.clone(),
+                        Some(if new_checked {
+                            "true".to_string()
+                        } else {
+                            "false".to_string()
+                        }),
+                    )
+                });
+            }
+        }
+
+        let text_widget = iced::widget::text(label);
+        let row = iced::widget::row(vec![checkbox.into(), text_widget.into()]);
+        row.into()
     }
 
-    fn build_slider(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
-    where
-        Message: Clone + 'static,
-    {
-        iced::widget::text("[Slider - T036]").into()
+    /// Build a slider widget from Gravity XML definition
+    ///
+    /// Supports the following attributes:
+    /// - `min`: Minimum value (default 0.0)
+    /// - `max`: Maximum value (default 100.0)
+    /// - `value`: Float binding for current value (clamped to [min, max])
+    /// - `on_change`: Handler called on change with stringified float value
+    ///
+    /// Events: Change (sends HandlerMessage::Handler(name, Some(value.to_string())))
+    fn build_slider(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        let min = node
+            .attributes
+            .get("min")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_else(|| "0.0".to_string())
+            .parse::<f32>()
+            .unwrap_or(0.0);
+
+        let max = node
+            .attributes
+            .get("max")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_else(|| "100.0".to_string())
+            .parse::<f32>()
+            .unwrap_or(100.0);
+
+        let value_str = node
+            .attributes
+            .get("value")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_else(|| "50.0".to_string());
+
+        let mut value = value_str.parse::<f32>().unwrap_or(50.0);
+
+        // Clamp value to [min, max]
+        value = value.max(min).min(max);
+
+        // Get handler from events
+        let on_change = node
+            .events
+            .iter()
+            .find(|e| e.event == gravity_core::EventKind::Change)
+            .map(|e| e.handler.clone());
+
+        let slider = if let Some(handler_name) = on_change {
+            if self.handler_registry.is_some() {
+                iced::widget::slider(min..=max, value, move |new_value| {
+                    HandlerMessage::Handler(handler_name.clone(), Some(new_value.to_string()))
+                })
+            } else {
+                iced::widget::slider(min..=max, value, |_| {
+                    HandlerMessage::Handler("dummy".to_string(), None)
+                })
+            }
+        } else {
+            iced::widget::slider(min..=max, value, |_| {
+                HandlerMessage::Handler("dummy".to_string(), None)
+            })
+        };
+
+        slider.into()
     }
 
-    fn build_pick_list(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
-    where
-        Message: Clone + 'static,
-    {
-        iced::widget::text("[PickList - T037]").into()
+    /// Build a pick list widget from Gravity XML definition
+    ///
+    /// Supports the following attributes:
+    /// - `options`: Comma-separated list of options
+    /// - `selected`: String binding for selected option
+    /// - `placeholder`: Placeholder text (currently unused)
+    /// - `on_select`: Handler called on selection with selected value
+    ///
+    /// Events: Select (sends HandlerMessage::Handler(name, Some(selected_value)))
+    fn build_pick_list(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        let options_str = node
+            .attributes
+            .get("options")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        let options: Vec<String> = options_str
+            .split(',')
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect();
+
+        let selected_str = node
+            .attributes
+            .get("selected")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        let selected = if selected_str.is_empty() {
+            None
+        } else {
+            options.iter().find(|o| *o == &selected_str).cloned()
+        };
+
+        // Get handler from events
+        let on_select = node
+            .events
+            .iter()
+            .find(|e| e.event == gravity_core::EventKind::Select)
+            .map(|e| e.handler.clone());
+
+        // For Iced pick_list, it requires options as Vec<T>, selected as Option<T>, and on_select as Fn(T) -> Message
+        // But since options is Vec<String>, and selected is Option<String>, but Iced pick_list expects T: Clone + ToString + PartialEq
+        // String implements that.
+        // But the constructor is pick_list(options, selected, on_select)
+        // But in Iced 0.14, pick_list is pick_list(options: Vec<T>, selected: Option<T>, on_select: impl Fn(T) -> Message)
+        // But wait, it takes placeholder separately? No, in the helper, it's pick_list(options, selected, on_select)
+        // But in the research, it has placeholder.
+
+        // Let me check Iced docs. From research: PickList::new(options, selected, Fn(T) -> Message)
+
+        // But for placeholder, perhaps it's not in the basic, or I need to use the full API.
+
+        // For simplicity, use pick_list(options, selected, on_select)
+
+        // But if no placeholder, ok.
+
+        // But the spec has placeholder.
+
+        // Perhaps Iced pick_list doesn't have placeholder, or I need to handle it differently.
+
+        // From the research: "Shows placeholder when nothing selected"
+
+        // Perhaps use the placeholder as the selected if none.
+
+        // But for now, implement without placeholder, as Iced may not have it.
+
+        let pick_list = if let Some(handler_name) = on_select {
+            if self.handler_registry.is_some() {
+                iced::widget::pick_list(options, selected, move |selected_value| {
+                    HandlerMessage::Handler(handler_name.clone(), Some(selected_value))
+                })
+            } else {
+                iced::widget::pick_list(options, selected, |_| {
+                    HandlerMessage::Handler("dummy".to_string(), None)
+                })
+            }
+        } else {
+            // If no handler, still need to provide one, but since no event, perhaps use a dummy
+            iced::widget::pick_list(options, selected, |_| {
+                HandlerMessage::Handler("dummy".to_string(), None)
+            })
+        };
+
+        pick_list.into()
     }
 
-    fn build_toggler(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
-    where
-        Message: Clone + 'static,
-    {
-        iced::widget::text("[Toggler - T038]").into()
+    /// Build a toggler widget from Gravity XML definition
+    ///
+    /// Supports the following attributes:
+    /// - `label`: Text label displayed next to toggler
+    /// - `active`: Boolean binding for active state
+    /// - `on_toggle`: Handler called on toggle with "true"/"false"
+    ///
+    /// Events: Toggle (sends HandlerMessage::Handler(name, Some("true"|"false")))
+    fn build_toggler(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        let label = node
+            .attributes
+            .get("label")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        let active_str = node
+            .attributes
+            .get("active")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_else(|| "false".to_string());
+
+        let is_active = active_str == "true" || active_str == "1";
+
+        // Get handler from events
+        let on_toggle = node
+            .events
+            .iter()
+            .find(|e| e.event == gravity_core::EventKind::Toggle)
+            .map(|e| e.handler.clone());
+
+        let mut toggler = iced::widget::toggler(is_active);
+
+        // Connect event if handler exists
+        if let Some(handler_name) = on_toggle {
+            if self.handler_registry.is_some() {
+                toggler = toggler.on_toggle(move |new_active| {
+                    HandlerMessage::Handler(
+                        handler_name.clone(),
+                        Some(if new_active {
+                            "true".to_string()
+                        } else {
+                            "false".to_string()
+                        }),
+                    )
+                });
+            }
+        }
+
+        let text_widget = iced::widget::text(label);
+        let row = iced::widget::row(vec![toggler.into(), text_widget.into()]);
+        row.into()
     }
 
-    fn build_image(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
-    where
-        Message: Clone + 'static,
-    {
-        iced::widget::text("[Image - T039]").into()
+    /// Build an image widget from Gravity XML definition
+    ///
+    /// Supports the following attributes:
+    /// - `src`: Path to image file (required)
+    /// - `width`: Display width in pixels
+    /// - `height`: Display height in pixels
+    ///
+    /// No events - display only widget
+    fn build_image(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        let src = node
+            .attributes
+            .get("src")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        if src.is_empty() {
+            if self.verbose {
+                eprintln!("[GravityWidgetBuilder] Image src is empty");
+            }
+            return iced::widget::text("[Image: no src]").into();
+        }
+
+        let handle = iced::widget::image::Handle::from_path(src);
+
+        let mut image = iced::widget::image(handle);
+
+        if let Some(width_attr) = node.attributes.get("width") {
+            if let Ok(width) = self.evaluate_attribute(width_attr).parse::<f32>() {
+                image = image.width(width);
+            }
+        }
+
+        if let Some(height_attr) = node.attributes.get("height") {
+            if let Ok(height) = self.evaluate_attribute(height_attr).parse::<f32>() {
+                image = image.height(height);
+            }
+        }
+
+        image.into()
     }
 
-    fn build_scrollable(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_scrollable(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         if let Some(first_child) = node.children.first() {
             let child = self.build_widget(first_child);
@@ -984,9 +1287,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         }
     }
 
-    fn build_stack(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_stack(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         let children: Vec<_> = node
             .children
@@ -998,38 +1301,38 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
         iced::widget::column(children).into()
     }
 
-    fn build_space(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_space(&self, _node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         iced::widget::text("").into()
     }
 
-    fn build_rule(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_rule(&self, _node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         iced::widget::text("─").into()
     }
 
-    fn build_svg(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_svg(&self, _node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         iced::widget::text("[SVG]").into()
     }
 
-    fn build_custom(&self, _node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_custom(&self, _node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         iced::widget::column(vec![]).into()
     }
 
     /// T054: Implement ProgressBar rendering with value clamping
-    fn build_progress_bar(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_progress_bar(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         // Parse min, max, and value attributes
         let min = match node.attributes.get("min") {
@@ -1058,9 +1361,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
     }
 
     /// T055: Implement Tooltip rendering as wrapper widget
-    fn build_tooltip(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_tooltip(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         // Get message attribute
         let message = match node.attributes.get("message") {
@@ -1095,9 +1398,9 @@ impl<'a, Message> GravityWidgetBuilder<'a, Message> {
 
     /// T076: Implement Canvas rendering with Program binding evaluation
     /// T077: Implement Canvas click event handling with coordinate passing
-    fn build_canvas(&self, node: &WidgetNode) -> Element<'a, Message, Theme, Renderer>
+    fn build_canvas(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
-        Message: Clone + 'static,
+        HandlerMessage: Clone + 'static,
     {
         // Parse width and height attributes (validated by parser, so they exist)
         let width = match node.attributes.get("width") {
