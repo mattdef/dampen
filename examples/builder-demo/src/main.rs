@@ -227,12 +227,7 @@ fn view(state: &AppState) -> Element<'_, Message> {
     // - Connects all event handlers
     // - Applies styles and layouts
     // - Processes nested widgets recursively
-    GravityWidgetBuilder::new(
-        &state.document.root,
-        &state.model,
-        Some(&state.handler_registry),
-    )
-    .build()
+    GravityWidgetBuilder::new(&state.document, &state.model, Some(&state.handler_registry)).build()
 }
 
 pub fn main() -> iced::Result {

@@ -157,13 +157,9 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
 
 /// View function
 fn view(state: &AppState) -> Element<'_, Message> {
-    GravityWidgetBuilder::new(
-        &state.document.root,
-        &state.model,
-        Some(&state.handler_registry),
-    )
-    .with_verbose(true) // Enable verbose logging to see Canvas info
-    .build()
+    GravityWidgetBuilder::new(&state.document, &state.model, Some(&state.handler_registry))
+        .with_verbose(true) // Enable verbose logging to see Canvas info
+        .build()
 }
 
 /// Main function

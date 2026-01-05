@@ -176,15 +176,15 @@ impl<'a> GravityWidgetBuilder<'a> {
     /// );
     /// ```
     pub fn new(
-        node: &'a WidgetNode,
+        document: &'a gravity_core::GravityDocument,
         model: &'a dyn UiBindable,
         handler_registry: Option<&'a HandlerRegistry>,
     ) -> Self {
         Self {
-            node,
+            node: &document.root,
             model,
             handler_registry,
-            style_classes: None,
+            style_classes: Some(&document.style_classes),
             verbose: false,
             message_factory: Box::new(|name, value| {
                 HandlerMessage::Handler(name.to_string(), value)
@@ -232,18 +232,7 @@ impl<'a> GravityWidgetBuilder<'a> {
         model: &'a dyn UiBindable,
         handler_registry: Option<&'a HandlerRegistry>,
     ) -> Self {
-        Self {
-            node: &document.root,
-            model,
-            handler_registry,
-            style_classes: Some(&document.style_classes),
-            verbose: false,
-            message_factory: Box::new(|name, value| {
-                HandlerMessage::Handler(name.to_string(), value)
-            }),
-            state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
-            binding_context: RefCell::new(Vec::new()),
-        }
+        Self::new(document, model, handler_registry)
     }
 }
 
@@ -993,7 +982,7 @@ impl<'a> GravityWidgetBuilder<'a> {
                         match evaluate_binding_expr(param_expr, self.model) {
                             Ok(value) => {
                                 if self.verbose {
-                                    eprintln!("[GravityWidgetBuilder] Button param from model: {:?} -> {}", 
+                                    eprintln!("[GravityWidgetBuilder] Button param from model: {:?} -> {}",
                                              param_expr, value.to_display_string());
                                 }
                                 Some(value.to_display_string())
@@ -1276,7 +1265,7 @@ impl<'a> GravityWidgetBuilder<'a> {
                         match evaluate_binding_expr(param_expr, self.model) {
                             Ok(value) => {
                                 if self.verbose {
-                                    eprintln!("[GravityWidgetBuilder] Checkbox param from model: {:?} -> {}", 
+                                    eprintln!("[GravityWidgetBuilder] Checkbox param from model: {:?} -> {}",
                                              param_expr, value.to_display_string());
                                 }
                                 Some(value.to_display_string())

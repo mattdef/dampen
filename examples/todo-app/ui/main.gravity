@@ -1,270 +1,393 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<scrollable>
-    <container padding="20">
-        <column spacing="20">
-            <!-- Header with title and dark mode toggle (T109) -->
-            <row spacing="15" align="center">
-                <text value="Todo App" size="32" weight="bold" />
-                <space />
-                <toggler
-                    label="Dark Mode"
-                    on_toggle="toggle_dark_mode"
-                    active="{dark_mode}"
-                />
-            </row>
+<gravity>
+    <!-- Theme Definitions -->
+    <themes>
+        <theme name="light">
+            <palette
+                primary="#3498db"
+                secondary="#2ecc71"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c"
+                background="#ecf0f1"
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d"
+            />
+            <typography
+                font_family="Inter, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="20"
+                font_weight="normal"
+                line_height="1.5"
+            />
+            <spacing unit="8" />
+        </theme>
 
-            <rule />
+        <theme name="dark">
+            <palette
+                primary="#5dade2"
+                secondary="#52be80"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#ec7063"
+                background="#2c3e50"
+                surface="#34495e"
+                text="#ecf0f1"
+                text_secondary="#95a5a6"
+            />
+            <typography
+                font_family="Inter, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="20"
+                font_weight="normal"
+                line_height="1.5"
+            />
+            <spacing unit="8" />
+        </theme>
+    </themes>
 
-            <!-- Statistics Section with ProgressBar and Canvas (T110) -->
-            <column spacing="10">
-                <text value="Statistics" size="20" weight="bold" />
+    <!-- Style Classes -->
+    <styles>
+        <!-- Button Styles -->
+        <style name="btn_primary">
+            <base
+                background="#3498db"
+                color="#ffffff"
+                padding="8 16"
+                border_radius="6"
+                border_width="0"
+            />
+            <hover background="#5dade2" />
+            <active background="#2874a6" />
+            <disabled opacity="0.5" />
+        </style>
 
-                <!-- Progress Bar showing completion percentage -->
-                <row spacing="10" align="center">
-                    <text value="Overall Progress:" />
-                    <progress_bar
-                        min="0"
-                        max="100"
-                        value="{completion_percentage}"
-                        style="success"
+        <style name="btn_success">
+            <base
+                background="#27ae60"
+                color="#ffffff"
+                padding="8 16"
+                border_radius="6"
+                border_width="0"
+            />
+            <hover background="#52be80" />
+            <active background="#1e8449" />
+        </style>
+
+        <style name="btn_danger">
+            <base
+                background="#e74c3c"
+                color="#ffffff"
+                padding="8 16"
+                border_radius="6"
+                border_width="0"
+            />
+            <hover background="#ec7063" />
+            <active background="#c0392b" />
+        </style>
+
+        <style name="btn_outlined">
+            <base
+                background="transparent"
+                color="#3498db"
+                padding="8 16"
+                border_radius="6"
+                border_width="2"
+                border_color="#3498db"
+            />
+            <hover background="#ebf5fb" border_color="#5dade2" />
+            <active background="#d6eaf8" />
+        </style>
+    </styles>
+
+    <!-- Set Global Theme -->
+    <global_theme name="light" />
+
+    <!-- Main UI -->
+    <scrollable>
+        <container padding="20">
+            <column spacing="20">
+                <!-- Header with title and dark mode toggle (T109) -->
+                <row spacing="15" align="center">
+                    <text value="Todo App" size="32" weight="bold" />
+                    <space />
+                    <toggler
+                        label="Dark Mode"
+                        on_toggle="toggle_dark_mode"
+                        active="{dark_mode}"
                     />
-                    <text value="{completion_percentage}%" />
                 </row>
 
-                <!-- Statistics about items -->
-                <grid columns="6" spacing="15">
-                    <text value="Total:" weight="bold" />
-                    <text value="{items_len}" />
-                    <text value="Active:" weight="bold" />
-                    <text value="{pending_count}" />
-                    <text value="Completed:" weight="bold" />
-                    <text value="{completed_count}" />
-                </grid>
+                <rule />
 
-                <!-- Canvas for 7-day trend visualization -->
-                <canvas width="400" height="200" program="{statistics_chart}" />
-            </column>
+                <!-- Statistics Section with ProgressBar and Canvas (T110) -->
+                <column spacing="10">
+                    <text value="Statistics" size="20" weight="bold" />
 
-            <rule />
+                    <!-- Progress Bar showing completion percentage -->
+                    <row spacing="10" align="center">
+                        <text value="Overall Progress:" />
+                        <progress_bar
+                            min="0"
+                            max="100"
+                            value="{completion_percentage}"
+                            style="success"
+                        />
+                        <text value="{completion_percentage}%" />
+                    </row>
 
-            <!-- Add Task Form with ComboBox and PickList (T111) -->
-            <column spacing="10">
-                <text value="Add New Task" size="20" weight="bold" />
+                    <!-- Statistics about items -->
+                    <grid columns="6" spacing="15">
+                        <text value="Total:" weight="bold" />
+                        <text value="{items_len}" />
+                        <text value="Active:" weight="bold" />
+                        <text value="{pending_count}" />
+                        <text value="Completed:" weight="bold" />
+                        <text value="{completed_count}" />
+                    </grid>
 
-                <row spacing="10">
-                    <text_input
-                        value="{new_item_text}"
-                        on_input="update_new_item"
-                        placeholder="Enter task description..."
+                    <!-- Canvas for 7-day trend visualization -->
+                    <canvas
+                        width="400"
+                        height="200"
+                        program="{statistics_chart}"
                     />
+                </column>
+
+                <rule />
+
+                <!-- Add Task Form with ComboBox and PickList (T111) -->
+                <column spacing="10">
+                    <text value="Add New Task" size="20" weight="bold" />
+
+                    <row spacing="10">
+                        <text_input
+                            value="{new_item_text}"
+                            on_input="update_new_item"
+                            placeholder="Enter task description..."
+                        />
+                        <tooltip
+                            message="Add this task to your list"
+                            position="top"
+                        >
+                            <button
+                                label="Add Task"
+                                on_click="add_item"
+                                enabled="{new_item_text.len() > 0}"
+                                class="btn_success"
+                            />
+                        </tooltip>
+                    </row>
+
+                    <!-- Category, Priority, and Filter Selection Grid -->
+                    <grid columns="6" spacing="10">
+                        <text value="Category:" />
+                        <pick_list
+                            options="Work,Personal,Shopping,Health,Finance,Other"
+                            selected="{selected_category}"
+                            on_select="update_category"
+                        />
+
+                        <text value="Priority:" />
+                        <pick_list
+                            options="Low,Medium,High"
+                            selected="{selected_priority_display}"
+                            on_select="update_priority"
+                        />
+
+                        <text value="Filter:" />
+                        <pick_list
+                            options="All,Active,Completed"
+                            selected="{current_filter_display}"
+                            on_select="apply_filter"
+                        />
+                    </grid>
+                </column>
+
+                <rule />
+
+                <!-- Task List with Grid Layout and Dynamic Rendering (T112) -->
+                <column spacing="10">
+                    <text value="Your Tasks" size="20" weight="bold" />
+
+                    <!-- Search input -->
+                    <row spacing="10">
+                        <text value="Search:" />
+                        <text_input
+                            value="{search_text}"
+                            on_input="update_search"
+                            placeholder="Search tasks, categories, or priorities..."
+                        />
+                    </row>
+
+                    <!-- Show message if no items -->
+                    <text
+                        value="{if items_len == 0 then 'No tasks yet! Add one above to get started.' else ''}"
+                    />
+
+                    <!-- Task list with header and dynamic rows -->
+                    <column spacing="5">
+                        <!-- Header row -->
+                        <row spacing="10">
+                            <container width="50">
+                                <text value="Status" weight="bold" />
+                            </container>
+                            <container width="200">
+                                <text value="Task" weight="bold" />
+                            </container>
+                            <container width="100">
+                                <text value="Category" weight="bold" />
+                            </container>
+                            <container width="80">
+                                <text value="Priority" weight="bold" />
+                            </container>
+                            <container width="80">
+                                <text value="Edit" weight="bold" />
+                            </container>
+                            <container width="80">
+                                <text value="Delete" weight="bold" />
+                            </container>
+                        </row>
+
+                        <rule />
+
+                        <!-- Dynamic task rows using <for> loop -->
+                        <for each="item" in="{filtered_items_cache}">
+                            <row spacing="10">
+                                <container width="50">
+                                    <checkbox
+                                        checked="{item.completed}"
+                                        on_toggle="toggle_item:{item.id}"
+                                    />
+                                </container>
+                                <container width="200">
+                                    <text value="{item.text}" />
+                                </container>
+                                <container width="100">
+                                    <text value="{item.category}" />
+                                </container>
+                                <container width="80">
+                                    <text value="{item.priority}" />
+                                </container>
+                                <container width="80">
+                                    <button
+                                        label="Edit"
+                                        on_click="start_edit:{item.id}"
+                                        class="btn_primary"
+                                    />
+                                </container>
+                                <container width="80">
+                                    <button
+                                        label="Delete"
+                                        on_click="delete_item:{item.id}"
+                                        class="btn_danger"
+                                    />
+                                </container>
+                            </row>
+                        </for>
+                    </column>
+
+                    <!-- Edit dialog (shown when editing_id >= 0) -->
+                    <text
+                        value="{if editing_id >= 0 then 'Editing Task' else ''}"
+                        size="18"
+                        weight="bold"
+                    />
+                    <text
+                        value="{if editing_id >= 0 then 'Edit the task text below:' else ''}"
+                    />
+                    <row spacing="10">
+                        <text_input
+                            value="{if editing_id >= 0 then edit_text else ''}"
+                            on_input="update_edit_text"
+                            placeholder="Task text..."
+                        />
+                        <button
+                            label="Save"
+                            on_click="save_edit"
+                            enabled="{editing_id >= 0}"
+                        />
+                        <button
+                            label="Cancel"
+                            on_click="cancel_edit"
+                            enabled="{editing_id >= 0}"
+                        />
+                    </row>
+
+                    <text value="Total: {items_len} tasks" />
+                </column>
+
+                <rule />
+
+                <!-- Actions with Tooltips (T113) -->
+                <row spacing="10">
                     <tooltip
-                        message="Add this task to your list"
+                        message="Remove all tasks from your list"
                         position="top"
                     >
                         <button
-                            label="Add Task"
-                            on_click="add_item"
-                            enabled="{new_item_text.len() > 0}"
+                            label="Clear All"
+                            on_click="clear_all"
+                            enabled="{items_len > 0}"
                         />
                     </tooltip>
+
+                    <tooltip
+                        message="Remove only completed tasks"
+                        position="top"
+                    >
+                        <button
+                            label="Clear Completed"
+                            on_click="clear_completed"
+                            enabled="{completed_count > 0}"
+                            class="btn_danger"
+                        />
+                    </tooltip>
+
+                    <space />
+
+                    <text value="Total Tasks: {items_len}" />
                 </row>
 
-                <!-- Category, Priority, and Filter Selection Grid -->
-                <grid columns="6" spacing="10">
-                    <text value="Category:" />
-                    <pick_list
-                        options="Work,Personal,Shopping,Health,Finance,Other"
-                        selected="{selected_category}"
-                        on_select="update_category"
+                <!-- Priority Icons Example (T114) -->
+                <column spacing="10">
+                    <text
+                        value="Priority Indicators:"
+                        size="16"
+                        weight="bold"
                     />
-
-                    <text value="Priority:" />
-                    <pick_list
-                        options="Low,Medium,High"
-                        selected="{selected_priority_display}"
-                        on_select="update_priority"
-                    />
-
-                    <text value="Filter:" />
-                    <pick_list
-                        options="All,Active,Completed"
-                        selected="{current_filter_display}"
-                        on_select="apply_filter"
-                    />
-                </grid>
-            </column>
-
-            <rule />
-
-            <!-- Task List with Grid Layout and Dynamic Rendering (T112) -->
-            <column spacing="10">
-                <text value="Your Tasks" size="20" weight="bold" />
-
-                <!-- Search input -->
-                <row spacing="10">
-                    <text value="Search:" />
-                    <text_input
-                        value="{search_text}"
-                        on_input="update_search"
-                        placeholder="Search tasks, categories, or priorities..."
-                    />
-                </row>
-
-                <!-- Show message if no items -->
-                <text
-                    value="{if items_len == 0 then 'No tasks yet! Add one above to get started.' else ''}"
-                />
-
-                <!-- Task list with header and dynamic rows -->
-                <column spacing="5">
-                    <!-- Header row -->
-                    <row spacing="10">
-                        <container width="50">
-                            <text value="Status" weight="bold" />
-                        </container>
-                        <container width="200">
-                            <text value="Task" weight="bold" />
-                        </container>
-                        <container width="100">
-                            <text value="Category" weight="bold" />
-                        </container>
-                        <container width="80">
-                            <text value="Priority" weight="bold" />
-                        </container>
-                        <container width="80">
-                            <text value="Edit" weight="bold" />
-                        </container>
-                        <container width="80">
-                            <text value="Delete" weight="bold" />
-                        </container>
+                    <row spacing="20">
+                        <column spacing="5" align="center">
+                            <svg
+                                path="examples/todo-app/assets/priority-low.svg"
+                                width="32"
+                                height="32"
+                            />
+                            <text value="Low" />
+                        </column>
+                        <column spacing="5" align="center">
+                            <svg
+                                path="examples/todo-app/assets/priority-medium.svg"
+                                width="32"
+                                height="32"
+                            />
+                            <text value="Medium" />
+                        </column>
+                        <column spacing="5" align="center">
+                            <svg
+                                path="examples/todo-app/assets/priority-high.svg"
+                                width="32"
+                                height="32"
+                            />
+                            <text value="High" />
+                        </column>
                     </row>
-
-                    <rule />
-
-                    <!-- Dynamic task rows using <for> loop -->
-                    <for each="item" in="{filtered_items_cache}">
-                        <row spacing="10">
-                            <container width="50">
-                                <checkbox
-                                    checked="{item.completed}"
-                                    on_toggle="toggle_item:{item.id}"
-                                />
-                            </container>
-                            <container width="200">
-                                <text value="{item.text}" />
-                            </container>
-                            <container width="100">
-                                <text value="{item.category}" />
-                            </container>
-                            <container width="80">
-                                <text value="{item.priority}" />
-                            </container>
-                            <container width="80">
-                                <button
-                                    label="Edit"
-                                    on_click="start_edit:{item.id}"
-                                />
-                            </container>
-                            <container width="80">
-                                <button
-                                    label="Delete"
-                                    on_click="delete_item:{item.id}"
-                                />
-                            </container>
-                        </row>
-                    </for>
                 </column>
 
-                <!-- Edit dialog (shown when editing_id >= 0) -->
-                <text
-                    value="{if editing_id >= 0 then 'Editing Task' else ''}"
-                    size="18"
-                    weight="bold"
-                />
-                <text
-                    value="{if editing_id >= 0 then 'Edit the task text below:' else ''}"
-                />
-                <row spacing="10">
-                    <text_input
-                        value="{if editing_id >= 0 then edit_text else ''}"
-                        on_input="update_edit_text"
-                        placeholder="Task text..."
-                    />
-                    <button
-                        label="Save"
-                        on_click="save_edit"
-                        enabled="{editing_id >= 0}"
-                    />
-                    <button
-                        label="Cancel"
-                        on_click="cancel_edit"
-                        enabled="{editing_id >= 0}"
-                    />
-                </row>
-
-                <text value="Total: {items_len} tasks" />
             </column>
-
-            <rule />
-
-            <!-- Actions with Tooltips (T113) -->
-            <row spacing="10">
-                <tooltip
-                    message="Remove all tasks from your list"
-                    position="top"
-                >
-                    <button
-                        label="Clear All"
-                        on_click="clear_all"
-                        enabled="{items_len > 0}"
-                    />
-                </tooltip>
-
-                <tooltip message="Remove only completed tasks" position="top">
-                    <button
-                        label="Clear Completed"
-                        on_click="clear_completed"
-                        enabled="{completed_count > 0}"
-                    />
-                </tooltip>
-
-                <space />
-
-                <text value="Total Tasks: {items_len}" />
-            </row>
-
-            <!-- Priority Icons Example (T114) -->
-            <column spacing="10">
-                <text value="Priority Indicators:" size="16" weight="bold" />
-                <row spacing="20">
-                    <column spacing="5" align="center">
-                        <svg
-                            path="examples/todo-app/assets/priority-low.svg"
-                            width="32"
-                            height="32"
-                        />
-                        <text value="Low" />
-                    </column>
-                    <column spacing="5" align="center">
-                        <svg
-                            path="examples/todo-app/assets/priority-medium.svg"
-                            width="32"
-                            height="32"
-                        />
-                        <text value="Medium" />
-                    </column>
-                    <column spacing="5" align="center">
-                        <svg
-                            path="examples/todo-app/assets/priority-high.svg"
-                            width="32"
-                            height="32"
-                        />
-                        <text value="High" />
-                    </column>
-                </row>
-            </column>
-
-        </column>
-
-    </container>
-</scrollable>
+        </container>
+    </scrollable>
+</gravity>

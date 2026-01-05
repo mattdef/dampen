@@ -90,12 +90,7 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
 
 /// View function using GravityWidgetBuilder
 fn view(state: &AppState) -> Element<'_, Message> {
-    GravityWidgetBuilder::new(
-        &state.document.root,
-        &state.model,
-        Some(&state.handler_registry),
-    )
-    .build()
+    GravityWidgetBuilder::new(&state.document, &state.model, Some(&state.handler_registry)).build()
 }
 
 pub fn main() -> iced::Result {
