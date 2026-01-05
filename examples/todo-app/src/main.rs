@@ -6,6 +6,7 @@ use iced::{Color, Element, Point, Rectangle, Renderer, Task, Theme};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 // ============================================================================
 // Data Models (T092-T094)
@@ -222,6 +223,13 @@ pub struct TodoAppModel {
 
     pub dark_mode: bool,
 
+    // Edit mode state
+    pub editing_id: i64, // -1 means not editing
+    pub edit_text: String,
+
+    // Search filter
+    pub search_text: String,
+
     // Computed properties (using i64 for binding compatibility)
     pub completed_count: i64,
     pub pending_count: i64,
@@ -262,6 +270,9 @@ impl Default for TodoAppModel {
             selected_category: "Personal".to_string(),
             selected_priority: Priority::Medium,
             dark_mode: false,
+            editing_id: -1,
+            edit_text: String::new(),
+            search_text: String::new(),
             completed_count: 0,
             pending_count: 0,
             completion_percentage: 0.0,
@@ -275,6 +286,29 @@ impl Default for TodoAppModel {
 }
 
 impl TodoAppModel {
+    /// Load from JSON file
+    pub fn load_from_file(path: &PathBuf) -> Self {
+        if let Ok(data) = std::fs::read_to_string(path) {
+            if let Ok(mut model) = serde_json::from_str::<TodoAppModel>(&data) {
+                model.update_counts();
+                println!("Loaded {} tasks from {:?}", model.items.len(), path);
+                return model;
+            }
+        }
+        Self::default()
+    }
+
+    /// Save to JSON file
+    pub fn save_to_file(&self, path: &PathBuf) {
+        if let Ok(data) = serde_json::to_string_pretty(self) {
+            if let Err(e) = std::fs::write(path, data) {
+                eprintln!("Failed to save tasks: {}", e);
+            } else {
+                println!("Saved {} tasks to {:?}", self.items.len(), path);
+            }
+        }
+    }
+
     /// Update computed counts (T105)
     pub fn update_counts(&mut self) {
         self.items_len = self.items.len() as i64;
@@ -301,10 +335,30 @@ impl TodoAppModel {
     /// Update filtered items property (for binding)
     /// Called after any filter or items change
     fn update_filtered_items(&mut self) {
+        let search_lower = self.search_text.to_lowercase();
         self.filtered_items_cache = self
             .items
             .iter()
-            .filter(|item| self.current_filter.matches(item.completed))
+            .filter(|item| {
+                // Filter by completion status
+                if !self.current_filter.matches(item.completed) {
+                    return false;
+                }
+                // Filter by search text
+                if !search_lower.is_empty() {
+                    let matches = item.text.to_lowercase().contains(&search_lower)
+                        || item.category.to_lowercase().contains(&search_lower)
+                        || item
+                            .priority
+                            .to_string()
+                            .to_lowercase()
+                            .contains(&search_lower);
+                    if !matches {
+                        return false;
+                    }
+                }
+                true
+            })
             .cloned()
             .collect();
     }
@@ -418,6 +472,49 @@ fn update_new_item(model: &mut TodoAppModel, value: String) {
     model.new_item_text = value;
 }
 
+#[ui_handler]
+fn start_edit(model: &mut TodoAppModel, id: i64) {
+    let id_usize = id as usize;
+    if let Some(item) = model.items.iter().find(|i| i.id == id_usize) {
+        model.editing_id = id;
+        model.edit_text = item.text.clone();
+        println!("Started editing item {}", id);
+    }
+}
+
+#[ui_handler]
+fn update_edit_text(model: &mut TodoAppModel, value: String) {
+    model.edit_text = value;
+}
+
+#[ui_handler]
+fn save_edit(model: &mut TodoAppModel) {
+    if model.editing_id >= 0 && !model.edit_text.is_empty() {
+        let id = model.editing_id as usize;
+        if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
+            item.text = model.edit_text.clone();
+            println!("Saved edit for item {}", id);
+        }
+        model.editing_id = -1;
+        model.edit_text.clear();
+        model.update_counts();
+    }
+}
+
+#[ui_handler]
+fn cancel_edit(model: &mut TodoAppModel) {
+    model.editing_id = -1;
+    model.edit_text.clear();
+    println!("Cancelled edit");
+}
+
+#[ui_handler]
+fn update_search(model: &mut TodoAppModel, value: String) {
+    model.search_text = value;
+    model.update_filtered_items();
+    println!("Search: {}", model.search_text);
+}
+
 // ============================================================================
 // Application State (T117-T119)
 // ============================================================================
@@ -426,12 +523,16 @@ struct AppState {
     model: TodoAppModel,
     document: gravity_core::GravityDocument,
     handler_registry: HandlerRegistry,
+    save_path: PathBuf,
 }
 
 impl AppState {
     fn new() -> Self {
         let xml = include_str!("../ui/main.gravity");
         let document = parse(xml).expect("Failed to parse XML");
+
+        let save_path = PathBuf::from("todo-app-data.json");
+        let model = TodoAppModel::load_from_file(&save_path);
 
         let handler_registry = HandlerRegistry::new();
 
@@ -454,6 +555,16 @@ impl AppState {
         handler_registry.register_simple("toggle_dark_mode", |model: &mut dyn Any| {
             let model = model.downcast_mut::<TodoAppModel>().unwrap();
             toggle_dark_mode(model);
+        });
+
+        handler_registry.register_simple("save_edit", |model: &mut dyn Any| {
+            let model = model.downcast_mut::<TodoAppModel>().unwrap();
+            save_edit(model);
+        });
+
+        handler_registry.register_simple("cancel_edit", |model: &mut dyn Any| {
+            let model = model.downcast_mut::<TodoAppModel>().unwrap();
+            cancel_edit(model);
         });
 
         // Register handlers with values
@@ -535,10 +646,49 @@ impl AppState {
             },
         );
 
+        handler_registry.register_with_value(
+            "start_edit",
+            |model: &mut dyn Any, value: Box<dyn Any>| {
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
+                let id_value = if let Some(text) = value.downcast_ref::<String>() {
+                    text.parse::<i64>().ok()
+                } else if let Some(id) = value.downcast_ref::<i64>() {
+                    Some(*id)
+                } else {
+                    None
+                };
+
+                if let Some(id) = id_value {
+                    start_edit(model, id);
+                }
+            },
+        );
+
+        handler_registry.register_with_value(
+            "update_edit_text",
+            |model: &mut dyn Any, value: Box<dyn Any>| {
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
+                if let Ok(text) = value.downcast::<String>() {
+                    update_edit_text(model, *text);
+                }
+            },
+        );
+
+        handler_registry.register_with_value(
+            "update_search",
+            |model: &mut dyn Any, value: Box<dyn Any>| {
+                let model = model.downcast_mut::<TodoAppModel>().unwrap();
+                if let Ok(text) = value.downcast::<String>() {
+                    update_search(model, *text);
+                }
+            },
+        );
+
         Self {
-            model: TodoAppModel::default(),
+            model,
             document,
             handler_registry,
+            save_path,
         }
     }
 }
@@ -567,6 +717,9 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
                     h(&mut state.model);
                 }
             }
+
+            // Auto-save after every modification
+            state.model.save_to_file(&state.save_path);
         }
     }
     Task::none()

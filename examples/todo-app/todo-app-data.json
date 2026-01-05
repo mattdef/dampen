@@ -1,0 +1,22 @@
+{
+  "items": [],
+  "filtered_items_cache": [],
+  "current_filter": "All",
+  "new_item_text": "",
+  "selected_category": "Personal",
+  "selected_priority": "Medium",
+  "dark_mode": true,
+  "editing_id": -1,
+  "edit_text": "",
+  "search_text": "",
+  "completed_count": 0,
+  "pending_count": 0,
+  "completion_percentage": 0.0,
+  "items_len": 0,
+  "selected_priority_display": "Medium",
+  "current_filter_display": "All",
+  "next_id": 1,
+  "statistics_chart": {
+    "completion_history": []
+  }
+}

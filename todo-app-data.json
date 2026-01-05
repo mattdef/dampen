@@ -1,0 +1,122 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "text": "gdfgdgdfg",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 2,
+      "text": "gdhjgdhjghdj",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 3,
+      "text": "mklmgycgjgchj",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 4,
+      "text": "fcgtdfxfdgf",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 5,
+      "text": "chfghjhkhjkhj",
+      "category": "Health",
+      "priority": "Low",
+      "completed": false
+    },
+    {
+      "id": 6,
+      "text": "Wow",
+      "category": "Finance",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 7,
+      "text": "You have to do now !!!!",
+      "category": "Work",
+      "priority": "High",
+      "completed": false
+    }
+  ],
+  "filtered_items_cache": [
+    {
+      "id": 1,
+      "text": "gdfgdgdfg",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 2,
+      "text": "gdhjgdhjghdj",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 3,
+      "text": "mklmgycgjgchj",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 4,
+      "text": "fcgtdfxfdgf",
+      "category": "Personal",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 5,
+      "text": "chfghjhkhjkhj",
+      "category": "Health",
+      "priority": "Low",
+      "completed": false
+    },
+    {
+      "id": 6,
+      "text": "Wow",
+      "category": "Finance",
+      "priority": "Medium",
+      "completed": false
+    },
+    {
+      "id": 7,
+      "text": "You have to do now !!!!",
+      "category": "Work",
+      "priority": "High",
+      "completed": false
+    }
+  ],
+  "current_filter": "All",
+  "new_item_text": "",
+  "selected_category": "Work",
+  "selected_priority": "High",
+  "dark_mode": true,
+  "editing_id": -1,
+  "edit_text": "",
+  "search_text": "",
+  "completed_count": 0,
+  "pending_count": 7,
+  "completion_percentage": 0.0,
+  "items_len": 7,
+  "selected_priority_display": "High",
+  "current_filter_display": "All",
+  "next_id": 8,
+  "statistics_chart": {
+    "completion_history": []
+  }
+}

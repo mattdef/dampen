@@ -860,20 +860,12 @@ impl<'a> GravityWidgetBuilder<'a> {
             .unwrap_or_default();
 
         // Get handler from events
-        let on_click = node
+        let on_click_event = node
             .events
             .iter()
-            .find(|e| e.event == gravity_core::EventKind::Click)
-            .map(|e| e.handler.clone());
+            .find(|e| e.event == gravity_core::EventKind::Click);
 
         let mut btn = iced::widget::button(iced::widget::text(label));
-
-        // Connect event if handler exists
-        if let Some(handler_name) = on_click {
-            if let Some(message) = self.get_handler_message(&handler_name) {
-                btn = btn.on_press(message);
-            }
-        }
 
         // Resolve and apply button styles using button-specific style function
         let resolved_style = match (self.resolve_class_styles(node), &node.style) {
@@ -931,8 +923,68 @@ impl<'a> GravityWidgetBuilder<'a> {
                     };
                 }
 
+                // Apply shadow
+                if let Some(ref shadow) = style_props.shadow {
+                    style.shadow = iced::Shadow {
+                        color: Color {
+                            r: shadow.color.r,
+                            g: shadow.color.g,
+                            b: shadow.color.b,
+                            a: shadow.color.a,
+                        },
+                        offset: iced::Vector {
+                            x: shadow.offset_x,
+                            y: shadow.offset_y,
+                        },
+                        blur_radius: shadow.blur_radius,
+                    };
+                }
+
                 style
             });
+        }
+
+        // Connect event if handler exists (AFTER style is applied)
+        if let Some(event_binding) = on_click_event {
+            if self.handler_registry.is_some() {
+                let handler_name = event_binding.handler.clone();
+
+                // Evaluate parameter if present
+                let param_value = if let Some(param_expr) = &event_binding.param {
+                    // Try context first (for {item.id} in for loop)
+                    if let Some(value) = self.resolve_from_context(param_expr) {
+                        let result = Some(value.to_display_string());
+                        if self.verbose {
+                            eprintln!(
+                                "[GravityWidgetBuilder] Button param evaluated: {:?}",
+                                result
+                            );
+                        }
+                        result
+                    } else {
+                        // Fallback to model evaluation
+                        match evaluate_binding_expr(param_expr, self.model) {
+                            Ok(value) => {
+                                let result = Some(value.to_display_string());
+                                if self.verbose {
+                                    eprintln!("[GravityWidgetBuilder] Button param evaluated (model): {:?}", result);
+                                }
+                                result
+                            }
+                            Err(e) => {
+                                if self.verbose {
+                                    eprintln!("[GravityWidgetBuilder] Button param error: {}", e);
+                                }
+                                None
+                            }
+                        }
+                    }
+                } else {
+                    None
+                };
+
+                btn = btn.on_press(HandlerMessage::Handler(handler_name, param_value));
+            }
         }
 
         btn.into()
