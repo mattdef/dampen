@@ -2,7 +2,7 @@
   "items": [
     {
       "id": 1,
-      "text": "Faire le vaisselle",
+      "text": "Faire le vaisselle !!!",
       "category": "Personal",
       "priority": "Low",
       "completed": false
@@ -11,6 +11,13 @@
       "id": 2,
       "text": "Appeler le client Valophis",
       "category": "Work",
+      "priority": "High",
+      "completed": true
+    },
+    {
+      "id": 3,
+      "text": "Aller chercher ma femme à la gare",
+      "category": "Personal",
       "priority": "High",
       "completed": false
     }
@@ -18,7 +25,7 @@
   "filtered_items_cache": [
     {
       "id": 1,
-      "text": "Faire le vaisselle",
+      "text": "Faire le vaisselle !!!",
       "category": "Personal",
       "priority": "Low",
       "completed": false
@@ -28,24 +35,31 @@
       "text": "Appeler le client Valophis",
       "category": "Work",
       "priority": "High",
+      "completed": true
+    },
+    {
+      "id": 3,
+      "text": "Aller chercher ma femme à la gare",
+      "category": "Personal",
+      "priority": "High",
       "completed": false
     }
   ],
   "current_filter": "All",
   "new_item_text": "",
-  "selected_category": "Work",
+  "selected_category": "Personal",
   "selected_priority": "High",
   "dark_mode": true,
-  "editing_id": 2,
-  "edit_text": "Appeler le client Valophis",
+  "editing_id": -1,
+  "edit_text": "",
   "search_text": "",
-  "completed_count": 0,
+  "completed_count": 1,
   "pending_count": 2,
-  "completion_percentage": 0.0,
-  "items_len": 2,
+  "completion_percentage": 33.333336,
+  "items_len": 3,
   "selected_priority_display": "High",
   "current_filter_display": "All",
-  "next_id": 3,
+  "next_id": 4,
   "statistics_chart": {
     "completion_history": []
   }

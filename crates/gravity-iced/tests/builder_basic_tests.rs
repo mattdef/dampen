@@ -147,6 +147,61 @@ fn test_complex_nested() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
+}
+
+#[test]
+fn test_button_enabled_static_true() {
+    let xml = r#"<button label="Click" on_click="handler1" enabled="true" />"#;
+    let doc = parse(xml).unwrap();
+    let model = create_model();
+    let registry = create_registry();
+
+    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
+}
+
+#[test]
+fn test_button_enabled_static_false() {
+    let xml = r#"<button label="Click" on_click="handler1" enabled="false" />"#;
+    let doc = parse(xml).unwrap();
+    let model = create_model();
+    let registry = create_registry();
+
+    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
+}
+
+#[test]
+fn test_button_enabled_binding() {
+    let xml = r#"<button label="Click" on_click="handler1" enabled="{count > 0}" />"#;
+    let doc = parse(xml).unwrap();
+    let model = create_model();
+    let registry = create_registry();
+
+    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
+}
+
+#[test]
+fn test_button_enabled_binding_false() {
+    let xml = r#"<button label="Click" on_click="handler1" enabled="{count < 0}" />"#;
+    let doc = parse(xml).unwrap();
+    let model = create_model();
+    let registry = create_registry();
+
+    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
+}
+
+#[test]
+fn test_button_enabled_with_verbose() {
+    let xml = r#"<button label="Decrement" on_click="handler1" enabled="{count > 0}" />"#;
+    let doc = parse(xml).unwrap();
+    let model = create_model();
+    let registry = create_registry();
+
+    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry)).with_verbose(true);
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }

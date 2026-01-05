@@ -857,7 +857,42 @@ impl<'a> GravityWidgetBuilder<'a> {
             }
         }
 
-        let mut btn = iced::widget::button(iced::widget::text(label));
+        let mut btn = iced::widget::button(iced::widget::text(label.clone()));
+
+        // Evaluate enabled attribute (default: true)
+        let is_enabled = match node.attributes.get("enabled") {
+            None => true,
+            Some(AttributeValue::Static(s)) => {
+                match s.to_lowercase().as_str() {
+                    "true" | "1" | "yes" | "on" => true,
+                    "false" | "0" | "no" | "off" => false,
+                    _ => true, // Default to enabled for unknown values
+                }
+            }
+            Some(AttributeValue::Binding(expr)) => {
+                match evaluate_binding_expr(expr, self.model) {
+                    Ok(value) => value.to_bool(),
+                    Err(e) => {
+                        if self.verbose {
+                            eprintln!("[GravityWidgetBuilder] Button enabled binding error: {}", e);
+                        }
+                        true // Default to enabled on error
+                    }
+                }
+            }
+            Some(AttributeValue::Interpolated(_)) => {
+                // Interpolated strings in boolean context - check if result is non-empty
+                let result = self.evaluate_attribute(node.attributes.get("enabled").unwrap());
+                !result.is_empty() && result != "false" && result != "0"
+            }
+        };
+
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Button '{}' enabled: {}",
+                label, is_enabled
+            );
+        }
 
         // Resolve and apply button styles using button-specific style function
         let resolved_style = match (self.resolve_class_styles(node), &node.style) {
@@ -936,9 +971,9 @@ impl<'a> GravityWidgetBuilder<'a> {
             });
         }
 
-        // Connect event if handler exists (AFTER style is applied)
+        // Connect event if handler exists AND button is enabled (AFTER style is applied)
         if let Some(event_binding) = on_click_event {
-            if self.handler_registry.is_some() {
+            if self.handler_registry.is_some() && is_enabled {
                 let handler_name = event_binding.handler.clone();
 
                 // Evaluate parameter if present
@@ -989,6 +1024,14 @@ impl<'a> GravityWidgetBuilder<'a> {
 
                 // Pass the HandlerMessage directly (on_press doesn't support closures)
                 btn = btn.on_press(HandlerMessage::Handler(handler_cloned, param_cloned));
+            } else if !is_enabled {
+                if self.verbose {
+                    eprintln!(
+                        "[GravityWidgetBuilder] Button '{}' is disabled via enabled attribute",
+                        label
+                    );
+                }
+                // Don't call on_press - button will be disabled automatically by Iced
             } else {
                 if self.verbose {
                     eprintln!("[GravityWidgetBuilder] Button: No handler_registry, cannot attach on_press");

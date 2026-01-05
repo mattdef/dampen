@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/gravity-core.svg)](https://crates.io/crates/gravity-core)
 [![Documentation](https://docs.rs/gravity-core/badge.svg)](https://docs.rs/gravity-core)
-[![CI](https://github.com/your-org/gravity/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/gravity/actions)
+[![CI](https://github.com/mattdef/gravity/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/gravity/actions)
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://rust-lang.org)
 
@@ -53,11 +53,14 @@ my-app/
 **1. Create `ui/main.gravity`:**
 
 ```xml
-<column padding="40" spacing="20" align="center">
-    <text value="Hello, Gravity!" size="32" weight="bold" />
-    <text value="Welcome to declarative Rust UI" />
-    <button label="Click me!" on_click="greet" />
-</column>
+<?xml version="1.0" encoding="UTF-8" ?>
+<gravity>
+    <column padding="40" spacing="20">
+        <text value="Hello, Gravity!" size="32" weight="bold" />
+        <text value="This is a declarative UI defined in XML" />
+        <button label="Click me!" on_click="greet" />
+    </column>
+</gravity>
 ```
 
 **2. Create `src/main.rs`:**
@@ -106,14 +109,17 @@ cargo run --release
 Define your entire UI in XML:
 
 ```xml
-<column padding="40" spacing="20">
-    <text value="Counter: {count}" size="48" />
-    <row spacing="20">
-        <button label="-" on_click="decrement" enabled="{count > 0}" />
-        <button label="+" on_click="increment" />
-    </row>
-    <button label="Reset" on_click="reset" />
-</column>
+<?xml version="1.0" encoding="UTF-8" ?>
+<gravity>
+    <column padding="40" spacing="20" align="center">
+        <text value="Counter: {count}" size="48" weight="bold" />
+        <row spacing="20">
+            <button label="-" on_click="decrement" enabled="{count > 0}" />
+            <button label="+" on_click="increment" />
+        </row>
+        <button label="Reset" on_click="reset" />
+    </column>
+</gravity>
 ```
 
 ### Advanced Styling System
