@@ -32,11 +32,14 @@
                 </row>
 
                 <!-- Statistics about items -->
-                <row spacing="15">
-                    <text value="Total: {items_len}" />
-                    <text value="Active: {pending_count}" />
-                    <text value="Completed: {completed_count}" />
-                </row>
+                <grid columns="6" spacing="15">
+                    <text value="Total:" weight="bold" />
+                    <text value="{items_len}" />
+                    <text value="Active:" weight="bold" />
+                    <text value="{pending_count}" />
+                    <text value="Completed:" weight="bold" />
+                    <text value="{completed_count}" />
+                </grid>
 
                 <!-- Canvas for 7-day trend visualization -->
                 <canvas 
@@ -67,35 +70,29 @@
                     </tooltip>
                 </row>
 
-                <!-- Category and Priority Selection -->
-                <row spacing="15">
-                    <column spacing="5">
-                        <text value="Category:" />
-                        <pick_list 
-                            options="Work,Personal,Shopping,Health,Finance,Other"
-                            selected="{selected_category}"
-                            on_select="update_category"
-                        />
-                    </column>
-
-                    <column spacing="5">
-                        <text value="Priority:" />
-                        <pick_list 
-                            options="Low,Medium,High"
-                            selected="{selected_priority_display}"
-                            on_select="update_priority"
-                        />
-                    </column>
-
-                    <column spacing="5">
-                        <text value="Filter:" />
-                        <pick_list 
-                            options="All,Active,Completed"
-                            selected="{current_filter_display}"
-                            on_select="apply_filter"
-                        />
-                    </column>
-                </row>
+                <!-- Category, Priority, and Filter Selection Grid -->
+                <grid columns="6" spacing="10">
+                    <text value="Category:" />
+                    <pick_list 
+                        options="Work,Personal,Shopping,Health,Finance,Other"
+                        selected="{selected_category}"
+                        on_select="update_category"
+                    />
+                    
+                    <text value="Priority:" />
+                    <pick_list 
+                        options="Low,Medium,High"
+                        selected="{selected_priority_display}"
+                        on_select="update_priority"
+                    />
+                    
+                    <text value="Filter:" />
+                    <pick_list 
+                        options="All,Active,Completed"
+                        selected="{current_filter_display}"
+                        on_select="apply_filter"
+                    />
+                </grid>
             </column>
 
             <rule />
