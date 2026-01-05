@@ -501,8 +501,17 @@ impl AppState {
             "toggle_item",
             |model: &mut dyn Any, value: Box<dyn Any>| {
                 let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                if let Ok(id) = value.downcast::<i64>() {
-                    toggle_item(model, *id);
+                // Try String first (most common from UI), then i64
+                let id_value = if let Some(text) = value.downcast_ref::<String>() {
+                    text.parse::<i64>().ok()
+                } else if let Some(id) = value.downcast_ref::<i64>() {
+                    Some(*id)
+                } else {
+                    None
+                };
+
+                if let Some(id) = id_value {
+                    toggle_item(model, id);
                 }
             },
         );
@@ -511,8 +520,17 @@ impl AppState {
             "delete_item",
             |model: &mut dyn Any, value: Box<dyn Any>| {
                 let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                if let Ok(id) = value.downcast::<i64>() {
-                    delete_item(model, *id);
+                // Try String first (most common from UI), then i64
+                let id_value = if let Some(text) = value.downcast_ref::<String>() {
+                    text.parse::<i64>().ok()
+                } else if let Some(id) = value.downcast_ref::<i64>() {
+                    Some(*id)
+                } else {
+                    None
+                };
+
+                if let Some(id) = id_value {
+                    delete_item(model, id);
                 }
             },
         );
@@ -530,11 +548,16 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
         HandlerMessage::Handler(name, value_opt) => {
             if let Some(value) = value_opt {
-                // Handler with value
+                // Try handler with value first
                 if let Some(gravity_core::HandlerEntry::WithValue(h)) =
                     state.handler_registry.get(&name)
                 {
                     h(&mut state.model, Box::new(value));
+                } else if let Some(gravity_core::HandlerEntry::Simple(h)) =
+                    state.handler_registry.get(&name)
+                {
+                    // Fallback to simple handler (ignore the value)
+                    h(&mut state.model);
                 }
             } else {
                 // Simple handler

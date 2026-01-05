@@ -159,15 +159,15 @@
                 <text value="Priority Indicators:" size="16" weight="bold" />
                 <row spacing="20">
                     <column spacing="5" align="center">
-                        <svg path="assets/priority-low.svg" width="32" height="32" />
+                        <svg path="examples/todo-app/assets/priority-low.svg" width="32" height="32" />
                         <text value="Low" />
                     </column>
                     <column spacing="5" align="center">
-                        <svg path="assets/priority-medium.svg" width="32" height="32" />
+                        <svg path="examples/todo-app/assets/priority-medium.svg" width="32" height="32" />
                         <text value="Medium" />
                     </column>
                     <column spacing="5" align="center">
-                        <svg path="assets/priority-high.svg" width="32" height="32" />
+                        <svg path="examples/todo-app/assets/priority-high.svg" width="32" height="32" />
                         <text value="High" />
                     </column>
                 </row>

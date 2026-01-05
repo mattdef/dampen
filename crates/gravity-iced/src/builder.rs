@@ -1110,11 +1110,29 @@ impl<'a> GravityWidgetBuilder<'a> {
                 let param_value = if let Some(param_expr) = &event_binding.param {
                     // Evaluate the parameter expression with context
                     if let Some(value) = self.resolve_from_context(param_expr) {
-                        Some(value.to_display_string())
+                        let result = Some(value.to_display_string());
+                        if self.verbose {
+                            eprintln!(
+                                "[GravityWidgetBuilder] Checkbox param evaluated: {:?}",
+                                result
+                            );
+                        }
+                        result
                     } else {
                         match evaluate_binding_expr(param_expr, self.model) {
-                            Ok(value) => Some(value.to_display_string()),
-                            Err(_) => None,
+                            Ok(value) => {
+                                let result = Some(value.to_display_string());
+                                if self.verbose {
+                                    eprintln!("[GravityWidgetBuilder] Checkbox param evaluated (model): {:?}", result);
+                                }
+                                result
+                            }
+                            Err(e) => {
+                                if self.verbose {
+                                    eprintln!("[GravityWidgetBuilder] Checkbox param error: {}", e);
+                                }
+                                None
+                            }
                         }
                     }
                 } else {
