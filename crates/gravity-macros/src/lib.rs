@@ -29,6 +29,6 @@ pub fn ui_handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// See the [`ui_loader`](ui_loader) module for documentation.
 #[proc_macro_attribute]
-pub fn gravity_ui(attr: TokenStream, _item: TokenStream) -> TokenStream {
-    ui_loader::process_gravity_ui(attr)
+pub fn gravity_ui(attr: TokenStream, item: TokenStream) -> TokenStream {
+    ui_loader::process_gravity_ui(attr, item)
 }

@@ -304,6 +304,54 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 }
 ```
 
+### AppState Pattern (006-auto-ui-loading)
+
+The `AppState<M>` struct provides a unified way to manage UI state:
+
+```rust
+use gravity_core::AppState;
+
+// Simple usage (no model)
+let state = AppState::<()>::new(document);
+
+// With model
+let state = AppState::with_model(document, my_model);
+
+// With handlers
+let state = AppState::with_handlers(document, handler_registry);
+```
+
+### Auto-Loading UI Files
+
+Use the `#[gravity_ui]` macro to automatically load XML files:
+
+```rust
+// src/ui/app.rs
+use gravity_macros::{gravity_ui, UiModel};
+use gravity_core::AppState;
+
+#[derive(UiModel)]
+pub struct Model { count: i32 }
+
+#[gravity_ui("app.gravity")]
+mod _app {}
+
+pub fn create_app_state() -> AppState<Model> {
+    let document = _app::document();
+    let handlers = create_handlers();
+    AppState::with_handlers(document, handlers)
+}
+```
+
+File structure:
+```
+src/
+└── ui/
+    ├── mod.rs          # Export the app module
+    ├── app.rs          # UI code with #[gravity_ui] macro
+    └── app.gravity     # XML UI definition
+```
+
 ## Performance Budgets
 
 | Metric | Target |
@@ -317,6 +365,14 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 - 006-auto-ui-loading: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+
 - 005-implement-real-widgets: Added Rust Edition 2021, MSRV 1.75 + Iced 0.14 (with `image` feature enabled), gravity-core
 - 004-advanced-widgets-todo: Added Rust Edition 2024, MSRV 1.75 + Iced 0.14+ (already in workspace)
+
+**Phase 7 Complete (006-auto-ui-loading):**
+- ✅ Contract tests for auto-loading mechanism (gravity-macros/tests/auto_loading_tests.rs)
+- ✅ Contract tests for AppState struct (gravity-core/tests/appstate_tests.rs)
+- ✅ Integration test for hello-world (examples/hello-world/tests/integration.rs)
+- ✅ Migrated examples/counter to new auto-loading pattern
+- ✅ Migrated examples/todo-app to new auto-loading pattern
+- ✅ Updated AGENTS.md with AppState usage patterns
 
   - Implemented `#[derive(UiModel)]` macro with field accessors
   - Created `UiBindable` trait and `BindingValue` enum
@@ -356,21 +412,24 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 - Formatted (`cargo fmt --all -- --check`)
 - Documentation updated if public API changed
 
-### Current Status: Phase 8 Complete ✓
+### Current Status: Phase 7 Complete ✓
 
 **Implemented Components:**
+- `gravity-core/src/state/mod.rs`: AppState struct with constructors
 - `gravity-core/src/binding/`: UiBindable trait, BindingValue enum
-- `gravity-core/src/expr/eval.rs`: Expression evaluator
-- `gravity-macros/src/ui_model.rs`: #[derive(UiModel)] macro
-- `gravity-macros/tests/ui_model_tests.rs`: 10 comprehensive tests
-- `gravity-runtime/src/watcher.rs`: File watcher with notify
-- `gravity-runtime/src/interpreter.rs`: Hot-reload interpreter
-- `gravity-runtime/src/overlay.rs`: Error overlay UI
-- `gravity-cli/src/commands/dev.rs`: Dev mode with hot-reload
-- `gravity-cli/src/commands/check.rs`: UI validation command
-- `examples/todo-app/`: Working bindings example
-- `examples/counter/`: Working handlers example
-- `examples/hello-world/`: Working static example
+- `gravity-macros/src/ui_loader.rs`: #[gravity_ui] macro for auto-loading
+- `gravity-macros/tests/auto_loading_tests.rs`: Contract tests
+- `gravity-core/tests/appstate_tests.rs`: Contract tests
+- `examples/hello-world/`: Minimal auto-loading example
+- `examples/counter/`: Migrated to auto-loading pattern
+- `examples/todo-app/`: Migrated to auto-loading pattern
+- `examples/settings/`: New example demonstrating multiple views
+
+**Auto-Loading Features:**
+- ✅ #[gravity_ui] macro for automatic XML loading
+- ✅ LazyLock for thread-safe lazy initialization
+- ✅ Multiple views support (app.gravity, settings.gravity)
+- ✅ AppState with Model and HandlerRegistry support
 
 **Hot-Reload Features:**
 - ✅ File watching with `notify` 6.0+
@@ -388,9 +447,9 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 - ✅ Comprehensive test coverage for validation
 
 **Next Steps:**
-- Phase 9: User Story 7 - Support All Core Iced Widgets
-  - Implement remaining widgets (container, scrollable, stack, etc.)
-  - Add attribute parsing for width/height, padding, spacing
-  - Create comprehensive todo-app example
+- Phase 8: Documentation & Final Polish
+  - Update README.md with auto-loading documentation
+  - Run final verification tests
+  - Prepare for feature release
 
 <!-- MANUAL ADDITIONS END -->

@@ -123,10 +123,12 @@ Auto-loading mechanism                                  AppState struct
 
 ### Multiple Views Pattern
 
-- [ ] T025 [P] [US4] Create `examples/settings/ui/settings.gravity.rs` demonstrating multiple views pattern
-- [ ] T026 [P] [US4] Create `examples/settings/ui/settings.gravity` XML file
-- [ ] T027 [P] [US4] Create `examples/settings/ui/mod.rs` exporting multiple AppStates
-- [ ] T028 [P] [US4] Update `examples/settings/src/main.rs` demonstrating view switching
+- [X] T025 [P] [US4] Create `examples/settings/src/ui/app.rs` demonstrating multiple views pattern - Main view
+- [X] T026 [P] [US4] Create `examples/settings/src/ui/app.gravity` XML file
+- [X] T027 [P] [US4] Create `examples/settings/src/ui/settings.rs` demonstrating multiple views pattern - Settings view
+- [X] T028 [P] [US4] Create `examples/settings/src/ui/settings.gravity` XML file
+- [X] T029 [P] [US4] Create `examples/settings/src/ui/mod.rs` exporting multiple AppStates
+- [X] T030 [P] [US4] Update `examples/settings/src/main.rs` demonstrating view switching
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
@@ -134,25 +136,25 @@ Auto-loading mechanism                                  AppState struct
 
 ### Contract Tests
 
-- [ ] T029 Create contract test for auto-loading mechanism in `gravity-macros/tests/auto_loading_tests.rs`
-- [ ] T030 Create contract test for AppState struct in `gravity-core/tests/appstate_tests.rs`
-- [ ] T031 Create integration test for hello-world example in `examples/hello-world/tests/integration.rs`
+- [X] T031 Create contract test for auto-loading mechanism in `gravity-macros/tests/auto_loading_tests.rs`
+- [X] T032 Create contract test for AppState struct in `gravity-core/tests/appstate_tests.rs`
+- [X] T033 Create integration test for hello-world example in `examples/hello-world/tests/integration.rs`
 
 ### Example Migration
 
-- [ ] T032 Migrate `examples/counter/` to new auto-loading pattern
-- [ ] T033 Migrate `examples/todo-app/` to new auto-loading pattern
+- [X] T034 Migrate `examples/counter/` to new auto-loading pattern
+- [X] T035 Migrate `examples/todo-app/` to new auto-loading pattern
 
 ### Documentation Updates
 
-- [ ] T034 Update AGENTS.md with AppState usage patterns
-- [ ] T035 Add auto-loading section to existing README.md
+- [X] T036 Update AGENTS.md with AppState usage patterns
+- [X] T037 Add auto-loading section to existing README.md and update existing examples
 
 ### Final Verification
 
-- [ ] T036 Run `cargo test --workspace` to verify all tests pass
-- [ ] T037 Run `cargo clippy --workspace -- -D warnings` to ensure lint compliance
-- [ ] T038 Run `cargo fmt --all` to format all code
+- [X] T038 Run `cargo test --workspace` to verify all tests pass
+- [X] T039 Run `cargo clippy --workspace -- -D warnings` to ensure lint compliance
+- [X] T040 Run `cargo fmt --all` to format all code
 
 ## Task Summary
 
@@ -163,8 +165,8 @@ Auto-loading mechanism                                  AppState struct
 | Phase 3 (US1) | T006-T012 | Auto-loading mechanism (7 tasks) |
 | Phase 4 (US2) | T013-T020 | AppState struct (8 tasks) |
 | Phase 5 (US3) | T021-T024 | Boilerplate reduction (4 tasks) |
-| Phase 6 (US4) | T025-T028 | Multiple views (4 tasks) |
-| Phase 7 | T029-T038 | Polish & cross-cutting (10 tasks) |
+| Phase 6 (US4) | T025-T03 | Multiple views (4 tasks) |
+| Phase 7 | T031-T040 | Polish & cross-cutting (10 tasks) |
 | **Total** | **38 tasks** | |
 
 ## Independent Test Criteria

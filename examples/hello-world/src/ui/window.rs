@@ -2,25 +2,22 @@
 //
 // This file is automatically compiled and loads the corresponding app.gravity XML file.
 
-use gravity_core::{parse, AppState, GravityDocument, HandlerRegistry};
-use gravity_macros::UiModel;
+use gravity_core::{AppState, HandlerRegistry};
+use gravity_macros::{gravity_ui, UiModel};
 use serde::{Deserialize, Serialize};
-use std::sync::LazyLock;
 
 /// The application model.
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
 pub struct Model;
 
-fn __load_document() -> GravityDocument {
-    let xml = include_str!("app.gravity");
-    parse(xml).expect("Failed to parse Gravity UI file")
-}
-
-pub static DOCUMENT: LazyLock<GravityDocument> = LazyLock::new(__load_document);
+/// Auto-load the app.gravity XML file.
+/// Path is relative to this file (src/ui/).
+#[gravity_ui("window.gravity")]
+mod _app {}
 
 /// Create the AppState for the hello-world example.
 pub fn create_app_state() -> AppState<Model> {
-    let document = (*DOCUMENT).clone();
+    let document = _app::document();
     let handler_registry = create_handler_registry();
     AppState::with_handlers(document, handler_registry)
 }

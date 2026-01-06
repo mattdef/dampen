@@ -9,6 +9,8 @@ use walkdir::WalkDir;
 
 fn main() {
     // Get the manifest directory (crate root)
+    // This env var is always set by Cargo for build scripts
+    #[allow(clippy::unwrap_used)]
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
 
     // Find all .gravity files recursively in the project

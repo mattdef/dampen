@@ -14,6 +14,7 @@ members = [
     "examples/styling",
     "examples/widget-showcase",
     "examples/responsive",
+    "examples/settings",
 ]
 
 [workspace.package]

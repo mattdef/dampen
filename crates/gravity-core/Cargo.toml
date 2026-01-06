@@ -27,6 +27,7 @@ csscolorparser = { workspace = true }
 proptest = { workspace = true }
 insta = { workspace = true }
 criterion = "0.5"
+gravity-macros = { path = "../gravity-macros" }
 
 [[bench]]
 name = "parser_bench"

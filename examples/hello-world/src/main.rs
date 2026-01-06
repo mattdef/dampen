@@ -23,7 +23,7 @@ type Message = HandlerMessage;
 
 /// Main application state wrapper
 struct GravityApp {
-    state: AppState<ui::app::Model>,
+    state: AppState<ui::window::Model>,
 }
 
 /// Update function
@@ -52,7 +52,7 @@ fn view(app: &GravityApp) -> Element<'_, Message> {
 
 /// Initialize the application
 fn init() -> (GravityApp, Task<Message>) {
-    let state = ui::app::create_app_state();
+    let state = ui::window::create_app_state();
     (GravityApp { state }, Task::none())
 }
 

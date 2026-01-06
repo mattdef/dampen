@@ -871,7 +871,12 @@ impl<'a> GravityWidgetBuilder<'a> {
             }
             Some(AttributeValue::Interpolated(_)) => {
                 // Interpolated strings in boolean context - check if result is non-empty
-                let result = self.evaluate_attribute(node.attributes.get("enabled").unwrap());
+                let enabled_attr = node.attributes.get("enabled");
+                let result = if let Some(attr) = enabled_attr {
+                    self.evaluate_attribute(attr)
+                } else {
+                    String::new()
+                };
                 !result.is_empty() && result != "false" && result != "0"
             }
         };

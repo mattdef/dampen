@@ -1,65 +1,81 @@
 {
   "items": [
     {
-      "id": 1,
-      "text": "Faire la vaisselle !!!",
-      "category": "Personal",
-      "priority": "Low",
-      "completed": false
-    },
-    {
-      "id": 2,
-      "text": "Appeler le client Valophis",
-      "category": "Work",
-      "priority": "High",
-      "completed": true
-    },
-    {
       "id": 3,
-      "text": "Aller chercher ma femme à la gare",
+      "text": "fddfsfsdf",
+      "completed": false,
+      "category": "Finance",
+      "priority": "Low"
+    },
+    {
+      "id": 4,
+      "text": "gfhssfhgsfh",
+      "completed": true,
+      "category": "Shopping",
+      "priority": "Low"
+    },
+    {
+      "id": 5,
+      "text": "sfsdfsd",
+      "completed": false,
       "category": "Personal",
-      "priority": "High",
-      "completed": true
+      "priority": "Low"
+    },
+    {
+      "id": 6,
+      "text": "jhdytujtyu",
+      "completed": true,
+      "category": "Other",
+      "priority": "High"
     }
   ],
   "filtered_items_cache": [
     {
-      "id": 1,
-      "text": "Faire la vaisselle !!!",
-      "category": "Personal",
-      "priority": "Low",
-      "completed": false
-    },
-    {
-      "id": 2,
-      "text": "Appeler le client Valophis",
-      "category": "Work",
-      "priority": "High",
-      "completed": true
-    },
-    {
       "id": 3,
-      "text": "Aller chercher ma femme à la gare",
+      "text": "fddfsfsdf",
+      "completed": false,
+      "category": "Finance",
+      "priority": "Low"
+    },
+    {
+      "id": 4,
+      "text": "gfhssfhgsfh",
+      "completed": true,
+      "category": "Shopping",
+      "priority": "Low"
+    },
+    {
+      "id": 5,
+      "text": "sfsdfsd",
+      "completed": false,
       "category": "Personal",
-      "priority": "High",
-      "completed": true
+      "priority": "Low"
+    },
+    {
+      "id": 6,
+      "text": "jhdytujtyu",
+      "completed": true,
+      "category": "Other",
+      "priority": "High"
     }
   ],
+  "next_id": 7,
+  "new_item_text": "",
+  "new_item_category": "Other",
+  "new_item_priority": "High",
   "current_filter": "All",
-  "new_item_text": "qzdqddqd",
-  "selected_category": "Personal",
-  "selected_priority": "High",
-  "dark_mode": true,
-  "editing_id": -1,
-  "edit_text": "",
   "search_text": "",
-  "completed_count": 2,
-  "pending_count": 1,
-  "completion_percentage": 66.66667,
-  "items_len": 3,
+  "editing_id": null,
+  "edit_text": "",
+  "dark_mode": true,
+  "selected_category": "Other",
+  "selected_priority": "High",
   "selected_priority_display": "High",
   "current_filter_display": "All",
-  "next_id": 4,
+  "completed_count": 2,
+  "pending_count": 2,
+  "completion_percentage": 50,
+  "items_len": 4,
   "statistics_chart": {
     "completion_history": []
   }

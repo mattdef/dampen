@@ -1,759 +1,99 @@
-use gravity_core::{parse, BindingValue, HandlerRegistry, ToBindingValue};
+//! Todo App example using the auto-loading pattern.
+
+mod ui;
+
+use gravity_core::AppState;
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
-use gravity_macros::{ui_handler, UiModel};
-use iced::widget::canvas;
-use iced::{Color, Element, Point, Rectangle, Renderer, Task, Theme};
-use serde::{Deserialize, Serialize};
-use std::any::Any;
-use std::collections::HashMap;
+use iced::{widget::container, Element, Task, Theme};
 use std::path::PathBuf;
-
-// ============================================================================
-// Data Models (T092-T094)
-// ============================================================================
-
-/// Priority level for todo items
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Priority {
-    Low,
-    Medium,
-    High,
-}
-
-impl Priority {
-    pub fn as_str(&self) -> &str {
-        match self {
-            Priority::Low => "Low",
-            Priority::Medium => "Medium",
-            Priority::High => "High",
-        }
-    }
-
-    pub fn icon_path(&self) -> &str {
-        match self {
-            Priority::Low => "assets/priority-low.svg",
-            Priority::Medium => "assets/priority-medium.svg",
-            Priority::High => "assets/priority-high.svg",
-        }
-    }
-}
-
-impl Default for Priority {
-    fn default() -> Self {
-        Priority::Medium
-    }
-}
-
-impl std::fmt::Display for Priority {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
-
-impl ToBindingValue for Priority {
-    fn to_binding_value(&self) -> BindingValue {
-        BindingValue::String(self.to_string())
-    }
-}
-
-/// Filter for displaying todos
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum TodoFilter {
-    All,
-    Active,
-    Completed,
-}
-
-impl TodoFilter {
-    pub fn as_str(&self) -> &str {
-        match self {
-            TodoFilter::All => "All",
-            TodoFilter::Active => "Active",
-            TodoFilter::Completed => "Completed",
-        }
-    }
-
-    pub fn matches(&self, completed: bool) -> bool {
-        match self {
-            TodoFilter::All => true,
-            TodoFilter::Active => !completed,
-            TodoFilter::Completed => completed,
-        }
-    }
-}
-
-impl Default for TodoFilter {
-    fn default() -> Self {
-        TodoFilter::All
-    }
-}
-
-impl std::fmt::Display for TodoFilter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
-
-/// Individual todo item
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TodoItem {
-    pub id: usize,
-    pub text: String,
-    pub category: String,
-    pub priority: Priority,
-    pub completed: bool,
-}
-
-impl TodoItem {
-    pub fn new(id: usize, text: String, category: String, priority: Priority) -> Self {
-        Self {
-            id,
-            text,
-            category,
-            priority,
-            completed: false,
-        }
-    }
-}
-
-impl ToBindingValue for TodoItem {
-    fn to_binding_value(&self) -> BindingValue {
-        let mut map = HashMap::new();
-        map.insert("id".to_string(), BindingValue::Integer(self.id as i64));
-        map.insert("text".to_string(), BindingValue::String(self.text.clone()));
-        map.insert(
-            "category".to_string(),
-            BindingValue::String(self.category.clone()),
-        );
-        map.insert("priority".to_string(), self.priority.to_binding_value());
-        map.insert("completed".to_string(), BindingValue::Bool(self.completed));
-        BindingValue::Object(map)
-    }
-}
-
-// ============================================================================
-// Canvas Program for Statistics Chart (T106-T108)
-// ============================================================================
-
-/// Statistics chart showing 7-day completion trend
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct StatisticsChart {
-    pub completion_history: Vec<f32>, // Last 7 days percentages
-}
-
-impl canvas::Program<Message> for StatisticsChart {
-    type State = ();
-
-    fn draw(
-        &self,
-        _state: &(),
-        renderer: &Renderer,
-        _theme: &Theme,
-        bounds: Rectangle,
-        _cursor: iced::mouse::Cursor,
-    ) -> Vec<canvas::Geometry> {
-        let mut frame = canvas::Frame::new(renderer, bounds.size());
-
-        // Draw axes
-        let x_axis = canvas::Path::line(
-            Point::new(30.0, bounds.height - 30.0),
-            Point::new(bounds.width - 10.0, bounds.height - 30.0),
-        );
-        frame.stroke(
-            &x_axis,
-            canvas::Stroke::default()
-                .with_width(2.0)
-                .with_color(Color::from_rgb(0.5, 0.5, 0.5)),
-        );
-
-        let y_axis = canvas::Path::line(
-            Point::new(30.0, 10.0),
-            Point::new(30.0, bounds.height - 30.0),
-        );
-        frame.stroke(
-            &y_axis,
-            canvas::Stroke::default()
-                .with_width(2.0)
-                .with_color(Color::from_rgb(0.5, 0.5, 0.5)),
-        );
-
-        // Draw data points
-        if !self.completion_history.is_empty() {
-            let data_width = bounds.width - 40.0;
-            let data_height = bounds.height - 40.0;
-            let point_spacing = data_width / (self.completion_history.len() as f32).max(1.0);
-
-            for (i, &percentage) in self.completion_history.iter().enumerate() {
-                let x = 30.0 + (i as f32 * point_spacing);
-                let y = (bounds.height - 30.0) - (percentage.min(1.0) * data_height);
-
-                let circle = canvas::Path::circle(Point::new(x, y), 4.0);
-                frame.fill(&circle, Color::from_rgb(0.2, 0.6, 1.0));
-            }
-        }
-
-        vec![frame.into_geometry()]
-    }
-}
-
-// ============================================================================
-// Application Model (T095)
-// ============================================================================
-
-/// Main application state
-#[derive(UiModel, Debug, Clone, Serialize, Deserialize)]
-pub struct TodoAppModel {
-    // Todo items - exposed as BindingValue::List for <for> loops
-    pub items: Vec<TodoItem>,
-
-    // Filtered items cache (updated when items or filter changes)
-    pub filtered_items_cache: Vec<TodoItem>,
-
-    // Current filter (use string representation for bindings)
-    #[ui_skip]
-    pub current_filter: TodoFilter,
-
-    // UI state
-    pub new_item_text: String,
-    pub selected_category: String,
-
-    // Use string representation for priority bindings
-    #[ui_skip]
-    pub selected_priority: Priority,
-
-    pub dark_mode: bool,
-
-    // Edit mode state
-    pub editing_id: i64, // -1 means not editing
-    pub edit_text: String,
-
-    // Search filter
-    pub search_text: String,
-
-    // Computed properties (using i64 for binding compatibility)
-    pub completed_count: i64,
-    pub pending_count: i64,
-    pub completion_percentage: f32,
-    pub items_len: i64,
-
-    // String representations for PickList bindings
-    pub selected_priority_display: String,
-    pub current_filter_display: String,
-
-    // Next ID for new items (using i64 for binding compatibility)
-    pub next_id: i64,
-
-    // Canvas data (for statistics chart)
-    #[ui_skip]
-    pub statistics_chart: StatisticsChart,
-}
-
-impl TodoAppModel {
-    /// Get string representation of current filter for bindings
-    pub fn current_filter_str(&self) -> String {
-        self.current_filter.to_string()
-    }
-
-    /// Get string representation of selected priority for bindings
-    pub fn selected_priority_str(&self) -> String {
-        self.selected_priority.to_string()
-    }
-}
-
-impl Default for TodoAppModel {
-    fn default() -> Self {
-        Self {
-            items: Vec::new(),
-            filtered_items_cache: Vec::new(),
-            current_filter: TodoFilter::All,
-            new_item_text: String::new(),
-            selected_category: "Personal".to_string(),
-            selected_priority: Priority::Medium,
-            dark_mode: false,
-            editing_id: -1,
-            edit_text: String::new(),
-            search_text: String::new(),
-            completed_count: 0,
-            pending_count: 0,
-            completion_percentage: 0.0,
-            items_len: 0,
-            selected_priority_display: "Medium".to_string(),
-            current_filter_display: "All".to_string(),
-            next_id: 1,
-            statistics_chart: StatisticsChart::default(),
-        }
-    }
-}
-
-impl TodoAppModel {
-    /// Load from JSON file
-    pub fn load_from_file(path: &PathBuf) -> Self {
-        if let Ok(data) = std::fs::read_to_string(path) {
-            if let Ok(mut model) = serde_json::from_str::<TodoAppModel>(&data) {
-                model.update_counts();
-                println!("Loaded {} tasks from {:?}", model.items.len(), path);
-                return model;
-            }
-        }
-        Self::default()
-    }
-
-    /// Save to JSON file
-    pub fn save_to_file(&self, path: &PathBuf) {
-        if let Ok(data) = serde_json::to_string_pretty(self) {
-            if let Err(e) = std::fs::write(path, data) {
-                eprintln!("Failed to save tasks: {}", e);
-            }
-        }
-    }
-
-    /// Update computed counts (T105)
-    pub fn update_counts(&mut self) {
-        self.items_len = self.items.len() as i64;
-        self.completed_count = self.items.iter().filter(|i| i.completed).count() as i64;
-        self.pending_count = self.items_len - self.completed_count;
-
-        self.completion_percentage = if self.items.is_empty() {
-            0.0
-        } else {
-            (self.completed_count as f32 / self.items.len() as f32) * 100.0
-        };
-
-        self.update_filtered_items();
-    }
-
-    /// Get filtered items based on current filter
-    pub fn filtered_items(&self) -> Vec<&TodoItem> {
-        self.items
-            .iter()
-            .filter(|item| self.current_filter.matches(item.completed))
-            .collect()
-    }
-
-    /// Update filtered items property (for binding)
-    /// Called after any filter or items change
-    fn update_filtered_items(&mut self) {
-        let search_lower = self.search_text.to_lowercase();
-        self.filtered_items_cache = self
-            .items
-            .iter()
-            .filter(|item| {
-                // Filter by completion status
-                if !self.current_filter.matches(item.completed) {
-                    return false;
-                }
-                // Filter by search text
-                if !search_lower.is_empty() {
-                    let matches = item.text.to_lowercase().contains(&search_lower)
-                        || item.category.to_lowercase().contains(&search_lower)
-                        || item
-                            .priority
-                            .to_string()
-                            .to_lowercase()
-                            .contains(&search_lower);
-                    if !matches {
-                        return false;
-                    }
-                }
-                true
-            })
-            .cloned()
-            .collect();
-    }
-}
-
-// ============================================================================
-// Messages
-// ============================================================================
 
 type Message = HandlerMessage;
 
-// ============================================================================
-// Event Handlers (T096-T104)
-// ============================================================================
-
-#[ui_handler]
-fn add_item(model: &mut TodoAppModel) {
-    if !model.new_item_text.is_empty() {
-        let item = TodoItem::new(
-            model.next_id as usize,
-            model.new_item_text.clone(),
-            model.selected_category.clone(),
-            model.selected_priority,
-        );
-        model.items.push(item);
-        model.next_id += 1;
-        model.new_item_text.clear();
-        model.update_counts();
-        println!(
-            "Added item: {} (Category: {}, Priority: {})",
-            model.items.last().unwrap().text,
-            model.selected_category,
-            model.selected_priority
-        );
-    }
+struct TodoApp {
+    state: AppState<ui::app::Model>,
 }
 
-#[ui_handler]
-fn toggle_item(model: &mut TodoAppModel, id: i64) {
-    let id = id as usize;
-    if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
-        item.completed = !item.completed;
-    }
-    model.update_counts();
-    println!("Toggled item {}", id);
-}
-
-#[ui_handler]
-fn delete_item(model: &mut TodoAppModel, id: i64) {
-    let id = id as usize;
-    model.items.retain(|i| i.id != id);
-    model.update_counts();
-    println!("Deleted item {}", id);
-}
-
-#[ui_handler]
-fn clear_all(model: &mut TodoAppModel) {
-    let count = model.items.len();
-    model.items.clear();
-    model.update_counts();
-    println!("Cleared {} items", count);
-}
-
-#[ui_handler]
-fn clear_completed(model: &mut TodoAppModel) {
-    let before = model.items.len();
-    model.items.retain(|i| !i.completed);
-    model.update_counts();
-    println!("Cleared {} completed items", before - model.items.len());
-}
-
-#[ui_handler]
-fn update_category(model: &mut TodoAppModel, value: String) {
-    model.selected_category = value;
-    println!("Selected category: {}", model.selected_category);
-}
-
-#[ui_handler]
-fn update_priority(model: &mut TodoAppModel, value: String) {
-    model.selected_priority = match value.as_str() {
-        "Low" => Priority::Low,
-        "Medium" => Priority::Medium,
-        "High" => Priority::High,
-        _ => Priority::Medium,
-    };
-    model.selected_priority_display = value;
-    println!("Selected priority: {}", model.selected_priority);
-}
-
-#[ui_handler]
-fn apply_filter(model: &mut TodoAppModel, value: String) {
-    model.current_filter = match value.as_str() {
-        "All" => TodoFilter::All,
-        "Active" => TodoFilter::Active,
-        "Completed" => TodoFilter::Completed,
-        _ => TodoFilter::All,
-    };
-    model.current_filter_display = value;
-    model.update_filtered_items();
-    println!("Applied filter: {}", model.current_filter);
-}
-
-#[ui_handler]
-fn toggle_dark_mode(model: &mut TodoAppModel) {
-    model.dark_mode = !model.dark_mode;
-    println!("Dark mode: {}", model.dark_mode);
-}
-
-#[ui_handler]
-fn update_new_item(model: &mut TodoAppModel, value: String) {
-    model.new_item_text = value;
-}
-
-#[ui_handler]
-fn start_edit(model: &mut TodoAppModel, id: i64) {
-    let id_usize = id as usize;
-    if let Some(item) = model.items.iter().find(|i| i.id == id_usize) {
-        model.editing_id = id;
-        model.edit_text = item.text.clone();
-        println!("Started editing item {}", id);
-    }
-}
-
-#[ui_handler]
-fn update_edit_text(model: &mut TodoAppModel, value: String) {
-    model.edit_text = value;
-}
-
-#[ui_handler]
-fn save_edit(model: &mut TodoAppModel) {
-    if model.editing_id >= 0 && !model.edit_text.is_empty() {
-        let id = model.editing_id as usize;
-        if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
-            item.text = model.edit_text.clone();
-            println!("Saved edit for item {}", id);
-        }
-        model.editing_id = -1;
-        model.edit_text.clear();
-        model.update_counts();
-    }
-}
-
-#[ui_handler]
-fn cancel_edit(model: &mut TodoAppModel) {
-    model.editing_id = -1;
-    model.edit_text.clear();
-    println!("Cancelled edit");
-}
-
-#[ui_handler]
-fn update_search(model: &mut TodoAppModel, value: String) {
-    model.search_text = value;
-    model.update_filtered_items();
-    println!("Search: {}", model.search_text);
-}
-
-// ============================================================================
-// Application State (T117-T119)
-// ============================================================================
-
-struct AppState {
-    model: TodoAppModel,
-    document: gravity_core::GravityDocument,
-    handler_registry: HandlerRegistry,
-    save_path: PathBuf,
-    verbose: bool,
-}
-
-impl AppState {
-    fn new(verbose: bool) -> Self {
-        let xml = include_str!("../ui/main.gravity");
-        let document = parse(xml).expect("Failed to parse XML");
-
-        let save_path = PathBuf::from("todo-app-data.json");
-        let model = TodoAppModel::load_from_file(&save_path);
-
-        let handler_registry = HandlerRegistry::new();
-
-        // Register simple handlers
-        handler_registry.register_simple("add_item", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<TodoAppModel>().unwrap();
-            add_item(model);
-        });
-
-        handler_registry.register_simple("clear_all", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<TodoAppModel>().unwrap();
-            clear_all(model);
-        });
-
-        handler_registry.register_simple("clear_completed", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<TodoAppModel>().unwrap();
-            clear_completed(model);
-        });
-
-        handler_registry.register_simple("toggle_dark_mode", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<TodoAppModel>().unwrap();
-            toggle_dark_mode(model);
-        });
-
-        handler_registry.register_simple("save_edit", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<TodoAppModel>().unwrap();
-            save_edit(model);
-        });
-
-        handler_registry.register_simple("cancel_edit", |model: &mut dyn Any| {
-            let model = model.downcast_mut::<TodoAppModel>().unwrap();
-            cancel_edit(model);
-        });
-
-        // Register handlers with values
-        handler_registry.register_with_value(
-            "update_new_item",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                if let Ok(text) = value.downcast::<String>() {
-                    update_new_item(model, *text);
-                }
-            },
-        );
-
-        handler_registry.register_with_value(
-            "update_category",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                if let Ok(text) = value.downcast::<String>() {
-                    update_category(model, *text);
-                }
-            },
-        );
-
-        handler_registry.register_with_value(
-            "update_priority",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                if let Ok(text) = value.downcast::<String>() {
-                    update_priority(model, *text);
-                }
-            },
-        );
-
-        handler_registry.register_with_value(
-            "apply_filter",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                if let Ok(text) = value.downcast::<String>() {
-                    apply_filter(model, *text);
-                }
-            },
-        );
-
-        handler_registry.register_with_value(
-            "toggle_item",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                // Try String first (most common from UI), then i64
-                let id_value = if let Some(text) = value.downcast_ref::<String>() {
-                    text.parse::<i64>().ok()
-                } else if let Some(id) = value.downcast_ref::<i64>() {
-                    Some(*id)
-                } else {
-                    None
-                };
-
-                if let Some(id) = id_value {
-                    toggle_item(model, id);
-                }
-            },
-        );
-
-        handler_registry.register_with_value(
-            "delete_item",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                // Try String first (most common from UI), then i64
-                let id_value = if let Some(text) = value.downcast_ref::<String>() {
-                    text.parse::<i64>().ok()
-                } else if let Some(id) = value.downcast_ref::<i64>() {
-                    Some(*id)
-                } else {
-                    None
-                };
-
-                if let Some(id) = id_value {
-                    delete_item(model, id);
-                }
-            },
-        );
-
-        handler_registry.register_with_value(
-            "start_edit",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                let id_value = if let Some(text) = value.downcast_ref::<String>() {
-                    text.parse::<i64>().ok()
-                } else if let Some(id) = value.downcast_ref::<i64>() {
-                    Some(*id)
-                } else {
-                    None
-                };
-
-                if let Some(id) = id_value {
-                    start_edit(model, id);
-                }
-            },
-        );
-
-        handler_registry.register_with_value(
-            "update_edit_text",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                if let Ok(text) = value.downcast::<String>() {
-                    update_edit_text(model, *text);
-                }
-            },
-        );
-
-        handler_registry.register_with_value(
-            "update_search",
-            |model: &mut dyn Any, value: Box<dyn Any>| {
-                let model = model.downcast_mut::<TodoAppModel>().unwrap();
-                if let Ok(text) = value.downcast::<String>() {
-                    update_search(model, *text);
-                }
-            },
-        );
-
-        Self {
-            model,
-            document,
-            handler_registry,
-            save_path,
-            verbose,
-        }
-    }
-}
-
-/// Update function
-fn update(state: &mut AppState, message: Message) -> Task<Message> {
+fn update(app: &mut TodoApp, message: Message) -> Task<Message> {
     match message {
-        HandlerMessage::Handler(name, value_opt) => {
-            if state.verbose {
-                println!("[Update] Handler: {} with value: {:?}", name, value_opt);
-            }
-            if let Some(value) = value_opt {
-                // Try handler with value first
-                if let Some(gravity_core::HandlerEntry::WithValue(h)) =
-                    state.handler_registry.get(&name)
-                {
-                    h(&mut state.model, Box::new(value));
-                } else if let Some(gravity_core::HandlerEntry::Simple(h)) =
-                    state.handler_registry.get(&name)
-                {
-                    // Fallback to simple handler (ignore the value)
-                    h(&mut state.model);
-                }
-            } else {
-                // Simple handler
-                if let Some(gravity_core::HandlerEntry::Simple(h)) =
-                    state.handler_registry.get(&name)
-                {
-                    h(&mut state.model);
+        HandlerMessage::Handler(handler_name, ref value) => {
+            let (base_handler, param_value) = parse_handler_name(&handler_name);
+
+            if let Some(handler) = app.state.handler_registry.get(&base_handler) {
+                match handler {
+                    gravity_core::HandlerEntry::Simple(h) => {
+                        h(&mut app.state.model);
+                    }
+                    gravity_core::HandlerEntry::WithValue(h) => {
+                        let handler_value = param_value.as_ref().or(value.as_ref());
+                        if let Some(val) = handler_value {
+                            h(&mut app.state.model, Box::new(val.clone()));
+                        } else {
+                            h(&mut app.state.model, Box::new(String::new()));
+                        }
+                    }
+                    gravity_core::HandlerEntry::WithCommand(h) => {
+                        let _cmd = h(&mut app.state.model);
+                    }
                 }
             }
 
-            // Auto-save after every modification
-            state.model.save_to_file(&state.save_path);
+            // Auto-save after any handler modification
+            let save_path = PathBuf::from("todo-app-data.json");
+            ui::app::save_to_path(&app.state.model, &save_path);
         }
     }
     Task::none()
 }
 
-/// View function using GravityWidgetBuilder
-fn view(state: &AppState) -> Element<'_, Message> {
-    GravityWidgetBuilder::from_document(
-        &state.document,
-        &state.model,
-        Some(&state.handler_registry),
+fn parse_handler_name(name: &str) -> (String, Option<String>) {
+    if let Some((base, value)) = name.split_once(':') {
+        (base.to_string(), Some(value.to_string()))
+    } else {
+        (name.to_string(), None)
+    }
+}
+
+fn view(app: &TodoApp) -> Element<'_, Message> {
+    let is_dark = app.state.model.dark_mode;
+    let bg_color = if is_dark {
+        iced::Color::from_rgb(0.17, 0.24, 0.31)
+    } else {
+        iced::Color::from_rgb(0.93, 0.94, 0.95)
+    };
+    let text_color = if is_dark {
+        iced::Color::from_rgb(0.93, 0.94, 0.95)
+    } else {
+        iced::Color::from_rgb(0.18, 0.24, 0.31)
+    };
+
+    let content = GravityWidgetBuilder::new(
+        &app.state.document,
+        &app.state.model,
+        Some(&app.state.handler_registry),
     )
-    .with_verbose(state.verbose)
-    .build()
+    .with_verbose(false)
+    .build();
+
+    let style_fn = move |_theme: &Theme| iced::widget::container::Style {
+        background: Some(iced::Background::Color(bg_color)),
+        text_color: Some(text_color),
+        ..iced::widget::container::Style::default()
+    };
+
+    container(content).style(style_fn).into()
+}
+
+fn init() -> (TodoApp, Task<Message>) {
+    let save_path = PathBuf::from("todo-app-data.json");
+    let model = if save_path.exists() {
+        ui::app::load_from_path(&save_path)
+    } else {
+        ui::app::Model::default()
+    };
+    let state = ui::app::create_app_state_with_model(model);
+    (TodoApp { state }, Task::none())
 }
 
 pub fn main() -> iced::Result {
-    let args: Vec<String> = std::env::args().collect();
-    let verbose = args.contains(&"--verbose".to_string());
-
-    if verbose {
-        println!("Verbose mode enabled");
-    }
-
-    iced::application(move || AppState::new(verbose), update, view)
-        .theme(|state: &AppState| {
-            if state.model.dark_mode {
-                Theme::Dark
-            } else {
-                Theme::Light
-            }
-        })
-        .run()
+    iced::application(init, update, view).run()
 }
