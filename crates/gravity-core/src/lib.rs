@@ -72,6 +72,7 @@ pub mod expr;
 pub mod handler;
 pub mod ir;
 pub mod parser;
+pub mod state;
 pub mod traits;
 
 // Public exports
@@ -125,6 +126,12 @@ pub use traits::Backend;
 /// This module generates static Rust code from Gravity documents,
 /// eliminating runtime parsing overhead.
 pub use codegen::{generate_application, validate_handlers, CodegenError, CodegenOutput};
+
+/// Application state container for UI views.
+///
+/// This module provides the [`AppState`](state::AppState) struct that combines
+/// a parsed UI document with application state and event handlers.
+pub use state::AppState;
 
 /// Tokenize a binding expression for debugging or custom processing.
 pub use expr::tokenize_binding_expr;

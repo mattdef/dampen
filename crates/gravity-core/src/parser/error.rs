@@ -1,4 +1,6 @@
 use crate::ir::span::Span;
+use proc_macro2::TokenStream;
+use quote::quote;
 
 /// Error during parsing
 #[derive(Debug, Clone, PartialEq)]
@@ -31,5 +33,35 @@ impl std::fmt::Display for ParseError {
             write!(f, "\n  help: {}", suggestion)?;
         }
         Ok(())
+    }
+}
+
+impl ParseError {
+    /// Convert this error into a compile_error! macro invocation.
+    ///
+    /// This is used by procedural macros to emit compile-time errors
+    /// with proper location information and helpful suggestions.
+    ///
+    /// # Returns
+    ///
+    /// A `TokenStream` containing a `compile_error!` macro invocation.
+    pub fn to_compile_error(&self) -> TokenStream {
+        let message = format!(
+            "Gravity parsing error: {}\n  at line {}, column {}",
+            self.message, self.span.line, self.span.column
+        );
+
+        let mut tokens = quote! {
+            compile_error!(#message);
+        };
+
+        if let Some(ref suggestion) = self.suggestion {
+            let help = format!("help: {}", suggestion);
+            tokens.extend(quote! {
+                compile_error!(#help);
+            });
+        }
+
+        tokens
     }
 }

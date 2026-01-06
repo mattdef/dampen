@@ -10,6 +10,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 - JSON state files via serde_json (existing pattern) (004-advanced-widgets-todo)
 - Rust Edition 2021, MSRV 1.75 + Iced 0.14 (with `image` feature enabled), gravity-core (005-implement-real-widgets)
 - N/A (UI widgets only) (005-implement-real-widgets)
+- Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+ (006-auto-ui-loading)
+- N/A (compile-time XML loading, no runtime persistence required for this feature) (006-auto-ui-loading)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
@@ -312,9 +314,9 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 | Runtime memory (dev) | < 50MB baseline |
 
 ## Recent Changes
+- 006-auto-ui-loading: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+
 - 005-implement-real-widgets: Added Rust Edition 2021, MSRV 1.75 + Iced 0.14 (with `image` feature enabled), gravity-core
 - 004-advanced-widgets-todo: Added Rust Edition 2024, MSRV 1.75 + Iced 0.14+ (already in workspace)
-- 003-widget-builder: Added Rust Edition 2024, Stable Rust (no nightly features)
 
   - Implemented `#[derive(UiModel)]` macro with field accessors
   - Created `UiBindable` trait and `BindingValue` enum

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 /// Registry of event handlers
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct HandlerRegistry {
     handlers: Arc<RwLock<HashMap<String, HandlerEntry>>>,
 }
@@ -22,6 +22,16 @@ pub enum HandlerEntry {
 
     /// Handler returning command: `fn(&mut Model) -> Command<Message>`
     WithCommand(Arc<dyn Fn(&mut dyn Any) -> Box<dyn Any> + Send + Sync>),
+}
+
+impl std::fmt::Debug for HandlerEntry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HandlerEntry::Simple(_) => f.write_str("Simple(handler)"),
+            HandlerEntry::WithValue(_) => f.write_str("WithValue(handler)"),
+            HandlerEntry::WithCommand(_) => f.write_str("WithCommand(handler)"),
+        }
+    }
 }
 
 impl HandlerRegistry {

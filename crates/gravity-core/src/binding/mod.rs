@@ -278,3 +278,16 @@ impl<T: ToBindingValue> ToBindingValue for std::collections::HashMap<String, T> 
         )
     }
 }
+
+/// Implement UiBindable for the unit type.
+///
+/// This allows `AppState<()>` to be used for static UIs without a model.
+impl UiBindable for () {
+    fn get_field(&self, _path: &[&str]) -> Option<BindingValue> {
+        None
+    }
+
+    fn available_fields() -> Vec<String> {
+        vec![]
+    }
+}
