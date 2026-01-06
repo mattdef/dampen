@@ -58,16 +58,17 @@ serde_json = "1.0"
 my-app/
 ├── Cargo.toml
 ├── src/
-│   ├── main.rs           # Point d'entree de l'application
+│   ├── main.rs             # Point d'entree de l'application
 │   └── ui/
-│       ├── mod.rs        # Module UI avec AppState
-│       └── main.gravity  # Definition XML de l'interface
+│       ├── mod.rs          # Module UI avec AppState
+│       ├── window.rs       # Code de la fenêtre
+│       └── window.gravity  # Definition XML de l'interface
 └── target/
 ```
 
 ## Demarrage rapide
 
-### 1. Creer le fichier UI (`src/ui/main.gravity`)
+### 1. Creer le fichier d'interface UI (`src/ui/window.gravity`)
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -80,46 +81,46 @@ my-app/
 </gravity>
 ```
 
-### 2. Creer le module UI (`src/ui/mod.rs`)
+### 2. Creer le code d'interface (`src/ui/window.rs`)
 
 ```rust
-use gravity_macros::{gravity_ui, ui_handler, UiModel};
+use gravity_core::{AppState, HandlerRegistry};
+use gravity_macros::{gravity_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
-#[derive(UiModel, Default, Serialize, Deserialize, Clone)]
-struct Model {
-    greeting: String,
-}
+#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
+pub struct Model;
 
-#[gravity_ui("main.gravity")]
+#[gravity_ui("window.gravity")]
 mod _app {}
 
-#[ui_handler]
-fn greet(model: &mut Model) {
-    model.greeting = "Hello from Gravity!".to_string();
-}
-
-pub fn create_app_state() -> gravity_core::AppState<Model> {
+pub fn create_app_state() -> AppState<Model> {
     let document = _app::document();
-    let registry = create_handler_registry();
-    gravity_core::AppState::with_handlers(document, registry)
+    let handler_registry = create_handler_registry();
+    AppState::with_handlers(document, handler_registry)
 }
 
-pub fn create_handler_registry() -> gravity_core::HandlerRegistry {
-    use gravity_core::HandlerEntry;
-    let registry = gravity_core::HandlerRegistry::new();
-    
+pub fn create_handler_registry() -> HandlerRegistry {
+    let registry = HandlerRegistry::new();
+
+    // Register the greet handler
     registry.register_simple("greet", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
-            greet(m);
+            println!("Button clicked! Model: {:?}", m);
         }
     });
-    
+
     registry
 }
 ```
 
-### 3. Creer le point d'entree (`src/main.rs`)
+### 4. Creer le module UI (`src/ui/mod.rs`)
+
+```rust
+pub mod window;
+```
+
+### 5. Creer le point d'entree (`src/main.rs`)
 
 ```rust
 mod ui;
@@ -130,14 +131,14 @@ use iced::{Element, Task};
 
 type Message = HandlerMessage;
 
-struct HelloApp {
-    state: AppState<ui::Model>,
+struct GravityApp {
+    state: AppState<ui::window::Model>,
 }
 
-fn update(app: &mut HelloApp, message: Message) -> Task<Message> {
+fn update(app: &mut GravityApp, message: Message) -> Task<Message> {
     match message {
-        HandlerMessage::Handler(handler_name, _) => {
-            if let Some(HandlerEntry::Simple(h)) = 
+        HandlerMessage::Handler(handler_name, _value) => {
+            if let Some(gravity_core::HandlerEntry::Simple(h)) =
                 app.state.handler_registry.get(&handler_name)
             {
                 h(&mut app.state.model);
@@ -147,7 +148,7 @@ fn update(app: &mut HelloApp, message: Message) -> Task<Message> {
     Task::none()
 }
 
-fn view(app: &HelloApp) -> Element<'_, Message> {
+fn view(app: &GravityApp) -> Element<'_, Message> {
     GravityWidgetBuilder::new(
         &app.state.document,
         &app.state.model,
@@ -156,14 +157,17 @@ fn view(app: &HelloApp) -> Element<'_, Message> {
     .build()
 }
 
-fn main() -> iced::Result {
-    let state = ui::create_app_state();
-    let app = HelloApp { state };
-    iced::application(app, update, view).run()
+fn init() -> (GravityApp, Task<Message>) {
+    let state = ui::window::create_app_state();
+    (GravityApp { state }, Task::none())
+}
+
+pub fn main() -> iced::Result {
+    iced::application(init, update, view).run()
 }
 ```
 
-### 4. Lancer l'application
+### 6. Lancer l'application
 
 ```bash
 cargo run
@@ -304,7 +308,6 @@ fn toggle_item(model: &mut Model, id: usize) {
 | `for` | Boucle dynamique | each, in |
 | `grid` | Grille | columns, spacing |
 | `progress_bar` | Barre de progression | min, max, value |
-| `canvas` | Zone de dessin | width, height, program |
 | `svg` | Image SVG | path, width, height |
 | `tooltip` | Infobulle | message, position |
 

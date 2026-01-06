@@ -2,21 +2,11 @@
 //!
 //! This example demonstrates how to create a Gravity application
 //! with minimal boilerplate using the new AppState pattern.
+mod ui;
 
 use gravity_core::AppState;
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
-
-pub mod ui {
-    //! UI module with auto-loaded XML.
-    //!
-    //! This module demonstrates the new pattern where:
-    //! - `app.rs` uses `#[gravity_ui]` macro
-    //! - The XML file is loaded automatically
-    //! - AppState is created with handlers
-
-    include!("ui/mod.rs");
-}
 
 /// Messages for the application.
 type Message = HandlerMessage;
