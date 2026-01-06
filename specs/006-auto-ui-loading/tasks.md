@@ -71,16 +71,16 @@ Auto-loading mechanism                                  AppState struct
 
 ### Build.rs File Discovery
 
-- [ ] T006 [P] [US1] Implement file discovery in `gravity-macros/build.rs` to find all `.gravity` files in `ui/` directory
-- [ ] T007 [P] [US1] Add `cargo:rerun-if-changed` directives for discovered `.gravity` files in `gravity-macros/build.rs`
+- [X] T006 [P] [US1] Implement file discovery in `gravity-macros/build.rs` to find all `.gravity` files in `ui/` directory
+- [X] T007 [P] [US1] Add `cargo:rerun-if-changed` directives for discovered `.gravity` files in `gravity-macros/build.rs`
 
 ### #[gravity_ui] Macro
 
-- [ ] T008 [P] [US1] Implement `#[gravity_ui]` attribute macro in `gravity-macros/src/ui_loader.rs` with file path parsing
-- [ ] T009 [P] [US1] Add XML file existence validation with error code G001 in `gravity-macros/src/ui_loader.rs`
-- [ ] T010 [P] [US1] Add XML parsing with error code G002 in `gravity-macros/src/ui_loader.rs`
-- [ ] T011 [P] [US1] Generate `pub static document: GravityDocument` in macro output `gravity-macros/src/ui_loader.rs`
-- [ ] T012 [P] [US1] Add custom path support `#[gravity_ui(path = "...")]` in `gravity-macros/src/ui_loader.rs`
+- [X] T008 [P] [US1] Implement `#[gravity_ui]` attribute macro in `gravity-macros/src/ui_loader.rs` with file path parsing
+- [X] T009 [P] [US1] Add XML file existence validation with error code G001 in `gravity-macros/src/ui_loader.rs`
+- [X] T010 [P] [US1] Add XML parsing with error code G002 in `gravity-macros/src/ui_loader.rs`
+- [X] T011 [P] [US1] Generate `pub static document: GravityDocument` in macro output `gravity-macros/src/ui_loader.rs`
+- [X] T012 [P] [US1] Add custom path support `#[gravity_ui(path = "...")]` in `gravity-macros/src/ui_loader.rs`
 
 ## Phase 4: User Story 2 - AppState Structure
 
@@ -90,17 +90,17 @@ Auto-loading mechanism                                  AppState struct
 
 ### AppState Struct
 
-- [ ] T013 [P] [US2] Create `AppState<M: UiBindable = ()>` struct in `gravity-core/src/state/mod.rs`
-- [ ] T014 [P] [US2] Add `document: GravityDocument` field in `gravity-core/src/state/mod.rs`
-- [ ] T015 [P] [US2] Add `model: M` field with `PhantomData<M>` marker in `gravity-core/src/state/mod.rs`
-- [ ] T016 [P] [US2] Add `handler_registry: HandlerRegistry` field in `gravity-core/src/state/mod.rs`
-- [ ] T017 [P] [US2] Implement `AppState::new()` constructor in `gravity-core/src/state/mod.rs`
-- [ ] T018 [P] [US2] Implement `AppState::with_model()` constructor in `gravity-core/src/state/mod.rs`
-- [ ] T019 [P] [US2] Implement `AppState::with_handlers()` constructor in `gravity-core/src/state/mod.rs`
+- [X] T013 [P] [US2] Create `AppState<M: UiBindable = ()>` struct in `gravity-core/src/state/mod.rs`
+- [X] T014 [P] [US2] Add `document: GravityDocument` field in `gravity-core/src/state/mod.rs`
+- [X] T015 [P] [US2] Add `model: M` field with `PhantomData<M>` marker in `gravity-core/src/state/mod.rs`
+- [X] T016 [P] [US2] Add `handler_registry: HandlerRegistry` field in `gravity-core/src/state/mod.rs`
+- [X] T017 [P] [US2] Implement `AppState::new()` constructor in `gravity-core/src/state/mod.rs`
+- [X] T018 [P] [US2] Implement `AppState::with_model()` constructor in `gravity-core/src/state/mod.rs`
+- [X] T019 [P] [US2] Implement `AppState::with_handlers()` constructor in `gravity-core/src/state/mod.rs`
 
 ### Module Exports
 
-- [ ] T020 [P] [US2] Export `AppState` from `gravity-core/src/lib.rs`
+- [X] T020 [P] [US2] Export `AppState` from `gravity-core/src/lib.rs`
 
 ## Phase 5: User Story 3 - Reduce Main.rs Boilerplate
 
@@ -110,10 +110,10 @@ Auto-loading mechanism                                  AppState struct
 
 ### Example Integration
 
-- [ ] T021 [US3] Create minimal main.rs template using AppState in `examples/hello-world/src/main.rs`
-- [ ] T022 [US3] Create `examples/hello-world/ui/mod.rs` with AppState export pattern
-- [ ] T023 [US3] Create `examples/hello-world/ui/app.gravity.rs` with #[gravity_ui] macro usage
-- [ ] T024 [US3] Create `examples/hello-world/ui/app.gravity` XML file
+- [X] T021 [US3] Create minimal main.rs template using AppState in `examples/hello-world/src/main.rs`
+- [X] T022 [US3] Create `examples/hello-world/ui/mod.rs` with AppState export pattern
+- [X] T023 [US3] Create `examples/hello-world/ui/app.gravity.rs` with #[gravity_ui] macro usage (macro applied in mod.rs)
+- [X] T024 [US3] Create `examples/hello-world/ui/app.gravity` XML file
 
 ## Phase 6: User Story 4 - Multiple UI Views
 
