@@ -76,6 +76,7 @@ pub fn process_gravity_ui(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// This can be used at compile time to warn about handlers that
 /// are referenced in the UI but not registered.
+#[allow(dead_code)]
 pub fn warn_unknown_handler(handler_name: &str) -> TokenStream {
     let warning = format!(
         "Handler '{}' is not registered in the HandlerRegistry\n\

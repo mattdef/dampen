@@ -225,6 +225,7 @@ mod tests {
         let event = EventBinding {
             event: gravity_core::EventKind::Click,
             handler: "increment".to_string(),
+            param: None,
             span: gravity_core::Span::new(0, 0, 1, 1),
         };
 

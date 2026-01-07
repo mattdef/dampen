@@ -28,7 +28,9 @@
         value="{password}"
         placeholder="Enter password..."
         password="true"
+        on_input="update_password"
     />
+    <text value="Password: {password}" size="14" color="#666666" />
 
     <text value="Disabled" size="18" weight="bold" />
     <text_input

@@ -12,14 +12,14 @@ pub struct Model;
 
 #[test]
 fn test_hello_world_xml_parsing() {
-    let xml = include_str!("../src/ui/app.gravity");
+    let xml = include_str!("../src/ui/window.gravity");
     let document = parse(xml).expect("Failed to parse app.gravity");
     assert_eq!(document.version.major, 1);
 }
 
 #[test]
 fn test_hello_world_app_state_creation() {
-    let xml = include_str!("../src/ui/app.gravity");
+    let xml = include_str!("../src/ui/window.gravity");
     let document = parse(xml).expect("Failed to parse XML");
 
     let registry = HandlerRegistry::new();

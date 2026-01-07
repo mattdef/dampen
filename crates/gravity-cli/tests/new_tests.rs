@@ -252,7 +252,7 @@ fn test_new_creates_valid_rust_code() {
     // Check for key elements
     assert!(main_rs.contains("struct Model"));
     assert!(main_rs.contains("#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]"));
-    assert!(main_rs.contains("#[ui_handler]"));
+    assert!(main_rs.contains("register_simple"));
     assert!(main_rs.contains("fn greet(model: &mut Model)"));
     assert!(main_rs.contains("fn main() -> iced::Result"));
 }

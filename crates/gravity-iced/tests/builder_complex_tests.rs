@@ -72,7 +72,7 @@ fn test_nested_field_access() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -84,7 +84,7 @@ fn test_method_calls() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -96,7 +96,7 @@ fn test_binary_operations() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -108,7 +108,7 @@ fn test_conditionals() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -120,7 +120,7 @@ fn test_formatted_strings() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -132,7 +132,7 @@ fn test_missing_attributes() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -144,7 +144,7 @@ fn test_invalid_attribute_values() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -175,7 +175,7 @@ fn test_deeply_nested_widgets() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -192,7 +192,7 @@ fn test_empty_containers() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -219,6 +219,6 @@ fn test_mixed_widget_types() {
     let model = create_complex_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }

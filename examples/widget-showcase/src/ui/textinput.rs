@@ -47,6 +47,13 @@ pub fn create_handler_registry() -> HandlerRegistry {
         }
     });
 
+    registry.register_with_value("update_password", |model: &mut dyn std::any::Any, value| {
+        let model = model.downcast_mut::<Model>().unwrap();
+        if let Ok(pwd) = value.downcast::<String>() {
+            model.password = *pwd;
+        }
+    });
+
     registry.register_simple("switch_to_window", |_model: &mut dyn std::any::Any| {
         println!("Switching to main view");
     });

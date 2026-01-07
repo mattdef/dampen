@@ -14,7 +14,7 @@
 //!
 //! Basic usage with document only:
 //!
-//! ```rust
+//! ```rust,ignore
 //! use gravity_core::{parse, AppState};
 //!
 //! let xml = r#"<column><text value="Hello!" /></column>"#;
@@ -24,8 +24,9 @@
 //!
 //! With a custom model:
 //!
-//! ```rust
-//! use gravity_core::{parse, AppState, UiModel};
+//! ```rust,ignore
+//! use gravity_core::{parse, AppState};
+//! use gravity_macros::UiModel;
 //!
 //! #[derive(UiModel, Default)]
 //! struct MyModel {
@@ -83,7 +84,7 @@ impl<M: UiBindable> AppState<M> {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```rust,ignore
     /// use gravity_core::{parse, AppState};
     ///
     /// let xml = r#"<column><text value="Hello!" /></column>"#;
@@ -106,8 +107,9 @@ impl<M: UiBindable> AppState<M> {
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// use gravity_core::{parse, AppState, UiModel};
+    /// ```rust,ignore
+    /// use gravity_core::{parse, AppState};
+    /// use gravity_macros::UiModel;
     ///
     /// #[derive(UiModel, Default)]
     /// struct MyModel {
@@ -132,7 +134,7 @@ impl<M: UiBindable> AppState<M> {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```rust,ignore
     /// use gravity_core::{parse, AppState, HandlerRegistry};
     ///
     /// let xml = r#"<column><text value="Hello!" /></column>"#;

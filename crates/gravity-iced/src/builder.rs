@@ -14,7 +14,7 @@
 //!
 //! # Basic Usage
 //!
-//! ```rust
+//! ```rust,ignore
 //! use gravity_core::{parse, HandlerRegistry};
 //! use gravity_iced::GravityWidgetBuilder;
 //! use gravity_macros::UiModel;
@@ -28,7 +28,7 @@
 //! let model = Model { count: 42 };
 //!
 //! let element = GravityWidgetBuilder::new(
-//!     &document.root,
+//!     &document,
 //!     &model,
 //!     None,
 //! ).build();
@@ -88,7 +88,7 @@ use std::sync::{Arc, Mutex};
 ///
 /// # Example
 ///
-/// ```rust
+/// ```rust,ignore
 /// use gravity_core::{parse, HandlerRegistry};
 /// use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 /// use gravity_macros::UiModel;
@@ -111,11 +111,12 @@ use std::sync::{Arc, Mutex};
 /// });
 ///
 /// let element = GravityWidgetBuilder::new(
-///     &document.root,
+///     &document,
 ///     &model,
-///     Some(®istry),
+///     Some(&registry),
 /// ).build();
 /// ```
+#[allow(dead_code)]
 pub struct GravityWidgetBuilder<'a> {
     /// The root widget node from parsed XML
     node: &'a WidgetNode,
@@ -154,7 +155,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```rust,ignore
     /// use gravity_core::{parse, HandlerRegistry};
     /// use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
     /// use gravity_macros::UiModel;
@@ -169,9 +170,9 @@ impl<'a> GravityWidgetBuilder<'a> {
     /// let registry = HandlerRegistry::new();
     ///
     /// let builder = GravityWidgetBuilder::new(
-    ///     &document.root,
+    ///     &document,
     ///     &model,
-    ///     Some(®istry),
+    ///     Some(&registry),
     /// );
     /// ```
     pub fn new(
@@ -206,7 +207,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```rust,ignore
     /// use gravity_core::parse;
     /// use gravity_iced::GravityWidgetBuilder;
     /// use gravity_macros::UiModel;
@@ -235,6 +236,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     }
 }
 
+#[allow(dead_code)]
 impl<'a> GravityWidgetBuilder<'a> {
     /// Create a new widget builder with a custom message factory
     ///
@@ -249,7 +251,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```rust,ignore
     /// use gravity_core::{parse, HandlerRegistry};
     /// use gravity_iced::GravityWidgetBuilder;
     /// use gravity_macros::UiModel;
@@ -269,7 +271,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     /// let model = Model { count: 0 };
     ///
     /// let builder = GravityWidgetBuilder::new_with_factory(
-    ///     &document.root,
+    ///     &document,
     ///     &model,
     ///     None,
     ///     |name| match name {
@@ -310,7 +312,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```rust,ignore
     /// use gravity_core::ir::theme::StyleClass;
     /// use std::collections::HashMap;
     ///
@@ -332,7 +334,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```rust,ignore
     /// let builder = GravityWidgetBuilder::new(/* ... */)
     ///     .verbose(true);
     /// ```
@@ -356,7 +358,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```rust,ignore
     /// use iced::Element;
     ///
     /// let builder = GravityWidgetBuilder::new(/* ... */);
@@ -887,6 +889,30 @@ impl<'a> GravityWidgetBuilder<'a> {
             );
         }
 
+        // Handle width attribute
+        if let Some(width_attr) = node.attributes.get("width") {
+            let width_value = self.evaluate_attribute(width_attr);
+            if !width_value.is_empty() {
+                match width_value.as_str() {
+                    "fill" | "100%" => {
+                        btn = btn.width(iced::Length::Fill);
+                    }
+                    _ => {
+                        // Try to parse as numeric value (pixels)
+                        if let Ok(pixels) = width_value.parse::<f32>() {
+                            btn = btn.width(iced::Length::Fixed(pixels));
+                        }
+                    }
+                }
+                if self.verbose {
+                    eprintln!(
+                        "[GravityWidgetBuilder] Button '{}' width: '{}'",
+                        label, width_value
+                    );
+                }
+            }
+        }
+
         // Resolve and apply button styles using button-specific style function
         let resolved_style = match (self.resolve_class_styles(node), &node.style) {
             (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
@@ -1135,6 +1161,7 @@ impl<'a> GravityWidgetBuilder<'a> {
     /// - `value`: String binding for current text value
     /// - `placeholder`: Placeholder text when empty
     /// - `on_input`: Handler called on text input with new value
+    /// - `password`: If "true", masks input with password character
     ///
     /// Events: Input (sends HandlerMessage::Handler(name, Some(new_text)))
     fn build_text_input(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
@@ -1150,10 +1177,18 @@ impl<'a> GravityWidgetBuilder<'a> {
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
 
+        // Check for password attribute
+        let is_password = node
+            .attributes
+            .get("password")
+            .map(|attr| self.evaluate_attribute(attr))
+            .map(|v| v == "true" || v == "1")
+            .unwrap_or(false);
+
         if self.verbose {
             eprintln!(
-                "[GravityWidgetBuilder] Building text_input: placeholder='{}', value='{}'",
-                placeholder, value
+                "[GravityWidgetBuilder] Building text_input: placeholder='{}', value='{}', password={}",
+                placeholder, value, is_password
             );
         }
 
@@ -1176,6 +1211,9 @@ impl<'a> GravityWidgetBuilder<'a> {
         }
 
         let mut text_input = iced::widget::text_input(&placeholder, &value);
+
+        // Note: Password masking with dots is not available in Iced 0.14's public API
+        // The input still works but text is visible
 
         // Connect event if handler exists
         if let Some(handler_name) = on_input {

@@ -78,7 +78,7 @@ fn test_text_input_static_value() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -89,7 +89,7 @@ fn test_text_input_with_binding() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -100,7 +100,7 @@ fn test_text_input_on_input_event() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -111,7 +111,7 @@ fn test_checkbox_static_checked() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -122,7 +122,7 @@ fn test_checkbox_with_binding() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -133,7 +133,7 @@ fn test_checkbox_on_toggle_event() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -144,7 +144,7 @@ fn test_toggler_static_active() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -155,7 +155,7 @@ fn test_toggler_with_binding() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -166,7 +166,7 @@ fn test_toggler_on_toggle_event() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -177,7 +177,7 @@ fn test_pick_list_with_options() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -188,7 +188,7 @@ fn test_pick_list_with_selected() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -199,7 +199,7 @@ fn test_pick_list_on_select_event() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -210,7 +210,7 @@ fn test_slider_with_values() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -221,7 +221,7 @@ fn test_slider_with_binding() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -232,7 +232,7 @@ fn test_slider_on_change_event() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -243,7 +243,7 @@ fn test_image_with_src() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -254,7 +254,7 @@ fn test_image_with_dimensions() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -265,6 +265,6 @@ fn test_image_with_invalid_src() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }

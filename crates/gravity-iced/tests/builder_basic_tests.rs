@@ -44,7 +44,7 @@ fn test_text_static() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -55,7 +55,7 @@ fn test_text_with_binding() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -71,7 +71,7 @@ fn test_column_with_children() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -82,7 +82,7 @@ fn test_button_with_event() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -93,7 +93,7 @@ fn test_verbose_logging() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry)).with_verbose(true);
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry)).with_verbose(true);
 
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
@@ -105,7 +105,7 @@ fn test_interpolated_string() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -116,7 +116,7 @@ fn test_with_style() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(&registry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -126,7 +126,7 @@ fn test_without_registry() {
     let doc = parse(xml).unwrap();
     let model = create_model();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, None);
+    let builder = GravityWidgetBuilder::new(&doc, &model, None);
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -147,7 +147,7 @@ fn test_complex_nested() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -158,7 +158,7 @@ fn test_button_enabled_static_true() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -169,7 +169,7 @@ fn test_button_enabled_static_false() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -180,18 +180,18 @@ fn test_button_enabled_binding() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
 #[test]
 fn test_button_enabled_binding_false() {
-    let xml = r#"<button label="Click" on_click="handler1" enabled="{count < 0}" />"#;
+    let xml = r#"<button label="Click" on_click="handler1" enabled="{count &lt; 0}" />"#;
     let doc = parse(xml).unwrap();
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry));
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
 
@@ -202,6 +202,6 @@ fn test_button_enabled_with_verbose() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = GravityWidgetBuilder::new(&doc.root, &model, Some(®istry)).with_verbose(true);
+    let builder = GravityWidgetBuilder::new(&doc, &model, Some(&registry)).with_verbose(true);
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }

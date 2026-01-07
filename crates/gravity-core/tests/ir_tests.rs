@@ -118,6 +118,7 @@ fn test_event_binding_serialization() {
     let event = EventBinding {
         event: EventKind::Click,
         handler: "handle_click".to_string(),
+        param: None,
         span: Span::new(0, 0, 1, 1),
     };
 
