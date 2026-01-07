@@ -40,11 +40,11 @@ crates/
 │   │   └── traits/           # Backend abstraction (mod.rs, backend.rs)
 │   └── tests/
 │
-├── gravity-macros/           # Proc macros (#[derive(UiModel)], #[ui_handler])
+├── gravity-macros/           # Proc macros (#[derive(UiModel)], #[gravity_ui])
 │   ├── src/
 │   │   ├── lib.rs
 │   │   ├── ui_model.rs
-│   │   └── ui_handler.rs
+│   │   └── ui_loader.rs
 │   └── tests/
 │
 ├── gravity-runtime/          # Hot-reload interpreter, file watcher

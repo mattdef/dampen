@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<column padding="20" spacing="20">
+    <row spacing="10">
+        <button label="Back" on_click="switch_to_window" />
+        <text value="For Loop Widget" size="24" weight="bold" />
+    </row>
+
+    <text value="Dynamic List from Model" size="18" weight="bold" />
+    <text value="Items: {items.len()}" size="14" color="#666666" />
+    <row spacing="10">
+        <button label="Add Item" on_click="add_item" />
+        <button label="Remove Last" on_click="remove_last" />
+    </row>
+
+    <scrollable height="150">
+        <column spacing="5">
+            <for each="item" in="{items}">
+                <text value="- {item}" size="14" />
+            </for>
+        </column>
+    </scrollable>
+
+    <text value="Numbered List" size="18" weight="bold" />
+    <scrollable height="100">
+        <column spacing="5">
+            <for each="i" in="[1, 2, 3, 4, 5]">
+                <text value="Number {i}" size="14" />
+            </for>
+        </column>
+    </scrollable>
+
+    <text value="Static Repetition" size="18" weight="bold" />
+    <row spacing="10">
+        <for each="i" in="[1, 2, 3]">
+            <button label="Button {i}" />
+        </for>
+    </row>
+</column>

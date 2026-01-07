@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<column padding="20" spacing="20">
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="Text Widget" size="24" weight="bold" />
+    </row>
+
+    <text value="Sizes" size="18" weight="bold" />
+    <text value="Size 48 - Largest" size="48" />
+    <text value="Size 32 - Large" size="32" />
+    <text value="Size 24 - Medium" size="24" />
+    <text value="Size 18 - Normal" size="18" />
+    <text value="Size 14 - Small" size="14" />
+    <text value="Size 12 - Tiny" size="12" />
+
+    <text value="Weights" size="18" weight="bold" />
+    <text value="Normal weight" weight="normal" />
+    <text value="Bold weight" weight="bold" />
+
+    <text value="Colors" size="18" weight="bold" />
+    <text value="Default color" />
+    <text value="Red text" color="#e74c3c" />
+    <text value="Blue text" color="#3498db" />
+    <text value="Green text" color="#27ae60" />
+    <text value="Purple text" color="#9b59b6" />
+
+    <text value="With Bindings" size="18" weight="bold" />
+    <text value="Hello, {name}!" size="18" />
+    <text value="Count: {count}" size="18" color="#3498db" />
+    <text value="Status: {status}" size="18" color="{status_color}" />
+
+    <text value="Interpolated Text" size="18" weight="bold" />
+    <text value="Name: {name}, Count: {count}" size="14" />
+
+    <text value="Conditional Text" size="18" weight="bold" />
+    <text value="{if is_active then 'Active' else 'Inactive'}" size="18" color="{if is_active then '#27ae60' else '#e74c3c'}" />
+</column>

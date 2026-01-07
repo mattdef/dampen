@@ -74,7 +74,7 @@ Changes to the UI will update automatically without losing your todos!
 
 ### Event Handlers
 
-All event handlers use the `#[ui_handler]` attribute macro:
+All event handlers are registered manually with HandlerRegistry:
 
 - `add_item`: Add new todo with category and priority
 - `toggle_item`: Toggle completion status

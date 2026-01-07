@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<column padding="20" spacing="20">
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="Scrollable Widget" size="24" weight="bold" />
+    </row>
+
+    <text value="Vertical Scroll" size="18" weight="bold" />
+    <scrollable height="200" width="300">
+        <column spacing="5">
+            <text value="Item 1 - Scroll down to see more..." size="14" />
+            <text value="Item 2" size="14" />
+            <text value="Item 3" size="14" />
+            <text value="Item 4" size="14" />
+            <text value="Item 5" size="14" />
+            <text value="Item 6" size="14" />
+            <text value="Item 7" size="14" />
+            <text value="Item 8" size="14" />
+            <text value="Item 9" size="14" />
+            <text value="Item 10" size="14" />
+            <text value="Item 11" size="14" />
+            <text value="Item 12" size="14" />
+            <text value="Item 13" size="14" />
+            <text value="Item 14" size="14" />
+            <text value="Item 15 - End of list" size="14" color="#666666" />
+        </column>
+    </scrollable>
+
+    <text value="With Buttons" size="18" weight="bold" />
+    <scrollable height="150" width="300">
+        <column spacing="10">
+            <button label="Scrollable Button 1" />
+            <button label="Scrollable Button 2" />
+            <button label="Scrollable Button 3" />
+            <button label="Scrollable Button 4" />
+            <button label="Scrollable Button 5" />
+            <button label="Scrollable Button 6" />
+        </column>
+    </scrollable>
+</column>

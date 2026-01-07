@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<column padding="20" spacing="10">
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="ComboBox Widget" size="24" weight="bold" />
+    </row>
+    <text value="Select a category:" size="14" />
+    <combobox
+        options="Work,Personal,Shopping,Health,Entertainment"
+        selected="Personal"
+    />
+    <row spacing="10">
+        <text value="Selected:" size="14" />
+        <text value="Personal" size="14" color="#3498db" />
+    </row>
+</column>

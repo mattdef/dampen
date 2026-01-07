@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<column padding="20" spacing="20">
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="Layout Widgets" size="24" weight="bold" />
+    </row>
+
+    <text value="Column Layout" size="18" weight="bold" />
+    <column spacing="10" padding="10" background="#f0f0f0">
+        <text value="Item 1" />
+        <text value="Item 2" />
+        <text value="Item 3" />
+    </column>
+
+    <text value="Row Layout" size="18" weight="bold" />
+    <row spacing="10" padding="10" background="#f0f0f0">
+        <text value="Item 1" />
+        <text value="Item 2" />
+        <text value="Item 3" />
+    </row>
+
+    <text value="Container" size="18" weight="bold" />
+    <container width="300" height="100" padding="20" background="#e8f4f8" border-width="2" border-color="#3498db">
+        <text value="Container with padding, fixed size, and border" size="14" />
+    </container>
+
+    <text value="Nested Layouts" size="18" weight="bold" />
+    <column spacing="10">
+        <row spacing="5">
+            <button label="A" />
+            <button label="B" />
+            <button label="C" />
+        </row>
+        <row spacing="5">
+            <button label="D" />
+            <button label="E" />
+            <button label="F" />
+        </row>
+    </column>
+
+    <text value="Complex Nesting" size="18" weight="bold" />
+    <container width="fill" padding="10" background="#fafafa">
+        <column spacing="10">
+            <text value="Header" weight="bold" />
+            <row spacing="20">
+                <column spacing="5">
+                    <text value="Left Col 1" size="12" />
+                    <text value="Left Col 2" size="12" />
+                </column>
+                <column spacing="5">
+                    <text value="Right Col 1" size="12" />
+                    <text value="Right Col 2" size="12" />
+                </column>
+            </row>
+        </column>
+    </container>
+</column>

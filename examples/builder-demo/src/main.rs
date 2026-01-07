@@ -1,6 +1,6 @@
 use gravity_core::{parse, HandlerRegistry};
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
-use gravity_macros::{ui_handler, UiModel};
+use gravity_macros::UiModel;
 use iced::{Element, Task};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -46,42 +46,36 @@ impl Default for Model {
 /// Messages for the application
 type Message = HandlerMessage;
 
-/// Event handlers using ui_handler macro
+/// Event handlers
 
-#[ui_handler]
 fn increment(model: &mut Model) {
     model.count += 1;
     model.total_clicks += 1;
     println!("[Handler] Incremented to: {}", model.count);
 }
 
-#[ui_handler]
 fn decrement(model: &mut Model) {
     model.count -= 1;
     model.total_clicks += 1;
     println!("[Handler] Decremented to: {}", model.count);
 }
 
-#[ui_handler]
 fn reset(model: &mut Model) {
     model.count = 0;
     model.total_clicks += 1;
     println!("[Handler] Reset counter");
 }
 
-#[ui_handler]
 fn update_text(model: &mut Model, value: String) {
     model.user_text = value.clone();
     println!("[Handler] Text updated: {}", value);
 }
 
-#[ui_handler]
 fn update_new_item(model: &mut Model, value: String) {
     model.new_item = value;
     println!("[Handler] New item text: {}", model.new_item);
 }
 
-#[ui_handler]
 fn add_item(model: &mut Model) {
     if !model.new_item.is_empty() {
         model.items.push(model.new_item.clone());
@@ -91,7 +85,6 @@ fn add_item(model: &mut Model) {
     }
 }
 
-#[ui_handler]
 fn clear_all(model: &mut Model) {
     let count = model.items.len();
     model.items.clear();
@@ -100,7 +93,6 @@ fn clear_all(model: &mut Model) {
     println!("[Handler] Cleared {} items", count);
 }
 
-#[ui_handler]
 fn clear_completed(model: &mut Model) {
     // For demo, just clear half the items as "completed"
     let to_remove = model.items.len().min(model.completed_count as usize);

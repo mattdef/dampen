@@ -1,7 +1,7 @@
 // Auto-loaded UI module for todo-app example.
 
 use gravity_core::{BindingValue, HandlerRegistry, ToBindingValue};
-use gravity_macros::{gravity_ui, ui_handler, UiModel};
+use gravity_macros::{gravity_ui, UiModel};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -161,10 +161,9 @@ pub struct StatisticsChart {
     pub completion_history: Vec<f32>,
 }
 
-#[gravity_ui("app.gravity")]
+#[gravity_ui("window.gravity")]
 mod _app {}
 
-#[ui_handler]
 fn add_item(model: &mut Model) {
     if !model.new_item_text.trim().is_empty() {
         model.items.push(TodoItem {
@@ -180,12 +179,10 @@ fn add_item(model: &mut Model) {
     }
 }
 
-#[ui_handler]
 fn toggle_dark_mode(model: &mut Model) {
     model.dark_mode = !model.dark_mode;
 }
 
-#[ui_handler]
 fn toggle_item(model: &mut Model, id: usize) {
     if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
         item.completed = !item.completed;
@@ -193,24 +190,20 @@ fn toggle_item(model: &mut Model, id: usize) {
     update_computed_fields(model);
 }
 
-#[ui_handler]
 fn delete_item(model: &mut Model, id: usize) {
     model.items.retain(|i| i.id != id);
     update_computed_fields(model);
 }
 
-#[ui_handler]
 fn update_new_item(model: &mut Model, value: String) {
     model.new_item_text = value;
 }
 
-#[ui_handler]
 fn update_category(model: &mut Model, value: String) {
     model.selected_category = value.clone();
     model.new_item_category = value;
 }
 
-#[ui_handler]
 fn update_priority(model: &mut Model, value: String) {
     model.selected_priority_display = value.clone();
     model.selected_priority = match value.as_str() {
@@ -222,7 +215,6 @@ fn update_priority(model: &mut Model, value: String) {
     update_computed_fields(model);
 }
 
-#[ui_handler]
 fn apply_filter(model: &mut Model, value: String) {
     model.current_filter = match value.as_str() {
         "Active" => TodoFilter::Active,
@@ -232,13 +224,11 @@ fn apply_filter(model: &mut Model, value: String) {
     update_computed_fields(model);
 }
 
-#[ui_handler]
 fn update_search(model: &mut Model, value: String) {
     model.search_text = value;
     update_computed_fields(model);
 }
 
-#[ui_handler]
 fn start_edit(model: &mut Model, id: usize) {
     model.editing_id = Some(id);
     if let Some(item) = model.items.iter().find(|i| i.id == id) {
@@ -246,7 +236,6 @@ fn start_edit(model: &mut Model, id: usize) {
     }
 }
 
-#[ui_handler]
 fn save_edit(model: &mut Model) {
     if let Some(id) = model.editing_id {
         if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
@@ -257,25 +246,21 @@ fn save_edit(model: &mut Model) {
     }
 }
 
-#[ui_handler]
 fn cancel_edit(model: &mut Model) {
     model.editing_id = None;
     model.edit_text.clear();
 }
 
-#[ui_handler]
 fn update_edit_text(model: &mut Model, value: String) {
     model.edit_text = value;
 }
 
-#[ui_handler]
 fn clear_all(model: &mut Model) {
     model.items.clear();
     model.next_id = 0;
     update_computed_fields(model);
 }
 
-#[ui_handler]
 fn clear_completed(model: &mut Model) {
     model.items.retain(|i| !i.completed);
     update_computed_fields(model);

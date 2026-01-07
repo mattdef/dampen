@@ -420,19 +420,16 @@ References handler function `increment` in Rust code.
 
 ```rust
 // Simple handler
-#[ui_handler]
 fn increment(model: &mut Model) {
     model.counter += 1;
 }
 
 // Handler with value
-#[ui_handler]
 fn update_name(model: &mut Model, value: String) {
     model.name = value;
 }
 
 // Handler returning Command
-#[ui_handler]
 fn fetch_data(model: &mut Model) -> Command<Message> {
     Command::perform(async { fetch_api().await }, Message::DataReceived)
 }

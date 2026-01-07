@@ -91,14 +91,13 @@ use std::sync::{Arc, Mutex};
 /// ```rust
 /// use gravity_core::{parse, HandlerRegistry};
 /// use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
-/// use gravity_macros::{ui_handler, UiModel};
+/// use gravity_macros::UiModel;
 /// use serde::{Deserialize, Serialize};
 /// use std::any::Any;
 ///
 /// #[derive(UiModel, Serialize, Deserialize, Clone)]
 /// struct Model { count: i32 }
 ///
-/// #[ui_handler]
 /// fn increment(model: &mut Model) { model.count += 1; }
 ///
 /// let xml = r#"<button label="+" on_click="increment" />"#;
@@ -407,12 +406,12 @@ impl<'a> GravityWidgetBuilder<'a> {
             WidgetKind::Rule => self.build_rule(node),
             WidgetKind::Svg => self.build_svg(node),
             WidgetKind::Custom(_) => self.build_custom(node),
-            WidgetKind::ComboBox => todo!("ComboBox not yet implemented"),
+            WidgetKind::ComboBox => self.build_combo_box(node),
             WidgetKind::ProgressBar => self.build_progress_bar(node),
             WidgetKind::Tooltip => self.build_tooltip(node),
             WidgetKind::Grid => self.build_grid(node),
             WidgetKind::Canvas => self.build_canvas(node),
-            WidgetKind::Float => todo!("Float not yet implemented"),
+            WidgetKind::Float => self.build_float(node),
             WidgetKind::For => self.build_for(node),
         }
     }
@@ -1468,6 +1467,115 @@ impl<'a> GravityWidgetBuilder<'a> {
         };
 
         pick_list.into()
+    }
+
+    /// Build a combo box widget from Gravity XML definition
+    ///
+    /// ComboBox is implemented using pick_list as a dropdown selector.
+    /// Supports the following attributes:
+    /// - `options`: Comma-separated list of options
+    /// - `selected`: String binding for selected option
+    /// - `placeholder`: Placeholder text when nothing is selected
+    /// - `on_select`: Handler called on selection with selected value
+    ///
+    /// Events: Select (sends HandlerMessage::Handler(name, Some(selected_value)))
+    fn build_combo_box(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        let options_str = node
+            .attributes
+            .get("options")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        let options: Vec<String> = options_str
+            .split(',')
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect();
+
+        let selected_str = node
+            .attributes
+            .get("selected")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_default();
+
+        let selected = if selected_str.is_empty() {
+            None
+        } else {
+            options.iter().find(|o| *o == &selected_str).cloned()
+        };
+
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building combo_box: options={:?}, selected={:?}",
+                options, selected
+            );
+        }
+
+        // Get handler from events
+        let on_select = node
+            .events
+            .iter()
+            .find(|e| e.event == gravity_core::EventKind::Select)
+            .map(|e| e.handler.clone());
+
+        if self.verbose {
+            if let Some(handler) = &on_select {
+                eprintln!(
+                    "[GravityWidgetBuilder] ComboBox has select event: handler={}",
+                    handler
+                );
+            } else {
+                eprintln!("[GravityWidgetBuilder] ComboBox has no select event");
+            }
+        }
+
+        // Use pick_list as combobox implementation
+        let combo_box = if let Some(handler_name) = on_select {
+            if self.handler_registry.is_some() {
+                if self.verbose {
+                    eprintln!(
+                        "[GravityWidgetBuilder] ComboBox: Attaching on_select with handler '{}'",
+                        handler_name
+                    );
+                }
+                iced::widget::pick_list(options, selected, move |selected_value| {
+                    HandlerMessage::Handler(handler_name.clone(), Some(selected_value))
+                })
+            } else {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] ComboBox: No handler_registry, cannot attach on_select");
+                }
+                iced::widget::pick_list(options, selected, |_| {
+                    HandlerMessage::Handler("dummy".to_string(), None)
+                })
+            }
+        } else {
+            iced::widget::pick_list(options, selected, |_| {
+                HandlerMessage::Handler("dummy".to_string(), None)
+            })
+        };
+
+        combo_box.into()
+    }
+
+    /// Build a float widget (absolute positioning container)
+    ///
+    /// Float is implemented as a container with layered children.
+    /// Currently renders as a column as a placeholder.
+    fn build_float(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        if self.verbose {
+            eprintln!("[GravityWidgetBuilder] Building float widget (placeholder)");
+        }
+
+        // For now, render children in a column as a placeholder
+        // In a full implementation, this would use absolute positioning
+        let children: Vec<_> = node
+            .children
+            .iter()
+            .map(|child| self.build_widget(child))
+            .collect();
+
+        iced::widget::column(children).into()
     }
 
     /// Build a toggler widget from Gravity XML definition

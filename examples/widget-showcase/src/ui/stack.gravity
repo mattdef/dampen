@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<column padding="20" spacing="20">
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="Stack Widget" size="24" weight="bold" />
+    </row>
+
+    <text value="Stacked Layers" size="18" weight="bold" />
+    <stack width="300" height="200">
+        <container width="fill" height="fill" background="#ecf0f1">
+            <text value="Background Layer" size="18" />
+        </container>
+        <container width="fill" height="fill" padding="20">
+            <text value="Middle Layer" size="18" color="#3498db" />
+        </container>
+        <container width="fill" height="fill" padding="40">
+            <text value="Top Layer" size="24" weight="bold" color="#e74c3c" />
+        </container>
+    </stack>
+
+    <text value="With Buttons" size="18" weight="bold" />
+    <stack width="300" height="150">
+        <container width="fill" height="fill" background="#f8f9fa" />
+        <container width="fill" height="fill" padding="20">
+            <column spacing="10">
+                <button label="Top Button" on_click="click_top" />
+                <button label="Bottom Button" on_click="click_bottom" />
+            </column>
+        </container>
+    </stack>
+</column>

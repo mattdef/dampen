@@ -22,7 +22,7 @@ Gravity Iced provides automatic interpretation of parsed Gravity markup into Ice
 ```rust
 use gravity_core::{parse, HandlerRegistry};
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
-use gravity_macros::{ui_handler, UiModel};
+use gravity_macros::UiModel;
 use iced::{Element, Task};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -34,12 +34,10 @@ struct Model {
 
 type Message = HandlerMessage;
 
-#[ui_handler]
 fn increment(model: &mut Model) {
     model.count += 1;
 }
 
-#[ui_handler]
 fn decrement(model: &mut Model) {
     model.count -= 1;
 }
@@ -193,19 +191,16 @@ let element: Element<'_, Message> = builder.build();
 
 ```rust
 // Simple handler (no payload)
-#[ui_handler]
 fn increment(model: &mut Model) {
     model.count += 1;
 }
 
 // Handler with value
-#[ui_handler]
 fn update_text(model: &mut Model, value: String) {
     model.text = value;
 }
 
 // Handler with command (async)
-#[ui_handler]
 fn fetch_data(model: &mut Model) -> Task<Message> {
     Task::perform(
         async { api::fetch().await },
@@ -374,7 +369,7 @@ registry.register_with_value("update", |m, v| /* ... */);
 
 - Verify handler is registered in `HandlerRegistry`
 - Check handler name matches XML attribute
-- Ensure `#[ui_handler]` attribute is present
+- Ensure handler is registered in HandlerRegistry
 
 ## Contributing
 

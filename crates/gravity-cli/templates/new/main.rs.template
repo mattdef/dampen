@@ -4,7 +4,7 @@ use gravity_core::{
     parse, evaluate_binding_expr, HandlerRegistry, WidgetNode, WidgetKind, EventKind,
     AttributeValue, InterpolatedPart,
 };
-use gravity_macros::{ui_handler, UiModel};
+use gravity_macros::UiModel;
 use iced::widget::{column, row, text, button};
 use iced::{Element, Task};
 use serde::{Serialize, Deserialize};
@@ -24,7 +24,6 @@ enum Message {
 }
 
 /// Event handler for button clicks
-#[ui_handler]
 fn greet(model: &mut Model) {
     model.click_count += 1;
     model.message = format!("Hello from Gravity! (clicked {} times)", model.click_count);

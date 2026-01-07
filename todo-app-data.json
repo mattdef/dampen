@@ -27,6 +27,13 @@
       "completed": true,
       "category": "Other",
       "priority": "High"
+    },
+    {
+      "id": 7,
+      "text": "qsdsqgfsdgfdsg",
+      "completed": false,
+      "category": "Health",
+      "priority": "Low"
     }
   ],
   "filtered_items_cache": [
@@ -57,25 +64,32 @@
       "completed": true,
       "category": "Other",
       "priority": "High"
+    },
+    {
+      "id": 7,
+      "text": "qsdsqgfsdgfdsg",
+      "completed": false,
+      "category": "Health",
+      "priority": "Low"
     }
   ],
-  "next_id": 7,
+  "next_id": 8,
   "new_item_text": "",
-  "new_item_category": "Other",
-  "new_item_priority": "High",
+  "new_item_category": "Health",
+  "new_item_priority": "Low",
   "current_filter": "All",
   "search_text": "",
   "editing_id": null,
   "edit_text": "",
   "dark_mode": true,
-  "selected_category": "Other",
-  "selected_priority": "High",
-  "selected_priority_display": "High",
+  "selected_category": "Health",
+  "selected_priority": "Low",
+  "selected_priority_display": "Low",
   "current_filter_display": "All",
   "completed_count": 2,
-  "pending_count": 2,
-  "completion_percentage": 50,
-  "items_len": 4,
+  "pending_count": 3,
+  "completion_percentage": 40,
+  "items_len": 5,
   "statistics_chart": {
     "completion_history": []
   }

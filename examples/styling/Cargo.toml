@@ -14,7 +14,3 @@ serde = { workspace = true }
 [[bin]]
 name = "styling"
 path = "src/main.rs"
-
-[[bin]]
-name = "state-demo"
-path = "src/state_demo.rs"

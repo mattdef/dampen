@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <column padding="40" spacing="30">
-    <text value="ProgressBar Widget Showcase" size="32" weight="bold" />
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="ProgressBar Widget Showcase" size="32" weight="bold" />
+    </row>
     
     <text value="Primary Style (Default)" size="18" />
     <progress_bar min="0" max="100" value="{primary_progress}" style="primary" />

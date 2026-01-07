@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<column padding="20" spacing="10">
+    <row spacing="10">
+        <button label="Back" on_click="switch_to_window" />
+        <text value="Space &amp; Rule Widgets" size="24" weight="bold" />
+    </row>
+
+    <text value="Space Widget" size="18" weight="bold" />
+    <text value="Element before space" />
+    <space height="20" />
+    <text value="Element after space (20px)" />
+
+    <space height="30" />
+
+    <text value="Variable Spacing" size="18" weight="bold" />
+    <text value="Small space:" />
+    <space height="5" />
+    <text value="Medium space:" />
+    <space height="15" />
+    <text value="Large space:" />
+    <space height="40" />
+
+    <text value="Rule Widget" size="18" weight="bold" />
+    <text value="Content above rule" />
+    <rule />
+    <text value="Content below rule" />
+
+    <rule height="2" color="#3498db" />
+
+    <text value="Content between blue rules" />
+
+    <rule height="3" color="#e74c3c" />
+
+    <text value="Content below red rule" />
+
+    <space height="20" />
+
+    <text value="Combined Layout" size="18" weight="bold" />
+    <text value="Header" weight="bold" />
+    <rule />
+    <text value="Paragraph 1" size="14" />
+    <space height="10" />
+    <text value="Paragraph 2" size="14" />
+    <rule />
+    <text value="Footer" size="12" color="#666666" />
+</column>

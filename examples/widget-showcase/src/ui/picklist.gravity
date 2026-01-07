@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <column padding="20" spacing="10">
-    <text value="PickList Widget" size="24" weight="bold" />
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="PickList Widget" size="24" weight="bold" />
+    </row>
     <text value="Filter tasks:" size="14" />
     <pick_list
         options="All,Active,Completed"
@@ -8,7 +11,7 @@
         placeholder="Show all tasks..."
     />
     <row spacing="10">
-        <button label="Filter:" />
-        <text value=" {filter}" size="14" />
+        <text value="Filter:" size="14" />
+        <text value="{filter}" size="14" color="#3498db" />
     </row>
 </column>

@@ -17,7 +17,7 @@ enum CurrentView {
 
 struct SettingsApp {
     current_view: CurrentView,
-    main_state: AppState<ui::app::Model>,
+    main_state: AppState<ui::window::Model>,
     settings_state: AppState<ui::settings::Model>,
 }
 
@@ -56,7 +56,7 @@ fn view(app: &SettingsApp) -> Element<'_, AppMessage> {
 }
 
 fn init() -> (SettingsApp, Task<AppMessage>) {
-    let main_state = ui::app::create_app_state();
+    let main_state = ui::window::create_app_state();
     let settings_state = ui::settings::create_app_state();
 
     (

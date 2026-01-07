@@ -292,7 +292,6 @@ ls examples/
 ### Event Handling
 - ✅ `on_click` handlers
 - ✅ Typed message passing
-- ✅ `#[ui_handler]` attribute macro
 - ✅ Handler registry
 - ✅ Type-safe dispatch
 

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<column padding="20" spacing="20">
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="Toggler Widget" size="24" weight="bold" />
+    </row>
+
+    <text value="Basic Toggles" size="18" weight="bold" />
+    <toggler checked="{dark_mode}" label="Dark Mode" on_toggle="toggle_dark" />
+    <toggler checked="{notifications}" label="Notifications" on_toggle="toggle_notifications" />
+    <toggler checked="{auto_save}" label="Auto Save" on_toggle="toggle_autosave" />
+
+    <text value="Status" size="18" weight="bold" />
+    <text value="Dark Mode: {if dark_mode then 'ON' else 'OFF'}" size="14" color="#666666" />
+    <text value="Notifications: {if notifications then 'ON' else 'OFF'}" size="14" color="#666666" />
+    <text value="Auto Save: {if auto_save then 'ON' else 'OFF'}" size="14" color="#666666" />
+
+    <text value="With Color" size="18" weight="bold" />
+    <toggler checked="{is_active}" label="Active State" on_toggle="toggle_active" />
+    <text value="System Status: {if is_active then 'ONLINE' else 'OFFLINE'}" size="16" color="{if is_active then '#27ae60' else '#e74c3c'}" />
+
+    <text value="Settings Panel" size="18" weight="bold" />
+    <column padding="10" spacing="10">
+        <toggler checked="{wifi}" label="Wi-Fi" on_toggle="toggle_wifi" />
+        <toggler checked="{bluetooth}" label="Bluetooth" on_toggle="toggle_bluetooth" />
+        <toggler checked="{airplane}" label="Airplane Mode" on_toggle="toggle_airplane" />
+    </column>
+</column>

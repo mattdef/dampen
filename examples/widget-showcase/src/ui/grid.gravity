@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <container padding="40">
     <column spacing="20">
-        <text value="Grid Widget Showcase" size="28" weight="bold" />
+        <row spacing="10">
+            <button label="← Back" on_click="switch_to_window" />
+            <text value="Grid Widget Showcase" size="28" weight="bold" />
+        </row>
         <text value="Multi-column layouts for tables and responsive grids" size="14" />
 
         <rule />

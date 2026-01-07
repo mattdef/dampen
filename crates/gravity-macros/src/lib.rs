@@ -4,7 +4,6 @@
 
 use proc_macro::TokenStream;
 
-mod ui_handler;
 mod ui_loader;
 mod ui_model;
 
@@ -17,12 +16,6 @@ mod ui_model;
 #[proc_macro_derive(UiModel, attributes(ui_skip, ui_bind))]
 pub fn ui_model_derive(input: TokenStream) -> TokenStream {
     ui_model::ui_model_derive(input)
-}
-
-/// Attribute macro to mark event handlers
-#[proc_macro_attribute]
-pub fn ui_handler(attr: TokenStream, item: TokenStream) -> TokenStream {
-    ui_handler::ui_handler(attr, item)
 }
 
 /// Attribute macro to automatically load Gravity UI files.

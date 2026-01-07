@@ -196,12 +196,10 @@ struct TodoItem {
 ### Gestionnaires d'evenements types
 
 ```rust
-#[ui_handler]
 fn increment(model: &mut Model) {
     model.count += 1;
 }
 
-#[ui_handler]
 fn add_item(model: &mut Model, text: String) {
     model.items.push(TodoItem {
         id: model.next_id,
@@ -211,7 +209,6 @@ fn add_item(model: &mut Model, text: String) {
     model.next_id += 1;
 }
 
-#[ui_handler]
 fn toggle_item(model: &mut Model, id: usize) {
     if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
         item.completed = !item.completed;
@@ -318,7 +315,7 @@ fn toggle_item(model: &mut Model, id: usize) {
 ```
 crates/
 ├── gravity-core/         # Parser XML, IR, traits (sans dependance Iced)
-├── gravity-macros/       # Macros #[derive(UiModel)], #[ui_handler], #[gravity_ui]
+├── gravity-macros/       # Macros #[derive(UiModel)], #[gravity_ui]
 ├── gravity-runtime/      # Hot-reload, surveillance de fichiers
 ├── gravity-iced/         # Implementation backend Iced
 └── gravity-cli/          # CLI developpeur (dev, build, check, inspect)

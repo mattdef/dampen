@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <column padding="40" spacing="30">
-    <text value="Tooltip Widget Showcase" size="32" weight="bold" />
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="Tooltip Widget Showcase" size="32" weight="bold" />
+    </row>
     
     <text value="Top Position" size="18" />
     <tooltip message="This tooltip appears at the top of the button" position="top">

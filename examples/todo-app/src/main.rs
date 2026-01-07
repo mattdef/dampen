@@ -10,7 +10,7 @@ use std::path::PathBuf;
 type Message = HandlerMessage;
 
 struct TodoApp {
-    state: AppState<ui::app::Model>,
+    state: AppState<ui::window::Model>,
 }
 
 fn update(app: &mut TodoApp, message: Message) -> Task<Message> {
@@ -39,7 +39,7 @@ fn update(app: &mut TodoApp, message: Message) -> Task<Message> {
 
             // Auto-save after any handler modification
             let save_path = PathBuf::from("todo-app-data.json");
-            ui::app::save_to_path(&app.state.model, &save_path);
+            ui::window::save_to_path(&app.state.model, &save_path);
         }
     }
     Task::none()
@@ -86,11 +86,11 @@ fn view(app: &TodoApp) -> Element<'_, Message> {
 fn init() -> (TodoApp, Task<Message>) {
     let save_path = PathBuf::from("todo-app-data.json");
     let model = if save_path.exists() {
-        ui::app::load_from_path(&save_path)
+        ui::window::load_from_path(&save_path)
     } else {
-        ui::app::Model::default()
+        ui::window::Model::default()
     };
-    let state = ui::app::create_app_state_with_model(model);
+    let state = ui::window::create_app_state_with_model(model);
     (TodoApp { state }, Task::none())
 }
 

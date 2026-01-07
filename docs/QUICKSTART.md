@@ -87,18 +87,15 @@ enum Message {
     Reset,
 }
 
-// Mark event handlers
-#[ui_handler]
+// Define event handlers
 fn increment(model: &mut Model) {
     model.count += 1;
 }
 
-#[ui_handler]
 fn decrement(model: &mut Model) {
     model.count -= 1;
 }
 
-#[ui_handler]
 fn reset(model: &mut Model) {
     model.count = 0;
 }
@@ -198,7 +195,6 @@ Interpolates multiple values.
 ### Simple Handler
 
 ```rust
-#[ui_handler]
 fn do_something(model: &mut Model) {
     model.some_field = new_value;
 }
@@ -209,7 +205,6 @@ fn do_something(model: &mut Model) {
 For `on_input`, `on_change`, etc.:
 
 ```rust
-#[ui_handler]
 fn update_name(model: &mut Model, value: String) {
     model.name = value;
 }
@@ -220,7 +215,6 @@ fn update_name(model: &mut Model, value: String) {
 For side effects like API calls:
 
 ```rust
-#[ui_handler]
 fn fetch_data(model: &mut Model) -> Command<Message> {
     Command::perform(
         async { api::fetch_items().await },
@@ -276,12 +270,10 @@ enum Message {
     ClearAll,
 }
 
-#[ui_handler]
 fn update_new_item(model: &mut Model, value: String) {
     model.new_item = value;
 }
 
-#[ui_handler]
 fn add_item(model: &mut Model) {
     if !model.new_item.is_empty() {
         model.items.push(model.new_item.clone());
@@ -289,7 +281,6 @@ fn add_item(model: &mut Model) {
     }
 }
 
-#[ui_handler]
 fn clear_all(model: &mut Model) {
     model.items.clear();
 }
@@ -465,9 +456,9 @@ If a binding doesn't work:
 ### 4. Handler Issues
 
 If handlers don't fire:
-1. Verify `#[ui_handler]` attribute
-2. Check handler name matches XML `on_click="handler_name"`
-3. Ensure handler is in scope
+1. Check handler name matches XML `on_click="handler_name"`
+2. Ensure handler is registered in HandlerRegistry
+3. Verify handler signature matches expected type
 
 ## Adding Styles
 
@@ -587,7 +578,7 @@ Now your app has:
 
 ### "Unknown handler: xyz"
 
-Ensure your handler has `#[ui_handler]` and the name matches.
+Ensure your handler is registered in the HandlerRegistry with the matching name.
 
 ### "Field not found: xyz"
 

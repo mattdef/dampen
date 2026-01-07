@@ -148,7 +148,6 @@ Example:
 
 ```rust
 // src/main.rs
-#[ui_handler]
 fn handler(model: &mut Model) {
     // Handle event
 }

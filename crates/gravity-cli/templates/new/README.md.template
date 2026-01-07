@@ -66,13 +66,12 @@ The Rust code defines:
    ```
 
 2. **Handlers** - Functions that update the model:
-   ```rust
-   #[ui_handler]
-   fn greet(model: &mut Model) {
-       model.click_count += 1;
-       model.message = format!("Clicked {} times", model.click_count);
-   }
-   ```
+    ```rust
+    fn greet(model: &mut Model) {
+        model.click_count += 1;
+        model.message = format!("Clicked {} times", model.click_count);
+    }
+    ```
 
 3. **Rendering** - Maps XML to Iced widgets (handled by the framework)
 
@@ -115,7 +114,6 @@ struct Model {
 Create new event handlers:
 
 ```rust
-#[ui_handler]
 fn reset(model: &mut Model) {
     model.counter = 0;
     model.message = "Reset!".to_string();

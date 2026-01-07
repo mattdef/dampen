@@ -79,7 +79,7 @@ pub fn process_gravity_ui(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn warn_unknown_handler(handler_name: &str) -> TokenStream {
     let warning = format!(
         "Handler '{}' is not registered in the HandlerRegistry\n\
-         help: Add a handler with #[ui_handler] or check for typos",
+         help: Register handlers manually with HandlerRegistry::register_simple() or check for typos",
         handler_name
     );
 

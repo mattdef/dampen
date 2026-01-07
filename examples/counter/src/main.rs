@@ -9,7 +9,7 @@ use iced::{Element, Task};
 type Message = HandlerMessage;
 
 struct CounterApp {
-    state: AppState<ui::app::Model>,
+    state: AppState<ui::window::Model>,
 }
 
 fn update(app: &mut CounterApp, message: Message) -> Task<Message> {
@@ -35,7 +35,7 @@ fn view(app: &CounterApp) -> Element<'_, Message> {
 }
 
 fn init() -> (CounterApp, Task<Message>) {
-    let state = ui::app::create_app_state();
+    let state = ui::window::create_app_state();
     (CounterApp { state }, Task::none())
 }
 

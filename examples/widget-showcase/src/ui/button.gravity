@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<column padding="20" spacing="20">
+    <row spacing="10">
+        <button label="← Back" on_click="switch_to_window" />
+        <text value="Button Widget" size="24" weight="bold" />
+    </row>
+
+    <text value="Basic Buttons" size="18" weight="bold" />
+    <row spacing="10">
+        <button label="Primary" on_click="handle_click" />
+        <button label="Secondary" on_click="handle_click" />
+        <button label="Disabled" disabled="true" />
+    </row>
+
+    <text value="Button States" size="18" weight="bold" />
+    <row spacing="10">
+        <button label="Clicked: {click_count}" on_click="increment_count" />
+    </row>
+    <text value="{click_count} clicks" size="14" color="#666666" />
+
+    <text value="With Icons (using text)" size="18" weight="bold" />
+    <row spacing="10">
+        <button label="✓ OK" on_click="handle_click" />
+        <button label="✗ Cancel" on_click="handle_click" />
+        <button label="★ Star" on_click="handle_click" />
+    </row>
+
+    <text value="Different Sizes" size="18" weight="bold" />
+    <row spacing="10" align="center">
+        <button label="Small" />
+        <button label="Medium" />
+        <button label="Large" />
+    </row>
+
+    <text value="Width Variations" size="18" weight="bold" />
+    <button label="Full Width Button" width="fill" on_click="handle_click" />
+    <button label="Fixed Width (200)" width="200" on_click="handle_click" />
+</column>

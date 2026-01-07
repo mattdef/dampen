@@ -1,168 +1,281 @@
-use gravity_core::{parse, HandlerRegistry};
+//! Widget showcase demonstrating all Gravity UI widgets.
+//!
+//! This example shows all currently supported widgets in Gravity.
+
+mod ui;
+
+use gravity_core::{AppState, HandlerRegistry};
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
-use gravity_macros::UiModel;
 use iced::{Element, Task};
-use serde::{Deserialize, Serialize};
 
-/// T079: Simple Canvas Program implementation for demonstration
-///
-/// Note: This is a placeholder implementation since canvas::Program
-/// cannot be directly bound from XML yet. In a real application,
-/// you would implement canvas::Program trait for custom visualizations.
-struct SimpleChartProgram;
-
-impl iced::widget::canvas::Program<HandlerMessage> for SimpleChartProgram {
-    type State = ();
-
-    fn draw(
-        &self,
-        _state: &Self::State,
-        renderer: &iced::Renderer,
-        _theme: &iced::Theme,
-        bounds: iced::Rectangle,
-        _cursor: iced::mouse::Cursor,
-    ) -> Vec<iced::widget::canvas::Geometry> {
-        use iced::widget::canvas::{Cache, Frame, Path, Stroke};
-        use iced::Color;
-
-        let mut cache = Cache::new();
-
-        let geometry = cache.draw(renderer, bounds.size(), |frame: &mut Frame| {
-            // Draw a simple bar chart visualization
-            let width = bounds.width;
-            let height = bounds.height;
-
-            // Background
-            frame.fill_rectangle(
-                iced::Point::ORIGIN,
-                iced::Size::new(width, height),
-                Color::from_rgb(0.98, 0.98, 0.98),
-            );
-
-            // Draw 5 bars
-            let bar_width = width / 6.0;
-            let values = [0.3, 0.6, 0.8, 0.5, 0.7];
-
-            for (i, &value) in values.iter().enumerate() {
-                let x = bar_width * (i as f32 + 0.5);
-                let bar_height = height * value * 0.8;
-                let y = height - bar_height - 20.0;
-
-                // Bar
-                frame.fill_rectangle(
-                    iced::Point::new(x, y),
-                    iced::Size::new(bar_width * 0.8, bar_height),
-                    Color::from_rgb(0.3, 0.6, 0.9),
-                );
-
-                // Border
-                let path = Path::rectangle(
-                    iced::Point::new(x, y),
-                    iced::Size::new(bar_width * 0.8, bar_height),
-                );
-                frame.stroke(
-                    &path,
-                    Stroke::default()
-                        .with_width(2.0)
-                        .with_color(Color::from_rgb(0.2, 0.4, 0.7)),
-                );
-            }
-
-            // Title
-            frame.fill_text(iced::widget::canvas::Text {
-                content: "Sample Chart".to_string(),
-                position: iced::Point::new(width / 2.0, 10.0),
-                color: Color::from_rgb(0.2, 0.2, 0.2),
-                size: 16.0.into(),
-                ..Default::default()
-            });
-        });
-
-        vec![geometry]
-    }
+#[derive(Clone, Debug, PartialEq)]
+enum CurrentView {
+    Window,
+    Button,
+    Text,
+    TextInput,
+    Checkbox,
+    Slider,
+    Toggler,
+    Image,
+    Svg,
+    Scrollable,
+    Stack,
+    Space,
+    Layout,
+    ForLoop,
+    Combobox,
+    Picklist,
+    Progressbar,
+    Tooltip,
+    Grid,
 }
 
-/// Application model with canvas program
-#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
-struct Model {
-    // Canvas programs would be stored here
-    // For now, they're created in view() due to binding limitations
-    #[serde(skip)]
-    #[ui_skip]
-    pub _placeholder: String,
+struct ShowcaseApp {
+    current_view: CurrentView,
+    window_state: AppState<ui::window::Model>,
+    button_state: AppState<ui::button::Model>,
+    text_state: AppState<ui::text::Model>,
+    textinput_state: AppState<ui::textinput::Model>,
+    checkbox_state: AppState<ui::checkbox::Model>,
+    slider_state: AppState<ui::slider::Model>,
+    toggler_state: AppState<ui::toggler::Model>,
+    image_state: AppState<()>,
+    svg_state: AppState<()>,
+    scrollable_state: AppState<()>,
+    stack_state: AppState<ui::stack::Model>,
+    space_state: AppState<()>,
+    layout_state: AppState<()>,
+    for_loop_state: AppState<ui::for_loop::Model>,
+    combobox_state: AppState<()>,
+    picklist_state: AppState<ui::picklist::Model>,
+    progressbar_state: AppState<ui::progressbar::Model>,
+    tooltip_state: AppState<()>,
+    grid_state: AppState<()>,
 }
 
-/// Messages for application (using HandlerMessage from gravity-iced)
-type Message = HandlerMessage;
+type AppMessage = HandlerMessage;
 
-/// Application state
-struct AppState {
-    model: Model,
-    document: gravity_core::GravityDocument,
-    handler_registry: HandlerRegistry,
-}
-
-impl AppState {
-    fn new() -> Self {
-        // Load canvas.gravity file
-        let xml = std::fs::read_to_string("examples/widget-showcase/ui/canvas.gravity")
-            .unwrap_or_else(|_| {
-                // Fallback if file not found
-                r#"<?xml version="1.0" encoding="UTF-8" ?>
-<column spacing="20" padding="20">
-    <text value="Canvas Widget Showcase" size="24" weight="bold" />
-    <text value="Canvas file not found - using fallback" size="12" />
-    <canvas width="400" height="300" program="{simple_chart}" />
-</column>"#
-                    .to_string()
-            });
-
-        let document = parse(&xml).expect("Failed to parse canvas.gravity");
-
-        // Create handler registry
-        let mut handler_registry = HandlerRegistry::new();
-
-        // Register canvas_clicked handler
-        handler_registry.register_simple("canvas_clicked", |_state| {
-            println!("Canvas clicked!");
-        });
-
-        Self {
-            model: Model::default(),
-            document,
-            handler_registry,
-        }
-    }
-}
-
-/// Update function
-fn update(state: &mut AppState, message: Message) -> Task<Message> {
+fn update(app: &mut ShowcaseApp, message: AppMessage) -> Task<AppMessage> {
     match message {
-        HandlerMessage::Handler(handler_name, value_opt) => {
-            // Handle canvas click with coordinates if available
-            if handler_name == "canvas_clicked" {
-                if let Some(value) = value_opt {
-                    println!("Canvas clicked at: {}", value);
-                } else {
-                    println!("Canvas clicked (no coordinates)");
+        HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
+            "switch_to_button" => app.current_view = CurrentView::Button,
+            "switch_to_text" => app.current_view = CurrentView::Text,
+            "switch_to_textinput" => app.current_view = CurrentView::TextInput,
+            "switch_to_checkbox" => app.current_view = CurrentView::Checkbox,
+            "switch_to_slider" => app.current_view = CurrentView::Slider,
+            "switch_to_toggler" => app.current_view = CurrentView::Toggler,
+            "switch_to_image" => app.current_view = CurrentView::Image,
+            "switch_to_svg" => app.current_view = CurrentView::Svg,
+            "switch_to_scrollable" => app.current_view = CurrentView::Scrollable,
+            "switch_to_stack" => app.current_view = CurrentView::Stack,
+            "switch_to_space" => app.current_view = CurrentView::Space,
+            "switch_to_layout" => app.current_view = CurrentView::Layout,
+            "switch_to_for" => app.current_view = CurrentView::ForLoop,
+            "switch_to_combobox" => app.current_view = CurrentView::Combobox,
+            "switch_to_picklist" => app.current_view = CurrentView::Picklist,
+            "switch_to_progressbar" => app.current_view = CurrentView::Progressbar,
+            "switch_to_tooltip" => app.current_view = CurrentView::Tooltip,
+            "switch_to_grid" => app.current_view = CurrentView::Grid,
+            "switch_to_window" => app.current_view = CurrentView::Window,
+            // Dispatch to current view's handlers
+            _ => {
+                let (model, registry): (&mut dyn std::any::Any, &HandlerRegistry) =
+                    match app.current_view {
+                        CurrentView::Button => (
+                            &mut app.button_state.model as &mut dyn std::any::Any,
+                            &app.button_state.handler_registry,
+                        ),
+                        CurrentView::Text => (
+                            &mut app.text_state.model as &mut dyn std::any::Any,
+                            &app.text_state.handler_registry,
+                        ),
+                        CurrentView::TextInput => (
+                            &mut app.textinput_state.model as &mut dyn std::any::Any,
+                            &app.textinput_state.handler_registry,
+                        ),
+                        CurrentView::Checkbox => (
+                            &mut app.checkbox_state.model as &mut dyn std::any::Any,
+                            &app.checkbox_state.handler_registry,
+                        ),
+                        CurrentView::Slider => (
+                            &mut app.slider_state.model as &mut dyn std::any::Any,
+                            &app.slider_state.handler_registry,
+                        ),
+                        CurrentView::Toggler => (
+                            &mut app.toggler_state.model as &mut dyn std::any::Any,
+                            &app.toggler_state.handler_registry,
+                        ),
+                        CurrentView::Stack => (
+                            &mut app.stack_state.model as &mut dyn std::any::Any,
+                            &app.stack_state.handler_registry,
+                        ),
+                        CurrentView::ForLoop => (
+                            &mut app.for_loop_state.model as &mut dyn std::any::Any,
+                            &app.for_loop_state.handler_registry,
+                        ),
+                        CurrentView::Picklist => (
+                            &mut app.picklist_state.model as &mut dyn std::any::Any,
+                            &app.picklist_state.handler_registry,
+                        ),
+                        CurrentView::Progressbar => (
+                            &mut app.progressbar_state.model as &mut dyn std::any::Any,
+                            &app.progressbar_state.handler_registry,
+                        ),
+                        _ => return Task::none(),
+                    };
+                match registry.get(&handler_name) {
+                    Some(gravity_core::HandlerEntry::Simple(h)) => {
+                        h(model);
+                    }
+                    Some(gravity_core::HandlerEntry::WithValue(h)) => {
+                        let val = value.unwrap_or_default();
+                        h(model, Box::new(val));
+                    }
+                    Some(gravity_core::HandlerEntry::WithCommand(_)) => {
+                        // Commands not used in this example
+                    }
+                    None => {}
                 }
-            } else {
-                println!("Handler called: {}", handler_name);
             }
+        },
+    }
+    Task::none()
+}
 
-            Task::none()
+fn view(app: &ShowcaseApp) -> Element<'_, AppMessage> {
+    match app.current_view {
+        CurrentView::Window => GravityWidgetBuilder::new(
+            &app.window_state.document,
+            &app.window_state.model,
+            Some(&app.window_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Button => GravityWidgetBuilder::new(
+            &app.button_state.document,
+            &app.button_state.model,
+            Some(&app.button_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Text => GravityWidgetBuilder::new(
+            &app.text_state.document,
+            &app.text_state.model,
+            Some(&app.text_state.handler_registry),
+        )
+        .build(),
+        CurrentView::TextInput => GravityWidgetBuilder::new(
+            &app.textinput_state.document,
+            &app.textinput_state.model,
+            Some(&app.textinput_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Checkbox => GravityWidgetBuilder::new(
+            &app.checkbox_state.document,
+            &app.checkbox_state.model,
+            Some(&app.checkbox_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Slider => GravityWidgetBuilder::new(
+            &app.slider_state.document,
+            &app.slider_state.model,
+            Some(&app.slider_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Toggler => GravityWidgetBuilder::new(
+            &app.toggler_state.document,
+            &app.toggler_state.model,
+            Some(&app.toggler_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Image => {
+            GravityWidgetBuilder::new(&app.image_state.document, &app.image_state.model, None)
+                .build()
+        }
+        CurrentView::Svg => {
+            GravityWidgetBuilder::new(&app.svg_state.document, &app.svg_state.model, None).build()
+        }
+        CurrentView::Scrollable => GravityWidgetBuilder::new(
+            &app.scrollable_state.document,
+            &app.scrollable_state.model,
+            None,
+        )
+        .build(),
+        CurrentView::Stack => GravityWidgetBuilder::new(
+            &app.stack_state.document,
+            &app.stack_state.model,
+            Some(&app.stack_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Space => {
+            GravityWidgetBuilder::new(&app.space_state.document, &app.space_state.model, None)
+                .build()
+        }
+        CurrentView::Layout => {
+            GravityWidgetBuilder::new(&app.layout_state.document, &app.layout_state.model, None)
+                .build()
+        }
+        CurrentView::ForLoop => GravityWidgetBuilder::new(
+            &app.for_loop_state.document,
+            &app.for_loop_state.model,
+            Some(&app.for_loop_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Combobox => GravityWidgetBuilder::new(
+            &app.combobox_state.document,
+            &app.combobox_state.model,
+            None,
+        )
+        .build(),
+        CurrentView::Picklist => GravityWidgetBuilder::new(
+            &app.picklist_state.document,
+            &app.picklist_state.model,
+            Some(&app.picklist_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Progressbar => GravityWidgetBuilder::new(
+            &app.progressbar_state.document,
+            &app.progressbar_state.model,
+            Some(&app.progressbar_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Tooltip => {
+            GravityWidgetBuilder::new(&app.tooltip_state.document, &app.tooltip_state.model, None)
+                .build()
+        }
+        CurrentView::Grid => {
+            GravityWidgetBuilder::new(&app.grid_state.document, &app.grid_state.model, None).build()
         }
     }
 }
 
-/// View function
-fn view(state: &AppState) -> Element<'_, Message> {
-    GravityWidgetBuilder::new(&state.document, &state.model, Some(&state.handler_registry))
-        .with_verbose(true) // Enable verbose logging to see Canvas info
-        .build()
+fn init() -> (ShowcaseApp, Task<AppMessage>) {
+    (
+        ShowcaseApp {
+            current_view: CurrentView::Window,
+            window_state: ui::window::create_app_state(),
+            button_state: ui::button::create_app_state(),
+            text_state: ui::text::create_app_state(),
+            textinput_state: ui::textinput::create_app_state(),
+            checkbox_state: ui::checkbox::create_app_state(),
+            slider_state: ui::slider::create_app_state(),
+            toggler_state: ui::toggler::create_app_state(),
+            image_state: ui::image::create_app_state(),
+            svg_state: ui::svg::create_app_state(),
+            scrollable_state: ui::scrollable::create_app_state(),
+            stack_state: ui::stack::create_app_state(),
+            space_state: ui::space::create_app_state(),
+            layout_state: ui::layout::create_app_state(),
+            for_loop_state: ui::for_loop::create_app_state(),
+            combobox_state: ui::combobox::create_app_state(),
+            picklist_state: ui::picklist::create_app_state(),
+            progressbar_state: ui::progressbar::create_app_state(),
+            tooltip_state: ui::tooltip::create_app_state(),
+            grid_state: ui::grid::create_app_state(),
+        },
+        Task::none(),
+    )
 }
 
-/// Main function
 pub fn main() -> iced::Result {
-    iced::application(AppState::new, update, view).run()
+    iced::application(init, update, view).run()
 }
