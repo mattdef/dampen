@@ -1,57 +1,67 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<scrollable>
-    <column padding="40" spacing="15" align="center">
-        <text value="Gravity Widget Showcase" size="36" weight="bold" />
-        <text value="Click on any widget to see it in action" size="14" color="#666666" />
+<gravity>
+    <scrollable>
+        <column padding="40" spacing="15" align="center">
+            <text value="Gravity Widget Showcase" size="36" weight="bold" />
+            <text
+                value="Click on any widget to see it in action"
+                size="14"
+                color="#666666"
+            />
 
-        <rule />
+            <rule />
 
-        <text value="Basic Widgets" size="20" weight="bold" />
-        <row spacing="10">
-            <button label="Button" on_click="switch_to_button" />
-            <button label="Text" on_click="switch_to_text" />
-            <button label="Text Input" on_click="switch_to_textinput" />
-        </row>
+            <text value="Basic Widgets" size="20" weight="bold" />
+            <row spacing="10">
+                <button label="Button" on_click="switch_to_button" />
+                <button label="Text" on_click="switch_to_text" />
+                <button label="Text Input" on_click="switch_to_textinput" />
+            </row>
 
-        <text value="Selection Widgets" size="20" weight="bold" />
-        <row spacing="10">
-            <button label="Checkbox" on_click="switch_to_checkbox" />
-            <button label="Slider" on_click="switch_to_slider" />
-            <button label="Toggler" on_click="switch_to_toggler" />
-        </row>
+            <text value="Selection Widgets" size="20" weight="bold" />
+            <row spacing="10">
+                <button label="Checkbox" on_click="switch_to_checkbox" />
+                <button label="Slider" on_click="switch_to_slider" />
+                <button label="Toggler" on_click="switch_to_toggler" />
+            </row>
 
-        <text value="Display Widgets" size="20" weight="bold" />
-        <row spacing="10">
-            <button label="Image" on_click="switch_to_image" />
-            <button label="SVG" on_click="switch_to_svg" />
-        </row>
+            <text value="Display Widgets" size="20" weight="bold" />
+            <row spacing="10">
+                <button label="Image" on_click="switch_to_image" />
+                <button label="SVG" on_click="switch_to_svg" />
+            </row>
 
-        <text value="Container Widgets" size="20" weight="bold" />
-        <row spacing="10">
-            <button label="Scrollable" on_click="switch_to_scrollable" />
-            <button label="Stack" on_click="switch_to_stack" />
-            <button label="Space &amp; Rule" on_click="switch_to_space" />
-        </row>
-        <row spacing="10">
-            <button label="Layout" on_click="switch_to_layout" />
-            <button label="For Loop" on_click="switch_to_for" />
-        </row>
+            <text value="Container Widgets" size="20" weight="bold" />
+            <row spacing="10">
+                <button label="Scrollable" on_click="switch_to_scrollable" />
+                <button label="Stack" on_click="switch_to_stack" />
+                <button label="Space &amp; Rule" on_click="switch_to_space" />
+            </row>
+            <row spacing="10">
+                <button label="Layout" on_click="switch_to_layout" />
+                <button label="For Loop" on_click="switch_to_for" />
+            </row>
 
-        <rule />
+            <rule />
 
-        <text value="Advanced Widgets" size="20" weight="bold" />
-        <row spacing="10">
-            <button label="Combo Box" on_click="switch_to_combobox" />
-            <button label="Pick List" on_click="switch_to_picklist" />
-        </row>
-        <row spacing="10">
-            <button label="Progress Bar" on_click="switch_to_progressbar" />
-            <button label="Tooltip" on_click="switch_to_tooltip" />
-            <button label="Grid" on_click="switch_to_grid" />
-        </row>
+            <text value="Advanced Widgets" size="20" weight="bold" />
+            <row spacing="10">
+                <button label="Combo Box" on_click="switch_to_combobox" />
+                <button label="Pick List" on_click="switch_to_picklist" />
+            </row>
+            <row spacing="10">
+                <button label="Progress Bar" on_click="switch_to_progressbar" />
+                <button label="Tooltip" on_click="switch_to_tooltip" />
+                <button label="Grid" on_click="switch_to_grid" />
+            </row>
 
-        <space height="20" />
+            <space height="20" />
 
-        <text value="All widgets except Canvas are functional!" size="12" color="#27ae60" />
-    </column>
-</scrollable>
+            <text
+                value="All widgets except Canvas are functional!"
+                size="12"
+                color="#27ae60"
+            />
+        </column>
+    </scrollable>
+</gravity>

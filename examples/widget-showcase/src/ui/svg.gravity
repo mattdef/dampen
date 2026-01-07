@@ -1,37 +1,65 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<column padding="20" spacing="20">
-    <row spacing="10">
-        <button label="Back" on_click="switch_to_window" />
-        <text value="Svg Widget" size="24" weight="bold" />
-    </row>
+<gravity>
+    <scrollable width="600">
+        <column padding="20" spacing="20">
+            <row spacing="10">
+                <button label="Back" on_click="switch_to_window" />
+                <text value="Svg Widget" size="24" weight="bold" />
+            </row>
 
-    <text value="SVG from File" size="18" weight="bold" />
-    <text value="SVG images loaded from file path using src attribute" size="14" color="#666666" />
-    <svg src="test.svg" width="100" height="100" />
+            <text value="SVG from File" size="18" weight="bold" />
+            <text
+                value="SVG images loaded from file path using src attribute"
+                size="14"
+                color="#666666"
+            />
+            <svg
+                src="examples/widget-showcase/assets/rust.svg"
+                width="100"
+                height="100"
+            />
 
-    <text value="Size Variations" size="18" weight="bold" />
-    <row spacing="20">
-        <column spacing="5">
-            <text value="Small (48x48)" size="12" />
-            <svg src="test.svg" width="48" height="48" />
+            <text value="Size Variations" size="18" weight="bold" />
+            <row spacing="20">
+                <column spacing="5">
+                    <text value="Small (48x48)" size="12" />
+                    <svg
+                        src="examples/widget-showcase/assets/rust.svg"
+                        width="48"
+                        height="48"
+                    />
+                </column>
+                <column spacing="5">
+                    <text value="Medium (96x96)" size="12" />
+                    <svg
+                        src="examples/widget-showcase/assets/rust.svg"
+                        width="96"
+                        height="96"
+                    />
+                </column>
+                <column spacing="5">
+                    <text value="Large (144x144)" size="12" />
+                    <svg
+                        src="examples/widget-showcase/assets/rust.svg"
+                        width="144"
+                        height="144"
+                    />
+                </column>
+            </row>
+
+            <text value="As Icon in Button" size="18" weight="bold" />
+            <row spacing="10">
+                <button label="Icon Left" />
+                <button label="Icon Right" />
+            </row>
+
+            <text value="Placeholder (no file)" size="18" weight="bold" />
+            <svg width="100" height="100" />
+            <text
+                value="When src is empty, shows placeholder"
+                size="12"
+                color="#999"
+            />
         </column>
-        <column spacing="5">
-            <text value="Medium (96x96)" size="12" />
-            <svg src="test.svg" width="96" height="96" />
-        </column>
-        <column spacing="5">
-            <text value="Large (144x144)" size="12" />
-            <svg src="test.svg" width="144" height="144" />
-        </column>
-    </row>
-
-    <text value="As Icon in Button" size="18" weight="bold" />
-    <row spacing="10">
-        <button label="Icon Left" />
-        <button label="Icon Right" />
-    </row>
-
-    <text value="Placeholder (no file)" size="18" weight="bold" />
-    <svg width="100" height="100" />
-    <text value="When src is empty, shows placeholder" size="12" color="#999" />
-</column>
+    </scrollable>
+</gravity>

@@ -40,12 +40,12 @@ struct ShowcaseApp {
     checkbox_state: AppState<ui::checkbox::Model>,
     slider_state: AppState<ui::slider::Model>,
     toggler_state: AppState<ui::toggler::Model>,
-    image_state: AppState<()>,
-    svg_state: AppState<()>,
-    scrollable_state: AppState<()>,
+    image_state: AppState<ui::image::Model>,
+    svg_state: AppState<ui::svg::Model>,
+    scrollable_state: AppState<ui::scrollable::Model>,
     stack_state: AppState<ui::stack::Model>,
-    space_state: AppState<()>,
-    layout_state: AppState<()>,
+    space_state: AppState<ui::space::Model>,
+    layout_state: AppState<ui::layout::Model>,
     for_loop_state: AppState<ui::for_loop::Model>,
     combobox_state: AppState<()>,
     picklist_state: AppState<ui::picklist::Model>,
@@ -78,7 +78,6 @@ fn update(app: &mut ShowcaseApp, message: AppMessage) -> Task<AppMessage> {
             "switch_to_tooltip" => app.current_view = CurrentView::Tooltip,
             "switch_to_grid" => app.current_view = CurrentView::Grid,
             "switch_to_window" => app.current_view = CurrentView::Window,
-            // Dispatch to current view's handlers
             _ => {
                 let (model, registry): (&mut dyn std::any::Any, &HandlerRegistry) =
                     match app.current_view {
@@ -106,13 +105,33 @@ fn update(app: &mut ShowcaseApp, message: AppMessage) -> Task<AppMessage> {
                             &mut app.toggler_state.model as &mut dyn std::any::Any,
                             &app.toggler_state.handler_registry,
                         ),
+                        CurrentView::Image => (
+                            &mut app.image_state.model as &mut dyn std::any::Any,
+                            &app.image_state.handler_registry,
+                        ),
+                        CurrentView::Svg => (
+                            &mut app.svg_state.model as &mut dyn std::any::Any,
+                            &app.svg_state.handler_registry,
+                        ),
                         CurrentView::Stack => (
                             &mut app.stack_state.model as &mut dyn std::any::Any,
                             &app.stack_state.handler_registry,
                         ),
+                        CurrentView::Space => (
+                            &mut app.space_state.model as &mut dyn std::any::Any,
+                            &app.space_state.handler_registry,
+                        ),
+                        CurrentView::Layout => (
+                            &mut app.layout_state.model as &mut dyn std::any::Any,
+                            &app.layout_state.handler_registry,
+                        ),
                         CurrentView::ForLoop => (
                             &mut app.for_loop_state.model as &mut dyn std::any::Any,
                             &app.for_loop_state.handler_registry,
+                        ),
+                        CurrentView::Scrollable => (
+                            &mut app.scrollable_state.model as &mut dyn std::any::Any,
+                            &app.scrollable_state.handler_registry,
                         ),
                         CurrentView::Picklist => (
                             &mut app.picklist_state.model as &mut dyn std::any::Any,
@@ -132,9 +151,7 @@ fn update(app: &mut ShowcaseApp, message: AppMessage) -> Task<AppMessage> {
                         let val = value.unwrap_or_default();
                         h(model, Box::new(val));
                     }
-                    Some(gravity_core::HandlerEntry::WithCommand(_)) => {
-                        // Commands not used in this example
-                    }
+                    Some(gravity_core::HandlerEntry::WithCommand(_)) => {}
                     None => {}
                 }
             }
@@ -187,17 +204,22 @@ fn view(app: &ShowcaseApp) -> Element<'_, AppMessage> {
             Some(&app.toggler_state.handler_registry),
         )
         .build(),
-        CurrentView::Image => {
-            GravityWidgetBuilder::new(&app.image_state.document, &app.image_state.model, None)
-                .build()
-        }
-        CurrentView::Svg => {
-            GravityWidgetBuilder::new(&app.svg_state.document, &app.svg_state.model, None).build()
-        }
+        CurrentView::Image => GravityWidgetBuilder::new(
+            &app.image_state.document,
+            &app.image_state.model,
+            Some(&app.image_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Svg => GravityWidgetBuilder::new(
+            &app.svg_state.document,
+            &app.svg_state.model,
+            Some(&app.svg_state.handler_registry),
+        )
+        .build(),
         CurrentView::Scrollable => GravityWidgetBuilder::new(
             &app.scrollable_state.document,
             &app.scrollable_state.model,
-            None,
+            Some(&app.scrollable_state.handler_registry),
         )
         .build(),
         CurrentView::Stack => GravityWidgetBuilder::new(
@@ -206,14 +228,18 @@ fn view(app: &ShowcaseApp) -> Element<'_, AppMessage> {
             Some(&app.stack_state.handler_registry),
         )
         .build(),
-        CurrentView::Space => {
-            GravityWidgetBuilder::new(&app.space_state.document, &app.space_state.model, None)
-                .build()
-        }
-        CurrentView::Layout => {
-            GravityWidgetBuilder::new(&app.layout_state.document, &app.layout_state.model, None)
-                .build()
-        }
+        CurrentView::Space => GravityWidgetBuilder::new(
+            &app.space_state.document,
+            &app.space_state.model,
+            Some(&app.space_state.handler_registry),
+        )
+        .build(),
+        CurrentView::Layout => GravityWidgetBuilder::new(
+            &app.layout_state.document,
+            &app.layout_state.model,
+            Some(&app.layout_state.handler_registry),
+        )
+        .build(),
         CurrentView::ForLoop => GravityWidgetBuilder::new(
             &app.for_loop_state.document,
             &app.for_loop_state.model,
