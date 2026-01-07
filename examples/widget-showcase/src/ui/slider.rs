@@ -28,10 +28,77 @@ pub fn create_app_state() -> AppState<Model> {
 pub fn create_handler_registry() -> HandlerRegistry {
     let registry = HandlerRegistry::new();
 
-    registry.register_simple("update_slider", |model: &mut dyn std::any::Any| {
-        let model = model.downcast_mut::<Model>().unwrap();
-        println!("Slider value: {}", model.slider_value);
-    });
+    registry.register_with_value(
+        "update_slider",
+        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            let model = model.downcast_mut::<Model>().unwrap();
+            if let Ok(val) = value.downcast::<String>() {
+                if let Ok(new_value) = val.parse::<f32>() {
+                    model.slider_value = new_value;
+                }
+            }
+        },
+    );
+
+    registry.register_with_value(
+        "update_volume",
+        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            let model = model.downcast_mut::<Model>().unwrap();
+            if let Ok(val) = value.downcast::<String>() {
+                if let Ok(new_value) = val.parse::<f32>() {
+                    model.volume = new_value;
+                }
+            }
+        },
+    );
+
+    registry.register_with_value(
+        "update_temperature",
+        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            let model = model.downcast_mut::<Model>().unwrap();
+            if let Ok(val) = value.downcast::<String>() {
+                if let Ok(new_value) = val.parse::<f32>() {
+                    model.temperature = new_value;
+                }
+            }
+        },
+    );
+
+    registry.register_with_value(
+        "update_red",
+        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            let model = model.downcast_mut::<Model>().unwrap();
+            if let Ok(val) = value.downcast::<String>() {
+                if let Ok(new_value) = val.parse::<f32>() {
+                    model.red = new_value;
+                }
+            }
+        },
+    );
+
+    registry.register_with_value(
+        "update_green",
+        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            let model = model.downcast_mut::<Model>().unwrap();
+            if let Ok(val) = value.downcast::<String>() {
+                if let Ok(new_value) = val.parse::<f32>() {
+                    model.green = new_value;
+                }
+            }
+        },
+    );
+
+    registry.register_with_value(
+        "update_blue",
+        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            let model = model.downcast_mut::<Model>().unwrap();
+            if let Ok(val) = value.downcast::<String>() {
+                if let Ok(new_value) = val.parse::<f32>() {
+                    model.blue = new_value;
+                }
+            }
+        },
+    );
 
     registry.register_simple("switch_to_window", |_model: &mut dyn std::any::Any| {
         println!("Switching to main view");

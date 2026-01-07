@@ -64,6 +64,54 @@ pub fn create_handler_registry() -> HandlerRegistry {
         model.airplane = !model.airplane;
     });
 
+    registry.register_with_value(
+        "toggle_notifications",
+        |model: &mut dyn std::any::Any, value| {
+            let model = model.downcast_mut::<Model>().unwrap();
+            if let Ok(val) = value.downcast::<String>() {
+                model.notifications = val.as_str() == "true";
+            }
+        },
+    );
+
+    registry.register_with_value("toggle_autosave", |model: &mut dyn std::any::Any, value| {
+        let model = model.downcast_mut::<Model>().unwrap();
+        if let Ok(val) = value.downcast::<String>() {
+            model.auto_save = val.as_str() == "true";
+        }
+    });
+
+    registry.register_with_value("toggle_active", |model: &mut dyn std::any::Any, value| {
+        let model = model.downcast_mut::<Model>().unwrap();
+        if let Ok(val) = value.downcast::<String>() {
+            model.is_active = val.as_str() == "true";
+        }
+    });
+
+    registry.register_with_value("toggle_wifi", |model: &mut dyn std::any::Any, value| {
+        let model = model.downcast_mut::<Model>().unwrap();
+        if let Ok(val) = value.downcast::<String>() {
+            model.wifi = val.as_str() == "true";
+        }
+    });
+
+    registry.register_with_value(
+        "toggle_bluetooth",
+        |model: &mut dyn std::any::Any, value| {
+            let model = model.downcast_mut::<Model>().unwrap();
+            if let Ok(val) = value.downcast::<String>() {
+                model.bluetooth = val.as_str() == "true";
+            }
+        },
+    );
+
+    registry.register_with_value("toggle_airplane", |model: &mut dyn std::any::Any, value| {
+        let model = model.downcast_mut::<Model>().unwrap();
+        if let Ok(val) = value.downcast::<String>() {
+            model.airplane = val.as_str() == "true";
+        }
+    });
+
     registry.register_simple("switch_to_window", |_model: &mut dyn std::any::Any| {
         println!("Switching to main view");
     });

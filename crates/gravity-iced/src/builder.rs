@@ -1267,20 +1267,19 @@ impl<'a> GravityWidgetBuilder<'a> {
             );
         }
 
-        // Get handler from events
-        let on_toggle_event = node
-            .events
-            .iter()
-            .find(|e| e.event == gravity_core::EventKind::Toggle);
+        // Get handler from events (accept both on_toggle and on_change)
+        let on_toggle_event = node.events.iter().find(|e| {
+            e.event == gravity_core::EventKind::Toggle || e.event == gravity_core::EventKind::Change
+        });
 
         if self.verbose {
             if let Some(event) = &on_toggle_event {
                 eprintln!(
-                    "[GravityWidgetBuilder] Checkbox has toggle event: handler={}, param={:?}",
+                    "[GravityWidgetBuilder] Checkbox has toggle/change event: handler={}, param={:?}",
                     event.handler, event.param
                 );
             } else {
-                eprintln!("[GravityWidgetBuilder] Checkbox has no toggle event");
+                eprintln!("[GravityWidgetBuilder] Checkbox has no toggle/change event");
             }
         }
 
@@ -1393,6 +1392,13 @@ impl<'a> GravityWidgetBuilder<'a> {
         // Clamp value to [min, max]
         value = value.max(min).min(max);
 
+        // Get optional step value
+        let step = node
+            .attributes
+            .get("step")
+            .map(|attr| self.evaluate_attribute(attr))
+            .and_then(|s| s.parse::<f32>().ok());
+
         // Get handler from events
         let on_change = node
             .events
@@ -1402,18 +1408,30 @@ impl<'a> GravityWidgetBuilder<'a> {
 
         let slider = if let Some(handler_name) = on_change {
             if self.handler_registry.is_some() {
-                iced::widget::slider(min..=max, value, move |new_value| {
+                let mut slider = iced::widget::slider(min..=max, value, move |new_value| {
                     HandlerMessage::Handler(handler_name.clone(), Some(new_value.to_string()))
-                })
+                });
+                if let Some(step_val) = step {
+                    slider = slider.step(step_val);
+                }
+                slider
             } else {
-                iced::widget::slider(min..=max, value, |_| {
+                let mut slider = iced::widget::slider(min..=max, value, |_| {
                     HandlerMessage::Handler("dummy".to_string(), None)
-                })
+                });
+                if let Some(step_val) = step {
+                    slider = slider.step(step_val);
+                }
+                slider
             }
         } else {
-            iced::widget::slider(min..=max, value, |_| {
+            let mut slider = iced::widget::slider(min..=max, value, |_| {
                 HandlerMessage::Handler("dummy".to_string(), None)
-            })
+            });
+            if let Some(step_val) = step {
+                slider = slider.step(step_val);
+            }
+            slider
         };
 
         slider.into()

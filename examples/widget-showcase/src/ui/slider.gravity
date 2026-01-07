@@ -9,20 +9,19 @@
     <slider min="0" max="100" value="{slider_value}" on_change="update_slider" />
     <text value="Value: {slider_value}" size="18" color="#3498db" />
 
-    <text value="With Steps" size="18" weight="bold" />
-    <text value="Volume (0-100, step 10)" size="14" />
-    <slider min="0" max="100" step="10" value="{volume}" />
+    <text value="Volume Control" size="18" weight="bold" />
+    <slider min="0" max="100" step="10" value="{volume}" on_change="update_volume" />
     <text value="Volume: {volume}%" size="14" />
 
     <text value="Temperature Scale" size="18" weight="bold" />
-    <slider min="-20" max="50" value="{temperature}" />
+    <slider min="-20" max="50" value="{temperature}" on_change="update_temperature" />
     <text value="Temperature: {temperature} deg C" size="18" color="#666666" />
 
     <text value="Multiple Sliders" size="18" weight="bold" />
     <text value="Red: {red}" size="14" color="#e74c3c" />
-    <slider min="0" max="255" value="{red}" />
+    <slider min="0" max="255" value="{red}" on_change="update_red" />
     <text value="Green: {green}" size="14" color="#27ae60" />
-    <slider min="0" max="255" value="{green}" />
+    <slider min="0" max="255" value="{green}" on_change="update_green" />
     <text value="Blue: {blue}" size="14" color="#3498db" />
-    <slider min="0" max="255" value="{blue}" />
+    <slider min="0" max="255" value="{blue}" on_change="update_blue" />
 </column>

@@ -11,16 +11,44 @@
     <checkbox checked="{option3}" label="Option 3" on_change="toggle_option3" />
 
     <text value="Status" size="18" weight="bold" />
-    <text value="Option 1: {if option1 then 'Checked' else 'Unchecked'}" size="14" color="#3498db" />
-    <text value="Option 2: {if option2 then 'Checked' else 'Unchecked'}" size="14" color="#3498db" />
-    <text value="Option 3: {if option3 then 'Checked' else 'Unchecked'}" size="14" color="#3498db" />
+    <text
+        value="Option 1: {if option1 then 'Checked' else 'Unchecked'}"
+        size="14"
+        color="#3498db"
+    />
+    <text
+        value="Option 2: {if option2 then 'Checked' else 'Unchecked'}"
+        size="14"
+        color="#3498db"
+    />
+    <text
+        value="Option 3: {if option3 then 'Checked' else 'Unchecked'}"
+        size="14"
+        color="#3498db"
+    />
 
     <text value="With Counters" size="18" weight="bold" />
-    <checkbox checked="{enable_feature}" label="Enable feature" on_change="toggle_feature" />
-    <text value="Feature is {if enable_feature then 'ENABLED' else 'disabled'}" size="16" color="{if enable_feature then '#27ae60' else '#e74c3c'}" />
+    <checkbox
+        checked="{enable_feature}"
+        label="Enable feature"
+        on_change="toggle_feature"
+    />
+    <text
+        value="Feature is {if enable_feature then 'ENABLED' else 'disabled'}"
+        size="16"
+        color="{if enable_feature then '#27ae60' else '#e74c3c'}"
+    />
 
     <text value="Form-like" size="18" weight="bold" />
-    <checkbox checked="{agree_terms}" label="I agree to the terms" on_change="toggle_terms" />
-    <checkbox checked="{newsletter}" label="Subscribe to newsletter" on_change="toggle_newsletter" />
-    <button label="Submit" on_click="submit_form" />
+    <checkbox
+        checked="{agree_terms}"
+        label="I agree to the terms"
+        on_change="toggle_terms"
+    />
+    <checkbox
+        checked="{newsletter}"
+        label="Subscribe to newsletter"
+        on_change="toggle_newsletter"
+    />
+    <button label="Submit" enabled="{agree_terms}" on_click="submit_form" />
 </column>
