@@ -4,94 +4,52 @@ mod ui;
 
 use gravity_core::AppState;
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
-use iced::{widget::container, Element, Task, Theme};
-use std::path::PathBuf;
+use iced::{Element, Task};
 
-type Message = HandlerMessage;
-
-struct TodoApp {
-    state: AppState<ui::window::Model>,
+#[derive(Clone, Debug, PartialEq)]
+enum CurrentView {
+    Window,
 }
 
-fn update(app: &mut TodoApp, message: Message) -> Task<Message> {
+struct TodoApp {
+    current_view: CurrentView,
+    window_state: AppState<ui::window::Model>,
+}
+
+fn dispatch_handler(app: &mut TodoApp, handler_name: &str, value: Option<String>) {
+    let (model, registry) = match app.current_view {
+        CurrentView::Window => (
+            &mut app.window_state.model as &mut dyn std::any::Any,
+            &app.window_state.handler_registry,
+        ),
+    };
+    registry.dispatch(handler_name, model, value);
+}
+
+fn update(app: &mut TodoApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
-        HandlerMessage::Handler(handler_name, ref value) => {
-            let (base_handler, param_value) = parse_handler_name(&handler_name);
-
-            if let Some(handler) = app.state.handler_registry.get(&base_handler) {
-                match handler {
-                    gravity_core::HandlerEntry::Simple(h) => {
-                        h(&mut app.state.model);
-                    }
-                    gravity_core::HandlerEntry::WithValue(h) => {
-                        let handler_value = param_value.as_ref().or(value.as_ref());
-                        if let Some(val) = handler_value {
-                            h(&mut app.state.model, Box::new(val.clone()));
-                        } else {
-                            h(&mut app.state.model, Box::new(String::new()));
-                        }
-                    }
-                    gravity_core::HandlerEntry::WithCommand(h) => {
-                        let _cmd = h(&mut app.state.model);
-                    }
-                }
-            }
-
-            // Auto-save after any handler modification
-            let save_path = PathBuf::from("todo-app-data.json");
-            ui::window::save_to_path(&app.state.model, &save_path);
-        }
+        HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
+            _ => dispatch_handler(app, &handler_name, value),
+        },
     }
     Task::none()
 }
 
-fn parse_handler_name(name: &str) -> (String, Option<String>) {
-    if let Some((base, value)) = name.split_once(':') {
-        (base.to_string(), Some(value.to_string()))
-    } else {
-        (name.to_string(), None)
+fn view(app: &TodoApp) -> Element<'_, HandlerMessage> {
+    match app.current_view {
+        CurrentView::Window => GravityWidgetBuilder::from_app_state(&app.window_state),
     }
+    .build()
 }
 
-fn view(app: &TodoApp) -> Element<'_, Message> {
-    let is_dark = app.state.model.dark_mode;
-    let bg_color = if is_dark {
-        iced::Color::from_rgb(0.17, 0.24, 0.31)
-    } else {
-        iced::Color::from_rgb(0.93, 0.94, 0.95)
-    };
-    let text_color = if is_dark {
-        iced::Color::from_rgb(0.93, 0.94, 0.95)
-    } else {
-        iced::Color::from_rgb(0.18, 0.24, 0.31)
-    };
-
-    let content = GravityWidgetBuilder::new(
-        &app.state.document,
-        &app.state.model,
-        Some(&app.state.handler_registry),
+fn init() -> (TodoApp, Task<HandlerMessage>) {
+    (
+        TodoApp {
+            current_view: CurrentView::Window,
+            window_state: ui::window::create_app_state(),
+        },
+        Task::none(),
     )
-    .with_verbose(false)
-    .build();
-
-    let style_fn = move |_theme: &Theme| iced::widget::container::Style {
-        background: Some(iced::Background::Color(bg_color)),
-        text_color: Some(text_color),
-        ..iced::widget::container::Style::default()
-    };
-
-    container(content).style(style_fn).into()
-}
-
-fn init() -> (TodoApp, Task<Message>) {
-    let save_path = PathBuf::from("todo-app-data.json");
-    let model = if save_path.exists() {
-        ui::window::load_from_path(&save_path)
-    } else {
-        ui::window::Model::default()
-    };
-    let state = ui::window::create_app_state_with_model(model);
-    (TodoApp { state }, Task::none())
 }
 
 pub fn main() -> iced::Result {

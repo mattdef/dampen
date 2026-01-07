@@ -8,16 +8,13 @@ use gravity_core::AppState;
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 
-/// Messages for the application.
-type Message = HandlerMessage;
-
 /// Main application state wrapper
 struct GravityApp {
     state: AppState<ui::window::Model>,
 }
 
 /// Update function
-fn update(app: &mut GravityApp, message: Message) -> Task<Message> {
+fn update(app: &mut GravityApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
         HandlerMessage::Handler(handler_name, _value) => {
             if let Some(gravity_core::HandlerEntry::Simple(h)) =
@@ -31,19 +28,18 @@ fn update(app: &mut GravityApp, message: Message) -> Task<Message> {
 }
 
 /// View function using GravityWidgetBuilder
-fn view(app: &GravityApp) -> Element<'_, Message> {
-    GravityWidgetBuilder::new(
-        &app.state.document,
-        &app.state.model,
-        Some(&app.state.handler_registry),
-    )
-    .build()
+fn view(app: &GravityApp) -> Element<'_, HandlerMessage> {
+    GravityWidgetBuilder::from_app_state(&app.state).build()
 }
 
 /// Initialize the application
-fn init() -> (GravityApp, Task<Message>) {
-    let state = ui::window::create_app_state();
-    (GravityApp { state }, Task::none())
+fn init() -> (GravityApp, Task<HandlerMessage>) {
+    (
+        GravityApp {
+            state: ui::window::create_app_state(),
+        },
+        Task::none(),
+    )
 }
 
 pub fn main() -> iced::Result {

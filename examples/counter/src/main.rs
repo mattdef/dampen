@@ -6,13 +6,11 @@ use gravity_core::AppState;
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 
-type Message = HandlerMessage;
-
 struct CounterApp {
     state: AppState<ui::window::Model>,
 }
 
-fn update(app: &mut CounterApp, message: Message) -> Task<Message> {
+fn update(app: &mut CounterApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
         HandlerMessage::Handler(handler_name, _value) => {
             if let Some(gravity_core::HandlerEntry::Simple(h)) =
@@ -25,18 +23,17 @@ fn update(app: &mut CounterApp, message: Message) -> Task<Message> {
     Task::none()
 }
 
-fn view(app: &CounterApp) -> Element<'_, Message> {
-    GravityWidgetBuilder::new(
-        &app.state.document,
-        &app.state.model,
-        Some(&app.state.handler_registry),
-    )
-    .build()
+fn view(app: &CounterApp) -> Element<'_, HandlerMessage> {
+    GravityWidgetBuilder::from_app_state(&app.state).build()
 }
 
-fn init() -> (CounterApp, Task<Message>) {
-    let state = ui::window::create_app_state();
-    (CounterApp { state }, Task::none())
+fn init() -> (CounterApp, Task<HandlerMessage>) {
+    (
+        CounterApp {
+            state: ui::window::create_app_state(),
+        },
+        Task::none(),
+    )
 }
 
 pub fn main() -> iced::Result {

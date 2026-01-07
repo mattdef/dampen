@@ -55,13 +55,6 @@
                 <button label="Grid" on_click="switch_to_grid" />
             </row>
 
-            <space height="20" />
-
-            <text
-                value="All widgets except Canvas are functional!"
-                size="12"
-                color="#27ae60"
-            />
         </column>
     </scrollable>
 </gravity>

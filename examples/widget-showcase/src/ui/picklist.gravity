@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <column padding="20" spacing="10">
     <row spacing="10">
         <button label="← Back" on_click="switch_to_window" />
@@ -8,6 +8,7 @@
     <pick_list
         options="All,Active,Completed"
         selected="{filter}"
+        on_select="update_filter"
         placeholder="Show all tasks..."
     />
     <row spacing="10">

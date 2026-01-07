@@ -21,49 +21,44 @@ struct SettingsApp {
     settings_state: AppState<ui::settings::Model>,
 }
 
-type AppMessage = HandlerMessage;
+fn dispatch_handler(app: &mut SettingsApp, handler_name: &str, value: Option<String>) {
+    let (model, registry) = match app.current_view {
+        CurrentView::Main => (
+            &mut app.main_state.model as &mut dyn std::any::Any,
+            &app.main_state.handler_registry,
+        ),
+        CurrentView::Settings => (
+            &mut app.settings_state.model as &mut dyn std::any::Any,
+            &app.settings_state.handler_registry,
+        ),
+    };
+    registry.dispatch(handler_name, model, value);
+}
 
-fn update(app: &mut SettingsApp, message: AppMessage) -> Task<AppMessage> {
+fn update(app: &mut SettingsApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
-        HandlerMessage::Handler(handler_name, _) => match handler_name.as_str() {
-            "switch_to_settings" => {
-                app.current_view = CurrentView::Settings;
-            }
-            "switch_to_main" => {
-                app.current_view = CurrentView::Main;
-            }
-            _ => {}
+        HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
+            "switch_to_main" => app.current_view = CurrentView::Main,
+            "switch_to_settings" => app.current_view = CurrentView::Settings,
+            _ => dispatch_handler(app, &handler_name, value),
         },
     }
     Task::none()
 }
 
-fn view(app: &SettingsApp) -> Element<'_, AppMessage> {
+fn view(app: &SettingsApp) -> Element<'_, HandlerMessage> {
     match app.current_view {
-        CurrentView::Main => GravityWidgetBuilder::new(
-            &app.main_state.document,
-            &app.main_state.model,
-            Some(&app.main_state.handler_registry),
-        )
-        .build(),
-        CurrentView::Settings => GravityWidgetBuilder::new(
-            &app.settings_state.document,
-            &app.settings_state.model,
-            Some(&app.settings_state.handler_registry),
-        )
-        .build(),
+        CurrentView::Main => GravityWidgetBuilder::from_app_state(&app.main_state).build(),
+        CurrentView::Settings => GravityWidgetBuilder::from_app_state(&app.settings_state).build(),
     }
 }
 
-fn init() -> (SettingsApp, Task<AppMessage>) {
-    let main_state = ui::window::create_app_state();
-    let settings_state = ui::settings::create_app_state();
-
+fn init() -> (SettingsApp, Task<HandlerMessage>) {
     (
         SettingsApp {
             current_view: CurrentView::Main,
-            main_state,
-            settings_state,
+            main_state: ui::window::create_app_state(),
+            settings_state: ui::settings::create_app_state(),
         },
         Task::none(),
     )

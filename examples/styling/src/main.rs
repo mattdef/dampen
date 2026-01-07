@@ -6,37 +6,47 @@ use gravity_core::AppState;
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 
-type Message = HandlerMessage;
-
-struct StylingApp {
-    state: AppState<ui::window::Model>,
+#[derive(Clone, Debug, PartialEq)]
+enum CurrentView {
+    Window,
 }
 
-fn update(app: &mut StylingApp, message: Message) -> Task<Message> {
+struct StylingApp {
+    current_view: CurrentView,
+    window_state: AppState<ui::window::Model>,
+}
+
+fn dispatch_handler(app: &mut StylingApp, handler_name: &str, value: Option<String>) {
+    let (model, registry) = match app.current_view {
+        CurrentView::Window => (
+            &mut app.window_state.model as &mut dyn std::any::Any,
+            &app.window_state.handler_registry,
+        ),
+    };
+    registry.dispatch(handler_name, model, value);
+}
+
+fn update(app: &mut StylingApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
-        HandlerMessage::Handler(handler_name, _value) => {
-            if let Some(gravity_core::HandlerEntry::Simple(h)) =
-                app.state.handler_registry.get(&handler_name)
-            {
-                h(&mut app.state.model);
-            }
-        }
+        HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
+            _ => dispatch_handler(app, &handler_name, value),
+        },
     }
     Task::none()
 }
 
-fn view(app: &StylingApp) -> Element<'_, Message> {
-    GravityWidgetBuilder::new(
-        &app.state.document,
-        &app.state.model,
-        Some(&app.state.handler_registry),
-    )
-    .build()
+fn view(app: &StylingApp) -> Element<'_, HandlerMessage> {
+    GravityWidgetBuilder::from_app_state(&app.window_state).build()
 }
 
-fn init() -> (StylingApp, Task<Message>) {
-    let state = ui::window::create_app_state();
-    (StylingApp { state }, Task::none())
+fn init() -> (StylingApp, Task<HandlerMessage>) {
+    (
+        StylingApp {
+            current_view: CurrentView::Window,
+            window_state: ui::window::create_app_state(),
+        },
+        Task::none(),
+    )
 }
 
 pub fn main() -> iced::Result {

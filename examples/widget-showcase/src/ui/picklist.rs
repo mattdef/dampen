@@ -43,5 +43,12 @@ pub fn create_handler_registry() -> HandlerRegistry {
         println!("Switching to grid view");
     });
 
+    registry.register_with_value("update_filter", |model: &mut dyn std::any::Any, value| {
+        let model = model.downcast_mut::<Model>().unwrap();
+        if let Ok(val) = value.downcast::<String>() {
+            model.filter = (*val).clone();
+        }
+    });
+
     registry
 }

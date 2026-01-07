@@ -60,6 +60,7 @@ use gravity_core::handler::HandlerRegistry;
 use gravity_core::ir::node::{AttributeValue, InterpolatedPart, WidgetNode};
 use gravity_core::ir::theme::StyleClass;
 use gravity_core::ir::WidgetKind;
+use gravity_core::state::AppState;
 #[allow(unused_imports)]
 use iced::widget::{checkbox, image, pick_list, slider, text_input, toggler};
 use iced::{Element, Renderer, Theme};
@@ -233,6 +234,40 @@ impl<'a> GravityWidgetBuilder<'a> {
         handler_registry: Option<&'a HandlerRegistry>,
     ) -> Self {
         Self::new(document, model, handler_registry)
+    }
+
+    /// Create a new widget builder directly from an AppState
+    ///
+    /// This is the most convenient constructor when working with AppState,
+    /// as it automatically extracts document, model, and handler_registry.
+    ///
+    /// # Arguments
+    ///
+    /// * `app_state` - Complete AppState containing document, model, and handler registry
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use gravity_core::parse;
+    /// use gravity_iced::GravityWidgetBuilder;
+    /// use gravity_macros::UiModel;
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(UiModel, Serialize, Deserialize, Clone)]
+    /// struct Model { count: i32 }
+    ///
+    /// let xml = r#"<column><text value="Hello!" /></column>"#;
+    /// let document = parse(xml).unwrap();
+    /// let app_state = AppState::with_model(document, Model { count: 0 });
+    ///
+    /// let builder = GravityWidgetBuilder::from_app_state(&app_state);
+    /// ```
+    pub fn from_app_state<M: UiBindable>(app_state: &'a AppState<M>) -> Self {
+        Self::new(
+            &app_state.document,
+            &app_state.model,
+            Some(&app_state.handler_registry),
+        )
     }
 }
 

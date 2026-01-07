@@ -7,10 +7,11 @@
     <text value="Select a category:" size="14" />
     <combobox
         options="Work,Personal,Shopping,Health,Entertainment"
-        selected="Personal"
+        selected="{selected}"
+        on_select="select_category"
     />
     <row spacing="10">
         <text value="Selected:" size="14" />
-        <text value="Personal" size="14" color="#3498db" />
+        <text value="{selected}" size="14" color="#3498db" />
     </row>
 </column>

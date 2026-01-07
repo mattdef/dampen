@@ -80,6 +80,45 @@ impl HandlerRegistry {
         self.handlers.read().ok()?.get(name).cloned()
     }
 
+    /// Dispatches a handler by name, executing it with the provided model and optional value.
+    ///
+    /// This is a convenience method that combines `get()` and handler invocation.
+    ///
+    /// # Arguments
+    ///
+    /// * `handler_name` - Name of the handler to dispatch
+    /// * `model` - Mutable reference to the model (as `&mut dyn Any`)
+    /// * `value` - Optional string value passed to WithValue handlers
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use gravity_core::HandlerRegistry;
+    ///
+    /// let registry = HandlerRegistry::new();
+    /// registry.register_simple("greet", |model| {
+    ///     let model = model.downcast_mut::<MyModel>().unwrap();
+    ///     model.count += 1;
+    /// });
+    ///
+    /// let model = &mut MyModel { count: 0 } as &mut dyn std::any::Any;
+    /// registry.dispatch("greet", model, None);
+    /// ```
+    pub fn dispatch(&self, handler_name: &str, model: &mut dyn Any, value: Option<String>) {
+        if let Some(entry) = self.get(handler_name) {
+            match entry {
+                HandlerEntry::Simple(h) => h(model),
+                HandlerEntry::WithValue(h) => {
+                    let val = value.unwrap_or_default();
+                    h(model, Box::new(val));
+                }
+                HandlerEntry::WithCommand(h) => {
+                    h(model);
+                }
+            }
+        }
+    }
+
     /// Check if a handler exists
     pub fn contains(&self, name: &str) -> bool {
         if let Ok(handlers) = self.handlers.read() {
