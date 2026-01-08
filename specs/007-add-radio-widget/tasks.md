@@ -123,9 +123,9 @@
 
 ### Implementation for User Story 6
 
-- [ ] T021 [US6] Add value type coercion for radio selection in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/expr/eval.rs
-- [ ] T022 [P] [US6] Add enum/string value binding support in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/binding/mod.rs
-- [ ] T023 [P] [US6] Add integration test for custom value types in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/radio_value_tests.rs
+- [x] T021 [US6] Value type coercion already handled by UiBindable binding system
+- [x] T022 [P] [US6] Enum/string value binding already supported via UiBindable trait
+- [x] T023 [P] [US6] Add integration test for custom value types in /home/matt/Documents/Dev/gravity/crates/gravity-core/tests/radio_value_tests.rs
 
 **Checkpoint**: Custom value types work correctly - User Story 6 complete
 
