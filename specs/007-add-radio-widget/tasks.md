@@ -75,9 +75,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Add event dispatch for radio selection changes in /home/matt/Documents/Dev/gravity/crates/gravity-runtime/src/interpreter.rs
-- [ ] T013 [P] [US3] Add handler invocation with selected value in /home/matt/Documents/Dev/gravity/crates/gravity-runtime/src/handler.rs
-- [ ] T014 [P] [US3] Add integration test for selection change events in /home/matt/Documents/Dev/gravity/crates/gravity-runtime/tests/radio_event_tests.rs
+- [x] T012 [US3] Event dispatch already implemented in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [x] T013 [P] [US3] Handler invocation already implemented in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [x] T014 [P] [US3] Add integration test for selection change events in /home/matt/Documents/Dev/gravity/crates/gravity-runtime/tests/radio_event_tests.rs
 
 **Checkpoint**: Selection changes trigger handlers with correct values - User Story 3 complete
 
