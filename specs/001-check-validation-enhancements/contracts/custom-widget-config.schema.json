@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Custom Widget Config",
+  "description": "JSON schema for custom widget attribute configuration",
+  "type": "object",
+  "additionalProperties": {
+    "$ref": "#/definitions/CustomWidgetConfig"
+  },
+  "definitions": {
+    "CustomWidgetConfig": {
+      "type": "object",
+      "required": ["allowed_attributes"],
+      "properties": {
+        "allowed_attributes": {
+          "type": "array",
+          "description": "List of attribute names allowed for this custom widget",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

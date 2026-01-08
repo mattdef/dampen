@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Model Info",
+  "description": "JSON schema for model information used by gravity check command",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/ModelField"
+  },
+  "definitions": {
+    "ModelField": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Field name (last part of binding path)"
+        },
+        "type_name": {
+          "type": "string",
+          "description": "Type hint for display purposes",
+          "default": ""
+        },
+        "is_nested": {
+          "type": "boolean",
+          "description": "If true, this field has nested children and path can extend",
+          "default": false
+        },
+        "children": {
+          "type": "array",
+          "description": "Nested field definitions for struct types",
+          "items": {
+            "$ref": "#/definitions/ModelField"
+          },
+          "default": []
+        }
+      }
+    }
+  }
+}
