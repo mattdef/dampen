@@ -1,7 +1,8 @@
 //! Create a new Gravity project
 //!
 //! This module provides the `gravity new` command which scaffolds a new
-//! Gravity UI project with a simple Hello World example.
+//! Gravity UI project with a simple Hello World example using the
+//! auto-loading pattern.
 //!
 //! # Example
 //!
@@ -31,8 +32,11 @@ pub struct NewArgs {
 ///
 /// Creates a new Gravity project directory with:
 /// - `Cargo.toml` with Gravity dependencies
-/// - `src/main.rs` with a complete Hello World application featuring bindings and handlers
-/// - `ui/main.gravity` with a declarative UI
+/// - `src/main.rs` with a complete Hello World application using auto-loading
+/// - `src/ui/mod.rs` - UI module
+/// - `src/ui/window.rs` - UI model and handlers with `#[gravity_ui]` macro
+/// - `src/ui/window.gravity` - Declarative UI definition (XML)
+/// - `tests/integration.rs` - Integration tests
 /// - `README.md` with comprehensive getting started instructions
 ///
 /// # Arguments
@@ -129,7 +133,10 @@ fn create_project(project_name: &str, project_path: &Path) -> Result<(), String>
     // Generate files
     generate_cargo_toml(project_path, project_name)?;
     generate_main_rs(project_path, project_name)?;
-    generate_main_gravity(project_path, project_name)?;
+    generate_ui_mod_rs(project_path, project_name)?;
+    generate_ui_window_rs(project_path, project_name)?;
+    generate_window_gravity(project_path, project_name)?;
+    generate_integration_tests(project_path, project_name)?;
     generate_readme(project_path, project_name)?;
 
     Ok(())
@@ -151,10 +158,20 @@ fn create_project_structure(project_path: &Path) -> Result<(), String> {
     fs::create_dir(&src_dir)
         .map_err(|e| format!("Failed to create directory '{}': {}", src_dir.display(), e))?;
 
-    // Create ui/ directory
-    let ui_dir = project_path.join("ui");
+    // Create src/ui/ directory
+    let ui_dir = src_dir.join("ui");
     fs::create_dir(&ui_dir)
         .map_err(|e| format!("Failed to create directory '{}': {}", ui_dir.display(), e))?;
+
+    // Create tests/ directory
+    let tests_dir = project_path.join("tests");
+    fs::create_dir(&tests_dir).map_err(|e| {
+        format!(
+            "Failed to create directory '{}': {}",
+            tests_dir.display(),
+            e
+        )
+    })?;
 
     Ok(())
 }
@@ -183,12 +200,48 @@ fn generate_main_rs(project_path: &Path, project_name: &str) -> Result<(), Strin
     Ok(())
 }
 
-/// Generate ui/main.gravity from template
-fn generate_main_gravity(project_path: &Path, project_name: &str) -> Result<(), String> {
-    let template = include_str!("../../templates/new/main.gravity.template");
+/// Generate src/ui/mod.rs from template
+fn generate_ui_mod_rs(project_path: &Path, project_name: &str) -> Result<(), String> {
+    let template = include_str!("../../templates/new/src/ui/mod.rs.template");
     let content = template.replace("{{PROJECT_NAME}}", project_name);
 
-    let file_path = project_path.join("ui/main.gravity");
+    let file_path = project_path.join("src/ui/mod.rs");
+    fs::write(&file_path, content)
+        .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
+
+    Ok(())
+}
+
+/// Generate src/ui/window.rs from template
+fn generate_ui_window_rs(project_path: &Path, project_name: &str) -> Result<(), String> {
+    let template = include_str!("../../templates/new/src/ui/window.rs.template");
+    let content = template.replace("{{PROJECT_NAME}}", project_name);
+
+    let file_path = project_path.join("src/ui/window.rs");
+    fs::write(&file_path, content)
+        .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
+
+    Ok(())
+}
+
+/// Generate src/ui/window.gravity from template
+fn generate_window_gravity(project_path: &Path, project_name: &str) -> Result<(), String> {
+    let template = include_str!("../../templates/new/window.gravity.template");
+    let content = template.replace("{{PROJECT_NAME}}", project_name);
+
+    let file_path = project_path.join("src/ui/window.gravity");
+    fs::write(&file_path, content)
+        .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
+
+    Ok(())
+}
+
+/// Generate tests/integration.rs from template
+fn generate_integration_tests(project_path: &Path, project_name: &str) -> Result<(), String> {
+    let template = include_str!("../../templates/new/tests/integration.rs.template");
+    let content = template.replace("{{PROJECT_NAME}}", project_name);
+
+    let file_path = project_path.join("tests/integration.rs");
     fs::write(&file_path, content)
         .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
 
