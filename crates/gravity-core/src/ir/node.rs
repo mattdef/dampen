@@ -41,6 +41,7 @@ pub enum WidgetKind {
     Toggler,
     Space,
     Rule,
+    Radio,
     // Advanced widgets
     ComboBox,
     ProgressBar,

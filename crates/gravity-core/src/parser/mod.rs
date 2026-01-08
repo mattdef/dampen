@@ -313,6 +313,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "toggler" => WidgetKind::Toggler,
         "space" => WidgetKind::Space,
         "rule" => WidgetKind::Rule,
+        "radio" => WidgetKind::Radio,
         "combobox" => WidgetKind::ComboBox,
         "progress_bar" => WidgetKind::ProgressBar,
         "tooltip" => WidgetKind::Tooltip,

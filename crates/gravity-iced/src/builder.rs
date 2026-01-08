@@ -450,6 +450,7 @@ impl<'a> GravityWidgetBuilder<'a> {
             WidgetKind::Canvas => self.build_canvas(node),
             WidgetKind::Float => self.build_float(node),
             WidgetKind::For => self.build_for(node),
+            WidgetKind::Radio => self.build_radio(node),
         }
     }
 
@@ -2284,6 +2285,34 @@ fn merge_styles(
         shadow: override_style.shadow.clone().or(base.shadow),
         opacity: override_style.opacity.or(base.opacity),
         transform: override_style.transform.clone().or(base.transform),
+    }
+}
+
+impl<'a> GravityWidgetBuilder<'a> {
+    /// Build a radio button widget (placeholder implementation)
+    fn build_radio(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer> {
+        let label = node
+            .attributes
+            .get("label")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_else(|| String::from(""));
+
+        let value = node
+            .attributes
+            .get("value")
+            .map(|attr| self.evaluate_attribute(attr))
+            .unwrap_or_else(|| String::from(""));
+
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Building radio: label='{}', value='{}'",
+                label, value
+            );
+        }
+
+        // Placeholder: Return a text widget representing the radio button
+        // Full implementation would use iced::widget::radio with proper value type
+        iced::widget::text(format!("[radio: {} = {}]", label, value)).into()
     }
 }
 

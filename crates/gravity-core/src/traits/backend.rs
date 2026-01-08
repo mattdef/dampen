@@ -83,4 +83,13 @@ pub trait Backend {
 
     /// Create a rule widget (divider)
     fn rule<'a>(&self) -> Self::Widget<'a>;
+
+    /// Create a radio button widget
+    fn radio<'a>(
+        &self,
+        label: &str,
+        value: &str,
+        selected: Option<&str>,
+        on_select: Option<Self::Message>,
+    ) -> Self::Widget<'a>;
 }

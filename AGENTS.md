@@ -12,6 +12,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 - N/A (UI widgets only) (005-implement-real-widgets)
 - Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+ (006-auto-ui-loading)
 - N/A (compile-time XML loading, no runtime persistence required for this feature) (006-auto-ui-loading)
+- Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `gravity-core`, `gravity-iced` (007-add-radio-widget)
+- N/A (UI widget, no persistence) (007-add-radio-widget)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
@@ -255,17 +257,11 @@ src/
 | Runtime memory | < 50MB baseline |
 
 ## Recent Changes
+- 007-add-radio-widget: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `gravity-core`, `gravity-iced`
 - 006-auto-ui-loading: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+
 - 005-implement-real-widgets: Added Rust Edition 2021, MSRV 1.75 + Iced 0.14 (with `image` feature enabled), gravity-core
-- 004-advanced-widgets-todo: Added Rust Edition 2024, MSRV 1.75 + Iced 0.14+ (already in workspace)
 
 **Phase 7 Complete (006-auto-ui-loading):**
-- ✅ Contract tests for auto-loading mechanism (gravity-macros/tests/auto_loading_tests.rs)
-- ✅ Contract tests for AppState struct (gravity-core/tests/appstate_tests.rs)
-- ✅ Integration test for hello-world (examples/hello-world/tests/integration.rs)
-- ✅ Migrated examples/counter to new auto-loading pattern
-- ✅ Migrated examples/todo-app to new auto-loading pattern
-- ✅ Updated AGENTS.md with AppState usage patterns
 
   - Implemented `#[derive(UiModel)]` macro with field accessors
   - Created `UiBindable` trait and `BindingValue` enum

@@ -4,6 +4,9 @@ use gravity_core::{AppState, HandlerRegistry};
 use gravity_macros::{gravity_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
+#[gravity_ui("window.gravity")]
+mod _app {}
+
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
 pub struct Model {
     pub count: i32,
@@ -23,9 +26,6 @@ fn reset(model: &mut Model) {
     model.count = 0;
     println!("Reset to: {}", model.count);
 }
-
-#[gravity_ui("window.gravity")]
-mod _app {}
 
 pub fn create_app_state() -> AppState<Model> {
     let document = _app::document();

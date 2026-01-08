@@ -173,6 +173,18 @@ impl Backend for IcedBackend {
         // Placeholder - rule needs proper implementation
         text("─").into()
     }
+
+    fn radio<'a>(
+        &self,
+        label: &str,
+        value: &str,
+        selected: Option<&str>,
+        on_select: Option<Self::Message>,
+    ) -> Self::Widget<'a> {
+        // Placeholder - radio needs proper message handling
+        let label_copy = format!("[radio: {}]", label);
+        text(label_copy).into()
+    }
 }
 
 /// Render a widget node to an Iced element
@@ -436,6 +448,17 @@ pub fn render<'a>(
         }
         WidgetKind::Space => backend.space(),
         WidgetKind::Rule => backend.rule(),
+        WidgetKind::Radio => {
+            let label = match node.attributes.get("label") {
+                Some(AttributeValue::Static(l)) => l.clone(),
+                _ => String::new(),
+            };
+            let value = match node.attributes.get("value") {
+                Some(AttributeValue::Static(v)) => v.clone(),
+                _ => String::new(),
+            };
+            backend.radio(&label, &value, None, None)
+        }
         WidgetKind::Custom(_) => {
             // For custom widgets, return empty
             backend.column(Vec::new())
