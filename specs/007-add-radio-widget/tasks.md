@@ -91,9 +91,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T015 [US4] Add default selected value support in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/ir/node.rs
-- [ ] T016 [P] [US4] Add default selection binding evaluation in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/expr/eval.rs
-- [ ] T017 [P] [US4] Add integration test for default selection in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/radio_default_tests.rs
+- [x] T015 [US4] Default selected value support already implemented in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [x] T016 [P] [US4] Default selection binding evaluation already implemented in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [x] T017 [P] [US4] Add integration test for default selection in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/radio_default_tests.rs
 
 **Checkpoint**: Default selection works on initial render - User Story 4 complete
 
