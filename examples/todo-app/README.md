@@ -23,7 +23,6 @@ This example showcases the following Gravity widgets:
 - **Priority Levels**: Assign priority levels (Low, Medium, High) with visual indicators
 - **Filtering**: View All, Active, or Completed tasks
 - **Statistics**: Real-time completion tracking with progress bar
-- **Data Persistence**: State persists across hot-reloads via `.gravity-state.json`
 - **Dark Mode**: Toggle between light and dark themes
 
 ## Data Model
@@ -58,17 +57,6 @@ The application will open in a window. You can:
 5. View overall progress in the progress bar
 6. See completion trends in the canvas chart
 7. Toggle dark mode using the toggler
-
-## Hot Reload
-
-The todo app supports hot-reload. Try editing `ui/main.gravity` while the app is running:
-
-```bash
-# In another terminal
-gravity dev --ui ui --file main.gravity
-```
-
-Changes to the UI will update automatically without losing your todos!
 
 ## Implementation Details
 

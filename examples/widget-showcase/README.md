@@ -92,20 +92,6 @@ cargo run
 
 The application will display examples of all implemented widgets.
 
-## Hot Reload Development
-
-For rapid UI iteration:
-
-```bash
-# Run the app
-cargo run &
-
-# In another terminal, start hot-reload
-gravity dev --ui ui --file main.gravity
-```
-
-Edit any `.gravity` file in the `ui/` directory and see changes instantly!
-
 ## File Structure
 
 ```

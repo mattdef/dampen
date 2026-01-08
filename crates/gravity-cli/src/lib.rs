@@ -27,9 +27,6 @@ pub enum Commands {
     /// Validate .gravity files without building
     Check(commands::CheckArgs),
 
-    /// Run in development mode with hot-reload
-    Dev(commands::DevArgs),
-
     /// Inspect IR or generated code
     Inspect(commands::InspectArgs),
 
@@ -44,7 +41,6 @@ pub fn run() {
     let result = match cli.command {
         Commands::Build(args) => commands::build_execute(&args).map_err(|e| e.to_string()),
         Commands::Check(args) => commands::check_execute(&args).map_err(|e| e.to_string()),
-        Commands::Dev(args) => commands::dev_execute(&args),
         Commands::Inspect(args) => commands::inspect_execute(&args),
         Commands::New(args) => commands::new_execute(&args),
     };

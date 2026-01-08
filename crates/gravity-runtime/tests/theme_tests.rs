@@ -3,7 +3,7 @@
 use gravity_core::ir::style::Color;
 use gravity_core::ir::{Background, WidgetState};
 use gravity_core::{parse, HandlerRegistry};
-use gravity_runtime::{HotReloadInterpreter, StyleCascade, ThemeManager};
+use gravity_runtime::{StyleCascade, ThemeManager};
 
 #[allow(dead_code)]
 fn c(s: &str) -> Color {
@@ -448,36 +448,6 @@ fn test_class_inheritance_and_merging() {
     // Should have merged properties from base → primary → large
     assert!(resolved.background.is_some());
     assert!(resolved.color.is_some());
-}
-
-// T128: Integration test - Hot-reload class updates
-#[test]
-fn test_class_hot_reload() {
-    let xml1 = "<gravity><style_classes><style name=\"btn\" background=\"#3498db\" /></style_classes><column><button class=\"btn\" label=\"Test\" /></column></gravity>";
-    let xml2 = "<gravity><style_classes><style name=\"btn\" background=\"#e74c3c\" /></style_classes><column><button class=\"btn\" label=\"Test\" /></column></gravity>";
-
-    let registry = HandlerRegistry::new();
-    let mut interpreter = HotReloadInterpreter::new(registry);
-
-    // Load first version
-    interpreter.reload_document(xml1).unwrap();
-    let doc1 = interpreter.document().unwrap();
-    let class1 = doc1.style_classes.get("btn").unwrap();
-
-    // Verify first background
-    if let Background::Color(color) = class1.style.background.as_ref().unwrap() {
-        assert_eq!(color, &c("#3498db"));
-    }
-
-    // Reload with second version
-    interpreter.reload_document(xml2).unwrap();
-    let doc2 = interpreter.document().unwrap();
-    let class2 = doc2.style_classes.get("btn").unwrap();
-
-    // Verify second background
-    if let Background::Color(color) = class2.style.background.as_ref().unwrap() {
-        assert_eq!(color, &c("#e74c3c"));
-    }
 }
 
 // T129: Error test - Circular dependency detection

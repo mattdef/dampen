@@ -16,7 +16,6 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
 - **XML Parsing**: `roxmltree` 0.19+
-- **File Watching**: `notify` 6.0+
 - **Serialization**: `serde`, `serde_json` 1.0+
 - **Proc Macros**: `syn` 2.0+, `quote` 2.0+, `proc-macro2` 2.0+
 - **CLI**: `clap` 4.0+
@@ -47,11 +46,10 @@ crates/
 │   │   └── ui_loader.rs
 │   └── tests/
 │
-├── gravity-runtime/          # Hot-reload interpreter, file watcher
+├── gravity-runtime/          # Interpreter, state management, error handling
 │   ├── src/
 │   │   ├── lib.rs
 │   │   ├── interpreter.rs
-│   │   ├── watcher.rs
 │   │   ├── state.rs
 │   │   └── overlay.rs
 │   └── tests/
@@ -67,7 +65,7 @@ crates/
 └── gravity-cli/              # Developer CLI
     ├── src/
     │   ├── main.rs
-    │   ├── commands/         # dev.rs, build.rs, check.rs, inspect.rs
+    │   ├── commands/         # build.rs, check.rs, inspect.rs
     │   └── config.rs
     └── tests/
 
@@ -124,110 +122,6 @@ cargo doc --workspace --no-deps --open
 cargo bench -p gravity-core
 ```
 
-## Gravity Dev Command (Hot-Reload Mode)
-
-The `gravity dev` command provides a development environment with automatic hot-reload of UI files.
-
-### Basic Usage
-
-```bash
-# From your project directory
-gravity dev --ui <ui_directory> --file <main_file> [options]
-
-# Example
-gravity dev --ui ui --file main.gravity --verbose
-```
-
-### Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--ui, -u <dir>` | UI directory containing `.gravity` files | `ui` |
-| `--file <name>` | Main `.gravity` file (relative to ui dir) | `main.gravity` |
-| `--state <file>` | State file for persistence | `.gravity-state.json` |
-| `--verbose, -v` | Enable verbose output | `false` |
-
-### How It Works
-
-1. **Initial Load**: Reads and parses the main `.gravity` file
-2. **UI Rendering**: Displays the UI in an Iced window
-3. **File Watching**: Monitors the UI directory for changes
-4. **Hot-Reload**: Automatically reloads and updates the UI when files change
-5. **State Persistence**: Maintains application state across reloads
-
-### Example Project Structure
-
-```
-my-project/
-├── Cargo.toml
-├── src/
-│   └── main.rs          # Optional: Rust code for handlers
-├── ui/
-│   └── main.gravity     # Main UI file
-└── .gravity-state.json  # Auto-generated state file
-```
-
-### UI File Example (`ui/main.gravity`)
-
-```xml
-<column padding="40" spacing="20">
-    <text value="My App" size="32" weight="bold" />
-    <text value="Count: {count}" size="18" />
-    <row spacing="10">
-        <button label="Increment" on_click="increment" />
-        <button label="Decrement" on_click="decrement" />
-    </row>
-    <button label="Reset" on_click="reset" />
-</column>
-```
-
-### Development Workflow
-
-1. **Start Dev Server**:
-   ```bash
-   gravity dev --ui ui --file main.gravity --verbose
-   ```
-
-2. **Edit UI Files**: Modify `.gravity` files in your `ui/` directory
-
-3. **See Changes**: The UI updates automatically within ~200ms of saving
-
-4. **Check Logs**: Use `--verbose` to see reload events and errors
-
-### Error Handling
-
-- **Parse Errors**: Displayed in a red overlay in the UI
-- **Runtime Errors**: Shown with location and suggestions
-- **File Not Found**: Clear error message with path
-
-### State Management
-
-- **Automatic Persistence**: State is saved to `.gravity-state.json`
-- **Cross-Reload**: State survives hot-reloads
-- **Clean Start**: Delete state file to reset
-
-### Performance
-
-- **Hot-Reload Latency**: < 500ms from save to UI update
-- **File Polling**: Every 200ms
-- **Debouncing**: Built-in to prevent multiple reloads
-
-### Troubleshooting
-
-**UI doesn't update:**
-- Check `--verbose` output for errors
-- Verify file paths are correct
-- Ensure `.gravity` files have valid XML syntax
-
-**State not persisting:**
-- Check file permissions on `.gravity-state.json`
-- Verify state file is in working directory
-
-**Slow reloads:**
-- Check for very large UI files
-- Verify disk I/O performance
-- Consider reducing file size or complexity
-
 ## Code Style
 
 ### Rust Conventions
@@ -269,7 +163,7 @@ my-project/
 
 1. **Declarative-First**: XML is the source of truth for UI structure
 2. **Type Safety Preservation**: No runtime type erasure for messages/state
-3. **Dual-Mode Architecture**: Dev (hot-reload) + Prod (static codegen)
+3. **Production Mode**: Static code generation for deployments
 4. **Backend Abstraction**: Core crate has no Iced dependency
 5. **Test-First Development**: Tests define contracts before implementation
 
@@ -357,9 +251,8 @@ src/
 | Metric | Target |
 |--------|--------|
 | XML parse time | < 10ms for 1000 widgets |
-| Hot-reload latency | < 500ms from save to UI update |
 | Code generation | < 5s for typical application |
-| Runtime memory (dev) | < 50MB baseline |
+| Runtime memory | < 50MB baseline |
 
 ## Recent Changes
 - 006-auto-ui-loading: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+
@@ -430,14 +323,6 @@ src/
 - ✅ LazyLock for thread-safe lazy initialization
 - ✅ Multiple views support (app.gravity, settings.gravity)
 - ✅ AppState with Model and HandlerRegistry support
-
-**Hot-Reload Features:**
-- ✅ File watching with `notify` 6.0+
-- ✅ Automatic reload on `.gravity` file changes
-- ✅ State persistence across reloads
-- ✅ Error overlay UI for parse/runtime errors
-- ✅ Verbose logging mode
-- ✅ ~200ms hot-reload latency
 
 **Validation Features (Phase 8):**
 - ✅ `gravity check` validates XML syntax and widget names

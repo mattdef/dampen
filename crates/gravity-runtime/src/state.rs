@@ -1,46 +1,8 @@
-//! State management for hot-reload
+//! State management for Gravity applications
 
 use gravity_core::UiBindable;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
-
-/// Runtime state holder for hot-reload with widget state support
-pub struct GravityRuntimeState {
-    pub user_model: Box<dyn UiBindable>,
-    pub widget_states: HashMap<String, Box<dyn std::any::Any>>,
-    next_widget_id: std::sync::atomic::AtomicU64,
-}
-
-impl GravityRuntimeState {
-    pub fn new(model: Box<dyn UiBindable>) -> Self {
-        Self {
-            user_model: model,
-            widget_states: HashMap::new(),
-            next_widget_id: std::sync::atomic::AtomicU64::new(1),
-        }
-    }
-
-    /// Get or create widget state for a specific widget ID
-    ///
-    /// # Panics
-    /// Panics if there's a type mismatch when downcasting the stored state
-    #[allow(clippy::panic)]
-    pub fn get_or_create_state<T: Default + 'static>(&mut self, widget_id: &str) -> &mut T {
-        self.widget_states
-            .entry(widget_id.to_string())
-            .or_insert_with(|| Box::new(T::default()))
-            .downcast_mut::<T>()
-            .unwrap_or_else(|| panic!("Type mismatch in widget state for widget_id: {}", widget_id))
-    }
-
-    pub fn generate_widget_id(&self) -> String {
-        let id = self
-            .next_widget_id
-            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        format!("widget_{}", id)
-    }
-}
 
 /// Wrapper for serializable runtime state
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -85,7 +47,7 @@ impl<T: for<'de> Deserialize<'de>> RuntimeState<T> {
     }
 }
 
-/// Result of attempting to restore state after reload
+/// Result of attempting to restore state
 #[derive(Debug, Clone)]
 pub enum StateRestoration<T> {
     /// Full restoration successful
@@ -204,20 +166,6 @@ pub fn load_state_from_file<T: for<'de> Deserialize<'de>>(
     let json = std::fs::read_to_string(path)?;
     let state = serde_json::from_str(&json)?;
     Ok(state)
-}
-
-/// Serializable snapshot of widget states for hot-reload
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WidgetStateSnapshot {
-    pub states: HashMap<String, serde_json::Value>,
-}
-
-impl WidgetStateSnapshot {
-    pub fn empty() -> Self {
-        Self {
-            states: HashMap::new(),
-        }
-    }
 }
 
 #[cfg(test)]

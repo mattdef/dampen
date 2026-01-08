@@ -31,7 +31,6 @@ fn update(app: &mut TodoApp, message: HandlerMessage) -> Task<HandlerMessage> {
         HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
             _ => dispatch_handler(app, &handler_name, value),
         },
-        HandlerMessage::TextEditorChanged(_) => {}
     }
     Task::none()
 }

@@ -1,9 +1,9 @@
-//! Error overlay widget for hot-reload mode
+//! Error overlay widget for displaying parse and binding errors
 
 use gravity_core::{BindingError, BindingErrorKind, ParseError};
 use std::fmt::Write;
 
-/// Overlay widget displaying errors during hot-reload
+/// Overlay widget displaying errors
 #[derive(Debug, Clone)]
 pub struct ErrorOverlay {
     /// Overlay title

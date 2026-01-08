@@ -258,10 +258,7 @@ ls examples/
 - ✅ Type-safe dispatch
 
 ### Development Tools
-- ✅ Hot-reload with file watching
-- ✅ Parse error overlays
-- ✅ State persistence across reloads
-- ✅ Verbose logging mode
+- ✅ Parse error display
 - ✅ UI validation (`gravity check`)
 
 ## File Structure Reference
@@ -280,10 +277,9 @@ examples/<example>/
 
 ### Benefits
 1. **Separation of Concerns**: UI designers work on XML, developers on Rust
-2. **Hot-Reload**: Modify UI without recompiling (< 500ms reload time)
-3. **Readability**: XML is more readable for UI structure
-4. **Tooling**: Can use XML editors, validators, formatters
-5. **Collaboration**: Designers and developers work independently
+2. **Readability**: XML is more readable for UI structure
+3. **Tooling**: Can use XML editors, validators, formatters
+4. **Collaboration**: Designers and developers work independently
 
 ### Trade-offs
 - Requires file I/O at runtime (minimal performance impact)
@@ -325,9 +321,7 @@ After exploring the examples:
 
 2. **Create your own app**: Use `gravity new my-app`
 
-3. **Try hot-reload mode**: `gravity dev --ui ui --file main.gravity`
-
-4. **Join the community**: Share your creations and get help
+3. **Join the community**: Share your creations and get help
 
 ## Documentation
 

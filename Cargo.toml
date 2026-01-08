@@ -38,9 +38,6 @@ roxmltree = "0.19"
 nom = "7.1"
 csscolorparser = "0.6"
 
-# File watching
-notify = "6.0"
-
 # Macros
 syn = { version = "2.0", features = ["full", "extra-traits"] }
 quote = "1.0"

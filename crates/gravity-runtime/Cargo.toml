@@ -7,25 +7,19 @@ authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 documentation = { workspace = true }
-description = "Hot-reload interpreter and file watcher for Gravity UI framework"
+description = "Runtime support for Gravity UI framework"
 readme = { workspace = true }
 keywords = { workspace = true }
 categories = { workspace = true }
 
 [dependencies]
 gravity-core = { path = "../gravity-core" }
-notify = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3.0"
-criterion = "0.5"
-
-[[bench]]
-name = "reload_bench"
-harness = false
 
 [lints]
 workspace = true

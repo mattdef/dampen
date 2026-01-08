@@ -29,13 +29,6 @@ edition = "2021"
 [dependencies]
 gravity = "0.1"
 gravity-iced = "0.1"
-
-# For development mode with hot-reload
-gravity-runtime = { version = "0.1", optional = true }
-
-[features]
-default = []
-dev = ["gravity-runtime"]
 ```
 
 ### Step 3: Create UI Directory
@@ -101,7 +94,7 @@ fn reset(model: &mut Model) {
 }
 
 fn main() {
-    // Run in development mode with hot-reload
+    // Run the application
     gravity::run::<Model, Message, IcedBackend>(
         "ui/main.gravity",
         Model::default(),
@@ -112,30 +105,18 @@ fn main() {
 ### Step 3: Run Your App
 
 ```bash
-# Development mode (with hot-reload)
-cargo run --features dev
-
-# Production build
-cargo run --release
+cargo run
 ```
 
 You should see a window with a counter that responds to button clicks!
 
-## Development Workflow
+### Rebuilding After Changes
 
-### Hot-Reload Mode
+When you modify `ui/main.gravity`, simply rebuild and rerun:
 
-When running with `--features dev`:
-
-1. **Edit** `ui/main.gravity`
-2. **Save** the file
-3. **See** changes instantly (<500ms)
-4. **State** is preserved across reloads
-
-Try it:
-- Change the text size from `48` to `64`
-- Add a new button
-- Save and watch the UI update!
+```bash
+cargo run
+```
 
 ### Error Handling
 

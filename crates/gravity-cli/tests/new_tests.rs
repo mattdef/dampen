@@ -98,7 +98,6 @@ fn test_new_substitutes_project_name_in_readme() {
     assert!(readme.contains(&format!("# {}", project_name)));
     assert!(readme.contains("Quick Start"));
     assert!(readme.contains("cargo run"));
-    assert!(readme.contains("gravity dev"));
 }
 
 #[test]
@@ -292,6 +291,5 @@ fn test_new_output_messages() {
         .stdout(predicate::str::contains("Created new Gravity project"))
         .stdout(predicate::str::contains("Next steps:"))
         .stdout(predicate::str::contains("cd output-test"))
-        .stdout(predicate::str::contains("cargo run"))
-        .stdout(predicate::str::contains("gravity dev"));
+        .stdout(predicate::str::contains("cargo run"));
 }

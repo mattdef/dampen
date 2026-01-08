@@ -42,7 +42,6 @@ fn update(app: &mut SettingsApp, message: HandlerMessage) -> Task<HandlerMessage
             "switch_to_settings" => app.current_view = CurrentView::Settings,
             _ => dispatch_handler(app, &handler_name, value),
         },
-        HandlerMessage::TextEditorChanged(_) => {}
     }
     Task::none()
 }

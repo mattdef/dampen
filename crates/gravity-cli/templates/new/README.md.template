@@ -12,16 +12,6 @@ cargo run
 
 This will open a window with your UI. Click the button to see bindings in action!
 
-## Development with Hot-Reload
-
-For live editing of the UI with instant feedback, use Gravity's dev mode:
-
-```bash
-gravity dev --ui ui --file main.gravity --verbose
-```
-
-Now edit `ui/main.gravity` and watch your changes appear instantly without recompiling!
-
 ## Project Structure
 
 ```
@@ -66,12 +56,12 @@ The Rust code defines:
    ```
 
 2. **Handlers** - Functions that update the model:
-    ```rust
-    fn greet(model: &mut Model) {
-        model.click_count += 1;
-        model.message = format!("Clicked {} times", model.click_count);
-    }
-    ```
+   ```rust
+   fn greet(model: &mut Model) {
+       model.click_count += 1;
+       model.message = format!("Clicked {} times", model.click_count);
+   }
+   ```
 
 3. **Rendering** - Maps XML to Iced widgets (handled by the framework)
 
@@ -80,7 +70,6 @@ The Rust code defines:
 - ✅ **Data Binding**: UI automatically updates when model changes
 - ✅ **Event Handlers**: Connect UI events to Rust functions
 - ✅ **Type Safety**: Full Rust type checking on your state
-- ✅ **Hot Reload**: Edit UI without recompiling (dev mode)
 - ✅ **Declarative**: Separate UI structure from logic
 
 ## Next Steps
@@ -151,11 +140,6 @@ Your binary will be in `target/release/{{PROJECT_NAME}}`.
 - [XML Schema Reference](../../docs/XML_SCHEMA.md)
 
 ## Troubleshooting
-
-**UI doesn't update in dev mode:**
-- Make sure you're using `gravity dev` command
-- Check the console for parse errors
-- Verify the `.gravity` file has valid XML syntax
 
 **Compilation errors:**
 - Ensure all handlers are registered in `AppState::new()`

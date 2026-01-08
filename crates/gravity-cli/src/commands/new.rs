@@ -72,9 +72,6 @@ pub fn execute(args: &NewArgs) -> Result<(), String> {
             println!("Next steps:");
             println!("  cd {}", project_name);
             println!("  cargo run");
-            println!();
-            println!("For hot-reload development:");
-            println!("  gravity dev --ui ui --file main.gravity");
             Ok(())
         }
         Err(e) => {

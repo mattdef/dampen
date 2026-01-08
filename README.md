@@ -5,14 +5,13 @@
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://rust-lang.org)
 
-**Framework UI déclaratif pour Rust avec backend Iced, supportant le hot-reload, le styling avancé, et la génération de code.**
+**Framework UI déclaratif pour Rust avec backend Iced, styling avancé, et génération de code.**
 
 Gravity permet de définir votre interface utilisateur en XML et de l'afficher via Iced.
 
 ## Fonctionnalités
 
 - ✅ **Definitions XML déclaratives**
-- ✅ **Mode hot-reload** (<500ms de mise à jour)
 - ✅ **Systeme de styling avancé** (themes, classes, styles etat)
 - ✅ **Design responsive** avec breakpoints (mobile, tablet, desktop)
 - ✅ **Gestionnaires d'evenements type-safe**
@@ -316,20 +315,19 @@ fn toggle_item(model: &mut Model, id: usize) {
 crates/
 ├── gravity-core/         # Parser XML, IR, traits (sans dependance Iced)
 ├── gravity-macros/       # Macros #[derive(UiModel)], #[gravity_ui]
-├── gravity-runtime/      # Hot-reload, surveillance de fichiers
+├── gravity-runtime/      # Interpretation, gestion d'etat, erreurs
 ├── gravity-iced/         # Implementation backend Iced
-└── gravity-cli/          # CLI developpeur (dev, build, check, inspect)
+└── gravity-cli/          # CLI developpeur (build, check, inspect)
 
 examples/
 ├── hello-world/          # Application minimale
-├── counter/              # Gestionnaires interactifs
+├── counter/              # Gestionnaires d'evenements interactifs
 ├── todo-app/             # Liaison de donnees complete
 ├── styling/              # Themes et classes de style
 ├── responsive/           # Design responsive
 ├── settings/             # Vues multiples
 ├── widget-showcase/      # Demonstration des widgets
-├── builder-demo/         # Patterns widget custom
-└── hot-reload-test/      # Workflow hot-reload
+└── builder-demo/         # Patterns widget custom
 
 specs/
 └── 001-006-*/            # Specifications techniques
@@ -339,7 +337,7 @@ specs/
 
 1. **Declaratif-First**: Le XML est la source de verite pour la structure UI
 2. **Securite de type**: Pas d'erasure de type pour les messages/etat
-3. **Dual-Mode**: Dev (hot-reload) + Prod (codegen)
+3. **Production Mode**: Code generation statique pour les deploiements
 4. **Backend-agnostic**: Le crate core n'a pas de dependance Iced
 5. **Test-First**: TDD pour toutes les fonctionnalites
 
@@ -355,7 +353,7 @@ XML (main.gravity)
    GravityDocument
         |
         v
-GravityWidgetBuilder
+ GravityWidgetBuilder
         |
         v
     Element<Iced>
@@ -366,7 +364,7 @@ GravityWidgetBuilder
 Voir le repertoire [examples/](examples/) pour des demonstrations progressives :
 
 | Exemple | Fonctionnalites |
-|---------|-----------------|
+|---------|----------------|
 | **hello-world** | Rendu UI statique minimal |
 | **counter** | Gestionnaires d'evenements interactifs |
 | **todo-app** | Liaison de donnees complete avec listes |
@@ -378,9 +376,6 @@ Voir le repertoire [examples/](examples/) pour des demonstrations progressives :
 ## Commandes CLI
 
 ```bash
-# Mode developpement avec hot-reload
-gravity dev --ui ui --file main.gravity --verbose
-
 # Generer du code de production
 gravity build --ui ui --output src/ui_genere.rs
 
@@ -397,9 +392,8 @@ gravity inspect --file ui/main.gravity --codegen --handlers increment,decrement
 | Metrique | Cible |
 |----------|-------|
 | Parse XML | <10ms pour 1000 widgets |
-| Hot-reload | <500ms de la sauvegarde a la mise a jour UI |
 | Generation de code | <5s pour une application typique |
-| Memoire runtime (dev) | <50MB de base |
+| Memoire runtime | <50MB de base |
 
 ## Documentation
 
