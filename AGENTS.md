@@ -14,6 +14,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 - N/A (compile-time XML loading, no runtime persistence required for this feature) (006-auto-ui-loading)
 - Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `gravity-core`, `gravity-iced` (007-add-radio-widget)
 - N/A (UI widget, no persistence) (007-add-radio-widget)
+- Rust Edition 2024, MSRV 1.75+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism (008-prod-codegen)
+- N/A (code generation, no runtime persistence) (008-prod-codegen)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
@@ -257,9 +259,9 @@ src/
 | Runtime memory | < 50MB baseline |
 
 ## Recent Changes
+- 008-prod-codegen: Added Rust Edition 2024, MSRV 1.75+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism
 - 007-add-radio-widget: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `gravity-core`, `gravity-iced`
 - 006-auto-ui-loading: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+
-- 005-implement-real-widgets: Added Rust Edition 2021, MSRV 1.75 + Iced 0.14 (with `image` feature enabled), gravity-core
 
 **Phase 7 Complete (006-auto-ui-loading):**
 

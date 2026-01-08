@@ -132,6 +132,7 @@ fn create_project(project_name: &str, project_path: &Path) -> Result<(), String>
 
     // Generate files
     generate_cargo_toml(project_path, project_name)?;
+    generate_build_rs(project_path, project_name)?;
     generate_main_rs(project_path, project_name)?;
     generate_ui_mod_rs(project_path, project_name)?;
     generate_ui_window_rs(project_path, project_name)?;
@@ -183,6 +184,18 @@ fn generate_cargo_toml(project_path: &Path, project_name: &str) -> Result<(), St
 
     let file_path = project_path.join("Cargo.toml");
     fs::write(&file_path, content)
+        .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
+
+    Ok(())
+}
+
+/// Generate build.rs from template
+fn generate_build_rs(project_path: &Path, _project_name: &str) -> Result<(), String> {
+    let template = include_str!("../../templates/build.rs.template");
+    // No replacements needed for build.rs - it's generic
+
+    let file_path = project_path.join("build.rs");
+    fs::write(&file_path, template)
         .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
 
     Ok(())

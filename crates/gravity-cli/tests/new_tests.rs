@@ -70,6 +70,10 @@ fn test_new_creates_project_structure() {
         project_path.join("tests/integration.rs").exists(),
         "tests/integration.rs should exist"
     );
+    assert!(
+        project_path.join("build.rs").exists(),
+        "build.rs should exist for production builds"
+    );
 }
 
 #[test]
@@ -93,6 +97,10 @@ fn test_new_substitutes_project_name_in_cargo_toml() {
     assert!(cargo_toml.contains("gravity-macros"));
     assert!(cargo_toml.contains("gravity-iced"));
     assert!(cargo_toml.contains("serde_json"));
+    assert!(
+        cargo_toml.contains("build = \"build.rs\""),
+        "Cargo.toml should reference build.rs"
+    );
 }
 
 #[test]
@@ -346,4 +354,50 @@ fn test_new_output_messages() {
         .stdout(predicate::str::contains("Next steps:"))
         .stdout(predicate::str::contains("cd output-test"))
         .stdout(predicate::str::contains("cargo run"));
+}
+
+#[test]
+fn test_new_creates_build_rs_for_production() {
+    let temp = TempDir::new().unwrap();
+    let project_name = "prod-build-test";
+
+    gravity_cmd()
+        .arg("new")
+        .arg(project_name)
+        .current_dir(temp.path())
+        .assert()
+        .success();
+
+    let project_path = temp.path().join(project_name);
+
+    // Verify build.rs exists
+    let build_rs_path = project_path.join("build.rs");
+    assert!(build_rs_path.exists(), "build.rs should exist");
+
+    // Read and verify build.rs content
+    let build_rs = fs::read_to_string(build_rs_path).unwrap();
+    assert!(
+        build_rs.contains("fn main()"),
+        "build.rs should have main function"
+    );
+    assert!(build_rs.contains("OUT_DIR"), "build.rs should use OUT_DIR");
+    assert!(
+        build_rs.contains(".gravity"),
+        "build.rs should reference .gravity files"
+    );
+    assert!(
+        build_rs.contains("src/ui/"),
+        "build.rs should look in src/ui/"
+    );
+    assert!(
+        build_rs.contains("cargo:rerun-if-changed"),
+        "build.rs should declare rerun triggers"
+    );
+
+    // Verify Cargo.toml references build.rs
+    let cargo_toml = fs::read_to_string(project_path.join("Cargo.toml")).unwrap();
+    assert!(
+        cargo_toml.contains("build = \"build.rs\""),
+        "Cargo.toml should reference build.rs"
+    );
 }

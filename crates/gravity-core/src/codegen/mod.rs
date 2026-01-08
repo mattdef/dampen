@@ -39,6 +39,44 @@ use crate::HandlerSignature;
 use proc_macro2::TokenStream;
 use quote::quote;
 
+/// Handler signature classification for code generation
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HandlerSignatureType {
+    /// fn(&mut Model) -> ()
+    /// Simple handler with no additional parameters
+    Simple,
+
+    /// fn(&mut Model, T) -> ()
+    /// Handler that receives a value from the UI element
+    WithValue,
+
+    /// fn(&mut Model) -> Command<Message>
+    /// Handler that returns a command for side effects
+    WithCommand,
+}
+
+/// Metadata structure emitted by #[ui_handler] macro for build-time registration
+#[derive(Debug, Clone)]
+pub struct HandlerInfo {
+    /// Unique handler name referenced in XML
+    pub name: &'static str,
+
+    /// Handler signature classification
+    pub signature_type: HandlerSignatureType,
+
+    /// Parameter type names for validation
+    pub param_types: &'static [&'static str],
+
+    /// Return type name
+    pub return_type: &'static str,
+
+    /// Source file location for error messages
+    pub source_file: &'static str,
+
+    /// Source line number
+    pub source_line: u32,
+}
+
 /// Result of code generation
 ///
 /// Contains the generated Rust code and any warnings or notes.
@@ -47,6 +85,22 @@ pub struct CodegenOutput {
     /// Generated Rust code
     pub code: String,
     /// Any warnings or notes
+    pub warnings: Vec<String>,
+}
+
+/// Output structure from code generation
+#[derive(Debug, Clone)]
+pub struct GeneratedApplication {
+    /// Generated Rust code as string
+    pub code: String,
+
+    /// List of handler names discovered
+    pub handlers: Vec<String>,
+
+    /// List of widget types used
+    pub widgets: Vec<String>,
+
+    /// Any warnings generated during code gen
     pub warnings: Vec<String>,
 }
 

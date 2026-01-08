@@ -4,6 +4,7 @@
 
 use proc_macro::TokenStream;
 
+mod ui_handler;
 mod ui_loader;
 mod ui_model;
 
@@ -24,4 +25,23 @@ pub fn ui_model_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn gravity_ui(attr: TokenStream, item: TokenStream) -> TokenStream {
     ui_loader::process_gravity_ui(attr, item)
+}
+
+/// Attribute macro to mark UI event handlers.
+///
+/// This macro emits metadata for build-time code generation and handler validation.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use gravity_macros::ui_handler;
+///
+/// #[ui_handler]
+/// fn on_click(model: &mut Model) {
+///     model.count += 1;
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn ui_handler(attr: TokenStream, item: TokenStream) -> TokenStream {
+    ui_handler::process_ui_handler(attr, item)
 }

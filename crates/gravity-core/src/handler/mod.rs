@@ -1,7 +1,7 @@
 //! Handler system for event dispatch
 
 use std::any::Any;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
 
 /// Registry of event handlers
@@ -146,4 +146,131 @@ pub struct HandlerSignature {
 
     /// Whether handler returns Command
     pub returns_command: bool,
+}
+
+/// Build-time analysis structure for circular dependency detection
+#[derive(Debug, Clone)]
+pub struct HandlerCallGraph {
+    /// Map of handler name to its dependencies
+    dependencies: HashMap<String, Vec<String>>,
+}
+
+impl HandlerCallGraph {
+    /// Create a new empty call graph
+    pub fn new() -> Self {
+        Self {
+            dependencies: HashMap::new(),
+        }
+    }
+
+    /// Add a dependency edge (from depends on to)
+    pub fn add_dependency(&mut self, from: &str, to: &str) {
+        self.dependencies
+            .entry(from.to_string())
+            .or_default()
+            .push(to.to_string());
+    }
+
+    /// Detect if adding edge would create a cycle
+    pub fn would_create_cycle(&self, from: &str, to: &str) -> bool {
+        // Check if 'to' can reach 'from' (which would create a cycle)
+        let mut visited = HashSet::new();
+        self.can_reach(to, from, &mut visited)
+    }
+
+    /// Check if 'from' can reach 'to' via dependencies
+    fn can_reach(&self, from: &str, to: &str, visited: &mut HashSet<String>) -> bool {
+        if from == to {
+            return true;
+        }
+
+        if visited.contains(from) {
+            return false;
+        }
+
+        visited.insert(from.to_string());
+
+        if let Some(deps) = self.dependencies.get(from) {
+            for dep in deps {
+                if self.can_reach(dep, to, visited) {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
+    /// Get all handlers that depend on the given handler
+    pub fn dependents_of(&self, handler: &str) -> Vec<String> {
+        self.dependencies
+            .iter()
+            .filter_map(|(k, v)| {
+                if v.contains(&handler.to_string()) {
+                    Some(k.clone())
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    /// Detect cycles in the call graph using DFS
+    pub fn detect_cycles(&self) -> Option<Vec<String>> {
+        let mut visited = HashSet::new();
+        let mut recursion_stack = HashSet::new();
+        let mut path = Vec::new();
+
+        for handler in self.dependencies.keys() {
+            if !visited.contains(handler) {
+                if let Some(cycle) =
+                    self.dfs_detect_cycle(handler, &mut visited, &mut recursion_stack, &mut path)
+                {
+                    return Some(cycle);
+                }
+            }
+        }
+
+        None
+    }
+
+    fn dfs_detect_cycle(
+        &self,
+        handler: &str,
+        visited: &mut HashSet<String>,
+        recursion_stack: &mut HashSet<String>,
+        path: &mut Vec<String>,
+    ) -> Option<Vec<String>> {
+        visited.insert(handler.to_string());
+        recursion_stack.insert(handler.to_string());
+        path.push(handler.to_string());
+
+        if let Some(deps) = self.dependencies.get(handler) {
+            for dep in deps {
+                if !visited.contains(dep) {
+                    if let Some(cycle) = self.dfs_detect_cycle(dep, visited, recursion_stack, path)
+                    {
+                        return Some(cycle);
+                    }
+                } else if recursion_stack.contains(dep) {
+                    // Found a cycle - construct the cycle path
+                    if let Some(cycle_start) = path.iter().position(|h| h == dep) {
+                        let mut cycle = path[cycle_start..].to_vec();
+                        cycle.push(dep.to_string());
+                        return Some(cycle);
+                    }
+                }
+            }
+        }
+
+        path.pop();
+        recursion_stack.remove(handler);
+        None
+    }
+}
+
+impl Default for HandlerCallGraph {
+    fn default() -> Self {
+        Self::new()
+    }
 }
