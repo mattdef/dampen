@@ -59,9 +59,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US1] Add selection state tracking for radio widgets in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/lib.rs
-- [ ] T010 [P] [US2] Add single-selection enforcement logic in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/lib.rs
-- [ ] T011 [P] [US2] Add integration test for single selection behavior in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/radio_selection_tests.rs
+- [x] T009 [US2] Add selection state tracking for radio widgets in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [x] T010 [P] [US2] Add single-selection enforcement logic (inherently enforced by Iced radio API)
+- [x] T011 [P] [US2] Add integration test for single selection behavior in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/radio_selection_tests.rs
 
 **Checkpoint**: Radio buttons enforce single-selection - User Story 2 complete
 

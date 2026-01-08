@@ -176,14 +176,14 @@ impl Backend for IcedBackend {
 
     fn radio<'a>(
         &self,
-        label: &str,
-        value: &str,
-        selected: Option<&str>,
-        on_select: Option<Self::Message>,
+        _label: &str,
+        _value: &str,
+        _selected: Option<&str>,
+        _on_select: Option<Self::Message>,
     ) -> Self::Widget<'a> {
-        // Placeholder - radio needs proper message handling
-        let label_copy = format!("[radio: {}]", label);
-        text(label_copy).into()
+        // Placeholder - radio is fully implemented in GravityWidgetBuilder
+        // This legacy method is kept for backwards compatibility
+        text("[radio]").into()
     }
 }
 

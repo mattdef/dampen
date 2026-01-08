@@ -62,7 +62,7 @@ use gravity_core::ir::theme::StyleClass;
 use gravity_core::ir::WidgetKind;
 use gravity_core::state::AppState;
 #[allow(unused_imports)]
-use iced::widget::{checkbox, image, pick_list, slider, text_input, toggler};
+use iced::widget::{checkbox, image, pick_list, radio, slider, text_input, toggler};
 use iced::{Element, Renderer, Theme};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -2303,16 +2303,100 @@ impl<'a> GravityWidgetBuilder<'a> {
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_else(|| String::from(""));
 
+        // Get the currently selected value (if any)
+        let selected = node
+            .attributes
+            .get("selected")
+            .map(|attr| self.evaluate_attribute(attr));
+
         if self.verbose {
             eprintln!(
-                "[GravityWidgetBuilder] Building radio: label='{}', value='{}'",
-                label, value
+                "[GravityWidgetBuilder] Building radio: label='{}', value='{}', selected={:?}",
+                label, value, selected
             );
         }
 
-        // Placeholder: Return a text widget representing the radio button
-        // Full implementation would use iced::widget::radio with proper value type
-        iced::widget::text(format!("[radio: {} = {}]", label, value)).into()
+        // Get handler from events
+        let on_select_event = node
+            .events
+            .iter()
+            .find(|e| e.event == gravity_core::EventKind::Select);
+
+        if self.verbose {
+            if let Some(event) = &on_select_event {
+                eprintln!(
+                    "[GravityWidgetBuilder] Radio has select event: handler={}, param={:?}",
+                    event.handler, event.param
+                );
+            } else {
+                eprintln!("[GravityWidgetBuilder] Radio has no select event");
+            }
+        }
+
+        // Determine if this radio is currently selected
+        let is_selected = selected.as_ref().map(|s| s == &value).unwrap_or(false);
+
+        // Create the radio widget using Iced's radio API
+        // Note: Iced radio requires Copy types, so we use a unique ID as the value
+        // and map it back to the string value in the message handler
+
+        // For Iced radio, we need to use a copyable type. We'll use a hash of the value
+        // to create a unique u64 identifier for each radio option
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        let mut hasher = DefaultHasher::new();
+        value.hash(&mut hasher);
+        let value_id = hasher.finish();
+
+        // Track the radio ID for debugging (unused but helpful for future enhancements)
+        let _radio_id = format!(
+            "{}_{}",
+            node.id.as_ref().map(|s| s.as_str()).unwrap_or("radio"),
+            value
+        );
+
+        // Create the currently selected value_id if this is the selected option
+        let selected_id = if is_selected { Some(value_id) } else { None };
+
+        // Create the radio widget
+        let radio_widget = if let Some(event_binding) = on_select_event {
+            if self.handler_registry.is_some() {
+                let handler_name = event_binding.handler.clone();
+                let value_clone = value.clone();
+
+                if self.verbose {
+                    eprintln!(
+                        "[GravityWidgetBuilder] Radio: Attaching on_select with handler '{}', value='{}' (id={})",
+                        handler_name, value_clone, value_id
+                    );
+                }
+
+                // Create radio with handler - sends the string value when selected
+                iced::widget::radio(label, value_id, selected_id, move |_selected_id| {
+                    HandlerMessage::Handler(handler_name.clone(), Some(value_clone.clone()))
+                })
+            } else {
+                if self.verbose {
+                    eprintln!("[GravityWidgetBuilder] Radio: No handler_registry, creating read-only radio");
+                }
+                // No handler registry - create read-only radio
+                iced::widget::radio(label, value_id, selected_id, |_| {
+                    HandlerMessage::Handler(String::new(), None)
+                })
+            }
+        } else {
+            if self.verbose {
+                eprintln!(
+                    "[GravityWidgetBuilder] Radio: No on_select event, creating read-only radio"
+                );
+            }
+            // No event handler - create read-only radio
+            iced::widget::radio(label, value_id, selected_id, |_| {
+                HandlerMessage::Handler(String::new(), None)
+            })
+        };
+
+        radio_widget.into()
     }
 }
 

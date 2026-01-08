@@ -18,6 +18,8 @@ iced = { workspace = true }
 
 [dev-dependencies]
 criterion = "0.5"
+gravity-macros = { path = "../gravity-macros" }
+serde = { workspace = true }
 
 [[bench]]
 name = "builder_bench"
