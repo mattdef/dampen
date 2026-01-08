@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gravity>
+    <scrollable width="100%">
+        <column padding="20" spacing="20">
+            <row spacing="10">
+                <button label="← Back" on_click="switch_to_window" />
+                <text value="Radio Widget" size="24" weight="bold" />
+            </row>
+
+            <text value="Size Selection" size="18" weight="bold" />
+            <radio
+                label="Small"
+                value="small"
+                selected="{selected_size}"
+                on_select="select_size"
+            />
+            <radio
+                label="Medium"
+                value="medium"
+                selected="{selected_size}"
+                on_select="select_size"
+            />
+            <radio
+                label="Large"
+                value="large"
+                selected="{selected_size}"
+                on_select="select_size"
+            />
+            <text
+                value="Selected size: {selected_size}"
+                size="14"
+                color="#3498db"
+            />
+
+            <text value="Color Selection" size="18" weight="bold" />
+            <radio
+                label="Red"
+                value="red"
+                selected="{selected_color}"
+                on_select="select_color"
+            />
+            <radio
+                label="Green"
+                value="green"
+                selected="{selected_color}"
+                on_select="select_color"
+            />
+            <radio
+                label="Blue"
+                value="blue"
+                selected="{selected_color}"
+                on_select="select_color"
+            />
+            <text
+                value="Selected color: {selected_color}"
+                size="14"
+                color="#27ae60"
+            />
+
+            <text value="Plan Selection" size="18" weight="bold" />
+            <radio
+                label="Free"
+                value="free"
+                selected="{selected_plan}"
+                on_select="select_plan"
+            />
+            <radio
+                label="Pro ($10/mo)"
+                value="pro"
+                selected="{selected_plan}"
+                on_select="select_plan"
+            />
+            <radio
+                label="Enterprise ($50/mo)"
+                value="enterprise"
+                selected="{selected_plan}"
+                on_select="select_plan"
+            />
+            <text
+                value="Selected plan: {selected_plan}"
+                size="14"
+                color="#9b59b6"
+            />
+
+            <text value="Disabled Radio Buttons" size="18" weight="bold" />
+            <row spacing="10">
+                <checkbox
+                    checked="{is_premium_disabled}"
+                    label="Disable Premium options"
+                    on_change="toggle_premium"
+                />
+            </row>
+            <radio
+                label="Premium Option 1"
+                value="prem1"
+                selected="{selected_plan}"
+                on_select="select_plan"
+                disabled="{is_premium_disabled}"
+            />
+            <radio
+                label="Premium Option 2"
+                value="prem2"
+                selected="{selected_plan}"
+                on_select="select_plan"
+                disabled="{is_premium_disabled}"
+            />
+
+            <text value="Multiple Independent Groups" size="18" weight="bold" />
+            <text value="Group A:" size="14" />
+            <radio
+                label="Option A1"
+                value="a1"
+                selected="{selected_size}"
+                on_select="select_size"
+            />
+            <radio
+                label="Option A2"
+                value="a2"
+                selected="{selected_size}"
+                on_select="select_size"
+            />
+            <text value="Group B (independent):" size="14" />
+            <radio
+                label="Option B1"
+                value="b1"
+                selected="{selected_color}"
+                on_select="select_color"
+            />
+            <radio
+                label="Option B2"
+                value="b2"
+                selected="{selected_color}"
+                on_select="select_color"
+            />
+        </column>
+    </scrollable>
+</gravity>
