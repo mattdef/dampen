@@ -11,6 +11,7 @@ pub mod image;
 pub mod layout;
 pub mod picklist;
 pub mod progressbar;
+pub mod radio;
 pub mod scrollable;
 pub mod slider;
 pub mod space;

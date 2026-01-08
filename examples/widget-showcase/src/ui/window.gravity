@@ -21,6 +21,7 @@
             <text value="Selection Widgets" size="20" weight="bold" />
             <row spacing="10">
                 <button label="Checkbox" on_click="switch_to_checkbox" />
+                <button label="Radio" on_click="switch_to_radio" />
                 <button label="Slider" on_click="switch_to_slider" />
                 <button label="Toggler" on_click="switch_to_toggler" />
             </row>

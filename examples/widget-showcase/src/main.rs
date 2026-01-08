@@ -27,6 +27,7 @@ enum CurrentView {
     Combobox,
     Picklist,
     Progressbar,
+    Radio,
     Tooltip,
     Grid,
 }
@@ -50,6 +51,7 @@ struct ShowcaseApp {
     combobox_state: AppState<ui::combobox::Model>,
     picklist_state: AppState<ui::picklist::Model>,
     progressbar_state: AppState<ui::progressbar::Model>,
+    radio_state: AppState<ui::radio::Model>,
     tooltip_state: AppState<ui::tooltip::Model>,
     grid_state: AppState<ui::grid::Model>,
 }
@@ -120,6 +122,10 @@ fn dispatch_handler(app: &mut ShowcaseApp, handler_name: &str, value: Option<Str
             &mut app.progressbar_state.model as &mut dyn std::any::Any,
             &app.progressbar_state.handler_registry,
         ),
+        CurrentView::Radio => (
+            &mut app.radio_state.model as &mut dyn std::any::Any,
+            &app.radio_state.handler_registry,
+        ),
         CurrentView::Tooltip => (
             &mut app.tooltip_state.model as &mut dyn std::any::Any,
             &app.tooltip_state.handler_registry,
@@ -155,6 +161,7 @@ fn update(app: &mut ShowcaseApp, message: HandlerMessage) -> Task<HandlerMessage
             "switch_to_combobox" => app.current_view = CurrentView::Combobox,
             "switch_to_picklist" => app.current_view = CurrentView::Picklist,
             "switch_to_progressbar" => app.current_view = CurrentView::Progressbar,
+            "switch_to_radio" => app.current_view = CurrentView::Radio,
             "switch_to_tooltip" => app.current_view = CurrentView::Tooltip,
             "switch_to_grid" => app.current_view = CurrentView::Grid,
             "switch_to_window" => app.current_view = CurrentView::Window,
@@ -183,6 +190,7 @@ fn view(app: &ShowcaseApp) -> Element<'_, HandlerMessage> {
         CurrentView::Combobox => GravityWidgetBuilder::from_app_state(&app.combobox_state),
         CurrentView::Picklist => GravityWidgetBuilder::from_app_state(&app.picklist_state),
         CurrentView::Progressbar => GravityWidgetBuilder::from_app_state(&app.progressbar_state),
+        CurrentView::Radio => GravityWidgetBuilder::from_app_state(&app.radio_state),
         CurrentView::Tooltip => GravityWidgetBuilder::from_app_state(&app.tooltip_state),
         CurrentView::Grid => GravityWidgetBuilder::from_app_state(&app.grid_state),
     }
@@ -210,6 +218,7 @@ fn init() -> (ShowcaseApp, Task<HandlerMessage>) {
             combobox_state: ui::combobox::create_app_state(),
             picklist_state: ui::picklist::create_app_state(),
             progressbar_state: ui::progressbar::create_app_state(),
+            radio_state: ui::radio::create_app_state(),
             tooltip_state: ui::tooltip::create_app_state(),
             grid_state: ui::grid::create_app_state(),
         },
