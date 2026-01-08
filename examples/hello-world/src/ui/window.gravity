@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <gravity>
     <column padding="40" spacing="20">
         <text value="Hello, Gravity!" size="32" weight="bold" />
-        <text value="This UI is auto-loaded!" size="16" />
         <button label="Click me!" on_click="greet" />
+        <text value="{message}" size="24" />
     </column>
 </gravity>

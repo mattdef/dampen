@@ -8,7 +8,9 @@ use serde::{Deserialize, Serialize};
 
 /// The application model.
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
-pub struct Model;
+pub struct Model {
+    pub message: String,
+}
 
 /// Auto-load the app.gravity XML file.
 /// Path is relative to this file (src/ui/).
@@ -29,7 +31,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
     // Register the greet handler
     registry.register_simple("greet", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
-            println!("Button clicked! Model: {:?}", m);
+            m.message = "Hello World!".to_string();
         }
     });
 
