@@ -23,11 +23,11 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 **Purpose**: Create validation module structure and shared components
 
-- [ ] T001 Create check subdirectory structure in crates/gravity-cli/src/commands/check/
-- [ ] T002 Create check subdirectory for tests in crates/gravity-cli/tests/check/
-- [ ] T003 Create suggestions.rs with Levenshtein distance algorithm in crates/gravity-cli/src/commands/check/suggestions.rs
-- [ ] T004 [P] Create attributes.rs with WidgetAttributeSchema in crates/gravity-cli/src/commands/check/attributes.rs
-- [ ] T005 [P] Add property-based tests for Levenshtein distance in crates/gravity-cli/tests/check/suggestions_tests.rs
+- [X] T001 Create check subdirectory structure in crates/gravity-cli/src/commands/check/
+- [X] T002 Create check subdirectory for tests in crates/gravity-cli/tests/check/
+- [X] T003 Create suggestions.rs with Levenshtein distance algorithm in crates/gravity-cli/src/commands/check/suggestions.rs
+- [X] T004 [P] Create attributes.rs with WidgetAttributeSchema in crates/gravity-cli/src/commands/check/attributes.rs
+- [X] T005 [P] Add property-based tests for Levenshtein distance in crates/gravity-cli/tests/check/suggestions_tests.rs
 
 ---
 
@@ -37,11 +37,11 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create errors.rs with all CheckError variants in crates/gravity-cli/src/commands/check/errors.rs
-- [ ] T007 Create mod.rs to re-export all check validators in crates/gravity-cli/src/commands/check/mod.rs
-- [ ] T008 Update CheckArgs to add --handlers, --model, --custom-widgets, --strict flags in crates/gravity-cli/src/commands/check.rs
-- [ ] T009 Create error collection infrastructure to gather all errors before reporting in crates/gravity-cli/src/commands/check.rs
-- [ ] T010 Create custom_widgets.rs for custom widget attribute configuration in crates/gravity-cli/src/commands/check/custom_widgets.rs
+- [X] T006 Create errors.rs with all CheckError variants in crates/gravity-cli/src/commands/check/errors.rs
+- [X] T007 Create mod.rs to re-export all check validators in crates/gravity-cli/src/commands/check/mod.rs
+- [X] T008 Update CheckArgs to add --handlers, --model, --custom-widgets, --strict flags in crates/gravity-cli/src/commands/check.rs
+- [X] T009 Create error collection infrastructure to gather all errors before reporting in crates/gravity-cli/src/commands/check.rs
+- [X] T010 Create custom_widgets.rs for custom widget attribute configuration in crates/gravity-cli/src/commands/check/custom_widgets.rs
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
