@@ -153,60 +153,24 @@ cargo run -p responsive
 
 ---
 
-### 8. Hot Reload Test (`hot-reload-test/`)
-**Development workflow demo**
-
-Tests hot-reload functionality for rapid UI iteration.
-
-```bash
-cargo run -p hot-reload-test
-```
-
-**What you'll learn:**
-- File watching for `.gravity` files
-- Live UI updates without recompilation
-- State preservation across reloads
-- Development workflow optimization
-
----
-
-### 9. Builder Demo (`builder-demo/`)
-**Style classes and inheritance**
-
-Advanced styling with reusable style classes and inheritance.
-
-```bash
-cargo run -p class-demo
-```
-
-**What you'll learn:**
-- Style class definitions
-- Class inheritance with `extends`
-- Cascade resolution
-- Reusable component styling
-
----
-
 ## Feature Comparison Matrix
 
-| Feature | hello | counter | todo-app | showcase | styling | responsive | hot-reload |
-|---------|-------|---------|----------|----------|---------|------------|------------|
-| **Basic Widgets** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Advanced Widgets** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **ProgressBar** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **Canvas** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **Tooltip** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **PickList** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **Image** | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Event Handlers** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Data Binding** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Layout Attributes** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| **Inline Styles** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| **Theming** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| **Style Classes** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| **State Variants** | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
-| **Breakpoints** | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| **Hot Reload** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Feature | hello | counter | todo-app | showcase | styling | responsive |
+|---------|-------|---------|----------|----------|---------|------------|
+| **Basic Widgets** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Advanced Widgets** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **ProgressBar** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **Tooltip** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **PickList** | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **Image** | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **Event Handlers** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Data Binding** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Layout Attributes** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Inline Styles** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Theming** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Style Classes** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **State Variants** | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| **Breakpoints** | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ## Learning Path
 
@@ -218,12 +182,10 @@ cargo run -p class-demo
 ### For UI Designers
 1. Jump to **styling** for comprehensive styling reference 📚
 2. Check **responsive** for adaptive layouts
-3. Try **class-demo** for reusable styles
 
 ### For Developers
 1. Review **counter** for event patterns
 2. Study **todo-app** for state management
-3. Use **hot-reload-test** for development workflow
 
 ## Running All Examples
 

@@ -1,9 +1,0 @@
-[package]
-name = "hot-reload-test"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-gravity-core = { path = "../../crates/gravity-core" }
-gravity-runtime = { path = "../../crates/gravity-runtime" }
-serde = { version = "1.0", features = ["derive"] }

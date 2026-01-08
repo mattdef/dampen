@@ -6,31 +6,49 @@ use gravity_core::AppState;
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 
-struct CounterApp {
-    state: AppState<ui::window::Model>,
+#[derive(Clone, Debug, PartialEq)]
+enum CurrentView {
+    Window,
 }
 
+/// Main application state wrapper
+struct CounterApp {
+    current_view: CurrentView,
+    window_state: AppState<ui::window::Model>,
+}
+
+/// Dispatch a handler to the current view
+fn dispatch_handler(app: &mut CounterApp, handler_name: &str, value: Option<String>) {
+    let (model, registry) = match app.current_view {
+        CurrentView::Window => (
+            &mut app.window_state.model as &mut dyn std::any::Any,
+            &app.window_state.handler_registry,
+        ),
+    };
+    registry.dispatch(handler_name, model, value);
+}
+
+/// Update function
 fn update(app: &mut CounterApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
-        HandlerMessage::Handler(handler_name, _value) => {
-            if let Some(gravity_core::HandlerEntry::Simple(h)) =
-                app.state.handler_registry.get(&handler_name)
-            {
-                h(&mut app.state.model);
-            }
-        }
+        HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
+            _ => dispatch_handler(app, &handler_name, value),
+        },
     }
     Task::none()
 }
 
+/// View function using GravityWidgetBuilder
 fn view(app: &CounterApp) -> Element<'_, HandlerMessage> {
-    GravityWidgetBuilder::from_app_state(&app.state).build()
+    GravityWidgetBuilder::from_app_state(&app.window_state).build()
 }
 
+/// Initialize the application
 fn init() -> (CounterApp, Task<HandlerMessage>) {
     (
         CounterApp {
-            state: ui::window::create_app_state(),
+            current_view: CurrentView::Window,
+            window_state: ui::window::create_app_state(),
         },
         Task::none(),
     )
