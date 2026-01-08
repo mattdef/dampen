@@ -194,3 +194,130 @@ fn test_handler_validation_without_registry() {
     // Should pass when no registry is provided (handlers not validated)
     assert!(result.is_ok());
 }
+
+// T029: Integration tests for binding validation
+#[test]
+fn test_binding_validation_with_model() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create model info
+    let model_path = temp_dir.path().join("model.json");
+    let model_content = r#"[
+  {
+    "name": "count",
+    "type_name": "i32",
+    "is_nested": false,
+    "children": []
+  },
+  {
+    "name": "user",
+    "type_name": "User",
+    "is_nested": true,
+    "children": [
+      {"name": "name", "type_name": "String", "is_nested": false, "children": []}
+    ]
+  }
+]"#;
+    fs::write(&model_path, model_content).expect("Failed to write model");
+
+    // Create UI file with valid binding
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <text value="{count}" />
+    <text value="{user.name}" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: Some(model_path.to_string_lossy().to_string()),
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should pass with valid bindings
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_binding_validation_with_invalid_field() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create model info
+    let model_path = temp_dir.path().join("model.json");
+    let model_content = r#"[
+  {
+    "name": "count",
+    "type_name": "i32",
+    "is_nested": false,
+    "children": []
+  }
+]"#;
+    fs::write(&model_path, model_content).expect("Failed to write model");
+
+    // Create UI file with invalid binding
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <text value="{unknown_field}" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: Some(model_path.to_string_lossy().to_string()),
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should fail with invalid binding
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_binding_validation_without_model() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create UI file with binding (no model provided)
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <text value="{any_field}" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None, // No model provided
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should pass when no model is provided (bindings not validated)
+    assert!(result.is_ok());
+}

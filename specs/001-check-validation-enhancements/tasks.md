@@ -104,17 +104,17 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T026 [P] [US3] Unit test for model info JSON loading in crates/gravity-cli/tests/check/binding_tests.rs
-- [ ] T027 [P] [US3] Unit test for simple field binding validation in crates/gravity-cli/tests/check/binding_tests.rs
-- [ ] T028 [P] [US3] Unit test for nested field binding validation in crates/gravity-cli/tests/check/binding_tests.rs
-- [ ] T029 [P] [US3] Integration test for binding validation with missing file in crates/gravity-cli/tests/check/integration_tests.rs
+- [X] T026 [P] [US3] Unit test for model info JSON loading in crates/gravity-cli/tests/check/binding_tests.rs
+- [X] T027 [P] [US3] Unit test for simple field binding validation in crates/gravity-cli/tests/check/binding_tests.rs
+- [X] T028 [P] [US3] Unit test for nested field binding validation in crates/gravity-cli/tests/check/binding_tests.rs
+- [X] T029 [P] [US3] Integration test for binding validation with missing file in crates/gravity-cli/tests/check/integration_tests.rs
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Create model.rs with ModelInfo and ModelField in crates/gravity-cli/src/commands/check/model.rs
-- [ ] T031 [US3] Add InvalidBindingField error variant to CheckError in errors.rs
-- [ ] T032 [US3] Integrate binding validation into main check.rs validator loop
-- [ ] T033 [US3] Add model loading logic in check.rs for --model flag
+- [X] T030 [US3] Create model.rs with ModelInfo and ModelField in crates/gravity-cli/src/commands/check/model.rs
+- [X] T031 [US3] Add InvalidBindingField error variant to CheckError in errors.rs
+- [X] T032 [US3] Integrate binding validation into main check.rs validator loop
+- [X] T033 [US3] Add model loading logic in check.rs for --model flag
 
 **Checkpoint**: User Stories 1, 2, AND 3 should all work independently
 

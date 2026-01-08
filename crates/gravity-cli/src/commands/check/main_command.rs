@@ -143,6 +143,12 @@ pub enum CheckError {
         source: serde_json::Error,
     },
 
+    #[error("Failed to load model info from {path}: {source}")]
+    ModelInfoLoadError {
+        path: PathBuf,
+        source: serde_json::Error,
+    },
+
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 }
@@ -207,6 +213,27 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         None
     };
 
+    // Load model info if provided (US3: Binding Validation Against Model)
+    let model_info = if let Some(model_path) = &args.model {
+        if args.verbose {
+            eprintln!("Loading model info from: {}", model_path);
+        }
+        let path = Path::new(model_path);
+        let model =
+            crate::commands::check::model::ModelInfo::load_from_json(path).map_err(|e| {
+                CheckError::ModelInfoLoadError {
+                    path: path.to_path_buf(),
+                    source: serde_json::Error::io(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        e.to_string(),
+                    )),
+                }
+            })?;
+        Some(model)
+    } else {
+        None
+    };
+
     let mut errors = Vec::new();
     let mut files_checked = 0;
 
@@ -243,7 +270,13 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         match parser::parse(&content) {
             Ok(document) => {
                 // Validate the document structure
-                validate_document(&document, file_path, &handler_registry, &mut errors);
+                validate_document(
+                    &document,
+                    file_path,
+                    &handler_registry,
+                    &model_info,
+                    &mut errors,
+                );
 
                 // Validate references (themes, classes)
                 validate_references(&document, file_path, &mut errors);
@@ -299,6 +332,7 @@ fn validate_document(
     document: &gravity_core::ir::GravityDocument,
     file_path: &Path,
     handler_registry: &Option<crate::commands::check::handlers::HandlerRegistry>,
+    model_info: &Option<crate::commands::check::model::ModelInfo>,
     errors: &mut Vec<CheckError>,
 ) {
     // Get all valid widget names
@@ -313,6 +347,7 @@ fn validate_document(
         file_path,
         &valid_widgets,
         handler_registry,
+        model_info,
         errors,
     );
 }
@@ -322,6 +357,7 @@ fn validate_widget_node(
     file_path: &Path,
     valid_widgets: &HashSet<String>,
     handler_registry: &Option<crate::commands::check::handlers::HandlerRegistry>,
+    model_info: &Option<crate::commands::check::model::ModelInfo>,
     errors: &mut Vec<CheckError>,
 ) {
     use crate::commands::check::attributes;
@@ -391,7 +427,22 @@ fn validate_widget_node(
         }
     }
 
-    // Validate attribute bindings
+    // Validate attribute bindings (US3: Binding Validation Against Model)
+    if let Some(model) = model_info {
+        for (attr_name, attr_value) in &node.attributes {
+            validate_attribute_bindings(
+                attr_name,
+                attr_value,
+                file_path,
+                node.span.line,
+                node.span.column,
+                model,
+                errors,
+            );
+        }
+    }
+
+    // Validate attribute values (style, layout, etc.)
     for attr_value in node.attributes.values() {
         validate_attribute_value(
             attr_value,
@@ -404,7 +455,108 @@ fn validate_widget_node(
 
     // Recursively validate children
     for child in &node.children {
-        validate_widget_node(child, file_path, valid_widgets, handler_registry, errors);
+        validate_widget_node(
+            child,
+            file_path,
+            valid_widgets,
+            handler_registry,
+            model_info,
+            errors,
+        );
+    }
+}
+
+fn validate_attribute_bindings(
+    _attr_name: &str,
+    value: &gravity_core::ir::AttributeValue,
+    file_path: &Path,
+    line: u32,
+    col: u32,
+    model: &crate::commands::check::model::ModelInfo,
+    errors: &mut Vec<CheckError>,
+) {
+    // Only validate binding expressions
+    if let gravity_core::ir::AttributeValue::Binding(binding_expr) = value {
+        // Validate field access in the expression
+        validate_expr_fields(&binding_expr.expr, file_path, line, col, model, errors);
+    }
+}
+
+fn validate_expr_fields(
+    expr: &gravity_core::expr::Expr,
+    file_path: &Path,
+    line: u32,
+    col: u32,
+    model: &crate::commands::check::model::ModelInfo,
+    errors: &mut Vec<CheckError>,
+) {
+    match expr {
+        gravity_core::expr::Expr::FieldAccess(field_access) => {
+            // Convert Vec<String> to Vec<&str>
+            let field_parts: Vec<&str> = field_access.path.iter().map(|s| s.as_str()).collect();
+
+            if !model.contains_field(&field_parts) {
+                // Generate available fields list
+                let all_paths = model.all_field_paths();
+                let available = if all_paths.len() > 5 {
+                    format!("{} ({} total)", &all_paths[..5].join(", "), all_paths.len())
+                } else {
+                    all_paths.join(", ")
+                };
+
+                let field_path = field_access.path.join(".");
+
+                errors.push(CheckError::InvalidBinding {
+                    field: field_path,
+                    file: file_path.to_path_buf(),
+                    line,
+                    col,
+                });
+
+                // Add more detailed error with available fields
+                eprintln!("  Available fields: {}", available);
+            }
+        }
+        gravity_core::expr::Expr::MethodCall(method_call) => {
+            // Validate the receiver expression
+            validate_expr_fields(&method_call.receiver, file_path, line, col, model, errors);
+            // Validate arguments
+            for arg in &method_call.args {
+                validate_expr_fields(arg, file_path, line, col, model, errors);
+            }
+        }
+        gravity_core::expr::Expr::BinaryOp(binary_op) => {
+            // Validate both sides of the binary operation
+            validate_expr_fields(&binary_op.left, file_path, line, col, model, errors);
+            validate_expr_fields(&binary_op.right, file_path, line, col, model, errors);
+        }
+        gravity_core::expr::Expr::UnaryOp(unary_op) => {
+            // Validate the operand
+            validate_expr_fields(&unary_op.operand, file_path, line, col, model, errors);
+        }
+        gravity_core::expr::Expr::Conditional(conditional) => {
+            // Validate all parts of the conditional
+            validate_expr_fields(&conditional.condition, file_path, line, col, model, errors);
+            validate_expr_fields(
+                &conditional.then_branch,
+                file_path,
+                line,
+                col,
+                model,
+                errors,
+            );
+            validate_expr_fields(
+                &conditional.else_branch,
+                file_path,
+                line,
+                col,
+                model,
+                errors,
+            );
+        }
+        gravity_core::expr::Expr::Literal(_) => {
+            // Literals don't reference fields, nothing to validate
+        }
     }
 }
 

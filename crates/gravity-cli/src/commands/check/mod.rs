@@ -4,6 +4,7 @@ pub mod custom_widgets;
 pub mod errors;
 pub mod handlers;
 mod main_command;
+pub mod model;
 pub mod suggestions;
 
 // Re-exports for convenience
@@ -12,4 +13,5 @@ pub use custom_widgets::{CustomWidgetConfig, CustomWidgetRegistry};
 pub use errors::CheckError as EnhancedCheckError;
 pub use handlers::{HandlerDefinition, HandlerRegistry};
 pub use main_command::{execute, CheckArgs, CheckError};
+pub use model::{ModelField, ModelInfo};
 pub use suggestions::{find_closest_match, levenshtein_distance, suggest};
