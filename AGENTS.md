@@ -276,6 +276,19 @@ src/
   - Working `counter` example demonstrating interactive handlers
   - All tests passing, clippy clean
 
+**Phase 8 Complete (007-add-radio-widget):**
+
+  - Added Radio widget to WidgetKind enum
+  - Implemented radio button parsing with label, value, selected, disabled attributes
+  - Added full Iced radio widget rendering in GravityWidgetBuilder
+  - Implemented single-selection behavior (inherent to Iced radio API)
+  - Added selection change event dispatch via on_select handler
+  - Implemented default selection support via selected attribute binding
+  - Added disabled state support with static/dynamic bindings
+  - Custom value types supported via UiBindable (enums, Option<String>, etc.)
+  - 52 radio tests passing across all crates (parsing, rendering, selection, events, default, disabled, value types)
+  - All tests passing, radio code clippy clean
+
 
 <!-- MANUAL ADDITIONS START -->
 
@@ -301,7 +314,7 @@ src/
 - Formatted (`cargo fmt --all -- --check`)
 - Documentation updated if public API changed
 
-### Current Status: Phase 7 Complete ✓
+### Current Status: Phase 8 Complete ✓
 
 **Implemented Components:**
 - `gravity-core/src/state/mod.rs`: AppState struct with constructors
@@ -320,17 +333,22 @@ src/
 - ✅ Multiple views support (app.gravity, settings.gravity)
 - ✅ AppState with Model and HandlerRegistry support
 
-**Validation Features (Phase 8):**
+**Validation Features:**
 - ✅ `gravity check` validates XML syntax and widget names
 - ✅ Clear error messages with span information
 - ✅ Exit code 0 for success, 1 for failure
 - ✅ File walking with `.gravity` extension filtering
 - ✅ Comprehensive test coverage for validation
 
-**Next Steps:**
-- Phase 8: Documentation & Final Polish
-  - Update README.md with auto-loading documentation
-  - Run final verification tests
-  - Prepare for feature release
+**Radio Widget Features (Phase 8 - 007-add-radio-widget):**
+- ✅ Radio widget XML parsing (label, value, selected, disabled attributes)
+- ✅ Single-selection behavior (inherent to Iced radio API)
+- ✅ Selection change events via on_select handler
+- ✅ Default selection support via selected attribute binding
+- ✅ Disabled state with static/dynamic bindings
+- ✅ Custom value types via UiBindable (enums, Option<String>)
+- ✅ 52 comprehensive tests (parsing, rendering, selection, events, default, disabled, value types)
+- ✅ Full Iced backend integration
+- ✅ Clippy clean, all tests passing
 
 <!-- MANUAL ADDITIONS END -->

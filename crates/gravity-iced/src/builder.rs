@@ -2389,11 +2389,7 @@ impl<'a> GravityWidgetBuilder<'a> {
         let value_id = hasher.finish();
 
         // Track the radio ID for debugging (unused but helpful for future enhancements)
-        let _radio_id = format!(
-            "{}_{}",
-            node.id.as_ref().map(|s| s.as_str()).unwrap_or("radio"),
-            value
-        );
+        let _radio_id = format!("{}_{}", node.id.as_deref().unwrap_or("radio"), value);
 
         // Create the currently selected value_id if this is the selected option
         let selected_id = if is_selected { Some(value_id) } else { None };
