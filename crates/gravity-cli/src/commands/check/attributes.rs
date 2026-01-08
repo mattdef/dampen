@@ -241,6 +241,9 @@ lazy_static::lazy_static! {
         "bottom",
         "left",
         "z_index",
+        "class",      // Style class reference
+        "theme",      // Theme reference
+        "theme_ref",  // Theme reference (alternative name)
     ];
 
     pub static ref EVENTS_COMMON: HashSet<&'static str> = hashset![
@@ -254,6 +257,40 @@ lazy_static::lazy_static! {
         "on_toggle",
         "on_scroll",
     ];
+}
+
+/// Validates widget attributes and detects unknown attributes.
+///
+/// Returns a list of unknown attributes with suggestions.
+pub fn validate_widget_attributes(
+    widget_kind: &WidgetKind,
+    attributes: &[String],
+) -> Vec<(String, Option<String>)> {
+    use crate::commands::check::suggestions;
+
+    let schema = WidgetAttributeSchema::for_widget(widget_kind);
+    let valid_attrs = schema.all_valid();
+    let valid_names = schema.all_valid_names();
+
+    let mut unknown_attrs = Vec::new();
+
+    for attr in attributes {
+        if !valid_attrs.contains(attr.as_str()) {
+            // Generate suggestion using Levenshtein distance
+            let suggestion = suggestions::find_closest_match(attr, &valid_names, 3)
+                .map(|(matched, _)| matched.to_string());
+
+            unknown_attrs.push((attr.clone(), suggestion));
+        }
+    }
+
+    unknown_attrs
+}
+
+/// Checks if an attribute is valid for a widget.
+pub fn is_valid_attribute(widget_kind: &WidgetKind, attribute: &str) -> bool {
+    let schema = WidgetAttributeSchema::for_widget(widget_kind);
+    schema.all_valid().contains(attribute)
 }
 
 #[cfg(test)]
@@ -319,5 +356,34 @@ mod tests {
 
         assert!(!names.is_empty());
         assert!(names.contains(&"on_click"));
+    }
+
+    #[test]
+    fn test_validate_widget_attributes_valid() {
+        let attrs = vec!["on_click".to_string(), "label".to_string()];
+        let unknown = validate_widget_attributes(&WidgetKind::Button, &attrs);
+        assert!(unknown.is_empty());
+    }
+
+    #[test]
+    fn test_validate_widget_attributes_unknown() {
+        let attrs = vec!["on_clik".to_string(), "unknown".to_string()];
+        let unknown = validate_widget_attributes(&WidgetKind::Button, &attrs);
+        assert_eq!(unknown.len(), 2);
+
+        // First should have suggestion for "on_click"
+        assert_eq!(unknown[0].0, "on_clik");
+        assert!(unknown[0].1.is_some());
+        assert_eq!(unknown[0].1.as_ref().unwrap(), "on_click");
+
+        // Second might not have a good suggestion
+        assert_eq!(unknown[1].0, "unknown");
+    }
+
+    #[test]
+    fn test_is_valid_attribute() {
+        assert!(is_valid_attribute(&WidgetKind::Button, "on_click"));
+        assert!(is_valid_attribute(&WidgetKind::Button, "label"));
+        assert!(!is_valid_attribute(&WidgetKind::Button, "on_clik"));
     }
 }

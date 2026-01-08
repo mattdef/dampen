@@ -44,12 +44,23 @@ pub enum CheckError {
         col: u32,
     },
 
-    #[error("Unknown handler '{handler}' in {file}:{line}:{col}")]
+    #[error("Unknown attribute '{attr}' for widget '{widget}' in {file}:{line}:{col}{suggestion}")]
+    UnknownAttribute {
+        attr: String,
+        widget: String,
+        file: PathBuf,
+        line: u32,
+        col: u32,
+        suggestion: String,
+    },
+
+    #[error("Unknown handler '{handler}' in {file}:{line}:{col}{suggestion}")]
     UnknownHandler {
         handler: String,
         file: PathBuf,
         line: u32,
         col: u32,
+        suggestion: String,
     },
 
     #[error("Invalid binding field '{field}' in {file}:{line}:{col}")]
@@ -126,6 +137,12 @@ pub enum CheckError {
         col: u32,
     },
 
+    #[error("Failed to load handler registry from {path}: {source}")]
+    HandlerRegistryLoadError {
+        path: PathBuf,
+        source: serde_json::Error,
+    },
+
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 }
@@ -158,6 +175,8 @@ pub struct CheckArgs {
 }
 
 pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
+    use crate::commands::check::handlers::HandlerRegistry;
+
     let input_path = Path::new(&args.input);
 
     if !input_path.exists() {
@@ -167,6 +186,26 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
     if args.verbose {
         eprintln!("Checking Gravity UI files in: {}", input_path.display());
     }
+
+    // Load handler registry if provided (US2: Handler Registry Validation)
+    let handler_registry = if let Some(handlers_path) = &args.handlers {
+        if args.verbose {
+            eprintln!("Loading handler registry from: {}", handlers_path);
+        }
+        let path = Path::new(handlers_path);
+        let registry = HandlerRegistry::load_from_json(path).map_err(|e| {
+            CheckError::HandlerRegistryLoadError {
+                path: path.to_path_buf(),
+                source: serde_json::Error::io(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                )),
+            }
+        })?;
+        Some(registry)
+    } else {
+        None
+    };
 
     let mut errors = Vec::new();
     let mut files_checked = 0;
@@ -204,7 +243,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         match parser::parse(&content) {
             Ok(document) => {
                 // Validate the document structure
-                validate_document(&document, file_path, &mut errors);
+                validate_document(&document, file_path, &handler_registry, &mut errors);
 
                 // Validate references (themes, classes)
                 validate_references(&document, file_path, &mut errors);
@@ -259,6 +298,7 @@ fn validate_xml_declaration(content: &str, file_path: &Path, errors: &mut Vec<Ch
 fn validate_document(
     document: &gravity_core::ir::GravityDocument,
     file_path: &Path,
+    handler_registry: &Option<crate::commands::check::handlers::HandlerRegistry>,
     errors: &mut Vec<CheckError>,
 ) {
     // Get all valid widget names
@@ -268,37 +308,86 @@ fn validate_document(
         .collect();
 
     // Validate each widget in the tree
-    validate_widget_node(&document.root, file_path, &valid_widgets, errors);
+    validate_widget_node(
+        &document.root,
+        file_path,
+        &valid_widgets,
+        handler_registry,
+        errors,
+    );
 }
 
 fn validate_widget_node(
     node: &gravity_core::ir::WidgetNode,
     file_path: &Path,
     valid_widgets: &HashSet<String>,
+    handler_registry: &Option<crate::commands::check::handlers::HandlerRegistry>,
     errors: &mut Vec<CheckError>,
 ) {
+    use crate::commands::check::attributes;
+    use crate::commands::check::suggestions;
+
     // Check if widget kind is valid
     let widget_name = format!("{:?}", node.kind).to_lowercase();
     if !valid_widgets.contains(&widget_name) && !matches!(node.kind, WidgetKind::Custom(_)) {
         errors.push(CheckError::InvalidWidget {
-            widget: widget_name,
+            widget: widget_name.clone(),
             file: file_path.to_path_buf(),
             line: node.span.line,
             col: node.span.column,
         });
     }
 
-    // Validate event handlers
-    for event_binding in &node.events {
-        // For now, we'll assume any handler name is valid
-        // In a real implementation, we'd check against registered handlers
-        if event_binding.handler.is_empty() {
-            errors.push(CheckError::UnknownHandler {
-                handler: "<empty>".to_string(),
-                file: file_path.to_path_buf(),
-                line: event_binding.span.line,
-                col: event_binding.span.column,
-            });
+    // Validate widget attributes (US1: Unknown Attribute Detection)
+    let attr_names: Vec<String> = node.attributes.keys().map(|s| s.to_string()).collect();
+    let unknown_attrs = attributes::validate_widget_attributes(&node.kind, &attr_names);
+
+    for (attr, _suggestion_opt) in unknown_attrs {
+        let schema = attributes::WidgetAttributeSchema::for_widget(&node.kind);
+        let all_valid = schema.all_valid_names();
+        let suggestion = suggestions::suggest(&attr, &all_valid, 3);
+
+        errors.push(CheckError::UnknownAttribute {
+            attr,
+            widget: widget_name.clone(),
+            file: file_path.to_path_buf(),
+            line: node.span.line,
+            col: node.span.column,
+            suggestion,
+        });
+    }
+
+    // Validate event handlers (US2: Handler Registry Validation)
+    if let Some(registry) = handler_registry {
+        for event_binding in &node.events {
+            if !registry.contains(&event_binding.handler) {
+                // Generate suggestion using Levenshtein distance
+                let all_handler_names = registry.all_names();
+                let handler_refs: Vec<&str> =
+                    all_handler_names.iter().map(|s| s.as_str()).collect();
+                let suggestion = suggestions::suggest(&event_binding.handler, &handler_refs, 3);
+
+                errors.push(CheckError::UnknownHandler {
+                    handler: event_binding.handler.clone(),
+                    file: file_path.to_path_buf(),
+                    line: event_binding.span.line,
+                    col: event_binding.span.column,
+                    suggestion,
+                });
+            }
+        }
+    } else {
+        // If no registry provided, only check for empty handlers
+        for event_binding in &node.events {
+            if event_binding.handler.is_empty() {
+                errors.push(CheckError::UnknownHandler {
+                    handler: "<empty>".to_string(),
+                    file: file_path.to_path_buf(),
+                    line: event_binding.span.line,
+                    col: event_binding.span.column,
+                    suggestion: String::new(),
+                });
+            }
         }
     }
 
@@ -315,7 +404,7 @@ fn validate_widget_node(
 
     // Recursively validate children
     for child in &node.children {
-        validate_widget_node(child, file_path, valid_widgets, errors);
+        validate_widget_node(child, file_path, valid_widgets, handler_registry, errors);
     }
 }
 

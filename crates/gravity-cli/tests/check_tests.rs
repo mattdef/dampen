@@ -4,6 +4,18 @@ use gravity_cli::commands::check::{execute, CheckArgs};
 use std::fs;
 use tempfile::TempDir;
 
+// Helper function to create CheckArgs with default values for new fields
+fn create_check_args(input: String, verbose: bool) -> CheckArgs {
+    CheckArgs {
+        input,
+        verbose,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    }
+}
+
 #[test]
 fn test_valid_ui_file() {
     let temp_dir = TempDir::new().unwrap();
@@ -18,10 +30,7 @@ fn test_valid_ui_file() {
 
     fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_ok());
@@ -41,10 +50,7 @@ fn test_invalid_widget_detection() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -67,10 +73,7 @@ fn test_valid_style_attributes() {
 
     fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_ok());
@@ -89,10 +92,7 @@ fn test_invalid_color_value() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -115,10 +115,7 @@ fn test_valid_layout_attributes() {
 
     fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_ok());
@@ -137,10 +134,7 @@ fn test_invalid_layout_constraints() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -183,10 +177,7 @@ fn test_valid_theme_and_class_references() {
 
     fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_ok());
@@ -231,10 +222,7 @@ fn test_unknown_class_reference() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -255,10 +243,7 @@ fn test_negative_spacing() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -279,10 +264,7 @@ fn test_min_greater_than_max() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -303,10 +285,7 @@ fn test_invalid_opacity() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -327,10 +306,7 @@ fn test_invalid_shadow() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -351,10 +327,7 @@ fn test_invalid_transform() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -375,10 +348,7 @@ fn test_invalid_border_style() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -399,10 +369,7 @@ fn test_invalid_direction() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -423,10 +390,7 @@ fn test_invalid_position() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -453,10 +417,7 @@ fn test_circular_class_dependency() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
-        verbose: false,
-    };
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
 
     let result = execute(&args);
     assert!(result.is_err());

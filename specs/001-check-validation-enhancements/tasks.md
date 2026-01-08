@@ -57,16 +57,16 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T011 [P] [US1] Unit test for unknown attribute detection on button in crates/gravity-cli/tests/check/attributes_tests.rs
-- [ ] T012 [P] [US1] Unit test for unknown attribute detection on text input in crates/gravity-cli/tests/check/attributes_tests.rs
-- [ ] T013 [P] [US1] Property-based test for Levenshtein distance suggestions in crates/gravity-cli/tests/check/suggestions_tests.rs
-- [ ] T014 [P] [US1] Integration test for unknown attribute with strict mode in crates/gravity-cli/tests/check/integration_tests.rs
+- [X] T011 [P] [US1] Unit test for unknown attribute detection on button in crates/gravity-cli/tests/check/attributes_tests.rs
+- [X] T012 [P] [US1] Unit test for unknown attribute detection on text input in crates/gravity-cli/tests/check/attributes_tests.rs
+- [X] T013 [P] [US1] Property-based test for Levenshtein distance suggestions in crates/gravity-cli/tests/check/suggestions_tests.rs
+- [X] T014 [P] [US1] Integration test for unknown attribute with strict mode in crates/gravity-cli/tests/check/integration_tests.rs
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement unknown attribute detection in attributes.rs calling suggestions.rs for Levenshtein
-- [ ] T016 [US1] Add UnknownAttribute error variant to CheckError in errors.rs
-- [ ] T017 [US1] Integrate attribute validation into main check.rs validator loop
+- [X] T015 [US1] Implement unknown attribute detection in attributes.rs calling suggestions.rs for Levenshtein
+- [X] T016 [US1] Add UnknownAttribute error variant to CheckError in errors.rs
+- [X] T017 [US1] Integrate attribute validation into main check.rs validator loop
 
 **Checkpoint**: User Story 1 fully functional - run `cargo test -p gravity-cli` to verify
 
@@ -80,17 +80,17 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T018 [P] [US2] Unit test for handler registry JSON loading in crates/gravity-cli/tests/check/handler_tests.rs
-- [ ] T019 [P] [US2] Unit test for unknown handler detection in crates/gravity-cli/tests/check/handler_tests.rs
-- [ ] T020 [P] [US2] Unit test for handler suggestion with Levenshtein in crates/gravity-cli/tests/check/handler_tests.rs
-- [ ] T021 [P] [US2] Integration test for handler validation with missing file in crates/gravity-cli/tests/check/integration_tests.rs
+- [X] T018 [P] [US2] Unit test for handler registry JSON loading in crates/gravity-cli/tests/check/handler_tests.rs
+- [X] T019 [P] [US2] Unit test for unknown handler detection in crates/gravity-cli/tests/check/handler_tests.rs
+- [X] T020 [P] [US2] Unit test for handler suggestion with Levenshtein in crates/gravity-cli/tests/check/handler_tests.rs
+- [X] T021 [P] [US2] Integration test for handler validation with missing file in crates/gravity-cli/tests/check/integration_tests.rs
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Create handlers.rs with HandlerRegistry and HandlerDefinition in crates/gravity-cli/src/commands/check/handlers.rs
-- [ ] T023 [US2] Add UnknownHandler error variant to CheckError in errors.rs
-- [ ] T024 [US2] Integrate handler validation into main check.rs validator loop
-- [ ] T025 [US2] Add handler loading logic in check.rs for --handlers flag
+- [X] T022 [US2] Create handlers.rs with HandlerRegistry and HandlerDefinition in crates/gravity-cli/src/commands/check/handlers.rs
+- [X] T023 [US2] Add UnknownHandler error variant to CheckError in errors.rs
+- [X] T024 [US2] Integrate handler validation into main check.rs validator loop
+- [X] T025 [US2] Add handler loading logic in check.rs for --handlers flag
 
 **Checkpoint**: User Stories 1 AND 2 should both work independently
 
