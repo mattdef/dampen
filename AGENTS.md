@@ -16,6 +16,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 - N/A (UI widget, no persistence) (007-add-radio-widget)
 - Rust Edition 2024, MSRV 1.75+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism (008-prod-codegen)
 - N/A (code generation, no runtime persistence) (008-prod-codegen)
+- Rust Edition 2024, MSRV stable (per constitution) + gravity-core (parser, IR), serde_json (JSON handling), clap (CLI) (001-check-validation-enhancements)
+- JSON files for handler registry (`--handlers`) and model info (`--model`) (001-check-validation-enhancements)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
@@ -259,9 +261,9 @@ src/
 | Runtime memory | < 50MB baseline |
 
 ## Recent Changes
+- 001-check-validation-enhancements: Added Rust Edition 2024, MSRV stable (per constitution) + gravity-core (parser, IR), serde_json (JSON handling), clap (CLI)
 - 008-prod-codegen: Added Rust Edition 2024, MSRV 1.75+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism
 - 007-add-radio-widget: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `gravity-core`, `gravity-iced`
-- 006-auto-ui-loading: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+
 
 **Phase 7 Complete (006-auto-ui-loading):**
 
