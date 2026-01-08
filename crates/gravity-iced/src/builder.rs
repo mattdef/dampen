@@ -2336,6 +2336,46 @@ impl<'a> GravityWidgetBuilder<'a> {
         // Determine if this radio is currently selected
         let is_selected = selected.as_ref().map(|s| s == &value).unwrap_or(false);
 
+        // Evaluate disabled attribute (default: false)
+        let is_disabled = match node.attributes.get("disabled") {
+            None => false,
+            Some(AttributeValue::Static(s)) => {
+                match s.to_lowercase().as_str() {
+                    "true" | "1" | "yes" | "on" => true,
+                    "false" | "0" | "no" | "off" => false,
+                    _ => false, // Default to enabled for unknown values
+                }
+            }
+            Some(AttributeValue::Binding(expr)) => {
+                match evaluate_binding_expr(expr, self.model) {
+                    Ok(value) => value.to_bool(),
+                    Err(e) => {
+                        if self.verbose {
+                            eprintln!("[GravityWidgetBuilder] Radio disabled binding error: {}", e);
+                        }
+                        false // Default to enabled on error
+                    }
+                }
+            }
+            Some(AttributeValue::Interpolated(_)) => {
+                // Interpolated strings in boolean context - check if result is "true"
+                let disabled_attr = node.attributes.get("disabled");
+                let result = if let Some(attr) = disabled_attr {
+                    self.evaluate_attribute(attr)
+                } else {
+                    String::new()
+                };
+                result == "true" || result == "1"
+            }
+        };
+
+        if self.verbose {
+            eprintln!(
+                "[GravityWidgetBuilder] Radio '{}' disabled: {}",
+                label, is_disabled
+            );
+        }
+
         // Create the radio widget using Iced's radio API
         // Note: Iced radio requires Copy types, so we use a unique ID as the value
         // and map it back to the string value in the message handler
@@ -2360,7 +2400,7 @@ impl<'a> GravityWidgetBuilder<'a> {
 
         // Create the radio widget
         let radio_widget = if let Some(event_binding) = on_select_event {
-            if self.handler_registry.is_some() {
+            if self.handler_registry.is_some() && !is_disabled {
                 let handler_name = event_binding.handler.clone();
                 let value_clone = value.clone();
 
@@ -2377,9 +2417,13 @@ impl<'a> GravityWidgetBuilder<'a> {
                 })
             } else {
                 if self.verbose {
-                    eprintln!("[GravityWidgetBuilder] Radio: No handler_registry, creating read-only radio");
+                    if is_disabled {
+                        eprintln!("[GravityWidgetBuilder] Radio: Disabled, creating non-interactive radio");
+                    } else {
+                        eprintln!("[GravityWidgetBuilder] Radio: No handler_registry, creating read-only radio");
+                    }
                 }
-                // No handler registry - create read-only radio
+                // Disabled or no handler registry - create read-only radio
                 iced::widget::radio(label, value_id, selected_id, |_| {
                     HandlerMessage::Handler(String::new(), None)
                 })

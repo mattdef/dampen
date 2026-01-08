@@ -107,9 +107,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T018 [US5] Add disabled attribute support in /home/matt/Documents/Dev/gravity/crates/gravity-core/src/ir/node.rs
-- [ ] T019 [P] [US5] Add disabled state rendering in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/lib.rs
-- [ ] T020 [P] [US5] Add integration test for disabled state in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/radio_disabled_tests.rs
+- [x] T018 [US5] Disabled attribute parsing already supported (tested in radio_parsing_tests.rs)
+- [x] T019 [P] [US5] Add disabled state rendering in /home/matt/Documents/Dev/gravity/crates/gravity-iced/src/builder.rs
+- [x] T020 [P] [US5] Add integration test for disabled state in /home/matt/Documents/Dev/gravity/crates/gravity-iced/tests/radio_disabled_tests.rs
 
 **Checkpoint**: Disabled radio buttons don't respond to clicks - User Story 5 complete
 
