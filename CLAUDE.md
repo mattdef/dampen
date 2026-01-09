@@ -18,6 +18,7 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 - N/A (code generation, no runtime persistence) (008-prod-codegen)
 - Rust Edition 2024, MSRV stable (per constitution) + dampen-core (parser, IR), serde_json (JSON handling), clap (CLI) (001-check-validation-enhancements)
 - JSON files for handler registry (`--handlers`) and model info (`--model`) (001-check-validation-enhancements)
+- File-based (`.dampen` XML UI definitions, optional `.dampen-state.json` for state persistence) (001-dual-mode-architecture)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
 - **UI Framework**: `iced` 0.14+
@@ -261,9 +262,9 @@ src/
 | Runtime memory | < 50MB baseline |
 
 ## Recent Changes
+- 001-dual-mode-architecture: Added Rust Edition 2024, MSRV stable (no nightly features in public API)
 - 001-check-validation-enhancements: Added Rust Edition 2024, MSRV stable (per constitution) + dampen-core (parser, IR), serde_json (JSON handling), clap (CLI)
 - 008-prod-codegen: Added Rust Edition 2024, MSRV 1.75+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism
-- 007-add-radio-widget: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `dampen-core`, `dampen-iced`
 
 **Phase 7 Complete (006-auto-ui-loading):**
 
