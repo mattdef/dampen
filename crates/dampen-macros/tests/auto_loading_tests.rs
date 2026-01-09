@@ -6,7 +6,7 @@
 use dampen_core::parse;
 use std::sync::LazyLock;
 
-static GRAVITY_DOCUMENT: LazyLock<dampen_core::GravityDocument> = LazyLock::new(|| {
+static GRAVITY_DOCUMENT: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
     let xml = r#"
             <gravity>
                 <column padding="40" spacing="20">
@@ -39,12 +39,12 @@ fn test_lazy_lock_initialization() {
 
 #[test]
 fn test_multiple_views_pattern() {
-    static VIEW1: LazyLock<dampen_core::GravityDocument> = LazyLock::new(|| {
+    static VIEW1: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
         let xml = r#"<gravity><column><text value="View 1" /></column></gravity>"#;
         parse(xml).expect("Failed to parse View 1")
     });
 
-    static VIEW2: LazyLock<dampen_core::GravityDocument> = LazyLock::new(|| {
+    static VIEW2: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
         let xml = r#"<gravity><column><text value="View 2" /></column></gravity>"#;
         parse(xml).expect("Failed to parse View 2")
     });

@@ -23,7 +23,7 @@ fn test_unknown_attribute_detection_integration() {
     <button on_clik="handle_click" label="Click Me" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -56,9 +56,9 @@ fn test_valid_attributes_pass_validation() {
     <Button on_click="handle_click" label="Click Me" width="100" />
 </ui>"#;
 
-    create_test_file(&temp_dir, "test.gravity", content);
+    create_test_file(&temp_dir, "test.dampen", content);
 
-    assert!(temp_dir.path().join("test.gravity").exists());
+    assert!(temp_dir.path().join("test.dampen").exists());
 }
 
 #[test]
@@ -72,11 +72,11 @@ fn test_strict_mode_placeholder() {
     <Button on_clik="handle_click" />
 </ui>"#;
 
-    create_test_file(&temp_dir, "test.gravity", content);
+    create_test_file(&temp_dir, "test.dampen", content);
 
     // In strict mode, this should fail validation
     // Normal mode should still report errors but with different exit code
-    assert!(temp_dir.path().join("test.gravity").exists());
+    assert!(temp_dir.path().join("test.dampen").exists());
 }
 
 // T021: Integration test for handler validation
@@ -105,7 +105,7 @@ fn test_handler_validation_with_registry() {
     <button on_click="handle_click" label="Click Me" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -147,7 +147,7 @@ fn test_handler_validation_with_unknown_handler() {
     <button on_click="unknown_handler" label="Click Me" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -178,7 +178,7 @@ fn test_handler_validation_without_registry() {
     <button on_click="any_handler" label="Click Me" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -231,7 +231,7 @@ fn test_binding_validation_with_model() {
     <text value="{user.name}" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -274,7 +274,7 @@ fn test_binding_validation_with_invalid_field() {
     <text value="{unknown_field}" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -305,7 +305,7 @@ fn test_binding_validation_without_model() {
     <text value="{any_field}" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -338,7 +338,7 @@ fn test_valid_radio_group_integration() {
     <radio id="size_group" value="large" label="Large" on_select="handle_size" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -372,7 +372,7 @@ fn test_valid_theme_integration() {
     <text value="Hello Theme" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -404,7 +404,7 @@ fn test_strict_mode_with_errors() {
     <button on_clik="handle_click" label="Click Me" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     // Test without strict mode
     let args_normal = CheckArgs {
@@ -451,7 +451,7 @@ fn test_strict_mode_with_no_warnings() {
     <text value="Hello World" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     // Test with strict mode
     let args = CheckArgs {
@@ -483,7 +483,7 @@ fn test_required_attribute_validation_text_missing_value() {
     <text size="16" color="blue" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -518,7 +518,7 @@ fn test_required_attribute_validation_image_missing_src() {
     <image width="200" height="100" fit="contain" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -553,7 +553,7 @@ fn test_required_attribute_validation_radio_missing_label() {
     <radio value="option1" on_select="handle_select" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -590,7 +590,7 @@ fn test_required_attribute_validation_all_present() {
     <radio label="Option 1" value="opt1" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
         input: Some(ui_dir.to_string_lossy().to_string()),
@@ -676,7 +676,7 @@ fn test_complete_validation_pipeline_all_flags() {
     <radio label="Option 2" value="opt2" on_select="handle_select" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     // Test with all flags enabled
     let args = CheckArgs {
@@ -735,7 +735,7 @@ fn test_complete_validation_pipeline_with_errors() {
     <radio value="opt1" />
 </column>"#;
 
-    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+    fs::write(ui_dir.join("test.dampen"), content).expect("Failed to write test file");
 
     // Test with all flags enabled - should detect all errors
     let args = CheckArgs {

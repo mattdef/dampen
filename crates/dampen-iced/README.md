@@ -20,7 +20,7 @@ Gravity Iced provides automatic interpretation of parsed Gravity markup into Ice
 ### Basic Usage
 
 ```rust
-use gravity_core::{parse, HandlerRegistry};
+use dampen_core::{parse, HandlerRegistry};
 use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
 use gravity_macros::UiModel;
 use iced::{Element, Task};
@@ -44,7 +44,7 @@ fn decrement(model: &mut Model) {
 
 struct AppState {
     model: Model,
-    document: gravity_core::GravityDocument,
+    document: dampen_core::DampenDocument,
     handler_registry: HandlerRegistry,
 }
 
@@ -110,7 +110,7 @@ GravityWidgetBuilder::new(
 
 // From complete document
 GravityWidgetBuilder::from_document(
-    document: &GravityDocument,
+    document: &DampenDocument,
     model: &dyn UiBindable,
     handler_registry: Option<&HandlerRegistry>,
 ) -> Self

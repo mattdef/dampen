@@ -35,7 +35,7 @@ pub struct NewArgs {
 /// - `src/main.rs` with a complete Hello World application using auto-loading
 /// - `src/ui/mod.rs` - UI module
 /// - `src/ui/window.rs` - UI model and handlers with `#[gravity_ui]` macro
-/// - `src/ui/window.gravity` - Declarative UI definition (XML)
+/// - `src/ui/window.dampen` - Declarative UI definition (XML)
 /// - `tests/integration.rs` - Integration tests
 /// - `README.md` with comprehensive getting started instructions
 ///
@@ -237,12 +237,12 @@ fn generate_ui_window_rs(project_path: &Path, project_name: &str) -> Result<(), 
     Ok(())
 }
 
-/// Generate src/ui/window.gravity from template
+/// Generate src/ui/window.dampen from template
 fn generate_window_gravity(project_path: &Path, project_name: &str) -> Result<(), String> {
-    let template = include_str!("../../templates/new/window.gravity.template");
+    let template = include_str!("../../templates/new/window.dampen.template");
     let content = template.replace("{{PROJECT_NAME}}", project_name);
 
-    let file_path = project_path.join("src/ui/window.gravity");
+    let file_path = project_path.join("src/ui/window.dampen");
     fs::write(&file_path, content)
         .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
 

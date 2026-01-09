@@ -166,8 +166,8 @@ mod tests {
         let mut validator = ThemeValidator::new();
 
         // a -> b -> a
-        validator.add_style_class("a", vec!["b".to_string()], "test.gravity", 1, 1);
-        validator.add_style_class("b", vec!["a".to_string()], "test.gravity", 2, 1);
+        validator.add_style_class("a", vec!["b".to_string()], "test.dampen", 1, 1);
+        validator.add_style_class("b", vec!["a".to_string()], "test.dampen", 2, 1);
 
         let errors = validator.validate();
         assert!(!errors.is_empty());
@@ -183,9 +183,9 @@ mod tests {
         let mut validator = ThemeValidator::new();
 
         // a -> b -> c (no cycle)
-        validator.add_style_class("a", vec!["b".to_string()], "test.gravity", 1, 1);
-        validator.add_style_class("b", vec!["c".to_string()], "test.gravity", 2, 1);
-        validator.add_style_class("c", vec![], "test.gravity", 3, 1);
+        validator.add_style_class("a", vec!["b".to_string()], "test.dampen", 1, 1);
+        validator.add_style_class("b", vec!["c".to_string()], "test.dampen", 2, 1);
+        validator.add_style_class("c", vec![], "test.dampen", 3, 1);
 
         let errors = validator.validate();
 
@@ -199,7 +199,7 @@ mod tests {
     fn test_missing_parent_class() {
         let mut validator = ThemeValidator::new();
 
-        validator.add_style_class("a", vec!["nonexistent".to_string()], "test.gravity", 1, 1);
+        validator.add_style_class("a", vec!["nonexistent".to_string()], "test.dampen", 1, 1);
 
         let errors = validator.validate();
         assert!(!errors.is_empty());

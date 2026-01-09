@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 /// Build command arguments
 #[derive(clap::Args)]
 pub struct BuildArgs {
-    /// Input directory containing .gravity files (default: ui/)
+    /// Input directory containing .dampen files (default: ui/)
     #[arg(short, long, default_value = "ui")]
     input: String,
 
@@ -48,7 +48,7 @@ pub fn execute(args: &BuildArgs) -> Result<(), String> {
         eprintln!("Building from {} to {}", args.input, args.output);
     }
 
-    // Find all .gravity files
+    // Find all .dampen files
     let input_dir = PathBuf::from(&args.input);
     if !input_dir.exists() {
         return Err(format!("Input directory '{}' does not exist", args.input));
@@ -56,11 +56,11 @@ pub fn execute(args: &BuildArgs) -> Result<(), String> {
 
     let gravity_files = find_gravity_files(&input_dir);
     if gravity_files.is_empty() {
-        return Err(format!("No .gravity files found in '{}'", args.input));
+        return Err(format!("No .dampen files found in '{}'", args.input));
     }
 
     if args.verbose {
-        eprintln!("Found {} .gravity files", gravity_files.len());
+        eprintln!("Found {} .dampen files", gravity_files.len());
     }
 
     // Generate code from all files
@@ -85,7 +85,7 @@ pub fn execute(args: &BuildArgs) -> Result<(), String> {
     Ok(())
 }
 
-/// Find all .gravity files recursively
+/// Find all .dampen files recursively
 fn find_gravity_files(dir: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
 
@@ -104,7 +104,7 @@ fn find_gravity_files(dir: &Path) -> Vec<PathBuf> {
     files
 }
 
-/// Generate Rust code from multiple .gravity files
+/// Generate Rust code from multiple .dampen files
 fn generate_code_from_files(
     files: &[PathBuf],
     model_name: &str,
@@ -121,7 +121,7 @@ fn generate_code_from_files(
     // For now, we'll generate a single combined function
     // In a full implementation, we'd parse handler signatures from a separate file
     if files.len() > 1 {
-        eprintln!("Warning: Multiple .gravity files found. Using first file for generation.");
+        eprintln!("Warning: Multiple .dampen files found. Using first file for generation.");
     }
 
     // Use the first file for now

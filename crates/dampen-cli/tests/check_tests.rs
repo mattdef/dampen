@@ -28,7 +28,7 @@ fn test_valid_ui_file() {
     <button label=\"Click me\" on_click=\"handle_click\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), valid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -48,7 +48,7 @@ fn test_invalid_widget_detection() {
     <invalid_widget label=\"This should fail\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -71,7 +71,7 @@ fn test_valid_style_attributes() {
             border_color=\"#c0392b\" border_radius=\"4\" shadow=\"2 2 4 #00000040\" opacity=\"0.9\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), valid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -90,7 +90,7 @@ fn test_invalid_color_value() {
     <text value=\"Invalid color\" color=\"not-a-color\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -113,7 +113,7 @@ fn test_valid_layout_attributes() {
     <container width=\"80%\" height=\"shrink\" padding=\"10\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), valid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -132,7 +132,7 @@ fn test_invalid_layout_constraints() {
     <text value=\"Invalid\" width=\"invalid_length\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -150,7 +150,7 @@ fn test_valid_theme_and_class_references() {
     fs::create_dir(&ui_dir).unwrap();
 
     let valid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<gravity>
+<dampen>
     <themes>
         <theme name=\"custom\">
             <palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\"
@@ -173,9 +173,9 @@ fn test_valid_theme_and_class_references() {
         <text value=\"Themed text\" />
         <button label=\"Primary button\" class=\"btn_primary\" />
     </column>
-</gravity>";
+</dampen>";
 
-    fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), valid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -196,7 +196,7 @@ fn test_valid_theme_and_class_references() {
 //     <text value=\"Test\" />
 // </column>";
 //
-//     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+//     fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 //
 //     let args = CheckArgs {
 //         input: ui_dir.to_string_lossy().to_string(),
@@ -220,7 +220,7 @@ fn test_unknown_class_reference() {
     <text value=\"Test\" class=\"nonexistent_class\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -241,7 +241,7 @@ fn test_negative_spacing() {
     <text value=\"Test\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -262,7 +262,7 @@ fn test_min_greater_than_max() {
     <text value=\"Test\" min_width=\"200\" max_width=\"100\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -283,7 +283,7 @@ fn test_invalid_opacity() {
     <text value=\"Test\" opacity=\"1.5\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -304,7 +304,7 @@ fn test_invalid_shadow() {
     <text value=\"Test\" shadow=\"invalid\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -325,7 +325,7 @@ fn test_invalid_transform() {
     <text value=\"Test\" transform=\"invalid_transform\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -346,7 +346,7 @@ fn test_invalid_border_style() {
     <text value=\"Test\" border_style=\"dotted_solid\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -367,7 +367,7 @@ fn test_invalid_direction() {
     <text value=\"Test\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -388,7 +388,7 @@ fn test_invalid_position() {
     <text value=\"Test\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -405,7 +405,7 @@ fn test_circular_class_dependency() {
     fs::create_dir(&ui_dir).unwrap();
 
     let invalid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<gravity>
+<dampen>
     <style_classes>
         <class name=\"class_a\" extends=\"class_b\" background=\"#fff\" />
         <class name=\"class_b\" extends=\"class_a\" color=\"#000\" />
@@ -413,9 +413,9 @@ fn test_circular_class_dependency() {
     <column>
         <text value=\"Test\" class=\"class_a\" />
     </column>
-</gravity>";
+</dampen>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -441,7 +441,7 @@ fn test_backward_compatibility_without_optional_flags() {
     <text_input value=\"{unvalidated_binding}\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), ui_content).unwrap();
+    fs::write(ui_dir.join("main.dampen"), ui_content).unwrap();
 
     // Create args without new optional flags (backward compatible mode)
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
@@ -472,7 +472,7 @@ fn test_backward_compatibility_existing_validation_still_works() {
     <unknown_widget_type value=\"test\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
@@ -509,7 +509,7 @@ fn test_enhanced_validation_requires_opt_in() {
     <button label=\"Click\" on_click=\"nonexistent_handler\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), ui_content).unwrap();
+    fs::write(ui_dir.join("main.dampen"), ui_content).unwrap();
 
     // Without handler registry, should pass (handler validation is opt-in)
     let args_without_registry =
@@ -536,7 +536,7 @@ fn test_auto_detect_src_ui_directory() {
     <text value=\"Hello World\" />
 </column>";
 
-    fs::write(src_ui_dir.join("main.gravity"), valid_ui).unwrap();
+    fs::write(src_ui_dir.join("main.dampen"), valid_ui).unwrap();
 
     // Change to temp directory
     let original_dir = std::env::current_dir().unwrap();
@@ -565,7 +565,7 @@ fn test_auto_detect_ui_directory_fallback() {
     <text value=\"Hello World\" />
 </column>";
 
-    fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), valid_ui).unwrap();
 
     // Change to temp directory
     let original_dir = std::env::current_dir().unwrap();
@@ -599,14 +599,14 @@ fn test_prefer_src_ui_over_ui() {
 <column>
     <text value=\"From src/ui\" />
 </column>";
-    fs::write(src_ui_dir.join("main.gravity"), valid_ui).unwrap();
+    fs::write(src_ui_dir.join("main.dampen"), valid_ui).unwrap();
 
     // Put invalid content in ui/ to verify src/ui/ is used
     let invalid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <column>
     <invalid_widget value=\"Should not be used\" />
 </column>";
-    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+    fs::write(ui_dir.join("main.dampen"), invalid_ui).unwrap();
 
     // Change to temp directory
     let original_dir = std::env::current_dir().unwrap();
@@ -638,14 +638,14 @@ fn test_explicit_input_overrides_auto_detection() {
 <column>
     <text value=\"From src/ui\" />
 </column>";
-    fs::write(src_ui_dir.join("main.gravity"), ui1).unwrap();
+    fs::write(src_ui_dir.join("main.dampen"), ui1).unwrap();
 
     let ui2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <column>
     <text value=\"From custom\" />
     <button label=\"Custom button\" />
 </column>";
-    fs::write(custom_dir.join("main.gravity"), ui2).unwrap();
+    fs::write(custom_dir.join("main.dampen"), ui2).unwrap();
 
     // Explicitly specify custom directory
     let args = create_check_args(Some(custom_dir.to_string_lossy().to_string()), false);
@@ -695,7 +695,7 @@ fn test_auto_discover_handlers_json_in_root() {
 <column>
     <button label=\"Click\" on_click=\"handle_click\" />
 </column>";
-    fs::write(src_ui_dir.join("main.gravity"), ui_content).unwrap();
+    fs::write(src_ui_dir.join("main.dampen"), ui_content).unwrap();
 
     // Create handlers.json in project root
     let handlers_json = r#"[
@@ -734,7 +734,7 @@ fn test_auto_discover_handlers_json_in_src() {
 <column>
     <button label=\"Click\" on_click=\"handle_click\" />
 </column>";
-    fs::write(src_ui_dir.join("main.gravity"), ui_content).unwrap();
+    fs::write(src_ui_dir.join("main.dampen"), ui_content).unwrap();
 
     // Create handlers.json in src/ directory
     let handlers_json = r#"[
@@ -772,7 +772,7 @@ fn test_explicit_handlers_overrides_auto_discovery() {
 <column>
     <button label=\"Click\" on_click=\"custom_handler\" />
 </column>";
-    fs::write(src_ui_dir.join("main.gravity"), ui_content).unwrap();
+    fs::write(src_ui_dir.join("main.dampen"), ui_content).unwrap();
 
     // Create handlers.json in root (would be auto-discovered)
     let root_handlers = r#"[
@@ -832,7 +832,7 @@ fn test_backward_compatibility_with_explicit_paths() {
 <column>
     <text value=\"Test\" />
 </column>";
-    fs::write(custom_dir.join("main.gravity"), ui_content).unwrap();
+    fs::write(custom_dir.join("main.dampen"), ui_content).unwrap();
 
     // Old-style explicit path specification
     let args = CheckArgs {

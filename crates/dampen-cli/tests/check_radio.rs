@@ -8,10 +8,10 @@ fn test_duplicate_radio_value_detection() {
     let mut validator = RadioGroupValidator::new();
 
     // Add first radio button with value "option1"
-    validator.add_radio("group1", "option1", "file.gravity", 10, 5, None);
+    validator.add_radio("group1", "option1", "file.dampen", 10, 5, None);
 
     // Add second radio button with same value "option1" (should be an error)
-    validator.add_radio("group1", "option1", "file.gravity", 15, 5, None);
+    validator.add_radio("group1", "option1", "file.dampen", 15, 5, None);
 
     // Validate and expect duplicate value error
     let errors = validator.validate();
@@ -35,7 +35,7 @@ fn test_inconsistent_handler_detection() {
     validator.add_radio(
         "group1",
         "opt1",
-        "file.gravity",
+        "file.dampen",
         10,
         5,
         Some("handler1".to_string()),
@@ -43,7 +43,7 @@ fn test_inconsistent_handler_detection() {
     validator.add_radio(
         "group1",
         "opt2",
-        "file.gravity",
+        "file.dampen",
         15,
         5,
         Some("handler2".to_string()),
@@ -70,7 +70,7 @@ fn test_valid_radio_group() {
     validator.add_radio(
         "group1",
         "opt1",
-        "file.gravity",
+        "file.dampen",
         10,
         5,
         Some("handler".to_string()),
@@ -78,7 +78,7 @@ fn test_valid_radio_group() {
     validator.add_radio(
         "group1",
         "opt2",
-        "file.gravity",
+        "file.dampen",
         15,
         5,
         Some("handler".to_string()),
@@ -86,7 +86,7 @@ fn test_valid_radio_group() {
     validator.add_radio(
         "group1",
         "opt3",
-        "file.gravity",
+        "file.dampen",
         20,
         5,
         Some("handler".to_string()),
@@ -106,7 +106,7 @@ fn test_multiple_radio_groups() {
     validator.add_radio(
         "group1",
         "opt1",
-        "file.gravity",
+        "file.dampen",
         10,
         5,
         Some("handler1".to_string()),
@@ -114,7 +114,7 @@ fn test_multiple_radio_groups() {
     validator.add_radio(
         "group1",
         "opt2",
-        "file.gravity",
+        "file.dampen",
         15,
         5,
         Some("handler1".to_string()),
@@ -124,7 +124,7 @@ fn test_multiple_radio_groups() {
     validator.add_radio(
         "group2",
         "opt1",
-        "file.gravity",
+        "file.dampen",
         20,
         5,
         Some("handler2".to_string()),
@@ -132,7 +132,7 @@ fn test_multiple_radio_groups() {
     validator.add_radio(
         "group2",
         "opt2",
-        "file.gravity",
+        "file.dampen",
         25,
         5,
         Some("handler2".to_string()),
@@ -148,8 +148,8 @@ fn test_radio_group_with_no_handler() {
     // Test radio buttons without handlers (valid)
     let mut validator = RadioGroupValidator::new();
 
-    validator.add_radio("group1", "opt1", "file.gravity", 10, 5, None);
-    validator.add_radio("group1", "opt2", "file.gravity", 15, 5, None);
+    validator.add_radio("group1", "opt1", "file.dampen", 10, 5, None);
+    validator.add_radio("group1", "opt2", "file.dampen", 15, 5, None);
 
     // Should be valid - no handlers is fine
     let errors = validator.validate();
@@ -164,12 +164,12 @@ fn test_radio_group_mixed_handlers() {
     validator.add_radio(
         "group1",
         "opt1",
-        "file.gravity",
+        "file.dampen",
         10,
         5,
         Some("handler".to_string()),
     );
-    validator.add_radio("group1", "opt2", "file.gravity", 15, 5, None);
+    validator.add_radio("group1", "opt2", "file.dampen", 15, 5, None);
 
     // Should detect inconsistent handlers
     let errors = validator.validate();

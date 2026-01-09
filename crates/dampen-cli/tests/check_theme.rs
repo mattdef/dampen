@@ -12,7 +12,7 @@ fn test_invalid_theme_property_detection() {
         "test_theme",
         "font_size_base",
         "-16.0",
-        "test.gravity",
+        "test.dampen",
         10,
         5,
     );
@@ -43,21 +43,9 @@ fn test_circular_dependency_detection() {
     // class_b extends class_c
     // class_c extends class_a (circular!)
 
-    validator.add_style_class("class_a", vec!["class_b".to_string()], "test.gravity", 5, 1);
-    validator.add_style_class(
-        "class_b",
-        vec!["class_c".to_string()],
-        "test.gravity",
-        10,
-        1,
-    );
-    validator.add_style_class(
-        "class_c",
-        vec!["class_a".to_string()],
-        "test.gravity",
-        15,
-        1,
-    );
+    validator.add_style_class("class_a", vec!["class_b".to_string()], "test.dampen", 5, 1);
+    validator.add_style_class("class_b", vec!["class_c".to_string()], "test.dampen", 10, 1);
+    validator.add_style_class("class_c", vec!["class_a".to_string()], "test.dampen", 15, 1);
 
     // Validate should detect circular dependency
     let errors = validator.validate();
@@ -88,7 +76,7 @@ fn test_style_class_extends_nonexistent() {
     validator.add_style_class(
         "child_class",
         vec!["nonexistent_parent".to_string()],
-        "test.gravity",
+        "test.dampen",
         5,
         1,
     );
@@ -112,37 +100,13 @@ fn test_multiple_circular_dependencies() {
     let mut validator = ThemeValidator::new();
 
     // First circular dependency: a -> b -> a
-    validator.add_style_class("class_a", vec!["class_b".to_string()], "test.gravity", 5, 1);
-    validator.add_style_class(
-        "class_b",
-        vec!["class_a".to_string()],
-        "test.gravity",
-        10,
-        1,
-    );
+    validator.add_style_class("class_a", vec!["class_b".to_string()], "test.dampen", 5, 1);
+    validator.add_style_class("class_b", vec!["class_a".to_string()], "test.dampen", 10, 1);
 
     // Second circular dependency: c -> d -> e -> c
-    validator.add_style_class(
-        "class_c",
-        vec!["class_d".to_string()],
-        "test.gravity",
-        15,
-        1,
-    );
-    validator.add_style_class(
-        "class_d",
-        vec!["class_e".to_string()],
-        "test.gravity",
-        20,
-        1,
-    );
-    validator.add_style_class(
-        "class_e",
-        vec!["class_c".to_string()],
-        "test.gravity",
-        25,
-        1,
-    );
+    validator.add_style_class("class_c", vec!["class_d".to_string()], "test.dampen", 15, 1);
+    validator.add_style_class("class_d", vec!["class_e".to_string()], "test.dampen", 20, 1);
+    validator.add_style_class("class_e", vec!["class_c".to_string()], "test.dampen", 25, 1);
 
     let errors = validator.validate();
 
@@ -164,22 +128,10 @@ fn test_deep_inheritance_without_cycle() {
     let mut validator = ThemeValidator::new();
 
     // Create a chain: a -> b -> c -> d (no cycle)
-    validator.add_style_class("class_a", vec!["class_b".to_string()], "test.gravity", 5, 1);
-    validator.add_style_class(
-        "class_b",
-        vec!["class_c".to_string()],
-        "test.gravity",
-        10,
-        1,
-    );
-    validator.add_style_class(
-        "class_c",
-        vec!["class_d".to_string()],
-        "test.gravity",
-        15,
-        1,
-    );
-    validator.add_style_class("class_d", vec![], "test.gravity", 20, 1);
+    validator.add_style_class("class_a", vec!["class_b".to_string()], "test.dampen", 5, 1);
+    validator.add_style_class("class_b", vec!["class_c".to_string()], "test.dampen", 10, 1);
+    validator.add_style_class("class_c", vec!["class_d".to_string()], "test.dampen", 15, 1);
+    validator.add_style_class("class_d", vec![], "test.dampen", 20, 1);
 
     let errors = validator.validate();
 

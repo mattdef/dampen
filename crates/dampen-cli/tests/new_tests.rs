@@ -1,13 +1,13 @@
-//! Integration tests for the `gravity new` command
+//! Integration tests for the `dampen new` command
 
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs;
 use tempfile::TempDir;
 
-/// Helper to get the gravity binary command
-fn gravity_cmd() -> Command {
-    Command::cargo_bin("gravity").unwrap()
+/// Helper to get the dampen binary command
+fn dampen_cmd() -> Command {
+    Command::cargo_bin("dampen").unwrap()
 }
 
 #[test]
@@ -15,8 +15,8 @@ fn test_new_creates_project_structure() {
     let temp = TempDir::new().unwrap();
     let project_name = "test-app";
 
-    // Execute gravity new
-    gravity_cmd()
+    // Execute dampen new
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -59,8 +59,8 @@ fn test_new_creates_project_structure() {
         "src/ui/window.rs should exist"
     );
     assert!(
-        project_path.join("src/ui/window.gravity").exists(),
-        "src/ui/window.gravity should exist"
+        project_path.join("src/ui/window.dampen").exists(),
+        "src/ui/window.dampen should exist"
     );
     assert!(
         project_path.join("tests").is_dir(),
@@ -81,7 +81,7 @@ fn test_new_substitutes_project_name_in_cargo_toml() {
     let temp = TempDir::new().unwrap();
     let project_name = "my-cool-app";
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -93,9 +93,9 @@ fn test_new_substitutes_project_name_in_cargo_toml() {
     let cargo_toml = fs::read_to_string(cargo_toml_path).unwrap();
 
     assert!(cargo_toml.contains(&format!("name = \"{}\"", project_name)));
-    assert!(cargo_toml.contains("gravity-core"));
-    assert!(cargo_toml.contains("gravity-macros"));
-    assert!(cargo_toml.contains("gravity-iced"));
+    assert!(cargo_toml.contains("dampen-core"));
+    assert!(cargo_toml.contains("dampen-macros"));
+    assert!(cargo_toml.contains("dampen-iced"));
     assert!(cargo_toml.contains("serde_json"));
     assert!(
         cargo_toml.contains("build = \"build.rs\""),
@@ -108,7 +108,7 @@ fn test_new_substitutes_project_name_in_readme() {
     let temp = TempDir::new().unwrap();
     let project_name = "readme-test";
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -122,7 +122,7 @@ fn test_new_substitutes_project_name_in_readme() {
     assert!(readme.contains(&format!("# {}", project_name)));
     assert!(readme.contains("Quick Start"));
     assert!(readme.contains("cargo run"));
-    assert!(readme.contains("src/ui/window.gravity"));
+    assert!(readme.contains("src/ui/window.dampen"));
 }
 
 #[test]
@@ -130,30 +130,30 @@ fn test_new_creates_valid_xml() {
     let temp = TempDir::new().unwrap();
     let project_name = "valid-xml-test";
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
         .assert()
         .success();
 
-    let xml_file = temp.path().join(project_name).join("src/ui/window.gravity");
+    let xml_file = temp.path().join(project_name).join("src/ui/window.dampen");
     let xml_content = fs::read_to_string(xml_file).unwrap();
 
     // Verify it's valid XML (at least has XML declaration and root element)
     assert!(xml_content.contains("<?xml"));
-    assert!(xml_content.contains("<gravity>"));
-    assert!(xml_content.contains("</gravity>"));
+    assert!(xml_content.contains("<dampen>"));
+    assert!(xml_content.contains("</dampen>"));
     assert!(xml_content.contains("<column"));
     assert!(xml_content.contains("</column>"));
-    assert!(xml_content.contains("Hello, Gravity!"));
+    assert!(xml_content.contains("Hello, Dampen!"));
 }
 
 #[test]
 fn test_new_rejects_empty_name() {
     let temp = TempDir::new().unwrap();
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg("")
         .current_dir(temp.path())
@@ -166,7 +166,7 @@ fn test_new_rejects_empty_name() {
 fn test_new_rejects_name_starting_with_number() {
     let temp = TempDir::new().unwrap();
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg("123invalid")
         .current_dir(temp.path())
@@ -181,7 +181,7 @@ fn test_new_rejects_name_starting_with_number() {
 fn test_new_rejects_name_with_special_chars() {
     let temp = TempDir::new().unwrap();
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg("my@app")
         .current_dir(temp.path())
@@ -196,7 +196,7 @@ fn test_new_rejects_name_with_special_chars() {
 fn test_new_rejects_name_with_spaces() {
     let temp = TempDir::new().unwrap();
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg("my app")
         .current_dir(temp.path())
@@ -212,7 +212,7 @@ fn test_new_rejects_reserved_names() {
     let temp = TempDir::new().unwrap();
 
     for reserved in &["test", "build", "target", "src"] {
-        gravity_cmd()
+        dampen_cmd()
             .arg("new")
             .arg(reserved)
             .current_dir(temp.path())
@@ -234,7 +234,7 @@ fn test_new_accepts_valid_names() {
         // Use different names to avoid conflicts
         let unique_name = format!("{}-{}", name, i);
 
-        gravity_cmd()
+        dampen_cmd()
             .arg("new")
             .arg(&unique_name)
             .current_dir(temp.path())
@@ -252,7 +252,7 @@ fn test_new_detects_existing_directory() {
     fs::create_dir(temp.path().join(project_name)).unwrap();
 
     // Try to create project with same name
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -266,7 +266,7 @@ fn test_new_creates_valid_rust_code() {
     let temp = TempDir::new().unwrap();
     let project_name = "valid-code-test";
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -280,7 +280,7 @@ fn test_new_creates_valid_rust_code() {
 
     // Check for key elements
     assert!(main_rs.contains("mod ui;"));
-    assert!(main_rs.contains("GravityWidgetBuilder"));
+    assert!(main_rs.contains("DampenWidgetBuilder"));
     assert!(main_rs.contains("AppState"));
     assert!(main_rs.contains("fn main() -> iced::Result"));
 
@@ -290,7 +290,7 @@ fn test_new_creates_valid_rust_code() {
     // Check for key elements
     assert!(window_rs.contains("pub struct Model"));
     assert!(window_rs.contains("#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]"));
-    assert!(window_rs.contains("#[gravity_ui(\"window.gravity\")]"));
+    assert!(window_rs.contains("#[dampen_ui(\"window.dampen\")]"));
     assert!(window_rs.contains("register_simple"));
     assert!(window_rs.contains("create_handler_registry"));
 }
@@ -300,7 +300,7 @@ fn test_new_creates_ui_mod_exports() {
     let temp = TempDir::new().unwrap();
     let project_name = "ui-mod-test";
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -320,7 +320,7 @@ fn test_new_creates_integration_tests() {
     let temp = TempDir::new().unwrap();
     let project_name = "integration-test";
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -344,7 +344,7 @@ fn test_new_output_messages() {
     let temp = TempDir::new().unwrap();
     let project_name = "output-test";
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -361,7 +361,7 @@ fn test_new_creates_build_rs_for_production() {
     let temp = TempDir::new().unwrap();
     let project_name = "prod-build-test";
 
-    gravity_cmd()
+    dampen_cmd()
         .arg("new")
         .arg(project_name)
         .current_dir(temp.path())
@@ -382,8 +382,8 @@ fn test_new_creates_build_rs_for_production() {
     );
     assert!(build_rs.contains("OUT_DIR"), "build.rs should use OUT_DIR");
     assert!(
-        build_rs.contains(".gravity"),
-        "build.rs should reference .gravity files"
+        build_rs.contains(".dampen"),
+        "build.rs should reference .dampen files"
     );
     assert!(
         build_rs.contains("src/ui/"),

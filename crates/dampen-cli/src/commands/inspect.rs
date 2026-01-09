@@ -7,7 +7,7 @@ use std::fs;
 
 #[derive(clap::Args)]
 pub struct InspectArgs {
-    /// Path to the .gravity file to inspect
+    /// Path to the .dampen file to inspect
     #[arg(short, long)]
     file: String,
 
@@ -100,10 +100,10 @@ pub fn execute(args: &InspectArgs) -> Result<(), String> {
 }
 
 /// Print IR tree in human-readable format
-fn print_ir_tree(doc: &dampen_core::GravityDocument, indent: usize) {
+fn print_ir_tree(doc: &dampen_core::DampenDocument, indent: usize) {
     let prefix = "  ".repeat(indent);
 
-    println!("{}GravityDocument {{", prefix);
+    println!("{}DampenDocument {{", prefix);
     println!(
         "{}  version: v{}.{}",
         prefix, doc.version.major, doc.version.minor

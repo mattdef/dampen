@@ -3,7 +3,7 @@ use dampen_core::parser::parse;
 
 #[test]
 fn test_parse_valid_simple() {
-    let xml = include_str!("fixtures/valid_simple.gravity");
+    let xml = include_str!("fixtures/valid_simple.dampen");
     let result = parse(xml);
 
     assert!(result.is_ok(), "Should parse valid simple XML");
@@ -44,7 +44,7 @@ fn test_parse_valid_simple() {
 
 #[test]
 fn test_parse_valid_nested() {
-    let xml = include_str!("fixtures/valid_nested.gravity");
+    let xml = include_str!("fixtures/valid_nested.dampen");
     let result = parse(xml);
 
     assert!(result.is_ok(), "Should parse nested XML");
@@ -67,7 +67,7 @@ fn test_parse_valid_nested() {
 
 #[test]
 fn test_parse_invalid_syntax() {
-    let xml = include_str!("fixtures/invalid_syntax.gravity");
+    let xml = include_str!("fixtures/invalid_syntax.dampen");
     let result = parse(xml);
 
     // Should fail with parse error

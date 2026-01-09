@@ -17,11 +17,11 @@ pub struct TestModel {
 #[test]
 fn test_appstate_default_unit() {
     let xml = r#"
-        <gravity>
+        <dampen>
             <column>
                 <text value="Hello" />
             </column>
-        </gravity>
+        </dampen>
     "#;
 
     let document = dampen_core::parse(xml).expect("Failed to parse XML");
@@ -34,11 +34,11 @@ fn test_appstate_default_unit() {
 #[test]
 fn test_appstate_with_model() {
     let xml = r#"
-        <gravity>
+        <dampen>
             <column>
                 <text value="Hello" />
             </column>
-        </gravity>
+        </dampen>
     "#;
 
     let document = dampen_core::parse(xml).expect("Failed to parse XML");
@@ -56,11 +56,11 @@ fn test_appstate_with_model() {
 #[test]
 fn test_appstate_with_handlers() {
     let xml = r#"
-        <gravity>
+        <dampen>
             <column>
                 <text value="Hello" />
             </column>
-        </gravity>
+        </dampen>
     "#;
 
     let document = dampen_core::parse(xml).expect("Failed to parse XML");
@@ -89,11 +89,11 @@ fn test_appstate_model_implements_uibindable() {
 #[test]
 fn test_appstate_clonable() {
     let xml = r#"
-        <gravity>
+        <dampen>
             <column>
                 <text value="Clone test" />
             </column>
-        </gravity>
+        </dampen>
     "#;
 
     let document = dampen_core::parse(xml).expect("Failed to parse XML");

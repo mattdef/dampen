@@ -23,8 +23,8 @@ fn test_build_rs_template_exists() {
     );
     assert!(content.contains("OUT_DIR"), "Template should use OUT_DIR");
     assert!(
-        content.contains(".gravity"),
-        "Template should reference .gravity files"
+        content.contains(".dampen"),
+        "Template should reference .dampen files"
     );
 }
 

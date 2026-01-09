@@ -141,14 +141,14 @@ mod tests {
         let mut group = RadioGroup::new("test".to_string());
         group.add_button(RadioButton {
             value: "opt1".to_string(),
-            file: PathBuf::from("test.gravity"),
+            file: PathBuf::from("test.dampen"),
             line: 10,
             col: 5,
             handler: Some("handler".to_string()),
         });
         group.add_button(RadioButton {
             value: "opt2".to_string(),
-            file: PathBuf::from("test.gravity"),
+            file: PathBuf::from("test.dampen"),
             line: 15,
             col: 5,
             handler: Some("handler".to_string()),
@@ -163,14 +163,14 @@ mod tests {
         let mut group = RadioGroup::new("test".to_string());
         group.add_button(RadioButton {
             value: "opt1".to_string(),
-            file: PathBuf::from("test.gravity"),
+            file: PathBuf::from("test.dampen"),
             line: 10,
             col: 5,
             handler: Some("handler".to_string()),
         });
         group.add_button(RadioButton {
             value: "opt1".to_string(),
-            file: PathBuf::from("test.gravity"),
+            file: PathBuf::from("test.dampen"),
             line: 15,
             col: 5,
             handler: Some("handler".to_string()),

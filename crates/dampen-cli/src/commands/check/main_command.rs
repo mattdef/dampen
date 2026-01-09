@@ -155,7 +155,7 @@ pub enum CheckError {
 
 #[derive(Args)]
 pub struct CheckArgs {
-    /// Directory containing .gravity files (default: auto-detect src/ui or ui)
+    /// Directory containing .dampen files (default: auto-detect src/ui or ui)
     #[arg(short, long)]
     pub input: Option<String>,
 
@@ -303,7 +303,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
     let mut errors = Vec::new();
     let mut files_checked = 0;
 
-    // Find all .gravity files
+    // Find all .dampen files
     for entry in WalkDir::new(input_path)
         .follow_links(true)
         .into_iter()
@@ -311,7 +311,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         .filter(|e| {
             e.path()
                 .extension()
-                .map(|ext| ext == "gravity")
+                .map(|ext| ext == "dampen")
                 .unwrap_or(false)
         })
     {
@@ -409,7 +409,7 @@ fn validate_xml_declaration(content: &str, file_path: &Path, errors: &mut Vec<Ch
 }
 
 fn validate_document(
-    document: &dampen_core::ir::GravityDocument,
+    document: &dampen_core::ir::DampenDocument,
     file_path: &Path,
     handler_registry: &Option<crate::commands::check::handlers::HandlerRegistry>,
     model_info: &Option<crate::commands::check::model::ModelInfo>,
@@ -859,7 +859,7 @@ impl WidgetKindExt for WidgetKind {
 
 /// Validate all references (themes, classes) in the document
 fn validate_references(
-    document: &dampen_core::ir::GravityDocument,
+    document: &dampen_core::ir::DampenDocument,
     file_path: &Path,
     errors: &mut Vec<CheckError>,
 ) {
@@ -926,7 +926,7 @@ fn validate_references(
 fn validate_widget_with_styles(
     node: &dampen_core::ir::WidgetNode,
     file_path: &Path,
-    document: &dampen_core::ir::GravityDocument,
+    document: &dampen_core::ir::DampenDocument,
     errors: &mut Vec<CheckError>,
 ) {
     // Validate structured style properties
