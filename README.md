@@ -310,8 +310,6 @@ examples/
 ├── widget-showcase/       # Widget demonstration
 └── builder-demo/          # Custom widget patterns
 
-specs/
-└── 001-006-*/             # Technical specifications
 ```
 
 ### Core Principles
@@ -379,9 +377,47 @@ dampen inspect --file ui/main.dampen --codegen --handlers increment,decrement
 ## Documentation
 
 - **[API Documentation](https://docs.rs/dampen-core)** - Complete Rustdoc
-- **[XML Schema Reference](specs/001-framework-technical-specs/contracts/xml-schema.md)** - Widgets and attributes
-- **[Styling Guide](examples/styling/README.md)** - Themes, classes, state styles
-- **[Examples](examples/)** - Progressive example projects
+- **[XML Schema Reference](docs/XML_SCHEMA.md)** - Widgets and attributes
+- **[Styling Guide](docs/STYLING.md)** - Themes, classes, state styles
+- **[Examples](examples/README.md)** - Progressive example projects
+
+## Contributing
+
+We welcome contributions from the community! Whether you're fixing bugs, adding features, improving documentation, or reporting issues, your help is appreciated.
+
+**Before contributing, please read our [Contributing Guide](docs/CONTRIBUTING.md)** which covers:
+
+- Code of conduct and community standards
+- Setting up your development environment
+- Coding standards and style guidelines
+- Testing requirements (TDD is mandatory)
+- Pull request process and commit message format
+- How to report issues and request features
+
+**Quick start for contributors:**
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/YOUR_USERNAME/dampen.git
+cd dampen
+
+# Build and test
+cargo build --workspace
+cargo test --workspace
+cargo clippy --workspace -- -D warnings
+
+# Try the examples
+cargo run --example hello-world
+```
+
+All contributions must:
+- ✅ Pass all tests (`cargo test --workspace`)
+- ✅ Pass clippy lints (`cargo clippy --workspace -- -D warnings`)
+- ✅ Be properly formatted (`cargo fmt --all`)
+- ✅ Include tests for new functionality
+- ✅ Update documentation as needed
+
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for complete details.
 
 ## License
 
