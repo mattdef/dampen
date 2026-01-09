@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify version matches tag
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          CARGO_VERSION=$(grep '^version = ' Cargo.toml | head -1 | cut -d '"' -f2)
+          echo "Tag version: $TAG_VERSION"
+          echo "Cargo version: $CARGO_VERSION"
+          if [ "$TAG_VERSION" != "$CARGO_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) doesn't match Cargo.toml version ($CARGO_VERSION)"
+            exit 1
+          fi
+
+      - name: Run tests
+        run: cargo test --workspace --verbose
+
+      - name: Publish dampen-core
+        run: cargo publish -p dampen-core --token ${{ secrets.CARGO_TOKEN }}
+        continue-on-error: false
+
+      - name: Wait for dampen-core to be available
+        run: sleep 30
+
+      - name: Publish dampen-macros
+        run: cargo publish -p dampen-macros --token ${{ secrets.CARGO_TOKEN }}
+        continue-on-error: false
+
+      - name: Wait for dampen-macros to be available
+        run: sleep 30
+
+      - name: Publish dampen-runtime
+        run: cargo publish -p dampen-runtime --token ${{ secrets.CARGO_TOKEN }}
+        continue-on-error: false
+
+      - name: Wait for dampen-runtime to be available
+        run: sleep 30
+
+      - name: Publish dampen-iced
+        run: cargo publish -p dampen-iced --token ${{ secrets.CARGO_TOKEN }}
+        continue-on-error: false
+
+      - name: Wait for dampen-iced to be available
+        run: sleep 30
+
+      - name: Publish dampen-cli
+        run: cargo publish -p dampen-cli --token ${{ secrets.CARGO_TOKEN }}
+        continue-on-error: false
+
+      - name: Create GitHub Release Summary
+        run: |
+          echo "## 🎉 Published to crates.io" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ [dampen-core v${{ github.ref_name }}](https://crates.io/crates/dampen-core)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ [dampen-macros v${{ github.ref_name }}](https://crates.io/crates/dampen-macros)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ [dampen-runtime v${{ github.ref_name }}](https://crates.io/crates/dampen-runtime)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ [dampen-iced v${{ github.ref_name }}](https://crates.io/crates/dampen-iced)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ [dampen-cli v${{ github.ref_name }}](https://crates.io/crates/dampen-cli)" >> $GITHUB_STEP_SUMMARY
