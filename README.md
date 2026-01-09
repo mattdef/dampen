@@ -5,27 +5,30 @@
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://rust-lang.org)
 
-**Framework UI déclaratif pour Rust avec backend Iced, styling avancé, et génération de code.**
+**Declarative UI framework for Rust with Iced backend, advanced styling, and code generation.**
 
-Dampen permet de définir votre interface utilisateur en XML et de l'afficher via Iced.
+Dampen allows you to define your user interface in XML and render it via Iced.
 
-## Fonctionnalités
+## Features
 
-- ✅ **Definitions XML déclaratives**
-- ✅ **Systeme de styling avancé** (themes, classes, styles etat)
-- ✅ **Design responsive** avec breakpoints (mobile, tablet, desktop)
-- ✅ **Gestionnaires d'evenements type-safe**
-- ✅ **Evaluation d'expressions** dans les attributs XML
-- ✅ **Support complet des widgets Iced** (text, buttons, inputs, layouts, etc.)
+- ✅ **Declarative XML definitions**
+- ✅ **Advanced styling system** (themes, classes, state styles)
+- ✅ **Responsive design** with breakpoints (mobile, tablet, desktop)
+- ✅ **Type-safe event handlers**
+- ✅ **Expression evaluation** in XML attributes
+- ✅ **Full Iced widget support** (text, buttons, inputs, layouts, etc.)
+- ✅ **Radio button groups** with single-selection behavior
+- ✅ **Data binding** with `#[derive(UiModel)]`
+- ✅ **CLI validation** tools for syntax checking
 
 ## Installation
 
 ### Prerequisites
 
-- Rust 1.75 ou superieur (stable)
-- Edition 2021 ou 2024
+- Rust 1.75 or higher (stable)
+- Edition 2021 or 2024
 
-### Configuration du projet
+### Project Configuration
 
 ```toml
 [workspace]
@@ -51,64 +54,64 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ```
 
-## Structure du projet
+## Project Structure
 
 ```
 my-app/
 ├── Cargo.toml
 ├── src/
-│   ├── main.rs             # Point d'entree de l'application
+│   ├── main.rs             # Application entry point
 │   └── ui/
-│       ├── mod.rs          # Module UI avec AppState
-│       ├── window.rs       # Code de la fenêtre
-│       └── window.dampen   # Definition XML de l'interface
+│       ├── mod.rs          # UI module with AppState
+│       ├── window.rs       # Window code
+│       └── window.dampen   # XML interface definition
 └── target/
 ```
 
-## Demarrage rapide
+## Quick Start
 
-### Creer un nouveau projet
+### Create a New Project
 
-Utilisez la commande CLI pour scaffold un nouveau projet Dampen :
+Use the CLI command to scaffold a new Dampen project:
 
 ```bash
-# Creer un nouveau projet
+# Create a new project
 dampen new my-app
 
-# Naviguer vers le projet
+# Navigate to the project
 cd my-app
 
-# Lancer l'application
+# Run the application
 cargo run
 ```
 
-La commande `dampen new` cree une structure de projet complete :
+The `dampen new` command creates a complete project structure:
 
 ```
 my-app/
-├── Cargo.toml              # Dependencies du projet
-├── README.md               # Guide de demarrage
-├── build.rs                # Generation de code (XML → Rust)
+├── Cargo.toml              # Project dependencies
+├── README.md               # Getting started guide
+├── build.rs                # Code generation (XML → Rust)
 ├── src/
-│   ├── main.rs             # Point d'entree de l'application
+│   ├── main.rs             # Application entry point
 │   └── ui/
-│       ├── mod.rs          # Exports du module UI
-│       ├── window.rs       # Model et handlers avec #[dampen_ui]
-│       └── window.dampen   # Definition UI declarative (XML)
+│       ├── mod.rs          # UI module exports
+│       ├── window.rs       # Model and handlers with #[dampen_ui]
+│       └── window.dampen   # Declarative UI definition (XML)
 └── tests/
-    └── integration.rs      # Tests d'integration
+    └── integration.rs      # Integration tests
 ```
 
-**Fichiers cles :**
+**Key Files:**
 
-| Fichier | Description |
-|---------|-------------|
-| `src/ui/window.dampen` | Definition UI XML avec widgets, bindings, handlers |
-| `src/ui/window.rs` | Model avec `#[derive(UiModel)]`, registre handlers |
-| `src/main.rs` | Orchestration application (view, update) |
-| `build.rs` | Compile les fichiers `.dampen` en code Rust |
+| File | Description |
+|------|-------------|
+| `src/ui/window.dampen` | XML UI definition with widgets, bindings, handlers |
+| `src/ui/window.rs` | Model with `#[derive(UiModel)]`, handler registry |
+| `src/main.rs` | Application orchestration (view, update) |
+| `build.rs` | Compiles `.dampen` files to Rust code |
 
-**Exemple UI genere :**
+**Generated UI Example:**
 
 ```xml
 <dampen>
@@ -120,38 +123,38 @@ my-app/
 </dampen>
 ```
 
-### Validation du projet
+### Project Validation
 
 ```bash
-# Valider la syntaxe XML et les noms de widgets
+# Validate XML syntax and widget names
 dampen check
 
-# Construire le projet
+# Build the project
 dampen build
 
-# Inspecter l'IR genere
+# Inspect generated IR
 dampen inspect src/ui/window.dampen
 ```
 
-### Structure du projet (manuelle)
+### Manual Project Structure
 
-Si vous preferez creer le projet manuellement :
+If you prefer to create the project manually:
 
 ```
 my-app/
 ├── Cargo.toml
 ├── src/
-│   ├── main.rs             # Point d'entree de l'application
+│   ├── main.rs             # Application entry point
 │   └── ui/
-│       ├── mod.rs          # Module UI avec AppState
-│       ├── window.rs       # Code de la fenetre
-│       └── window.dampen   # Definition XML de l'interface
+│       ├── mod.rs          # UI module with AppState
+│       ├── window.rs       # Window code
+│       └── window.dampen   # XML interface definition
 └── target/
 ```
 
-## Fonctionnalites avancees
+## Advanced Features
 
-### Liaison de donnees (Data Binding)
+### Data Binding
 
 ```rust
 #[derive(UiModel, Default, Serialize, Deserialize, Clone)]
@@ -169,7 +172,7 @@ struct TodoItem {
 }
 ```
 
-### Gestionnaires d'evenements types
+### Type-Safe Event Handlers
 
 ```rust
 fn increment(model: &mut Model) {
@@ -192,7 +195,7 @@ fn toggle_item(model: &mut Model, id: usize) {
 }
 ```
 
-### Systeme de theming avance
+### Advanced Theming System
 
 ```xml
 <themes>
@@ -220,7 +223,7 @@ fn toggle_item(model: &mut Model, id: usize) {
 <global_theme name="light" />
 ```
 
-### Classes de style reutilisables
+### Reusable Style Classes
 
 ```xml
 <styles>
@@ -246,11 +249,11 @@ fn toggle_item(model: &mut Model, id: usize) {
     </style>
 </styles>
 
-<button class="btn_primary" label="Valider" on_click="submit" />
-<button class="btn_danger" label="Supprimer" on_click="delete" />
+<button class="btn_primary" label="Submit" on_click="submit" />
+<button class="btn_danger" label="Delete" on_click="delete" />
 ```
 
-### Design responsive avec breakpoints
+### Responsive Design with Breakpoints
 
 ```xml
 <column 
@@ -260,71 +263,72 @@ fn toggle_item(model: &mut Model, id: usize) {
     <text 
         mobile:size="18"
         desktop:size="32"
-        value="Texte responsive" />
+        value="Responsive text" />
 </column>
 ```
 
-### Widgets disponibles
+### Available Widgets
 
-| Widget | Description | Attributs principaux |
-|--------|-------------|---------------------|
-| `text` | Affichage de texte | value, size, weight, color |
-| `button` | Bouton interactif | label, on_click, enabled, class |
-| `text_input` | Champ de saisie | value, on_input, placeholder |
-| `checkbox` | Case a cocher | checked, on_toggle |
-| `toggler` | Interrupteur | active, on_toggle, label |
-| `pick_list` | Liste deroulante | options, selected, on_select |
-| `column` | Layout vertical | spacing, padding, align |
-| `row` | Layout horizontal | spacing, padding, align |
-| `scrollable` | Zone defilement | width, height |
-| `container` | Conteneur | padding, width, height |
-| `for` | Boucle dynamique | each, in |
-| `grid` | Grille | columns, spacing |
-| `progress_bar` | Barre de progression | min, max, value |
-| `svg` | Image SVG | path, width, height |
-| `tooltip` | Infobulle | message, position |
+| Widget | Description | Main Attributes |
+|--------|-------------|----------------|
+| `text` | Text display | value, size, weight, color |
+| `button` | Interactive button | label, on_click, enabled, class |
+| `text_input` | Text input field | value, on_input, placeholder |
+| `checkbox` | Checkbox | checked, on_toggle |
+| `toggler` | Toggle switch | active, on_toggle, label |
+| `pick_list` | Dropdown list | options, selected, on_select |
+| `radio` | Radio button | label, value, selected, on_select |
+| `column` | Vertical layout | spacing, padding, align |
+| `row` | Horizontal layout | spacing, padding, align |
+| `scrollable` | Scrollable area | width, height |
+| `container` | Container | padding, width, height |
+| `for` | Dynamic loop | each, in |
+| `grid` | Grid layout | columns, spacing |
+| `progress_bar` | Progress bar | min, max, value |
+| `svg` | SVG image | path, width, height |
+| `tooltip` | Tooltip | message, position |
 
 ## Architecture
 
-### Structure des crates
+### Crate Structure
 
 ```
 crates/
-├── dampen-core/           # Parser XML, IR, traits (sans dependance Iced)
+├── dampen-core/           # XML parser, IR, traits (no Iced dependency)
 ├── dampen-macros/         # Macros #[derive(UiModel)], #[dampen_ui]
-├── dampen-runtime/        # Interpretation, gestion d'etat, erreurs
-├── dampen-iced/           # Implementation backend Iced
-└── dampen-cli/            # CLI developpeur (build, check, inspect)
+├── dampen-runtime/        # Interpretation, state management, errors
+├── dampen-iced/           # Iced backend implementation
+└── dampen-cli/            # Developer CLI (build, check, inspect)
 
 examples/
-├── hello-world/           # Application minimale
-├── counter/               # Gestionnaires d'evenements interactifs
-├── todo-app/              # Liaison de donnees complete
-├── styling/               # Themes et classes de style
-├── responsive/            # Design responsive
-├── settings/              # Vues multiples
-├── widget-showcase/       # Demonstration des widgets
-└── builder-demo/          # Patterns widget custom
+├── hello-world/           # Minimal application
+├── counter/               # Interactive event handlers
+├── todo-app/              # Complete data binding
+├── styling/               # Themes and style classes
+├── responsive/            # Responsive design
+├── settings/              # Multiple views
+├── widget-showcase/       # Widget demonstration
+└── builder-demo/          # Custom widget patterns
 
 specs/
-└── 001-006-*/             # Specifications techniques
+└── 001-006-*/             # Technical specifications
 ```
 
-### Principes fondamentaux
+### Core Principles
 
-1. **Declaratif-First**: Le XML est la source de verite pour la structure UI
-2. **Securite de type**: Pas d'erasure de type pour les messages/etat
-3. **Production Mode**: Code generation statique pour les deploiements
-4. **Backend-agnostic**: Le crate core n'a pas de dependance Iced
-5. **Test-First**: TDD pour toutes les fonctionnalites
+1. **Declarative-First**: XML is the source of truth for UI structure
+2. **Type Safety**: No type erasure for messages/state
+3. **Production Mode**: Static code generation for deployments
+4. **Backend-Agnostic**: Core crate has no Iced dependency
+5. **Test-First**: TDD for all features
 
-### Flux de donnees
+### Data Flow
 
 ```
 XML (main.dampen)
         |
         v
-    Parser XML
+    XML Parser
         |
         v
    DampenDocument
@@ -336,53 +340,53 @@ XML (main.dampen)
      Element<Iced>
 ```
 
-## Exemples
+## Examples
 
-Voir le repertoire [examples/](examples/) pour des demonstrations progressives :
+See the [examples/](examples/) directory for progressive demonstrations:
 
-| Exemple | Fonctionnalites |
-|---------|----------------|
-| **hello-world** | Rendu UI statique minimal |
-| **counter** | Gestionnaires d'evenements interactifs |
-| **todo-app** | Liaison de donnees complete avec listes |
-| **styling** | Themes, classes, styles etat |
-| **responsive** | Design responsive avec breakpoints |
-| **settings** | Vues multiples et navigation |
-| **widget-showcase** | Demonstration de tous les widgets |
+| Example | Features |
+|---------|----------|
+| **hello-world** | Minimal static UI rendering |
+| **counter** | Interactive event handlers |
+| **todo-app** | Complete data binding with lists |
+| **styling** | Themes, classes, state styles |
+| **responsive** | Responsive design with breakpoints |
+| **settings** | Multiple views and navigation |
+| **widget-showcase** | Demonstration of all widgets |
 
-## Commandes CLI
+## CLI Commands
 
 ```bash
-# Generer du code de production
-dampen build --ui ui --output src/ui_genere.rs
+# Generate production code
+dampen build --ui ui --output src/ui_generated.rs
 
-# Valider les fichiers UI sans executer
+# Validate UI files without running
 dampen check --ui ui
 
-# Inspecter l'IR ou le code genere
+# Inspect IR or generated code
 dampen inspect --file ui/main.dampen
 dampen inspect --file ui/main.dampen --codegen --handlers increment,decrement
 ```
 
 ## Performance
 
-| Metrique | Cible |
-|----------|-------|
-| Parse XML | <10ms pour 1000 widgets |
-| Generation de code | <5s pour une application typique |
-| Memoire runtime | <50MB de base |
+| Metric | Target |
+|--------|--------|
+| XML parsing | <10ms for 1000 widgets |
+| Code generation | <5s for typical application |
+| Runtime memory | <50MB baseline |
 
 ## Documentation
 
-- **[Documentation API](https://docs.rs/dampen-core)** - Rustdoc complet
-- **[Reference Schema XML](specs/001-framework-technical-specs/contracts/xml-schema.md)** - Widgets et attributs
-- **[Guide de style](examples/styling/README.md)** - Themes, classes, styles etat
-- **[Exemples](examples/)** - Projets examples progressifs
+- **[API Documentation](https://docs.rs/dampen-core)** - Complete Rustdoc
+- **[XML Schema Reference](specs/001-framework-technical-specs/contracts/xml-schema.md)** - Widgets and attributes
+- **[Styling Guide](examples/styling/README.md)** - Themes, classes, state styles
+- **[Examples](examples/)** - Progressive example projects
 
-## Licence
+## License
 
-Ce projet est sous licence Apache 2.0 ou MIT, au choix.
+This project is dual-licensed under Apache 2.0 or MIT, at your option.
 
 ---
 
-**Build avec ❤️ utilisant Rust et Iced**
+**Built with ❤️ using Rust and Iced**
