@@ -128,15 +128,15 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T034 [P] [US4] Unit test for duplicate radio value detection in crates/gravity-cli/tests/check/radio_tests.rs
-- [ ] T035 [P] [US4] Unit test for inconsistent handler detection in crates/gravity-cli/tests/check/radio_tests.rs
-- [ ] T036 [P] [US4] Integration test for valid radio group in crates/gravity-cli/tests/check/integration_tests.rs
+- [X] T034 [P] [US4] Unit test for duplicate radio value detection in crates/gravity-cli/tests/check/radio_tests.rs
+- [X] T035 [P] [US4] Unit test for inconsistent handler detection in crates/gravity-cli/tests/check/radio_tests.rs
+- [X] T036 [P] [US4] Integration test for valid radio group in crates/gravity-cli/tests/check/integration_tests.rs
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Create cross_widget.rs with RadioGroup collection and validation in crates/gravity-cli/src/commands/check/cross_widget.rs
-- [ ] T038 [US4] Add DuplicateRadioValue and InconsistentRadioHandlers error variants to CheckError in errors.rs
-- [ ] T039 [US4] Integrate radio group validation into main check.rs after widget validation
+- [X] T037 [US4] Create cross_widget.rs with RadioGroup collection and validation in crates/gravity-cli/src/commands/check/cross_widget.rs
+- [X] T038 [US4] Add DuplicateRadioValue and InconsistentRadioHandlers error variants to CheckError in errors.rs
+- [X] T039 [US4] Integrate radio group validation into main check.rs after widget validation
 
 **Checkpoint**: Radio group validation working - test with duplicate values and inconsistent handlers
 
@@ -150,15 +150,15 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T040 [P] [US5] Unit test for invalid theme property detection in crates/gravity-cli/tests/check/theme_tests.rs
-- [ ] T041 [P] [US5] Unit test for circular dependency detection in crates/gravity-cli/tests/check/theme_tests.rs
-- [ ] T042 [P] [US5] Integration test for valid theme in crates/gravity-cli/tests/check/integration_tests.rs
+- [X] T040 [P] [US5] Unit test for invalid theme property detection in crates/gravity-cli/tests/check/theme_tests.rs
+- [X] T041 [P] [US5] Unit test for circular dependency detection in crates/gravity-cli/tests/check/theme_tests.rs
+- [X] T042 [P] [US5] Integration test for valid theme in crates/gravity-cli/tests/check/integration_tests.rs
 
 ### Implementation for User Story 5
 
-- [ ] T043 [US5] Create themes.rs with theme property validation and cycle detection in crates/gravity-cli/src/commands/check/themes.rs
-- [ ] T044 [US5] Add InvalidThemeProperty and ThemeCircularDependency error variants to CheckError in errors.rs
-- [ ] T045 [US5] Integrate theme validation into main check.rs after widget validation
+- [X] T043 [US5] Create themes.rs with theme property validation and cycle detection in crates/gravity-cli/src/commands/check/themes.rs
+- [X] T044 [US5] Add InvalidThemeProperty and ThemeCircularDependency error variants to CheckError in errors.rs
+- [X] T045 [US5] Integrate theme validation into main check.rs after widget validation
 
 **Checkpoint**: Theme validation complete - test with invalid properties and circular dependencies
 
@@ -172,13 +172,13 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T046 [P] [US6] Integration test for strict mode exit code in crates/gravity-cli/tests/check/integration_tests.rs
-- [ ] T047 [P] [US6] Integration test for strict mode with no warnings in crates/gravity-cli/tests/check/integration_tests.rs
+- [X] T046 [P] [US6] Integration test for strict mode exit code in crates/gravity-cli/tests/check/integration_tests.rs
+- [X] T047 [P] [US6] Integration test for strict mode with no warnings in crates/gravity-cli/tests/check/integration_tests.rs
 
 ### Implementation for User Story 6
 
-- [ ] T048 [US6] Implement strict mode logic in check.rs to exit with code 1 on any warning
-- [ ] T049 [US6] Update error formatting to distinguish warnings from errors when in strict mode
+- [X] T048 [US6] Implement strict mode logic in check.rs to exit with code 1 on any warning
+- [X] T049 [US6] Update error formatting to distinguish warnings from errors when in strict mode
 
 **Checkpoint**: Strict mode working - test with `gravity check --strict` on files with warnings
 
@@ -192,16 +192,16 @@ description: "Task list for Check Validation Enhancements feature implementation
 
 ### Tests for User Story 7 ⚠️
 
-- [ ] T050 [P] [US7] Unit test for missing required attribute on Text in crates/gravity-cli/tests/check/attributes_tests.rs
-- [ ] T051 [P] [US7] Unit test for missing required attribute on Image in crates/gravity-cli/tests/check/attributes_tests.rs
-- [ ] T052 [P] [US7] Unit test for missing required attribute on Radio in crates/gravity-cli/tests/check/attributes_tests.rs
-- [ ] T053 [P] [US7] Integration test for required attribute validation in crates/gravity-cli/tests/check/integration_tests.rs
+- [X] T050 [P] [US7] Unit test for missing required attribute on Text in crates/gravity-cli/tests/check_attributes.rs
+- [X] T051 [P] [US7] Unit test for missing required attribute on Image in crates/gravity-cli/tests/check_attributes.rs
+- [X] T052 [P] [US7] Unit test for missing required attribute on Radio in crates/gravity-cli/tests/check_attributes.rs
+- [X] T053 [P] [US7] Integration test for required attribute validation in crates/gravity-cli/tests/check_integration.rs
 
 ### Implementation for User Story 7
 
-- [ ] T054 [US7] Enhance attributes.rs to check required attributes per widget type
-- [ ] T055 [US7] Add MissingRequiredAttribute error variant to CheckError in errors.rs
-- [ ] T056 [US7] Integrate required attribute validation into main check.rs validator loop
+- [X] T054 [US7] Enhance attributes.rs to check required attributes per widget type
+- [X] T055 [US7] Add MissingRequiredAttribute error variant to CheckError in errors.rs
+- [X] T056 [US7] Integrate required attribute validation into main check.rs validator loop
 
 **Checkpoint**: Required attribute validation complete - test with widgets missing required attrs
 
@@ -214,9 +214,9 @@ description: "Task list for Check Validation Enhancements feature implementation
 - [ ] T057 [P] Add integration test for complete validation pipeline with all flags in crates/gravity-cli/tests/check/integration_tests.rs
 - [ ] T058 [P] Update existing check_tests.rs to verify backward compatibility in crates/gravity-cli/tests/check_tests.rs
 - [ ] T059 [P] Verify performance target (100-500 widgets < 1 second) with benchmark test
-- [ ] T060 Run cargo clippy and cargo fmt to ensure code quality
+- [X] T060 Run cargo clippy and cargo fmt to ensure code quality
 - [ ] T061 [P] Update quickstart.md with any new CLI flag documentation
-- [ ] T062 [P] Run all gravity-cli tests: cargo test -p gravity-cli
+- [X] T062 [P] Run all gravity-cli tests: cargo test -p gravity-cli
 - [ ] T063 Validate against contracts/ error-messages.md format specification
 
 ---

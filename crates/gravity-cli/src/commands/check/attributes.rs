@@ -293,6 +293,24 @@ pub fn is_valid_attribute(widget_kind: &WidgetKind, attribute: &str) -> bool {
     schema.all_valid().contains(attribute)
 }
 
+/// Validates that all required attributes are present for a widget.
+///
+/// Returns a list of missing required attributes.
+pub fn validate_required_attributes(
+    widget_kind: &WidgetKind,
+    attributes: &[String],
+) -> Vec<String> {
+    let schema = WidgetAttributeSchema::for_widget(widget_kind);
+
+    // Find all required attributes that are not present in the provided attributes
+    schema
+        .required
+        .iter()
+        .filter(|&&req| !attributes.iter().any(|attr| attr == req))
+        .map(|&s| s.to_string())
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -385,5 +403,44 @@ mod tests {
         assert!(is_valid_attribute(&WidgetKind::Button, "on_click"));
         assert!(is_valid_attribute(&WidgetKind::Button, "label"));
         assert!(!is_valid_attribute(&WidgetKind::Button, "on_clik"));
+    }
+
+    #[test]
+    fn test_validate_required_attributes_all_present() {
+        let attrs = vec!["value".to_string(), "size".to_string()];
+        let missing = validate_required_attributes(&WidgetKind::Text, &attrs);
+        assert!(missing.is_empty());
+    }
+
+    #[test]
+    fn test_validate_required_attributes_missing_value() {
+        let attrs = vec!["size".to_string(), "color".to_string()];
+        let missing = validate_required_attributes(&WidgetKind::Text, &attrs);
+        assert_eq!(missing.len(), 1);
+        assert_eq!(missing[0], "value");
+    }
+
+    #[test]
+    fn test_validate_required_attributes_image_missing_src() {
+        let attrs = vec!["width".to_string(), "height".to_string()];
+        let missing = validate_required_attributes(&WidgetKind::Image, &attrs);
+        assert_eq!(missing.len(), 1);
+        assert_eq!(missing[0], "src");
+    }
+
+    #[test]
+    fn test_validate_required_attributes_radio_missing_both() {
+        let attrs = vec!["selected".to_string()];
+        let missing = validate_required_attributes(&WidgetKind::Radio, &attrs);
+        assert_eq!(missing.len(), 2);
+        assert!(missing.contains(&"label".to_string()));
+        assert!(missing.contains(&"value".to_string()));
+    }
+
+    #[test]
+    fn test_validate_required_attributes_button_no_required() {
+        let attrs = vec!["on_click".to_string()];
+        let missing = validate_required_attributes(&WidgetKind::Button, &attrs);
+        assert!(missing.is_empty());
     }
 }

@@ -321,3 +321,288 @@ fn test_binding_validation_without_model() {
     // Should pass when no model is provided (bindings not validated)
     assert!(result.is_ok());
 }
+// T036: Integration test for valid radio group
+#[test]
+fn test_valid_radio_group_integration() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create UI file with valid radio group
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <radio id="size_group" value="small" label="Small" on_select="handle_size" />
+    <radio id="size_group" value="medium" label="Medium" on_select="handle_size" />
+    <radio id="size_group" value="large" label="Large" on_select="handle_size" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should pass with valid radio group
+    assert!(result.is_ok());
+}
+
+// T042: Integration test for valid theme
+#[test]
+fn test_valid_theme_integration() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create UI file with theme and style class definitions
+    // Note: This is a simplified test since full theme validation
+    // would require parsing theme XML/JSON definitions
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <text value="Hello Theme" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should pass with simple valid file
+    assert!(result.is_ok());
+}
+
+// T046: Integration test for strict mode exit code
+#[test]
+fn test_strict_mode_with_errors() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create UI file with unknown attribute (would be a warning normally)
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <button on_clik="handle_click" label="Click Me" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    // Test without strict mode
+    let args_normal = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result_normal = execute(&args_normal);
+    // Should fail with error
+    assert!(result_normal.is_err());
+
+    // Test with strict mode
+    let args_strict = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: true,
+    };
+
+    let result_strict = execute(&args_strict);
+    // Should also fail with strict mode enabled
+    assert!(result_strict.is_err());
+}
+
+// T047: Integration test for strict mode with no warnings
+#[test]
+fn test_strict_mode_with_no_warnings() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create UI file with valid content (no errors or warnings)
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <button on_click="handle_click" label="Click Me" />
+    <text value="Hello World" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    // Test with strict mode
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: true,
+    };
+
+    let result = execute(&args);
+    // Should pass with no warnings or errors
+    assert!(result.is_ok());
+}
+
+// T053: Integration test for required attribute validation
+#[test]
+fn test_required_attribute_validation_text_missing_value() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create a test file with Text widget missing required 'value' attribute
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <text size="16" color="blue" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should fail due to missing required 'value' attribute
+    assert!(result.is_err());
+
+    let err = result.unwrap_err();
+    let err_msg = format!("{}", err);
+    assert!(err_msg.contains("value") || err_msg.contains("required"));
+}
+
+#[test]
+fn test_required_attribute_validation_image_missing_src() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create a test file with Image widget missing required 'src' attribute
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <image width="200" height="100" fit="contain" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should fail due to missing required 'src' attribute
+    assert!(result.is_err());
+
+    let err = result.unwrap_err();
+    let err_msg = format!("{}", err);
+    assert!(err_msg.contains("src") || err_msg.contains("required"));
+}
+
+#[test]
+fn test_required_attribute_validation_radio_missing_label() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create a test file with Radio widget missing required 'label' attribute
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <radio value="option1" on_select="handle_select" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should fail due to missing required 'label' attribute
+    assert!(result.is_err());
+
+    let err = result.unwrap_err();
+    let err_msg = format!("{}", err);
+    assert!(err_msg.contains("label") || err_msg.contains("required"));
+}
+
+#[test]
+fn test_required_attribute_validation_all_present() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create a test file with all required attributes present
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <text value="Hello World" size="16" />
+    <image src="logo.png" width="100" />
+    <radio label="Option 1" value="opt1" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+
+    // Should pass validation - all required attributes present
+    assert!(result.is_ok());
+}

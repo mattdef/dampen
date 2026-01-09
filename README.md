@@ -67,109 +67,86 @@ my-app/
 
 ## Demarrage rapide
 
-### 1. Creer le fichier d'interface UI (`src/ui/window.gravity`)
+### Creer un nouveau projet
+
+Utilisez la commande CLI pour scaffold un nouveau projet Gravity :
+
+```bash
+# Creer un nouveau projet
+gravity new my-app
+
+# Naviguer vers le projet
+cd my-app
+
+# Lancer l'application
+cargo run
+```
+
+La commande `gravity new` cree une structure de projet complete :
+
+```
+my-app/
+├── Cargo.toml              # Dependencies du projet
+├── README.md               # Guide de demarrage
+├── build.rs                # Generation de code (XML → Rust)
+├── src/
+│   ├── main.rs             # Point d'entree de l'application
+│   └── ui/
+│       ├── mod.rs          # Exports du module UI
+│       ├── window.rs       # Model et handlers avec #[gravity_ui]
+│       └── window.gravity  # Definition UI declarative (XML)
+└── tests/
+    └── integration.rs      # Tests d'integration
+```
+
+**Fichiers cles :**
+
+| Fichier | Description |
+|---------|-------------|
+| `src/ui/window.gravity` | Definition UI XML avec widgets, bindings, handlers |
+| `src/ui/window.rs` | Model avec `#[derive(UiModel)]`, registre handlers |
+| `src/main.rs` | Orchestration application (view, update) |
+| `build.rs` | Compile les fichiers `.gravity` en code Rust |
+
+**Exemple UI genere :**
 
 ```xml
-<?xml version="1.0" encoding="UTF-8" ?>
 <gravity>
     <column padding="40" spacing="20">
         <text value="Hello, Gravity!" size="32" weight="bold" />
-        <text value="Framework UI declaratif pour Rust" />
         <button label="Click me!" on_click="greet" />
+        <text value="{message}" size="24" />
     </column>
 </gravity>
 ```
 
-### 2. Creer le code d'interface (`src/ui/window.rs`)
-
-```rust
-use gravity_core::{AppState, HandlerRegistry};
-use gravity_macros::{gravity_ui, UiModel};
-use serde::{Deserialize, Serialize};
-
-#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
-pub struct Model;
-
-#[gravity_ui("window.gravity")]
-mod _app {}
-
-pub fn create_app_state() -> AppState<Model> {
-    let document = _app::document();
-    let handler_registry = create_handler_registry();
-    AppState::with_handlers(document, handler_registry)
-}
-
-pub fn create_handler_registry() -> HandlerRegistry {
-    let registry = HandlerRegistry::new();
-
-    // Register the greet handler
-    registry.register_simple("greet", |model: &mut dyn std::any::Any| {
-        if let Some(m) = model.downcast_mut::<Model>() {
-            println!("Button clicked! Model: {:?}", m);
-        }
-    });
-
-    registry
-}
-```
-
-### 4. Creer le module UI (`src/ui/mod.rs`)
-
-```rust
-pub mod window;
-```
-
-### 5. Creer le point d'entree (`src/main.rs`)
-
-```rust
-mod ui;
-
-use gravity_core::AppState;
-use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
-use iced::{Element, Task};
-
-type Message = HandlerMessage;
-
-struct GravityApp {
-    state: AppState<ui::window::Model>,
-}
-
-fn update(app: &mut GravityApp, message: Message) -> Task<Message> {
-    match message {
-        HandlerMessage::Handler(handler_name, _value) => {
-            if let Some(gravity_core::HandlerEntry::Simple(h)) =
-                app.state.handler_registry.get(&handler_name)
-            {
-                h(&mut app.state.model);
-            }
-        }
-    }
-    Task::none()
-}
-
-fn view(app: &GravityApp) -> Element<'_, Message> {
-    GravityWidgetBuilder::new(
-        &app.state.document,
-        &app.state.model,
-        Some(&app.state.handler_registry),
-    )
-    .build()
-}
-
-fn init() -> (GravityApp, Task<Message>) {
-    let state = ui::window::create_app_state();
-    (GravityApp { state }, Task::none())
-}
-
-pub fn main() -> iced::Result {
-    iced::application(init, update, view).run()
-}
-```
-
-### 6. Lancer l'application
+### Validation du projet
 
 ```bash
-cargo run
+# Valider la syntaxe XML et les noms de widgets
+gravity check
+
+# Construire le projet
+gravity build
+
+# Inspecter l'IR genere
+gravity inspect src/ui/window.gravity
+```
+
+### Structure du projet (manuelle)
+
+Si vous preferez creer le projet manuellement :
+
+```
+my-app/
+├── Cargo.toml
+├── src/
+│   ├── main.rs             # Point d'entree de l'application
+│   └── ui/
+│       ├── mod.rs          # Module UI avec AppState
+│       ├── window.rs       # Code de la fenetre
+│       └── window.gravity  # Definition XML de l'interface
+└── target/
 ```
 
 ## Fonctionnalites avancees

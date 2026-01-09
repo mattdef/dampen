@@ -119,3 +119,140 @@ fn test_textinput_valid_attributes() {
     assert!(all_valid.contains("width"));
     assert!(all_valid.contains("padding"));
 }
+
+// T050: Unit test for missing required attribute on Text widget
+#[test]
+fn test_text_missing_required_value_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Text);
+
+    // Text widget requires 'value' attribute
+    assert!(schema.required.contains("value"));
+
+    // Test that an attribute set without 'value' is missing required
+    let test_attrs = vec!["size", "color", "width"];
+    let missing_required: Vec<_> = schema
+        .required
+        .iter()
+        .filter(|&&req| !test_attrs.contains(&req))
+        .collect();
+
+    assert_eq!(missing_required.len(), 1);
+    assert_eq!(*missing_required[0], "value");
+}
+
+#[test]
+fn test_text_with_all_required_attributes() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Text);
+
+    // Test that an attribute set with 'value' has all required
+    let test_attrs = vec!["value", "size", "color"];
+    let missing_required: Vec<_> = schema
+        .required
+        .iter()
+        .filter(|&&req| !test_attrs.contains(&req))
+        .collect();
+
+    assert_eq!(missing_required.len(), 0);
+}
+
+// T052: Unit test for missing required attribute on Radio widget
+#[test]
+fn test_radio_missing_required_label_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Radio);
+
+    // Radio widget requires 'label' and 'value' attributes
+    assert!(schema.required.contains("label"));
+    assert!(schema.required.contains("value"));
+
+    // Test that an attribute set without 'label' is missing required
+    let test_attrs = vec!["value", "selected", "on_select"];
+    let missing_required: Vec<_> = schema
+        .required
+        .iter()
+        .filter(|&&req| !test_attrs.contains(&req))
+        .collect();
+
+    assert_eq!(missing_required.len(), 1);
+    assert_eq!(*missing_required[0], "label");
+}
+
+#[test]
+fn test_radio_missing_required_value_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Radio);
+
+    // Test that an attribute set without 'value' is missing required
+    let test_attrs = vec!["label", "selected", "on_select"];
+    let missing_required: Vec<_> = schema
+        .required
+        .iter()
+        .filter(|&&req| !test_attrs.contains(&req))
+        .collect();
+
+    assert_eq!(missing_required.len(), 1);
+    assert_eq!(*missing_required[0], "value");
+}
+
+#[test]
+fn test_radio_missing_both_required_attributes() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Radio);
+
+    // Test that an attribute set without both 'label' and 'value' is missing both
+    let test_attrs = vec!["selected", "on_select", "disabled"];
+    let missing_required: Vec<_> = schema
+        .required
+        .iter()
+        .filter(|&&req| !test_attrs.contains(&req))
+        .collect();
+
+    assert_eq!(missing_required.len(), 2);
+}
+
+#[test]
+fn test_radio_with_all_required_attributes() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Radio);
+
+    // Test that an attribute set with both 'label' and 'value' has all required
+    let test_attrs = vec!["label", "value", "selected"];
+    let missing_required: Vec<_> = schema
+        .required
+        .iter()
+        .filter(|&&req| !test_attrs.contains(&req))
+        .collect();
+
+    assert_eq!(missing_required.len(), 0);
+}
+
+// T051: Unit test for missing required attribute on Image widget
+#[test]
+fn test_image_missing_required_src_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Image);
+
+    // Image widget requires 'src' attribute
+    assert!(schema.required.contains("src"));
+
+    // Test that an attribute set without 'src' is missing required
+    let test_attrs = vec!["width", "height", "fit"];
+    let missing_required: Vec<_> = schema
+        .required
+        .iter()
+        .filter(|&&req| !test_attrs.contains(&req))
+        .collect();
+
+    assert_eq!(missing_required.len(), 1);
+    assert_eq!(*missing_required[0], "src");
+}
+
+#[test]
+fn test_image_with_all_required_attributes() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Image);
+
+    // Test that an attribute set with 'src' has all required
+    let test_attrs = vec!["src", "width", "height"];
+    let missing_required: Vec<_> = schema
+        .required
+        .iter()
+        .filter(|&&req| !test_attrs.contains(&req))
+        .collect();
+
+    assert_eq!(missing_required.len(), 0);
+}

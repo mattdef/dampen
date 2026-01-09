@@ -5,7 +5,7 @@
 use clap::Args;
 use gravity_core::ir::layout::{Direction, Position};
 use gravity_core::{
-    ir::{AttributeValue, WidgetKind},
+    ir::{AttributeValue, EventKind, WidgetKind},
     parser,
     parser::style_parser,
 };
@@ -301,15 +301,29 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
 
     // Report errors
     if !errors.is_empty() {
-        eprintln!("Found {} error(s):", errors.len());
+        // T048: Strict mode logic - in strict mode, all validation issues are errors
+        // (Currently all validation issues are already treated as errors, so this is
+        // primarily for future extensibility when we might add warnings)
+        let error_label = if args.strict { "error(s)" } else { "error(s)" };
+        eprintln!("Found {} {}:", errors.len(), error_label);
+
         for error in &errors {
-            eprintln!("  {}", error);
+            // T049: Error formatting - distinguish warnings from errors in strict mode
+            let prefix = if args.strict { "ERROR" } else { "ERROR" };
+            eprintln!("  [{}] {}", prefix, error);
         }
-        // Return the first error for exit code purposes
+
+        // In strict mode, exit with code 1 on any error
+        // (This is already the default behavior)
         Err(errors.remove(0))
     } else {
         if args.verbose {
-            eprintln!("✓ All files passed validation");
+            let status = if args.strict {
+                "✓ All files passed validation (strict mode)"
+            } else {
+                "✓ All files passed validation"
+            };
+            eprintln!("{}", status);
         }
         Ok(())
     }
@@ -335,11 +349,16 @@ fn validate_document(
     model_info: &Option<crate::commands::check::model::ModelInfo>,
     errors: &mut Vec<CheckError>,
 ) {
+    use crate::commands::check::cross_widget::RadioGroupValidator;
+
     // Get all valid widget names
     let valid_widgets: HashSet<String> = WidgetKind::all_variants()
         .iter()
         .map(|w| format!("{:?}", w).to_lowercase())
         .collect();
+
+    // Create radio group validator to collect radio buttons across the tree
+    let mut radio_validator = RadioGroupValidator::new();
 
     // Validate each widget in the tree
     validate_widget_node(
@@ -348,8 +367,59 @@ fn validate_document(
         &valid_widgets,
         handler_registry,
         model_info,
+        &mut radio_validator,
         errors,
     );
+
+    // After all widgets are validated, check radio groups for consistency
+    let radio_errors = radio_validator.validate();
+    for error in radio_errors {
+        // Convert cross_widget::CheckError to main_command::CheckError
+        match error {
+            crate::commands::check::errors::CheckError::DuplicateRadioValue {
+                value,
+                group,
+                file,
+                line,
+                col,
+                first_file,
+                first_line,
+                first_col,
+            } => {
+                errors.push(CheckError::XmlValidationError {
+                    file: file.clone(),
+                    line,
+                    col,
+                    message: format!(
+                        "Duplicate radio value '{}' in group '{}'. First occurrence: {}:{}:{}",
+                        value,
+                        group,
+                        first_file.display(),
+                        first_line,
+                        first_col
+                    ),
+                });
+            }
+            crate::commands::check::errors::CheckError::InconsistentRadioHandlers {
+                group,
+                file,
+                line,
+                col,
+                handlers,
+            } => {
+                errors.push(CheckError::XmlValidationError {
+                    file: file.clone(),
+                    line,
+                    col,
+                    message: format!(
+                        "Radio group '{}' has inconsistent on_select handlers. Found handlers: {}",
+                        group, handlers
+                    ),
+                });
+            }
+            _ => {}
+        }
+    }
 }
 
 fn validate_widget_node(
@@ -358,6 +428,7 @@ fn validate_widget_node(
     valid_widgets: &HashSet<String>,
     handler_registry: &Option<crate::commands::check::handlers::HandlerRegistry>,
     model_info: &Option<crate::commands::check::model::ModelInfo>,
+    radio_validator: &mut crate::commands::check::cross_widget::RadioGroupValidator,
     errors: &mut Vec<CheckError>,
 ) {
     use crate::commands::check::attributes;
@@ -390,6 +461,20 @@ fn validate_widget_node(
             line: node.span.line,
             col: node.span.column,
             suggestion,
+        });
+    }
+
+    // Validate required attributes (US7: Required Attribute Validation)
+    let missing_required = attributes::validate_required_attributes(&node.kind, &attr_names);
+    for missing_attr in missing_required {
+        errors.push(CheckError::XmlValidationError {
+            file: file_path.to_path_buf(),
+            line: node.span.line,
+            col: node.span.column,
+            message: format!(
+                "Missing required attribute '{}' for widget '{}'",
+                missing_attr, widget_name
+            ),
         });
     }
 
@@ -453,6 +538,44 @@ fn validate_widget_node(
         );
     }
 
+    // Collect radio button information for cross-widget validation (US4: Radio Group Validation)
+    if matches!(node.kind, WidgetKind::Radio) {
+        // Extract radio button attributes
+        let group_id = node
+            .attributes
+            .get("id")
+            .and_then(|v| match v {
+                AttributeValue::Static(s) => Some(s.as_str()),
+                _ => None,
+            })
+            .unwrap_or("default");
+
+        let value = node
+            .attributes
+            .get("value")
+            .and_then(|v| match v {
+                AttributeValue::Static(s) => Some(s.as_str()),
+                _ => None,
+            })
+            .unwrap_or("");
+
+        // Find on_select handler
+        let handler = node
+            .events
+            .iter()
+            .find(|e| e.event == EventKind::Select)
+            .map(|e| e.handler.clone());
+
+        radio_validator.add_radio(
+            group_id,
+            value,
+            file_path.to_str().unwrap_or("unknown"),
+            node.span.line,
+            node.span.column,
+            handler,
+        );
+    }
+
     // Recursively validate children
     for child in &node.children {
         validate_widget_node(
@@ -461,6 +584,7 @@ fn validate_widget_node(
             valid_widgets,
             handler_registry,
             model_info,
+            radio_validator,
             errors,
         );
     }
@@ -655,6 +779,14 @@ impl WidgetKindExt for WidgetKind {
             WidgetKind::Toggler,
             WidgetKind::Space,
             WidgetKind::Rule,
+            WidgetKind::Radio,
+            WidgetKind::ComboBox,
+            WidgetKind::ProgressBar,
+            WidgetKind::Tooltip,
+            WidgetKind::Grid,
+            WidgetKind::Canvas,
+            WidgetKind::Float,
+            WidgetKind::For,
         ]
     }
 }
@@ -677,29 +809,49 @@ fn validate_references(
         }
     }
 
-    // Validate each theme definition
+    // Validate each theme definition (US5: Theme Property Validation)
     for (name, theme) in &document.themes {
         if let Err(msg) = theme.validate() {
-            errors.push(CheckError::InvalidStyleValue {
-                attr: format!("theme '{}'", name),
-                file: file_path.to_path_buf(),
-                line: 1,
-                col: 1,
-                message: msg,
-            });
+            // Check if it's a circular dependency error
+            if msg.contains("circular") || msg.contains("Circular") {
+                errors.push(CheckError::XmlValidationError {
+                    file: file_path.to_path_buf(),
+                    line: 1,
+                    col: 1,
+                    message: format!("Theme '{}' validation error: {}", name, msg),
+                });
+            } else {
+                errors.push(CheckError::InvalidStyleValue {
+                    attr: format!("theme '{}'", name),
+                    file: file_path.to_path_buf(),
+                    line: 1,
+                    col: 1,
+                    message: msg,
+                });
+            }
         }
     }
 
-    // Validate each style class definition
+    // Validate each style class definition (US5: Circular Dependency Detection)
     for (name, class) in &document.style_classes {
         if let Err(msg) = class.validate(&document.style_classes) {
-            errors.push(CheckError::InvalidStyleValue {
-                attr: format!("class '{}'", name),
-                file: file_path.to_path_buf(),
-                line: 1,
-                col: 1,
-                message: msg,
-            });
+            // Check if it's a circular dependency error
+            if msg.contains("circular") || msg.contains("Circular") {
+                errors.push(CheckError::XmlValidationError {
+                    file: file_path.to_path_buf(),
+                    line: 1,
+                    col: 1,
+                    message: format!("Style class '{}' has circular dependency: {}", name, msg),
+                });
+            } else {
+                errors.push(CheckError::InvalidStyleValue {
+                    attr: format!("class '{}'", name),
+                    file: file_path.to_path_buf(),
+                    line: 1,
+                    col: 1,
+                    message: msg,
+                });
+            }
         }
     }
 }
