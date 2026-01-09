@@ -67,7 +67,7 @@ fn test_valid_style_attributes() {
     let valid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <column padding=\"20\" spacing=\"10\">
     <text value=\"Styled text\" color=\"#3498db\" />
-    <button label=\"Styled button\" background=\"#e74c3c\" border_width=\"2\" 
+    <button label=\"Styled button\" background=\"#e74c3c\" border_width=\"2\"
             border_color=\"#c0392b\" border_radius=\"4\" shadow=\"2 2 4 #00000040\" opacity=\"0.9\" />
 </column>";
 
@@ -153,22 +153,22 @@ fn test_valid_theme_and_class_references() {
 <gravity>
     <themes>
         <theme name=\"custom\">
-            <palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\" 
-                     warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" 
+            <palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\"
+                     warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\"
                      surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" />
-            <typography font_family=\"Inter\" font_size_base=\"16\" font_size_small=\"12\" 
+            <typography font_family=\"Inter\" font_size_base=\"16\" font_size_small=\"12\"
                         font_size_large=\"20\" font_weight=\"normal\" line_height=\"1.5\" />
             <spacing unit=\"8\" />
         </theme>
     </themes>
-    
+
     <style_classes>
         <class name=\"btn_primary\" background=\"#3498db\" color=\"#ffffff\" border_radius=\"4\" />
         <class name=\"card\" background=\"#ffffff\" padding=\"20\" border_radius=\"8\" />
     </style_classes>
-    
+
     <global_theme name=\"custom\" />
-    
+
     <column theme_ref=\"custom\" class=\"card\">
         <text value=\"Themed text\" />
         <button label=\"Primary button\" class=\"btn_primary\" />
@@ -423,4 +423,99 @@ fn test_circular_class_dependency() {
     assert!(result.is_err());
     let error_msg = result.unwrap_err().to_string();
     assert!(error_msg.contains("circular") || error_msg.contains("class"));
+}
+
+// T058: Backward compatibility tests for enhanced validation features
+#[test]
+fn test_backward_compatibility_without_optional_flags() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    // Create a UI file that would have validation errors with new flags,
+    // but should still work in basic mode without them
+    let ui_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <text value=\"Hello World\" />
+    <button label=\"Click\" on_click=\"unregistered_handler\" />
+    <text_input value=\"{unvalidated_binding}\" />
+</column>";
+
+    fs::write(ui_dir.join("main.gravity"), ui_content).unwrap();
+
+    // Create args without new optional flags (backward compatible mode)
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+
+    // Verify that handlers and model are None (backward compatible)
+    assert!(args.handlers.is_none());
+    assert!(args.model.is_none());
+    assert!(args.custom_widgets.is_none());
+    assert!(!args.strict);
+
+    // Should pass basic validation (only widget names and attributes)
+    let result = execute(&args);
+    assert!(
+        result.is_ok(),
+        "Basic validation should pass without optional validation flags"
+    );
+}
+
+#[test]
+fn test_backward_compatibility_existing_validation_still_works() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    // Test that existing validations (unknown widget, parse errors) still work
+    let invalid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <unknown_widget_type value=\"test\" />
+</column>";
+
+    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+
+    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+
+    // Should still fail on unknown widget type
+    let result = execute(&args);
+    assert!(
+        result.is_err(),
+        "Unknown widget validation should still work"
+    );
+}
+
+#[test]
+fn test_backward_compatibility_helper_function() {
+    // Verify that the helper function creates backward-compatible args
+    let args = create_check_args("./ui".to_string(), false);
+
+    assert_eq!(args.input, "./ui");
+    assert!(!args.verbose);
+    assert!(args.handlers.is_none());
+    assert!(args.model.is_none());
+    assert!(args.custom_widgets.is_none());
+    assert!(!args.strict);
+}
+
+#[test]
+fn test_enhanced_validation_requires_opt_in() {
+    let temp_dir = TempDir::new().unwrap();
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    // UI file with handler that doesn't exist
+    let ui_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <button label=\"Click\" on_click=\"nonexistent_handler\" />
+</column>";
+
+    fs::write(ui_dir.join("main.gravity"), ui_content).unwrap();
+
+    // Without handler registry, should pass (handler validation is opt-in)
+    let args_without_registry = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let result = execute(&args_without_registry);
+    assert!(
+        result.is_ok(),
+        "Handler validation should be opt-in via --handlers flag"
+    );
 }

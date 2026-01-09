@@ -606,3 +606,162 @@ fn test_required_attribute_validation_all_present() {
     // Should pass validation - all required attributes present
     assert!(result.is_ok());
 }
+
+// T057: Integration test for complete validation pipeline with all flags
+#[test]
+fn test_complete_validation_pipeline_all_flags() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create handler registry
+    let registry_path = temp_dir.path().join("handlers.json");
+    let registry_content = r#"[
+  {
+    "name": "handle_click",
+    "param_type": null,
+    "returns_command": false
+  },
+  {
+    "name": "handle_input",
+    "param_type": "String",
+    "returns_command": false
+  },
+  {
+    "name": "handle_select",
+    "param_type": "String",
+    "returns_command": false
+  }
+]"#;
+    fs::write(&registry_path, registry_content).expect("Failed to write registry");
+
+    // Create model info
+    let model_path = temp_dir.path().join("model.json");
+    let model_content = r#"[
+  {
+    "name": "title",
+    "type_name": "String",
+    "is_nested": false,
+    "children": []
+  },
+  {
+    "name": "count",
+    "type_name": "i32",
+    "is_nested": false,
+    "children": []
+  },
+  {
+    "name": "user",
+    "type_name": "User",
+    "is_nested": true,
+    "children": [
+      {"name": "name", "type_name": "String", "is_nested": false, "children": []},
+      {"name": "email", "type_name": "String", "is_nested": false, "children": []}
+    ]
+  }
+]"#;
+    fs::write(&model_path, model_content).expect("Failed to write model");
+
+    // Create a comprehensive UI file with all validation scenarios
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <text value="{title}" size="24" />
+    <text value="Count: {count}" />
+    <button on_click="handle_click" label="Click Me" />
+    <text_input placeholder="Enter name" value="{user.name}" on_input="handle_input" />
+    <image src="logo.png" width="100" height="100" />
+    <radio label="Option 1" value="opt1" on_select="handle_select" />
+    <radio label="Option 2" value="opt2" on_select="handle_select" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    // Test with all flags enabled
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: true,
+        handlers: Some(registry_path.to_string_lossy().to_string()),
+        model: Some(model_path.to_string_lossy().to_string()),
+        custom_widgets: None,
+        strict: true,
+    };
+
+    let result = execute(&args);
+
+    // Should pass validation - all attributes valid, handlers registered, bindings valid
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_complete_validation_pipeline_with_errors() {
+    use gravity_cli::commands::check::{execute, CheckArgs};
+
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).expect("Failed to create ui dir");
+
+    // Create handler registry (missing some handlers)
+    let registry_path = temp_dir.path().join("handlers.json");
+    let registry_content = r#"[
+  {
+    "name": "handle_click",
+    "param_type": null,
+    "returns_command": false
+  }
+]"#;
+    fs::write(&registry_path, registry_content).expect("Failed to write registry");
+
+    // Create model info (missing some fields)
+    let model_path = temp_dir.path().join("model.json");
+    let model_content = r#"[
+  {
+    "name": "count",
+    "type_name": "i32",
+    "is_nested": false,
+    "children": []
+  }
+]"#;
+    fs::write(&model_path, model_content).expect("Failed to write model");
+
+    // Create UI file with multiple validation errors
+    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<column>
+    <text size="24" />
+    <button on_clik="handle_click" label="Click Me" />
+    <text_input value="{missing_field}" on_input="unknown_handler" />
+    <image width="100" />
+    <radio value="opt1" />
+</column>"#;
+
+    fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
+
+    // Test with all flags enabled - should detect all errors
+    let args = CheckArgs {
+        input: ui_dir.to_string_lossy().to_string(),
+        verbose: false,
+        handlers: Some(registry_path.to_string_lossy().to_string()),
+        model: Some(model_path.to_string_lossy().to_string()),
+        custom_widgets: None,
+        strict: true,
+    };
+
+    let result = execute(&args);
+
+    // Should fail - multiple validation errors
+    assert!(result.is_err());
+
+    let err = result.unwrap_err();
+    let err_msg = format!("{}", err);
+
+    // Should detect at least one of the errors (unknown attribute, missing required, invalid binding, unknown handler)
+    assert!(
+        err_msg.contains("value")
+            || err_msg.contains("on_clik")
+            || err_msg.contains("missing_field")
+            || err_msg.contains("unknown_handler")
+            || err_msg.contains("src")
+            || err_msg.contains("label")
+    );
+}
