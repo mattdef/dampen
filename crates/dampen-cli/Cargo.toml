@@ -13,10 +13,10 @@ keywords = { workspace = true }
 categories = { workspace = true }
 
 [dependencies]
-dampen-core = { path = "../dampen-core" }
-dampen-macros = { path = "../dampen-macros" }
-dampen-runtime = { path = "../dampen-runtime" }
-dampen-iced = { path = "../dampen-iced" }
+dampen-core = "0.1"
+dampen-macros = "0.1"
+dampen-runtime = "0.1"
+dampen-iced = "0.1"
 clap = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
