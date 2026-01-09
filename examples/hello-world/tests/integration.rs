@@ -31,11 +31,11 @@ fn test_hello_world_app_state_creation() {
 #[test]
 fn test_hello_world_macro_pattern() {
     let xml = r#"
-        <gravity>
+        <dampen>
             <column>
                 <text value="Test" />
             </column>
-        </gravity>
+        </dampen>
     "#;
 
     let document = parse(xml).expect("Failed to parse");
