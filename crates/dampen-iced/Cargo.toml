@@ -13,12 +13,12 @@ keywords = { workspace = true }
 categories = { workspace = true }
 
 [dependencies]
-dampen-core = { path = "../dampen-core" }
+dampen-core = "0.1"
 iced = { workspace = true }
 
 [dev-dependencies]
 criterion = "0.5"
-dampen-macros = { path = "../dampen-macros" }
+dampen-macros = "0.1"
 serde = { workspace = true }
 
 [[bench]]
