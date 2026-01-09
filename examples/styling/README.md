@@ -1,10 +1,10 @@
-# Gravity Styling Example
+# Dampen Styling Example
 
-This example provides a **comprehensive showcase** of all layout, sizing, theming, and styling capabilities currently available in Gravity.
+This example provides a **comprehensive showcase** of all layout, sizing, theming, and styling capabilities currently available in Dampen.
 
 ## Overview
 
-Gravity is a declarative UI framework for Rust that uses XML-based `.gravity` files to define user interfaces. This example demonstrates every feature implemented in the framework, including:
+Dampen is a declarative UI framework for Rust that uses XML-based `.dampen` files to define user interfaces. This example demonstrates every feature implemented in the framework, including:
 
 - ✅ Layout attributes (padding, spacing, alignment)
 - ✅ Sizing modes (fixed, fill, shrink, percentage)
@@ -27,7 +27,7 @@ cargo run --bin styling
 cargo run --bin state-demo
 
 # Theme switching demo
-cargo run -p styling  # (loads ui/theme_demo.gravity)
+cargo run -p styling  # (loads ui/theme_demo.dampen)
 ```
 
 ## File Structure
@@ -41,9 +41,9 @@ examples/styling/
 │   ├── state_demo.rs    # State transitions demo
 │   └── theme_demo.rs    # Theme switching demo
 └── ui/
-    ├── main.gravity         # Main comprehensive UI showcase
-    ├── state_demo.gravity   # State transitions UI
-    └── theme_demo.gravity   # Theme switching UI
+    ├── main.dampen         # Main comprehensive UI showcase
+    ├── state_demo.dampen   # State transitions UI
+    └── theme_demo.dampen   # Theme switching UI
 ```
 
 ## Features Demonstrated
@@ -296,7 +296,7 @@ cargo run --bin theme-demo  # Not yet implemented
 ### Root Structure
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gravity>
+<dampen>
     <!-- Optional: Theme definitions -->
     <themes>
         <theme name="...">...</theme>
@@ -314,7 +314,7 @@ cargo run --bin theme-demo  # Not yet implemented
     <column|row|container|...>
         <!-- Child widgets -->
     </column>
-</gravity>
+</dampen>
 ```
 
 ### Widget Types
@@ -341,7 +341,7 @@ cargo run --bin theme-demo  # Not yet implemented
 
 ## Editing the UI
 
-1. **Open** `ui/main.gravity` in your editor
+1. **Open** `ui/main.dampen` in your editor
 2. **Make changes**:
    - Change `padding="40"` to `padding="60"`
    - Change `background="#3498db"` to `background="#e74c3c"`
@@ -354,23 +354,23 @@ cargo run --bin theme-demo  # Not yet implemented
 
 ### Hot-Reload (Future)
 ```bash
-gravity dev --ui ui --file main.gravity
+dampen dev --ui ui --file main.dampen
 ```
-Changes to `.gravity` files will automatically reload the UI without recompiling Rust code.
+Changes to `.dampen` files will automatically reload the UI without recompiling Rust code.
 
 ### Production Build (Future)
 ```bash
-gravity build --ui ui --file main.gravity --output src/ui_generated.rs
+dampen build --ui ui --file main.dampen --output src/ui_generated.rs
 ```
 Generates static Rust code for zero-runtime overhead.
 
 ## Architecture
 
-**Gravity follows a dual-mode architecture:**
+**Dampen follows a dual-mode architecture:**
 
 1. **Development Mode** (current):
    - Runtime interpretation of XML
-   - Parse `.gravity` files at startup
+   - Parse `.dampen` files at startup
    - State preservation across reloads
    - Fast iteration cycle
 
@@ -384,7 +384,7 @@ Generates static Rust code for zero-runtime overhead.
 
 ✅ **Declarative UI**: All layout and style defined in XML  
 ✅ **Type Safety**: Attributes validated at parse time  
-✅ **Separation of Concerns**: UI in `.gravity`, logic in Rust  
+✅ **Separation of Concerns**: UI in `.dampen`, logic in Rust  
 ✅ **State Management**: Automatic state transitions with visual feedback  
 ✅ **Theming**: Consistent design system with reusable themes  
 ✅ **Flexible Styling**: Inline styles + reusable classes + state variants  
@@ -458,4 +458,4 @@ Generates static Rust code for zero-runtime overhead.
 
 ## License
 
-This example is part of the Gravity framework, licensed under MIT OR Apache-2.0.
+This example is part of the Dampen framework, licensed under MIT OR Apache-2.0.

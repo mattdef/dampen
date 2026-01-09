@@ -1,6 +1,6 @@
-//! Style mapping from Gravity IR to Iced types
+//! Style mapping from Dampen IR to Iced types
 //!
-//! This module maps Gravity's backend-agnostic style types to Iced-specific
+//! This module maps Dampen's backend-agnostic style types to Iced-specific
 //! style types.
 
 use dampen_core::ir::layout::{Alignment, Justification, LayoutConstraints, Length, Position};
@@ -166,7 +166,7 @@ pub fn map_background(background: &Background) -> iced::Background {
     }
 }
 
-/// Map Gravity Gradient to Iced Gradient
+/// Map Dampen Gradient to Iced Gradient
 pub fn map_gradient(gradient: &dampen_core::ir::style::Gradient) -> iced::Gradient {
     match gradient {
         dampen_core::ir::style::Gradient::Linear { angle, stops } => {

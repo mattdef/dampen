@@ -1,5 +1,5 @@
 ---
-source: crates/gravity-core/tests/codegen_snapshot_tests.rs
+source: crates/dampen-core/tests/codegen_snapshot_tests.rs
 expression: output.code
 ---
-# [derive (Clone , Debug)] pub enum Message { update_name (String) } impl iced :: Application for Model { type Executor = iced :: executor :: Default ; type Flags = () ; type Message = Message ; fn new (_flags : ()) -> (Self , iced :: Task < Self :: Message >) { (Self :: default () , iced :: Task :: none ()) } fn title (& self) -> String { "Gravity Application" . to_string () } } fn view (& self) -> iced :: Element < '_ , Self :: Message > { iced :: widget :: text ("Unsupported widget") } fn update (& mut self , message : Self :: Message) -> iced :: Task < Self :: Message > { match message { Message :: update_name (value) => { update_name (self , value) ; iced :: Task :: none () } } }
+# [derive (Clone , Debug)] pub enum Message { update_name (String) } impl iced :: Application for Model { type Executor = iced :: executor :: Default ; type Flags = () ; type Message = Message ; fn new (_flags : ()) -> (Self , iced :: Task < Self :: Message >) { (Self :: default () , iced :: Task :: none ()) } fn title (& self) -> String { "Dampen Application" . to_string () } } fn view (& self) -> iced :: Element < '_ , Self :: Message > { iced :: widget :: text ("Unsupported widget") } fn update (& mut self , message : Self :: Message) -> iced :: Task < Self :: Message > { match message { Message :: update_name (value) => { update_name (self , value) ; iced :: Task :: none () } } }

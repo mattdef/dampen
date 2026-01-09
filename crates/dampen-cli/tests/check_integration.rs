@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
 
-/// Helper function to create a temporary .gravity file for testing
+/// Helper function to create a temporary .dampen file for testing
 fn create_test_file(dir: &TempDir, filename: &str, content: &str) -> PathBuf {
     let file_path = dir.path().join(filename);
     fs::write(&file_path, content).expect("Failed to write test file");

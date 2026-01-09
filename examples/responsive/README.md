@@ -1,6 +1,6 @@
 # Responsive Example
 
-This example demonstrates **responsive layout** with constraints using external `.gravity` files.
+This example demonstrates **responsive layout** with constraints using external `.dampen` files.
 
 ## Features Demonstrated
 
@@ -26,7 +26,7 @@ examples/responsive/
 ├── src/
 │   └── main.rs          # Runtime
 └── ui/
-    └── main.gravity     # Responsive UI definition
+    └── main.dampen     # Responsive UI definition
 ```
 
 ## Running the Example
@@ -35,10 +35,10 @@ examples/responsive/
 cargo run -p responsive
 ```
 
-## Example UI (ui/main.gravity)
+## Example UI (ui/main.dampen)
 
 ```xml
-<gravity>
+<dampen>
     <column padding="40" spacing="20">
         <text value="Responsive Layout Example" size="32" weight="bold" />
         
@@ -78,7 +78,7 @@ cargo run -p responsive
             </column>
         </container>
     </column>
-</gravity>
+</dampen>
 ```
 
 ## Understanding Constraints
@@ -146,7 +146,7 @@ match length {
 
 ## Try It Yourself
 
-Edit `ui/main.gravity` and experiment:
+Edit `ui/main.dampen` and experiment:
 
 1. **Change fixed width**: `width="400"` → `width="500"`
 2. **Add constraints**: Add `min_width="200"` to fill container
@@ -158,14 +158,14 @@ Save and run to see changes!
 ## Architecture
 
 ```
-ui/main.gravity (XML)
+ui/main.dampen (XML)
     ↓ (parse)
-GravityDocument (IR)
+dampenDocument (IR)
     ↓ (render)
 Iced Widgets (UI)
 ```
 
 The separation allows:
-- UI designers to work on `.gravity` files
+- UI designers to work on `.dampen` files
 - Developers to work on Rust logic
 - Hot-reload without recompilation

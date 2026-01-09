@@ -1,10 +1,10 @@
-# Gravity Iced
+# Dampen Iced
 
-Iced backend implementation for the Gravity declarative UI framework.
+Iced backend implementation for the Dampen declarative UI framework.
 
 ## Overview
 
-Gravity Iced provides automatic interpretation of parsed Gravity markup into Iced widgets, eliminating manual conversion boilerplate. It handles bindings, events, styles, and layouts automatically through the `GravityWidgetBuilder`.
+Dampen Iced provides automatic interpretation of parsed Dampen markup into Iced widgets, eliminating manual conversion boilerplate. It handles bindings, events, styles, and layouts automatically through the `DampenWidgetBuilder`.
 
 ## Features
 
@@ -21,8 +21,8 @@ Gravity Iced provides automatic interpretation of parsed Gravity markup into Ice
 
 ```rust
 use dampen_core::{parse, HandlerRegistry};
-use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
-use gravity_macros::UiModel;
+use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
+use dampen_macros::UiModel;
 use iced::{Element, Task};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -50,7 +50,7 @@ struct AppState {
 
 impl AppState {
     fn new() -> Self {
-        let xml = include_str!("../ui/main.gravity");
+        let xml = include_str!("../ui/main.dampen");
         let document = parse(xml).expect("Failed to parse XML");
         
         let handler_registry = HandlerRegistry::new();
@@ -73,7 +73,7 @@ impl AppState {
 
 fn view(state: &AppState) -> Element<'_, Message> {
     // Single line to build the entire UI!
-    GravityWidgetBuilder::new(
+    DampenWidgetBuilder::new(
         &state.document.root,
         &state.model,
         Some(&state.handler_registry),
@@ -82,7 +82,7 @@ fn view(state: &AppState) -> Element<'_, Message> {
 }
 ```
 
-### UI File (ui/main.gravity)
+### UI File (ui/main.dampen)
 
 ```xml
 <column padding="40" spacing="20">
@@ -96,27 +96,27 @@ fn view(state: &AppState) -> Element<'_, Message> {
 
 ## API Reference
 
-### GravityWidgetBuilder
+### DampenWidgetBuilder
 
 #### Constructor
 
 ```rust
 // Using HandlerMessage (recommended for most cases)
-GravityWidgetBuilder::new(
+DampenWidgetBuilder::new(
     node: &WidgetNode,
     model: &dyn UiBindable,
     handler_registry: Option<&HandlerRegistry>,
 ) -> Self
 
 // From complete document
-GravityWidgetBuilder::from_document(
+DampenWidgetBuilder::from_document(
     document: &DampenDocument,
     model: &dyn UiBindable,
     handler_registry: Option<&HandlerRegistry>,
 ) -> Self
 
 // With custom message factory
-GravityWidgetBuilder::new_with_factory<F>(
+DampenWidgetBuilder::new_with_factory<F>(
     node: &WidgetNode,
     model: &dyn UiBindable,
     handler_registry: Option<&HandlerRegistry>,
@@ -230,10 +230,10 @@ See the `examples/` directory for complete working applications:
 ### File Structure
 
 ```
-crates/gravity-iced/
+crates/dampen-iced/
 ├── src/
 │   ├── lib.rs           # Public API, IcedBackend trait
-│   ├── builder.rs       # GravityWidgetBuilder implementation
+│   ├── builder.rs       # DampenWidgetBuilder implementation
 │   ├── convert.rs       # IR → Iced type conversions
 │   ├── state.rs         # Widget state management
 │   ├── style_mapping.rs # Style and layout mapping
@@ -263,7 +263,7 @@ crates/gravity-iced/
 ### Verbose Mode
 
 ```rust
-let widget = GravityWidgetBuilder::new(&node, &model, Some(®istry))
+let widget = DampenWidgetBuilder::new(&node, &model, Some(®istry))
     .with_verbose(true)  // Enable debug logging
     .build();
 ```
@@ -280,7 +280,7 @@ let widget = GravityWidgetBuilder::new(&node, &model, Some(®istry))
 ### With Hot-Reload
 
 ```rust
-use gravity_runtime::{watcher::FileWatcher, interpreter::HotReloadInterpreter};
+use dampen_runtime::{watcher::FileWatcher, interpreter::HotReloadInterpreter};
 
 let mut interpreter = HotReloadInterpreter::new(registry);
 interpreter.load_document(xml)?;
@@ -291,13 +291,13 @@ interpreter.load_document(xml)?;
 
 ```bash
 # Development mode
-gravity dev --ui ui --file main.gravity --verbose
+dampen dev --ui ui --file main.dampen --verbose
 
 # Validate XML
-gravity check --ui ui
+dampen check --ui ui
 
 # Inspect IR
-gravity inspect --file ui/main.gravity
+dampen inspect --file ui/main.dampen
 ```
 
 ## Best Practices
@@ -373,7 +373,7 @@ registry.register_with_value("update", |m, v| /* ... */);
 
 ## Contributing
 
-See the [main repository CONTRIBUTING.md](https://github.com/your-org/gravity/blob/main/CONTRIBUTING.md) for guidelines.
+See the [main repository CONTRIBUTING.md](https://github.com/your-org/dampen/blob/main/CONTRIBUTING.md) for guidelines.
 
 ## License
 

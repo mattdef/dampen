@@ -103,11 +103,11 @@ cargo build --workspace
 cargo test --workspace
 
 # Run specific crate tests
-cargo test -p gravity-core
-cargo test -p gravity-macros
-cargo test -p gravity-runtime
-cargo test -p gravity-iced
-cargo test -p gravity-cli
+cargo test -p dampen-core
+cargo test -p dampen-macros
+cargo test -p dampen-runtime
+cargo test -p dampen-iced
+cargo test -p dampen-cli
 
 # Linting
 cargo clippy --workspace -- -D warnings
@@ -125,7 +125,7 @@ cargo run -p todo-app
 cargo doc --workspace --no-deps --open
 
 # Benchmarks (when implemented)
-cargo bench -p gravity-core
+cargo bench -p dampen-core
 ```
 
 ## Code Style
@@ -141,7 +141,7 @@ cargo bench -p gravity-core
 
 ### Naming Conventions
 
-- **Crates**: `gravity-{module}` (kebab-case)
+- **Crates**: `dampen-{module}` (kebab-case)
 - **Types**: PascalCase (`WidgetNode`, `BindingExpr`)
 - **Functions**: snake_case (`parse_xml`, `evaluate_binding`)
 - **Constants**: SCREAMING_SNAKE_CASE
@@ -161,7 +161,7 @@ cargo bench -p gravity-core
 - Integration tests for full pipeline
 - Property-based tests for parser edge cases
 - Snapshot tests for code generation
-- Target: >90% coverage for gravity-core
+- Target: >90% coverage for dampen-core
 
 ## Architecture Principles
 
@@ -176,19 +176,19 @@ cargo bench -p gravity-core
 ### Crate Dependencies
 
 ```text
-gravity-core (no backend deps)
+dampen-core (no backend deps)
     ↑
-    ├── gravity-macros (proc-macro, depends on core)
-    ├── gravity-runtime (depends on core)
-    └── gravity-iced (depends on core + iced)
+    ├── dampen-macros (proc-macro, depends on core)
+    ├── dampen-runtime (depends on core)
+    └── dampen-iced (depends on core + iced)
             ↑
-            └── gravity-cli (depends on all above)
+            └── dampen-cli (depends on all above)
 ```
 
 ### Key Traits
 
 ```rust
-// Backend abstraction (gravity-core/src/traits/backend.rs)
+// Backend abstraction (dampen-core/src/traits/backend.rs)
 pub trait Backend {
     type Widget<'a>;
     type Message: Clone + 'static;
@@ -197,7 +197,7 @@ pub trait Backend {
     // ... other widgets
 }
 
-// Binding abstraction (gravity-core/src/binding/mod.rs)
+// Binding abstraction (dampen-core/src/binding/mod.rs)
 pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
     fn get_field(&self, path: &[&str]) -> Option<BindingValue>;
     fn available_fields() -> Vec<String>;
@@ -209,7 +209,7 @@ pub trait UiBindable: Serialize + for<'de> Deserialize<'de> {
 The `AppState<M>` struct provides a unified way to manage UI state:
 
 ```rust
-use gravity_core::AppState;
+use dampen_core::AppState;
 
 // Simple usage (no model)
 let state = AppState::<()>::new(document);
@@ -223,17 +223,17 @@ let state = AppState::with_handlers(document, handler_registry);
 
 ### Auto-Loading UI Files
 
-Use the `#[gravity_ui]` macro to automatically load XML files:
+Use the `#[dampen_ui]` macro to automatically load XML files:
 
 ```rust
 // src/ui/app.rs
-use gravity_macros::{gravity_ui, UiModel};
-use gravity_core::AppState;
+use dampen_macros::{dampen_ui, UiModel};
+use dampen_core::AppState;
 
 #[derive(UiModel)]
 pub struct Model { count: i32 }
 
-#[gravity_ui("app.gravity")]
+#[dampen_ui("app.dampen")]
 mod _app {}
 
 pub fn create_app_state() -> AppState<Model> {
@@ -248,8 +248,8 @@ File structure:
 src/
 └── ui/
     ├── mod.rs          # Export the app module
-    ├── app.rs          # UI code with #[gravity_ui] macro
-    └── app.gravity     # XML UI definition
+    ├── app.rs          # UI code with #[dampen_ui] macro
+    └── app.dampen     # XML UI definition
 ```
 
 ## Performance Budgets
@@ -261,9 +261,9 @@ src/
 | Runtime memory | < 50MB baseline |
 
 ## Recent Changes
-- 001-check-validation-enhancements: Added Rust Edition 2024, MSRV stable (per constitution) + gravity-core (parser, IR), serde_json (JSON handling), clap (CLI)
+- 001-check-validation-enhancements: Added Rust Edition 2024, MSRV stable (per constitution) + dampen-core (parser, IR), serde_json (JSON handling), clap (CLI)
 - 008-prod-codegen: Added Rust Edition 2024, MSRV 1.75+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism
-- 007-add-radio-widget: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `gravity-core`, `gravity-iced`
+- 007-add-radio-widget: Added Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `dampen-core`, `dampen-iced`
 
 **Phase 7 Complete (006-auto-ui-loading):**
 
@@ -284,7 +284,7 @@ src/
 
   - Added Radio widget to WidgetKind enum
   - Implemented radio button parsing with label, value, selected, disabled attributes
-  - Added full Iced radio widget rendering in GravityWidgetBuilder
+  - Added full Iced radio widget rendering in DampenWidgetBuilder
   - Implemented single-selection behavior (inherent to Iced radio API)
   - Added selection change event dispatch via on_select handler
   - Implemented default selection support via selected attribute binding
@@ -321,27 +321,27 @@ src/
 ### Current Status: Phase 8 Complete ✓
 
 **Implemented Components:**
-- `gravity-core/src/state/mod.rs`: AppState struct with constructors
-- `gravity-core/src/binding/`: UiBindable trait, BindingValue enum
-- `gravity-macros/src/ui_loader.rs`: #[gravity_ui] macro for auto-loading
-- `gravity-macros/tests/auto_loading_tests.rs`: Contract tests
-- `gravity-core/tests/appstate_tests.rs`: Contract tests
+- `dampen-core/src/state/mod.rs`: AppState struct with constructors
+- `dampen-core/src/binding/`: UiBindable trait, BindingValue enum
+- `dampen-macros/src/ui_loader.rs`: #[dampen_ui] macro for auto-loading
+- `dampen-macros/tests/auto_loading_tests.rs`: Contract tests
+- `dampen-core/tests/appstate_tests.rs`: Contract tests
 - `examples/hello-world/`: Minimal auto-loading example
 - `examples/counter/`: Migrated to auto-loading pattern
 - `examples/todo-app/`: Migrated to auto-loading pattern
 - `examples/settings/`: New example demonstrating multiple views
 
 **Auto-Loading Features:**
-- ✅ #[gravity_ui] macro for automatic XML loading
+- ✅ #[dampen_ui] macro for automatic XML loading
 - ✅ LazyLock for thread-safe lazy initialization
-- ✅ Multiple views support (app.gravity, settings.gravity)
+- ✅ Multiple views support (app.dampen, settings.dampen)
 - ✅ AppState with Model and HandlerRegistry support
 
 **Validation Features:**
-- ✅ `gravity check` validates XML syntax and widget names
+- ✅ `dampen check` validates XML syntax and widget names
 - ✅ Clear error messages with span information
 - ✅ Exit code 0 for success, 1 for failure
-- ✅ File walking with `.gravity` extension filtering
+- ✅ File walking with `.dampen` extension filtering
 - ✅ Comprehensive test coverage for validation
 
 **Radio Widget Features (Phase 8 - 007-add-radio-widget):**
@@ -357,11 +357,11 @@ src/
 
 ### Creating a New Project
 
-Use the CLI to scaffold a new Gravity project:
+Use the CLI to scaffold a new Dampen project:
 
 ```bash
 # Create a new project
-gravity new my-app
+dampen new my-app
 
 # Navigate to the project
 cd my-app
@@ -370,7 +370,7 @@ cd my-app
 cargo run
 ```
 
-The `gravity new` command creates a complete project structure:
+The `dampen new` command creates a complete project structure:
 
 ```
 my-app/
@@ -382,7 +382,7 @@ my-app/
 │   └── ui/
 │       ├── mod.rs          # UI module exports
 │       ├── window.rs       # UI model and handlers
-│       └── window.gravity  # Declarative UI definition (XML)
+│       └── window.dampen  # Declarative UI definition (XML)
 └── tests/
     └── integration.rs      # Integration tests
 ```
@@ -391,34 +391,34 @@ my-app/
 
 | File | Purpose |
 |------|---------|
-| `src/ui/window.gravity` | XML UI definition with widgets, bindings, and handlers |
+| `src/ui/window.dampen` | XML UI definition with widgets, bindings, and handlers |
 | `src/ui/window.rs` | Model definition with `#[derive(UiModel)]`, handlers registry |
 | `src/main.rs` | Application orchestration (view, update, subscriptions) |
-| `build.rs` | Compiles `.gravity` XML files to Rust code at build time |
+| `build.rs` | Compiles `.dampen` XML files to Rust code at build time |
 
 **Generated example UI:**
 
 ```xml
-<gravity>
+<dampen>
     <column padding="40" spacing="20">
-        <text value="Hello, Gravity!" size="32" weight="bold" />
+        <text value="Hello, Dampen!" size="32" weight="bold" />
         <button label="Click me!" on_click="greet" />
         <text value="{message}" size="24" />
     </column>
-</gravity>
+</dampen>
 ```
 
 **Project validation:**
 
 ```bash
 # Validate XML syntax and widget names
-gravity check
+dampen check
 
 # Build the project
-gravity build
+dampen build
 
 # Inspect the generated IR
-gravity inspect src/ui/window.gravity
+dampen inspect src/ui/window.dampen
 ```
 
 <!-- MANUAL ADDITIONS END -->

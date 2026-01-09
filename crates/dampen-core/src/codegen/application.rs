@@ -22,7 +22,7 @@ pub fn generate_application_trait(
             }
 
             fn title(&self) -> String {
-                "Gravity Application".to_string()
+                "Dampen Application".to_string()
             }
         }
     })

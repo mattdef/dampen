@@ -1,10 +1,10 @@
 # Widget Showcase Example
 
-A comprehensive demonstration of all Gravity widgets with individual examples for each widget type.
+A comprehensive demonstration of all Dampen widgets with individual examples for each widget type.
 
 ## Purpose
 
-This example serves as a reference implementation and testing ground for all Gravity widgets. Each widget has its own `.gravity` file demonstrating its features and usage patterns.
+This example serves as a reference implementation and testing ground for all Dampen widgets. Each widget has its own `.dampen` file demonstrating its features and usage patterns.
 
 ## Widget Examples
 
@@ -12,7 +12,7 @@ This example serves as a reference implementation and testing ground for all Gra
 
 The following widget examples are available in the `ui/` directory:
 
-#### ProgressBar (`ui/progressbar.gravity`)
+#### ProgressBar (`ui/progressbar.dampen`)
 Demonstrates progress indicators with different styles and value ranges.
 
 **Features**:
@@ -21,7 +21,7 @@ Demonstrates progress indicators with different styles and value ranges.
 - Percentage display
 - Value clamping behavior
 
-#### Tooltip (`ui/tooltip.gravity`)
+#### Tooltip (`ui/tooltip.dampen`)
 Shows contextual help text on hover with different positioning options.
 
 **Features**:
@@ -30,7 +30,7 @@ Shows contextual help text on hover with different positioning options.
 - Wrapping different widget types
 - Hover interaction
 
-#### Canvas (`ui/canvas.gravity`)
+#### Canvas (`ui/canvas.dampen`)
 Custom drawing surface for graphics and visualizations.
 
 **Features**:
@@ -39,7 +39,7 @@ Custom drawing surface for graphics and visualizations.
 - Interactive click handling
 - Real-time rendering
 
-#### PickList (`ui/picklist.gravity`)
+#### PickList (`ui/picklist.dampen`)
 Dropdown selection from a list of options.
 
 **Features**:
@@ -48,7 +48,7 @@ Dropdown selection from a list of options.
 - Event handling on selection change
 - Placeholder text
 
-#### ComboBox (`ui/combobox.gravity`)
+#### ComboBox (`ui/combobox.dampen`)
 Searchable dropdown with type-ahead functionality.
 
 **Features**:
@@ -59,7 +59,7 @@ Searchable dropdown with type-ahead functionality.
 
 **Note**: ComboBox rendering is not yet implemented. This file demonstrates the XML syntax.
 
-#### Float (`ui/float.gravity`)
+#### Float (`ui/float.dampen`)
 Positioned overlay elements like floating action buttons.
 
 **Features**:
@@ -70,7 +70,7 @@ Positioned overlay elements like floating action buttons.
 
 **Note**: Float rendering is not yet implemented. This file demonstrates the XML syntax.
 
-#### Grid (`ui/grid.gravity`)
+#### Grid (`ui/grid.dampen`)
 Multi-column responsive layout.
 
 **Features**:
@@ -99,14 +99,14 @@ widget-showcase/
 ├── src/
 │   └── main.rs           # Application entry point with widget programs
 ├── ui/
-│   ├── main.gravity      # Main layout switching between widgets
-│   ├── progressbar.gravity
-│   ├── tooltip.gravity
-│   ├── canvas.gravity
-│   ├── picklist.gravity
-│   ├── combobox.gravity  # Not yet rendered
-│   ├── float.gravity     # Not yet rendered
-│   └── grid.gravity      # Not yet rendered
+│   ├── main.dampen      # Main layout switching between widgets
+│   ├── progressbar.dampen
+│   ├── tooltip.dampen
+│   ├── canvas.dampen
+│   ├── picklist.dampen
+│   ├── combobox.dampen  # Not yet rendered
+│   ├── float.dampen     # Not yet rendered
+│   └── grid.dampen      # Not yet rendered
 ├── Cargo.toml
 └── README.md             # This file
 ```
@@ -115,7 +115,7 @@ widget-showcase/
 
 To add a new widget example:
 
-1. Create a new `.gravity` file in `ui/`
+1. Create a new `.dampen` file in `ui/`
 2. Define the widget with all its attributes
 3. Add event handlers in `src/main.rs` if needed
 4. Register handlers in the `HandlerRegistry`
@@ -124,7 +124,7 @@ To add a new widget example:
 Example:
 
 ```xml
-<!-- ui/my_widget.gravity -->
+<!-- ui/my_widget.dampen -->
 <my_widget
     attribute1="value"
     attribute2="{binding}"
@@ -165,7 +165,7 @@ The following widgets are defined but not yet implemented in the widget builder:
 - **Grid**: Parsing works, rendering shows `todo!()` error
 - **Float**: Parsing works, rendering shows `todo!()` error
 
-These widgets can be added to `.gravity` files to test parsing, but the application will panic when trying to render them.
+These widgets can be added to `.dampen` files to test parsing, but the application will panic when trying to render them.
 
 ### Workarounds
 
@@ -177,17 +177,17 @@ These widgets can be added to `.gravity` files to test parsing, but the applicat
 
 When implementing new widget renderers:
 
-1. Add the rendering logic to `crates/gravity-iced/src/builder.rs`
-2. Add tests to `crates/gravity-iced/tests/widget_rendering_tests.rs`
+1. Add the rendering logic to `crates/dampen-iced/src/builder.rs`
+2. Add tests to `crates/dampen-iced/tests/widget_rendering_tests.rs`
 3. Create an example in this showcase
 4. Update this README
 
 ## References
 
-- [Gravity Documentation](../../docs/)
+- [Dampen Documentation](../../docs/)
 - [Widget XML Schema](../../specs/004-advanced-widgets-todo/contracts/xml-schema.md)
 - [Iced Widget Documentation](https://docs.rs/iced/latest/iced/widget/)
 
 ## License
 
-This example is part of the Gravity framework and follows the same licensing terms.
+This example is part of the Dampen framework and follows the same licensing terms.

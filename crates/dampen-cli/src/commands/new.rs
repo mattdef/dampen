@@ -1,13 +1,13 @@
-//! Create a new Gravity project
+//! Create a new Dampen project
 //!
-//! This module provides the `gravity new` command which scaffolds a new
-//! Gravity UI project with a simple Hello World example using the
+//! This module provides the `dampen new` command which scaffolds a new
+//! Dampen UI project with a simple Hello World example using the
 //! auto-loading pattern.
 //!
 //! # Example
 //!
 //! ```bash
-//! gravity new my-app
+//! dampen new my-app
 //! cd my-app
 //! cargo run
 //! ```
@@ -30,11 +30,11 @@ pub struct NewArgs {
 
 /// Execute the new command
 ///
-/// Creates a new Gravity project directory with:
-/// - `Cargo.toml` with Gravity dependencies
+/// Creates a new Dampen project directory with:
+/// - `Cargo.toml` with Dampen dependencies
 /// - `src/main.rs` with a complete Hello World application using auto-loading
 /// - `src/ui/mod.rs` - UI module
-/// - `src/ui/window.rs` - UI model and handlers with `#[gravity_ui]` macro
+/// - `src/ui/window.rs` - UI model and handlers with `#[dampen_ui]` macro
 /// - `src/ui/window.dampen` - Declarative UI definition (XML)
 /// - `tests/integration.rs` - Integration tests
 /// - `README.md` with comprehensive getting started instructions
@@ -71,7 +71,7 @@ pub fn execute(args: &NewArgs) -> Result<(), String> {
     // Create project structure
     match create_project(project_name, &project_path) {
         Ok(()) => {
-            println!("Created new Gravity project: {}", project_name);
+            println!("Created new Dampen project: {}", project_name);
             println!();
             println!("Next steps:");
             println!("  cd {}", project_name);
@@ -136,7 +136,7 @@ fn create_project(project_name: &str, project_path: &Path) -> Result<(), String>
     generate_main_rs(project_path, project_name)?;
     generate_ui_mod_rs(project_path, project_name)?;
     generate_ui_window_rs(project_path, project_name)?;
-    generate_window_gravity(project_path, project_name)?;
+    generate_window_dampen(project_path, project_name)?;
     generate_integration_tests(project_path, project_name)?;
     generate_readme(project_path, project_name)?;
 
@@ -238,7 +238,7 @@ fn generate_ui_window_rs(project_path: &Path, project_name: &str) -> Result<(), 
 }
 
 /// Generate src/ui/window.dampen from template
-fn generate_window_gravity(project_path: &Path, project_name: &str) -> Result<(), String> {
+fn generate_window_dampen(project_path: &Path, project_name: &str) -> Result<(), String> {
     let template = include_str!("../../templates/new/window.dampen.template");
     let content = template.replace("{{PROJECT_NAME}}", project_name);
 

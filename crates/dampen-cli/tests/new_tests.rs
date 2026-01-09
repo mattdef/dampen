@@ -22,7 +22,7 @@ fn test_new_creates_project_structure() {
         .current_dir(temp.path())
         .assert()
         .success()
-        .stdout(predicate::str::contains("Created new Gravity project"));
+        .stdout(predicate::str::contains("Created new Dampen project"));
 
     // Verify directory structure
     let project_path = temp.path().join(project_name);
@@ -350,7 +350,7 @@ fn test_new_output_messages() {
         .current_dir(temp.path())
         .assert()
         .success()
-        .stdout(predicate::str::contains("Created new Gravity project"))
+        .stdout(predicate::str::contains("Created new Dampen project"))
         .stdout(predicate::str::contains("Next steps:"))
         .stdout(predicate::str::contains("cd output-test"))
         .stdout(predicate::str::contains("cargo run"));

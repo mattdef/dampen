@@ -3,11 +3,11 @@ use dampen_core::parse;
 
 fn bench_parse_1000_widgets(c: &mut Criterion) {
     // Create XML with 1000 text widgets
-    let mut xml = String::from(r#"<?xml version="1.0" encoding="UTF-8"?><gravity><column>"#);
+    let mut xml = String::from(r#"<?xml version="1.0" encoding="UTF-8"?><dampen><column>"#);
     for i in 0..1000 {
         xml.push_str(&format!("<text value=\"Widget {}\" />", i));
     }
-    xml.push_str("</column></gravity>");
+    xml.push_str("</column></dampen>");
 
     c.bench_function("parse_1000_widgets", |b| {
         b.iter(|| {

@@ -1,6 +1,6 @@
 //! Binding system types
 //!
-//! This module provides the core abstraction for data binding in Gravity.
+//! This module provides the core abstraction for data binding in Dampen.
 //!
 //! # Overview
 //!
@@ -42,7 +42,7 @@
 /// Trait for types that expose bindable fields
 ///
 /// This trait is typically derived using `#[derive(UiModel)]` from the
-/// `gravity-macros` crate, but can be implemented manually for custom logic.
+/// `dampen-macros` crate, but can be implemented manually for custom logic.
 ///
 /// # Example
 ///

@@ -1,9 +1,9 @@
-# Gravity Styling System
+# Dampen Styling System
 
 **Version**: 1.0.0  
 **Last Updated**: 2026-01-02
 
-This guide covers the complete styling system for Gravity UI, including themes, style classes, inline styles, and state-based styling.
+This guide covers the complete styling system for Dampen UI, including themes, style classes, inline styles, and state-based styling.
 
 ---
 
@@ -25,7 +25,7 @@ Themes provide a consistent look and feel across your application.
 ### Defining a Theme
 
 ```xml
-<gravity>
+<dampen>
     <themes>
         <theme name="custom">
             <palette 
@@ -52,7 +52,7 @@ Themes provide a consistent look and feel across your application.
     <global_theme name="custom" />
     
     <!-- Your UI here -->
-</gravity>
+</dampen>
 ```
 
 ### Palette Colors
@@ -364,7 +364,7 @@ Apply different styles based on viewport size.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gravity>
+<dampen>
     <!-- Theme Definition -->
     <themes>
         <theme name="app_theme">
@@ -440,7 +440,7 @@ Apply different styles based on viewport size.
             <text value="Resize window to see padding change" color="#7f8c8d" />
         </container>
     </column>
-</gravity>
+</dampen>
 ```
 
 ---

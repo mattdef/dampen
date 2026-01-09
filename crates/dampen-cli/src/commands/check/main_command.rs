@@ -1,6 +1,6 @@
 #![allow(clippy::print_stderr, clippy::print_stdout)]
 
-//! Check command - validates Gravity UI files
+//! Check command - validates Dampen UI files
 
 use clap::Args;
 use dampen_core::ir::layout::{Direction, Position};
@@ -209,7 +209,7 @@ fn resolve_ui_directory(explicit_input: Option<&str>) -> Result<PathBuf, String>
          - src/ui/ (recommended for Rust projects)\n\
          - ui/ (general purpose)\n\n\
          Or specify a custom path with --input:\n\
-         gravity check --input path/to/ui"
+         dampen check --input path/to/ui"
         .to_string())
 }
 

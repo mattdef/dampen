@@ -1,13 +1,13 @@
-# Gravity Examples
+# Dampen Examples
 
-This directory contains comprehensive examples demonstrating all features of the Gravity UI framework.
+This directory contains comprehensive examples demonstrating all features of the Dampen UI framework.
 
 ## Available Examples
 
 ### 1. Hello World (`hello-world/`)
-**Basic introduction to Gravity**
+**Basic introduction to Dampen**
 
-The simplest possible Gravity application - displays text in a column layout.
+The simplest possible Dampen application - displays text in a column layout.
 
 ```bash
 cargo run -p hello-world
@@ -76,14 +76,14 @@ See [todo-app/README.md](todo-app/README.md) for detailed feature documentation.
 ### 4. Widget Showcase (`widget-showcase/`)
 **Comprehensive widget reference** 📚 **NEW: Complete Widget Catalog**
 
-Individual examples for each Gravity widget type with feature demonstrations.
+Individual examples for each Dampen widget type with feature demonstrations.
 
 ```bash
 cargo run -p widget-showcase
 ```
 
 **What you'll learn:**
-- All available Gravity widgets
+- All available Dampen widgets
 - Widget-specific attributes and features
 - Event handling patterns for each widget
 - Best practices and usage examples
@@ -129,9 +129,9 @@ cargo run --bin state-demo
 **Files:**
 - `src/main.rs` - Main comprehensive example
 - `src/state_demo.rs` - State transitions demo
-- `ui/main.gravity` - Comprehensive showcase UI
-- `ui/state_demo.gravity` - State demo UI
-- `ui/theme_demo.gravity` - Theme switching UI
+- `ui/main.dampen` - Comprehensive showcase UI
+- `ui/state_demo.dampen` - State demo UI
+- `ui/theme_demo.dampen` - Theme switching UI
 - `README.md` - **Detailed styling documentation** 📚
 
 ---
@@ -259,7 +259,7 @@ ls examples/
 
 ### Development Tools
 - ✅ Parse error display
-- ✅ UI validation (`gravity check`)
+- ✅ UI validation (`dampen check`)
 
 ## File Structure Reference
 
@@ -270,10 +270,10 @@ examples/<example>/
 ├── src/
 │   └── main.rs         # Rust application code
 └── ui/
-    └── main.gravity    # UI definition
+    └── main.dampen    # UI definition
 ```
 
-## Why External .gravity Files?
+## Why External .dampen Files?
 
 ### Benefits
 1. **Separation of Concerns**: UI designers work on XML, developers on Rust
@@ -291,13 +291,13 @@ examples/<example>/
 ### 1. Explore Styling Example (Recommended)
 ```bash
 cd examples/styling
-cat ui/main.gravity         # See the comprehensive UI
+cat ui/main.dampen         # See the comprehensive UI
 cat README.md               # Read detailed docs
 cargo run --bin styling     # Run the showcase
 ```
 
 ### 2. Modify the UI
-Edit `ui/main.gravity` and change:
+Edit `ui/main.dampen` and change:
 - `padding="40"` → `padding="60"`
 - `background="#3498db"` → `background="#e74c3c"`
 - Add `shadow="4 4 8 #00000030"` to containers
@@ -319,7 +319,7 @@ After exploring the examples:
    - `STYLING.md` - Complete styling reference
    - `XML_SCHEMA.md` - Full XML schema documentation
 
-2. **Create your own app**: Use `gravity new my-app`
+2. **Create your own app**: Use `dampen new my-app`
 
 3. **Join the community**: Share your creations and get help
 
@@ -329,7 +329,7 @@ After exploring the examples:
 - [Styling Guide](../docs/STYLING.md) - **Complete reference** 📚
 - [XML Schema Reference](../docs/XML_SCHEMA.md)
 - [Styling Example README](styling/README.md) - **Detailed feature guide** 📚
-- [API Documentation](https://docs.rs/gravity-core)
+- [API Documentation](https://docs.rs/dampen-core)
 
 ## Contributing
 
@@ -337,4 +337,4 @@ Found a bug or have an example idea? Open an issue or PR!
 
 ## License
 
-All examples are provided under the same MIT OR Apache-2.0 license as Gravity.
+All examples are provided under the same MIT OR Apache-2.0 license as Dampen.

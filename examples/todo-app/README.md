@@ -1,12 +1,12 @@
 # Todo App Example
 
-A comprehensive modern todo application demonstrating advanced Gravity widgets including ProgressBar, Canvas, Tooltip, PickList, and Image widgets.
+A comprehensive modern todo application demonstrating advanced Dampen widgets including ProgressBar, Canvas, Tooltip, PickList, and Image widgets.
 
 ## Features
 
 ### Widget Demonstration
 
-This example showcases the following Gravity widgets:
+This example showcases the following Dampen widgets:
 
 - **ProgressBar**: Visual completion tracking showing overall task completion percentage
 - **Canvas**: Custom 7-day completion trend visualization using the `canvas::Program` trait
@@ -134,4 +134,4 @@ Once ComboBox, Grid, and dynamic list rendering are implemented, this example wi
 
 ## License
 
-This example is part of the Gravity framework and follows the same licensing terms.
+This example is part of the Dampen framework and follows the same licensing terms.

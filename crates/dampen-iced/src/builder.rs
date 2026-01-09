@@ -1,7 +1,7 @@
-//! Gravity Widget Builder - Automatic interpretation of Gravity markup
+//! Dampen Widget Builder - Automatic interpretation of Dampen markup
 //!
 //! This module provides the DampenWidgetBuilder which automatically converts
-//! parsed Gravity UI definitions into Iced widgets with full support for
+//! parsed Dampen UI definitions into Iced widgets with full support for
 //! bindings, events, styles, and layouts.
 //!
 //! # Overview
@@ -68,7 +68,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-/// Builder for creating Iced widgets from Gravity markup
+/// Builder for creating Iced widgets from Dampen markup
 ///
 /// # Construction
 ///
@@ -1196,7 +1196,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         }
     }
 
-    /// Build a text input widget from Gravity XML definition
+    /// Build a text input widget from Dampen XML definition
     ///
     /// Supports the following attributes:
     /// - `value`: String binding for current text value
@@ -1278,7 +1278,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         text_input.into()
     }
 
-    /// Build a checkbox widget from Gravity XML definition
+    /// Build a checkbox widget from Dampen XML definition
     ///
     /// Supports the following attributes:
     /// - `label`: Text label displayed next to checkbox
@@ -1396,7 +1396,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         row.into()
     }
 
-    /// Build a slider widget from Gravity XML definition
+    /// Build a slider widget from Dampen XML definition
     ///
     /// Supports the following attributes:
     /// - `min`: Minimum value (default 0.0)
@@ -1478,7 +1478,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         slider.into()
     }
 
-    /// Build a pick list widget from Gravity XML definition
+    /// Build a pick list widget from Dampen XML definition
     ///
     /// Supports the following attributes:
     /// - `options`: Comma-separated list of options
@@ -1566,7 +1566,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         pick_list.into()
     }
 
-    /// Build a combo box widget from Gravity XML definition
+    /// Build a combo box widget from Dampen XML definition
     ///
     /// ComboBox is implemented using pick_list as a dropdown selector.
     /// Supports the following attributes:
@@ -1675,7 +1675,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         iced::widget::column(children).into()
     }
 
-    /// Build a toggler widget from Gravity XML definition
+    /// Build a toggler widget from Dampen XML definition
     ///
     /// Supports the following attributes:
     /// - `label`: Text label displayed next to toggler
@@ -1756,7 +1756,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         row.into()
     }
 
-    /// Build an image widget from Gravity XML definition
+    /// Build an image widget from Dampen XML definition
     ///
     /// Supports the following attributes:
     /// - `src`: Path to image file (required)

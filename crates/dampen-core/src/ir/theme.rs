@@ -1,4 +1,4 @@
-//! Theming system types for Gravity UI framework
+//! Theming system types for Dampen UI framework
 //!
 //! This module defines the IR types for theme definitions, color palettes,
 //! typography, spacing scales, and style classes with inheritance.

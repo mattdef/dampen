@@ -1,4 +1,4 @@
-//! Styling system types for Gravity UI framework
+//! Styling system types for Dampen UI framework
 //!
 //! This module defines the IR types for visual styling properties including
 //! backgrounds, colors, borders, shadows, opacity, and transforms.

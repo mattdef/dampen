@@ -5,7 +5,6 @@
 #![allow(clippy::print_stderr, clippy::print_stdout)]
 
 pub mod commands;
-pub mod config;
 
 use clap::{Parser, Subcommand};
 

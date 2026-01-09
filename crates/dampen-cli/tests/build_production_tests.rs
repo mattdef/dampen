@@ -1,7 +1,7 @@
 //! Integration tests for production build code generation
 //!
 //! These tests verify that build.rs correctly generates static Rust code
-//! from .gravity files.
+//! from .dampen files.
 
 use std::fs;
 use std::path::PathBuf;
@@ -29,8 +29,8 @@ fn test_build_rs_template_exists() {
 }
 
 #[test]
-fn test_build_rs_finds_gravity_files() {
-    // This test will verify that build.rs can find .gravity files
+fn test_build_rs_finds_dampen_files() {
+    // This test will verify that build.rs can find .dampen files
     // For now, this is a placeholder
 
     // TODO: Implement actual build.rs logic and test it
@@ -43,7 +43,7 @@ fn test_build_rs_generates_code() {
     // For now, this is a placeholder
 
     // Expected behavior:
-    // 1. Parse .gravity files
+    // 1. Parse .dampen files
     // 2. Generate ui_generated.rs with Message enum and Application impl
     // 3. Code should compile successfully
 

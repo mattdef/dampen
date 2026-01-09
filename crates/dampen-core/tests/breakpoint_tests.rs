@@ -6,10 +6,10 @@ use dampen_core::parse;
 
 #[test]
 fn test_parse_breakpoint_prefixes() {
-    let xml = "<column 
-        spacing=\"10\" 
-        mobile-spacing=\"5\" 
-        tablet-spacing=\"15\" 
+    let xml = "<column
+        spacing=\"10\"
+        mobile-spacing=\"5\"
+        tablet-spacing=\"15\"
         desktop-spacing=\"20\">
         <text value=\"Test\" />
     </column>";
@@ -48,7 +48,7 @@ fn test_parse_breakpoint_prefixes() {
 
 #[test]
 fn test_parse_multiple_breakpoint_attributes() {
-    let xml = "<container 
+    let xml = "<container
         width=\"400\"
         mobile-width=\"fill\"
         mobile-padding=\"10\"
@@ -186,8 +186,8 @@ fn test_breakpoint_parse_from_string() {
 
 #[test]
 fn test_breakpoint_with_binding_expressions() {
-    let xml = "<column 
-        spacing=\"{count}\" 
+    let xml = "<column
+        spacing=\"{count}\"
         mobile-spacing=\"{mobile_count}\"
         desktop-spacing=\"{desktop_count}\">
         <text value=\"Test\" />
@@ -212,7 +212,7 @@ fn test_breakpoint_with_binding_expressions() {
 
 #[test]
 fn test_breakpoint_with_complex_attributes() {
-    let xml = "<container 
+    let xml = "<container
         background=\"#ffffff\"
         mobile-background=\"#000000\"
         border_width=\"2\"
@@ -252,12 +252,12 @@ fn test_breakpoint_empty_attributes() {
 
 #[test]
 fn test_breakpoint_multiple_widgets_independent() {
-    let xml = "<gravity>
+    let xml = "<dampen>
         <column mobile-spacing=\"5\" desktop-spacing=\"20\">
             <text value=\"First\" />
             <text value=\"Second\" mobile-color=\"#ff0000\" desktop-color=\"#00ff00\" />
         </column>
-    </gravity>";
+    </dampen>";
 
     let doc = parse(xml).unwrap();
 

@@ -47,7 +47,7 @@ impl ParseError {
     /// A `TokenStream` containing a `compile_error!` macro invocation.
     pub fn to_compile_error(&self) -> TokenStream {
         let message = format!(
-            "Gravity parsing error: {}\n  at line {}, column {}",
+            "Dampen parsing error: {}\n  at line {}, column {}",
             self.message, self.span.line, self.span.column
         );
 

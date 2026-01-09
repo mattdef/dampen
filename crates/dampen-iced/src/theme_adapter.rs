@@ -1,6 +1,6 @@
-//! Theme adapter for converting Gravity themes to Iced themes
+//! Theme adapter for converting Dampen themes to Iced themes
 //!
-//! This module adapts Gravity's theme system to Iced's theme system.
+//! This module adapts Dampen's theme system to Iced's theme system.
 //!
 //! Note: Placeholder implementation for Phase 1. Full theme mapping
 //! will be implemented in Phase 5.
@@ -8,11 +8,11 @@
 use dampen_core::ir::theme::{FontWeight, Theme, Typography};
 use iced::Theme as IcedTheme;
 
-/// Adapter for converting Gravity themes to Iced themes
+/// Adapter for converting Dampen themes to Iced themes
 pub struct ThemeAdapter;
 
 impl ThemeAdapter {
-    /// Convert a Gravity theme to an Iced theme
+    /// Convert a Dampen theme to an Iced theme
     ///
     /// Note: This is a placeholder. Full implementation in Phase 5.
     pub fn to_iced(_theme: &Theme) -> IcedTheme {

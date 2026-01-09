@@ -20,7 +20,7 @@ fn complete_palette(primary: &str, secondary: &str, background: &str, text: &str
 
 #[test]
 fn test_theme_parsing() {
-    let xml = "<gravity><themes><theme name=\"custom\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"8\" /></theme></themes><global_theme name=\"custom\" /><column><text value=\"Test\" /></column></gravity>";
+    let xml = "<dampen><themes><theme name=\"custom\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"8\" /></theme></themes><global_theme name=\"custom\" /><column><text value=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     assert!(doc.themes.contains_key("custom"));
@@ -45,7 +45,7 @@ fn test_builtin_themes() {
 
 #[test]
 fn test_theme_switching() {
-    let xml = format!("<gravity><themes><theme name=\"light\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme><theme name=\"dark\"><palette primary=\"#5dade2\" secondary=\"#58d68d\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#2c3e50\" surface=\"#ffffff\" text=\"#ecf0f1\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"light\" /><column><text value=\"Test\" /></column></gravity>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
+    let xml = format!("<dampen><themes><theme name=\"light\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme><theme name=\"dark\"><palette primary=\"#5dade2\" secondary=\"#58d68d\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#2c3e50\" surface=\"#ffffff\" text=\"#ecf0f1\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"light\" /><column><text value=\"Test\" /></column></dampen>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
 
     let doc = parse(&xml).unwrap();
     let mut manager = ThemeManager::new();
@@ -62,7 +62,7 @@ fn test_theme_switching() {
 
 #[test]
 fn test_style_classes() {
-    let xml = "<gravity><style_classes><style name=\"btn\" background=\"#3498db\" color=\"#ffffff\" /></style_classes><column><button class=\"btn\" label=\"Test\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"btn\" background=\"#3498db\" color=\"#ffffff\" /></style_classes><column><button class=\"btn\" label=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     assert!(doc.style_classes.contains_key("btn"));
@@ -105,7 +105,7 @@ fn test_theme_validation() {
 
 #[test]
 fn test_class_inheritance() {
-    let xml = "<gravity><style_classes><style name=\"base\" background=\"#ffffff\" /><style name=\"primary\" extends=\"base\" color=\"#3498db\" /></style_classes><column><text value=\"Test\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"base\" background=\"#ffffff\" /><style name=\"primary\" extends=\"base\" color=\"#3498db\" /></style_classes><column><text value=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let primary = doc.style_classes.get("primary").unwrap();
@@ -114,7 +114,7 @@ fn test_class_inheritance() {
 
 #[test]
 fn test_widget_theme_ref() {
-    let xml = format!("<gravity><themes><theme name=\"global\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme><theme name=\"local\"><palette primary=\"#e74c3c\" secondary=\"#e67e22\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"global\" /><column><text value=\"Global\" /><container theme_ref=\"local\"><text value=\"Local\" /></container></column></gravity>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
+    let xml = format!("<dampen><themes><theme name=\"global\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme><theme name=\"local\"><palette primary=\"#e74c3c\" secondary=\"#e67e22\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"global\" /><column><text value=\"Global\" /><container theme_ref=\"local\"><text value=\"Local\" /></container></column></dampen>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
 
     let doc = parse(&xml).unwrap();
     assert!(doc.themes.contains_key("global"));
@@ -124,7 +124,7 @@ fn test_widget_theme_ref() {
 
 #[test]
 fn test_full_theme_spec() {
-    let xml = "<gravity><themes><theme name=\"full\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" /><typography font_family=\"Inter, sans-serif\" font_size_base=\"16\" font_size_small=\"12\" font_size_large=\"24\" font_weight=\"bold\" line_height=\"1.5\" /><spacing unit=\"8\" /></theme></themes><global_theme name=\"full\" /><column><text value=\"Test\" /></column></gravity>";
+    let xml = "<dampen><themes><theme name=\"full\"><palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" /><typography font_family=\"Inter, sans-serif\" font_size_base=\"16\" font_size_small=\"12\" font_size_large=\"24\" font_weight=\"bold\" line_height=\"1.5\" /><spacing unit=\"8\" /></theme></themes><global_theme name=\"full\" /><column><text value=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let theme = doc.themes.get("full").unwrap();
@@ -141,7 +141,7 @@ fn test_full_theme_spec() {
 
 #[test]
 fn test_minimal_theme() {
-    let xml = format!("<gravity><themes><theme name=\"minimal\"><palette {} /></theme></themes><global_theme name=\"minimal\" /><column><text value=\"Test\" /></column></gravity>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
+    let xml = format!("<dampen><themes><theme name=\"minimal\"><palette {} /></theme></themes><global_theme name=\"minimal\" /><column><text value=\"Test\" /></column></dampen>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
 
     let doc = parse(&xml).unwrap();
     let theme = doc.themes.get("minimal").unwrap();
@@ -154,7 +154,7 @@ fn test_minimal_theme() {
 // T112: Contract test - Inline style attributes → StyleProperties
 #[test]
 fn test_inline_style_parsing() {
-    let xml = "<gravity><column><button background=\"#e74c3c\" color=\"#ffffff\" border_width=\"2\" border_color=\"#c0392b\" border_radius=\"4\" shadow=\"2 2 4 #00000040\" opacity=\"0.8\" label=\"Styled Button\" /></column></gravity>";
+    let xml = "<dampen><column><button background=\"#e74c3c\" color=\"#ffffff\" border_width=\"2\" border_color=\"#c0392b\" border_radius=\"4\" shadow=\"2 2 4 #00000040\" opacity=\"0.8\" label=\"Styled Button\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let button = &doc.root.children[0];
@@ -195,7 +195,7 @@ fn test_inline_style_parsing() {
 // T113: Integration test - Inline styles override theme
 #[test]
 fn test_inline_style_overrides_theme() {
-    let xml = format!("<gravity><themes><theme name=\"app\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"app\" /><column><container background=\"#ffffff\" padding=\"20\"><text value=\"Override Test\" /></container></column></gravity>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
+    let xml = format!("<dampen><themes><theme name=\"app\"><palette {} /><typography font_family=\"sans-serif\" font_size_base=\"16\" /><spacing unit=\"4\" /></theme></themes><global_theme name=\"app\" /><column><container background=\"#ffffff\" padding=\"20\"><text value=\"Override Test\" /></container></column></dampen>", complete_palette("#3498db", "#2ecc71", "#ecf0f1", "#2c3e50"));
 
     let doc = parse(&xml).unwrap();
 
@@ -261,7 +261,7 @@ fn test_inline_style_overrides_theme() {
 // T114: Snapshot test - Generated code with inline styles
 #[test]
 fn test_inline_style_snapshot() {
-    let xml = "<gravity><column><container background=\"linear-gradient(90deg, #3498db 0%, #2ecc71 100%)\" padding=\"20\" border_width=\"2\" border_color=\"#000000\" border_radius=\"8\" shadow=\"0 4 8 #00000020\"><text value=\"Gradient Container\" color=\"#ffffff\" /></container></column></gravity>";
+    let xml = "<dampen><column><container background=\"linear-gradient(90deg, #3498db 0%, #2ecc71 100%)\" padding=\"20\" border_width=\"2\" border_color=\"#000000\" border_radius=\"8\" shadow=\"0 4 8 #00000020\"><text value=\"Gradient Container\" color=\"#ffffff\" /></container></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let container = &doc.root.children[0];
@@ -407,7 +407,7 @@ fn test_border_parsing() {
 // T126: Contract test - Class XML → StyleClass struct
 #[test]
 fn test_class_parsing_contract() {
-    let xml = "<gravity><style_classes><style name=\"btn\" background=\"#3498db\" color=\"#ffffff\" padding=\"12 24\" extends=\"base\" /></style_classes><column><button class=\"btn\" label=\"Test\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"btn\" background=\"#3498db\" color=\"#ffffff\" padding=\"12 24\" extends=\"base\" /></style_classes><column><button class=\"btn\" label=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
 
@@ -425,7 +425,7 @@ fn test_class_parsing_contract() {
 // T127: Integration test - Class inheritance and merging
 #[test]
 fn test_class_inheritance_and_merging() {
-    let xml = "<gravity><style_classes><style name=\"base\" background=\"#ffffff\" padding=\"8\" /><style name=\"primary\" extends=\"base\" background=\"#3498db\" color=\"#ffffff\" /><style name=\"large\" font_size=\"20\" /></style_classes><column><button class=\"primary large\" label=\"Test\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"base\" background=\"#ffffff\" padding=\"8\" /><style name=\"primary\" extends=\"base\" background=\"#3498db\" color=\"#ffffff\" /><style name=\"large\" font_size=\"20\" /></style_classes><column><button class=\"primary large\" label=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
 
@@ -538,7 +538,7 @@ fn test_inheritance_depth_limit() {
 // Test multiple classes merging order
 #[test]
 fn test_multiple_classes_merge_order() {
-    let xml = "<gravity><style_classes><style name=\"a\" background=\"#ff0000\" color=\"#000000\" /><style name=\"b\" background=\"#00ff00\" /></style_classes><column><button class=\"a b\" label=\"Test\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"a\" background=\"#ff0000\" color=\"#000000\" /><style name=\"b\" background=\"#00ff00\" /></style_classes><column><button class=\"a b\" label=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let cascade = StyleCascade::new(&doc);
@@ -561,7 +561,7 @@ fn test_multiple_classes_merge_order() {
 #[test]
 fn test_class_state_variants() {
     // Use child elements for state variants (as per XML schema)
-    let xml = "<gravity><style_classes><style name=\"btn\"><base background=\"#3498db\" /><hover background=\"#2980b9\" /><active background=\"#21618c\" /></style></style_classes><column><button class=\"btn\" label=\"Test\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"btn\"><base background=\"#3498db\" /><hover background=\"#2980b9\" /><active background=\"#21618c\" /></style></style_classes><column><button class=\"btn\" label=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let class = doc.style_classes.get("btn").unwrap();
@@ -580,7 +580,7 @@ fn test_class_state_variants() {
 // Test class with layout constraints
 #[test]
 fn test_class_with_layout() {
-    let xml = "<gravity><style_classes><style name=\"card\" background=\"#ffffff\" padding=\"20\" width=\"300\" height=\"200\" /></style_classes><column><container class=\"card\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"card\" background=\"#ffffff\" padding=\"20\" width=\"300\" height=\"200\" /></style_classes><column><container class=\"card\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let class = doc.style_classes.get("card").unwrap();
@@ -603,7 +603,7 @@ fn test_class_with_layout() {
 // Test widget class extraction
 #[test]
 fn test_widget_class_extraction() {
-    let xml = "<gravity><style_classes><style name=\"btn\" background=\"#3498db\" /></style_classes><column><button class=\"btn primary large\" label=\"Test\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"btn\" background=\"#3498db\" /></style_classes><column><button class=\"btn primary large\" label=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let button = &doc.root.children[0];
@@ -618,7 +618,7 @@ fn test_widget_class_extraction() {
 // Test empty class attribute
 #[test]
 fn test_empty_class_attribute() {
-    let xml = "<gravity><column><button label=\"Test\" /></column></gravity>";
+    let xml = "<dampen><column><button label=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let button = &doc.root.children[0];
@@ -630,7 +630,7 @@ fn test_empty_class_attribute() {
 // Test class attribute with extra whitespace
 #[test]
 fn test_class_whitespace_handling() {
-    let xml = "<gravity><style_classes><style name=\"btn\" background=\"#3498db\" /></style_classes><column><button class=\"  btn   primary  \" label=\"Test\" /></column></gravity>";
+    let xml = "<dampen><style_classes><style name=\"btn\" background=\"#3498db\" /></style_classes><column><button class=\"  btn   primary  \" label=\"Test\" /></column></dampen>";
 
     let doc = parse(xml).unwrap();
     let button = &doc.root.children[0];

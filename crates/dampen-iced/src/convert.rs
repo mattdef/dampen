@@ -1,4 +1,4 @@
-//! Type conversions from Gravity IR to Iced types
+//! Type conversions from Dampen IR to Iced types
 //!
 //! This module re-exports the existing mapping functions from style_mapping.rs
 //! for use in the DampenWidgetBuilder.

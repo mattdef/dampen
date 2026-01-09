@@ -1,9 +1,9 @@
-# XML Schema Reference: Gravity UI Markup
+# XML Schema Reference: Dampen UI Markup
 
 **Version**: 1.0.0  
 **Last Updated**: 2025-12-30
 
-This document defines the complete XML schema for Gravity UI markup files (`.gravity`).
+This document defines the complete XML schema for Dampen UI markup files (`.dampen`).
 
 ---
 
@@ -11,13 +11,13 @@ This document defines the complete XML schema for Gravity UI markup files (`.gra
 
 ### Root Element
 
-Every Gravity file must have a single root element:
+Every Dampen file must have a single root element:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gravity version="1.0" xmlns="https://gravity-ui.dev/schema/1.0">
+<dampen version="1.0" xmlns="https://dampen-ui.dev/schema/1.0">
     <!-- UI content here -->
-</gravity>
+</dampen>
 ```
 
 **Attributes:**
@@ -275,7 +275,7 @@ Displays SVG content.
 ### `<pick_list>` - Dropdown Selection
 
 ```xml
-<pick_list 
+<pick_list
     options="{items}"
     selected="{current_item}"
     on_select="select_item"
@@ -293,10 +293,39 @@ Displays SVG content.
 | `enabled` | bool/binding | true | Interactive state |
 | `width` | length | auto | Width constraint |
 
+### `<radio>` - Radio Button Group
+
+```xml
+<radio_group name="selection">
+    <radio label="Option A" value="a" />
+    <radio label="Option B" value="b" />
+    <radio label="Option C" value="c" />
+</radio_group>
+```
+
+Or with inline definition:
+
+```xml
+<column>
+    <radio label="Small" value="small" selected="{size}" on_select="set_size" />
+    <radio label="Medium" value="medium" selected="{size}" on_select="set_size" />
+    <radio label="Large" value="large" selected="{size}" on_select="set_size" />
+</column>
+```
+
+**Radio Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `label` | string/binding | "" | Radio button label |
+| `value` | string/binding | required | Value when selected |
+| `selected` | any/binding | none | Currently selected value |
+| `on_select` | handler | - | Selection handler |
+| `disabled` | bool/binding | false | Disabled state |
+
 ### `<toggler>` - Toggle Switch
 
 ```xml
-<toggler 
+<toggler
     label="Dark mode"
     toggled="{dark_mode}"
     on_toggle="toggle_dark_mode"
@@ -310,6 +339,41 @@ Displays SVG content.
 | `toggled` | bool/binding | false | Toggle state |
 | `on_toggle` | handler | - | Toggle handler |
 | `enabled` | bool/binding | true | Interactive state |
+
+### `<progress_bar>` - Progress Indicator
+
+```xml
+<progress_bar
+    min="0"
+    max="100"
+    value="{progress}"
+/>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `min` | number | 0 | Minimum value |
+| `max` | number | 100 | Maximum value |
+| `value` | number/binding | 0 | Current progress |
+
+### `<for>` - Iteration Widget
+
+Render a list of items by iterating over a collection.
+
+```xml
+<column>
+    <for each="item" in="items">
+        <text value="{item}" />
+    </for>
+</column>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `each` | string | required | Iterator variable name |
+| `in` | binding | required | Collection to iterate over |
 
 ---
 
@@ -595,7 +659,7 @@ Breakpoint-prefixed attributes override base values:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gravity version="1.0">
+<dampen version="1.0">
     <column padding="20" spacing="10">
         <text value="Todo List" size="24" weight="bold" />
         
@@ -628,7 +692,7 @@ Breakpoint-prefixed attributes override base values:
             />
         </row>
     </column>
-</gravity>
+</dampen>
 ```
 
 ---
@@ -638,13 +702,16 @@ Breakpoint-prefixed attributes override base values:
 **Version 1.0**: Initial release with core widgets
 - Layout: column, row, container, scrollable, stack
 - Content: text, image, svg
-- Interactive: button, text_input, checkbox, slider, pick_list, toggler
+- Interactive: button, text_input, checkbox, slider, pick_list, toggler, radio, progress_bar
+- Control flow: for
 - Decorative: space, rule
 - Bindings: field access, method calls, conditionals, formatting
-- Events: click, input, change, toggle, submit
+- Events: click, input, change, toggle, submit, select
 
-**Future Versions**:
-- 1.1: Iteration support, custom widgets
-- 2.0: Breaking changes if needed
+**Version 1.1**: Additional features
+- Grid layout widget
+- Canvas widget for custom drawing
+- Tooltip widget
+- ComboBox widget
 
 Files without a version attribute are treated as version 1.0.

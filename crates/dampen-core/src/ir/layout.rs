@@ -1,4 +1,4 @@
-//! Layout system types for Gravity UI framework
+//! Layout system types for Dampen UI framework
 //!
 //! This module defines the IR types for layout constraints, sizing, alignment,
 //! and responsive breakpoints. All types are backend-agnostic and serializable.

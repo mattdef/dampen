@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use thiserror::Error;
 
-/// Enhanced error types for the `gravity check` command.
+/// Enhanced error types for the `dampen check` command.
 #[derive(Error, Debug)]
 pub enum CheckError {
     // Phase 1: Unknown Attribute Detection
