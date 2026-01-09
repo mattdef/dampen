@@ -19,16 +19,23 @@ members = [
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
-authors = ["Dampen Developers <dev@dampen.dev>"]
+authors = ["Mattdef <mattdef@gmail.com>"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/anomalyco/dampen"
-documentation = "https://docs.rs/dampen-core"
+repository = "https://github.com/mattdef/dampen"
+documentation = "https://docs.rs/dampen-cli"
 readme = "README.md"
 keywords = ["ui", "iced", "declarative", "gui", "framework"]
 categories = ["gui", "development-tools"]
 publish = true
 
 [workspace.dependencies]
+# Dampen crates
+dampen-core = { path = "./crates/dampen-core", version = "0.1.0" }
+dampen-macros = { path = "./crates/dampen-macros", version = "0.1.0" }
+dampen-runtime = { path = "./crates/dampen-runtime", version = "0.1.0" }
+dampen-iced = { path = "./crates/dampen-iced", version = "0.1.0" }
+dampen-cli = { path = "./crates/dampen-cli", version = "0.1.0" }
+
 # Core dependencies
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

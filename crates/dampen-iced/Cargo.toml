@@ -13,12 +13,12 @@ keywords = { workspace = true }
 categories = { workspace = true }
 
 [dependencies]
-dampen-core = "0.1"
+dampen-core = { workspace = true }
 iced = { workspace = true }
 
 [dev-dependencies]
 criterion = "0.5"
-dampen-macros = "0.1"
+dampen-macros = { workspace = true }
 serde = { workspace = true }
 
 [[bench]]

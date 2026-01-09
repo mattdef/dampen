@@ -135,10 +135,10 @@
         <!-- Header Section -->
         <column spacing="15">
             <text
-                    value="Gravity Styling Showcase"
+                    value="Dampen Styling Showcase"
                     size="36"
                     weight="bold"
-                    color="#2c3e50"
+                    color="#cccccc"
                 />
             <text
                     value="Comprehensive demo of all layout, sizing, theming, and styling features"

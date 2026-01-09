@@ -1,0 +1,64 @@
+//! Build script to extract dependency versions from workspace Cargo.toml
+//!
+//! This script parses the workspace Cargo.toml and exports dependency versions
+//! as environment variables for use in the `dampen new` template generation.
+
+use std::env;
+use std::fs;
+use std::path::PathBuf;
+
+fn main() {
+    // Get the workspace root (two levels up from dampen-cli/build.rs)
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
+    let workspace_toml = workspace_root.join("Cargo.toml");
+
+    // Re-run if workspace Cargo.toml changes
+    println!("cargo:rerun-if-changed={}", workspace_toml.display());
+
+    // Read and parse workspace Cargo.toml
+    let content = fs::read_to_string(&workspace_toml).expect("Failed to read workspace Cargo.toml");
+
+    // Extract versions using simple string parsing
+    // Note: This is a simple approach. For more complex scenarios, consider using toml crate.
+    for line in content.lines() {
+        let line = line.trim();
+
+        // Look for dependency version definitions like: iced = { version = "0.14", ... }
+        if let Some(version) = extract_version(line, "iced") {
+            println!("cargo:rustc-env=ICED_VERSION={}", version);
+        }
+        if let Some(version) = extract_version(line, "serde") {
+            println!("cargo:rustc-env=SERDE_VERSION={}", version);
+        }
+        if let Some(version) = extract_version(line, "serde_json") {
+            println!("cargo:rustc-env=SERDE_JSON_VERSION={}", version);
+        }
+    }
+}
+
+/// Extract version from a TOML line like: name = { version = "1.0", ... }
+fn extract_version(line: &str, dep_name: &str) -> Option<String> {
+    // Check if line starts with the dependency name
+    if !line.starts_with(dep_name) {
+        return None;
+    }
+
+    // Find version = "..." pattern
+    if let Some(version_start) = line.find("version = \"") {
+        let after_version = &line[version_start + 11..]; // Skip 'version = "'
+        if let Some(quote_pos) = after_version.find('"') {
+            return Some(after_version[..quote_pos].to_string());
+        }
+    }
+
+    // Handle simple version format: name = "1.0"
+    if let Some(eq_pos) = line.find('=') {
+        let after_eq = line[eq_pos + 1..].trim();
+        if after_eq.starts_with('"') && after_eq.ends_with('"') {
+            return Some(after_eq[1..after_eq.len() - 1].to_string());
+        }
+    }
+
+    None
+}

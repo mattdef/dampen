@@ -9,6 +9,29 @@
 
 Dampen allows you to define your user interface in XML and render it via Iced.
 
+---
+
+> **⚠️ DEVELOPMENT STATUS**
+> 
+> **Dampen is currently under active development and is NOT ready for production use.**
+> 
+> The framework is functional and can be tested for experimentation, learning, and contributing to its development. However, the API is unstable and subject to breaking changes. Features may be incomplete, and there may be bugs or performance issues.
+> 
+> **Use Dampen for:**
+> - ✅ Experimentation and learning
+> - ✅ Contributing to development
+> - ✅ Testing and providing feedback
+> - ✅ Prototype applications
+> 
+> **Do NOT use Dampen for:**
+> - ❌ Production applications
+> - ❌ Mission-critical systems
+> - ❌ Applications requiring API stability
+> 
+> We welcome your feedback and contributions! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) to get involved.
+
+---
+
 ## Features
 
 - ✅ **Declarative XML definitions**

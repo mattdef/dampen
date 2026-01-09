@@ -5,12 +5,12 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-dampen-core = { path = "../../crates/dampen-core" }
-dampen-macros = { path = "../../crates/dampen-macros" }
-dampen-runtime = { path = "../../crates/dampen-runtime", optional = true }
-dampen-iced = { path = "../../crates/dampen-iced" }
-iced = "0.14"
-serde = { version = "1.0", features = ["derive"] }
+dampen-core = { workspace = true }
+dampen-macros = { workspace = true }
+dampen-runtime = { workspace = true, optional = true }
+dampen-iced = { workspace = true }
+iced = { workspace = true }
+serde = { workspace = true }
 
 [features]
 default = []

@@ -180,7 +180,19 @@ fn create_project_structure(project_path: &Path) -> Result<(), String> {
 /// Generate Cargo.toml from template
 fn generate_cargo_toml(project_path: &Path, project_name: &str) -> Result<(), String> {
     let template = include_str!("../../templates/new/Cargo.toml.template");
-    let content = template.replace("{{PROJECT_NAME}}", project_name);
+
+    // Get versions from build.rs environment variables
+    let dampen_version = env!("CARGO_PKG_VERSION");
+    let iced_version = env!("ICED_VERSION");
+    let serde_version = env!("SERDE_VERSION");
+    let serde_json_version = env!("SERDE_JSON_VERSION");
+
+    let content = template
+        .replace("{{PROJECT_NAME}}", project_name)
+        .replace("{{DAMPEN_VERSION}}", dampen_version)
+        .replace("{{ICED_VERSION}}", iced_version)
+        .replace("{{SERDE_VERSION}}", serde_version)
+        .replace("{{SERDE_JSON_VERSION}}", serde_json_version);
 
     let file_path = project_path.join("Cargo.toml");
     fs::write(&file_path, content)

@@ -5,9 +5,9 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-dampen-core = "0.1.0"
-dampen-iced = "0.1.0"
-dampen-macros = "0.1.0"
-iced = "0.14"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+dampen-core = "{{DAMPEN_VERSION}}"
+dampen-iced = "{{DAMPEN_VERSION}}"
+dampen-macros = "{{DAMPEN_VERSION}}"
+iced = "{{ICED_VERSION}}"
+serde = { version = "{{SERDE_VERSION}}", features = ["derive"] }
+serde_json = "{{SERDE_JSON_VERSION}}"
