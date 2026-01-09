@@ -9,7 +9,7 @@
     <row spacing="10">
         <button label="Primary" on_click="handle_click" />
         <button label="Secondary" on_click="handle_click" />
-        <button label="Disabled" disabled="true" />
+        <button label="Disabled" enabled="false" />
     </row>
 
     <text value="Button States" size="18" weight="bold" />

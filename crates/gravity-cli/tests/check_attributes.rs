@@ -105,17 +105,14 @@ fn test_textinput_valid_attributes() {
     let schema = WidgetAttributeSchema::for_widget(&WidgetKind::TextInput);
     let all_valid = schema.all_valid();
 
-    // Widget-specific attributes
     assert!(all_valid.contains("placeholder"));
     assert!(all_valid.contains("value"));
-    assert!(all_valid.contains("secure"));
+    assert!(all_valid.contains("password"));
 
-    // Event attributes
     assert!(all_valid.contains("on_input"));
     assert!(all_valid.contains("on_submit"));
     assert!(all_valid.contains("on_change"));
 
-    // Common layout attributes
     assert!(all_valid.contains("width"));
     assert!(all_valid.contains("padding"));
 }
@@ -255,4 +252,112 @@ fn test_image_with_all_required_attributes() {
         .collect();
 
     assert_eq!(missing_required.len(), 0);
+}
+
+#[test]
+fn test_row_column_align_attribute_alias() {
+    let row_schema = WidgetAttributeSchema::for_widget(&WidgetKind::Row);
+    let col_schema = WidgetAttributeSchema::for_widget(&WidgetKind::Column);
+    let container_schema = WidgetAttributeSchema::for_widget(&WidgetKind::Container);
+
+    assert!(row_schema.all_valid().contains("align"));
+    assert!(col_schema.all_valid().contains("align"));
+    assert!(container_schema.all_valid().contains("align"));
+
+    assert!(row_schema.all_valid().contains("align_items"));
+    assert!(row_schema.all_valid().contains("justify_content"));
+}
+
+#[test]
+fn test_toggler_active_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Toggler);
+
+    assert!(schema.all_valid().contains("checked"));
+    assert!(schema.all_valid().contains("active"));
+    assert!(schema.all_valid().contains("label"));
+}
+
+#[test]
+fn test_progressbar_style_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::ProgressBar);
+
+    assert!(schema.all_valid().contains("value"));
+    assert!(schema.all_valid().contains("min"));
+    assert!(schema.all_valid().contains("max"));
+    assert!(schema.all_valid().contains("style"));
+}
+
+#[test]
+fn test_canvas_program_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Canvas);
+
+    assert!(schema.all_valid().contains("program"));
+    assert!(schema.all_valid().contains("on_draw"));
+}
+
+#[test]
+fn test_tooltip_attributes() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Tooltip);
+
+    assert!(schema.all_valid().contains("message"));
+    assert!(schema.all_valid().contains("position"));
+    assert!(!schema.layout_attributes.contains("position"));
+}
+
+#[test]
+fn test_for_each_in_attributes() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::For);
+
+    assert!(schema.required.contains("each"));
+    assert!(schema.required.contains("in"));
+    assert!(schema.all_valid().contains("template"));
+}
+
+#[test]
+fn test_svg_path_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Svg);
+
+    assert!(schema.required.contains("src"));
+    assert!(schema.all_valid().contains("path"));
+    assert!(schema.all_valid().contains("width"));
+    assert!(schema.all_valid().contains("height"));
+}
+
+#[test]
+fn test_textinput_password_attribute() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::TextInput);
+
+    assert!(schema.all_valid().contains("placeholder"));
+    assert!(schema.all_valid().contains("value"));
+    assert!(schema.all_valid().contains("password"));
+    assert!(!schema.all_valid().contains("secure"));
+}
+
+#[test]
+fn test_scrollable_no_specific_attributes() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Scrollable);
+
+    assert!(schema.optional.is_empty());
+    assert!(schema.all_valid().contains("on_scroll"));
+}
+
+#[test]
+fn test_grid_columns_only() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Grid);
+
+    assert!(schema.all_valid().contains("columns"));
+    assert!(!schema.all_valid().contains("rows"));
+}
+
+#[test]
+fn test_text_simple_attributes() {
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Text);
+
+    assert!(schema.required.contains("value"));
+    assert!(schema.all_valid().contains("size"));
+    assert!(schema.all_valid().contains("weight"));
+    assert!(schema.all_valid().contains("color"));
+    assert!(!schema.all_valid().contains("family"));
+    assert!(!schema.all_valid().contains("line_height"));
+    assert!(!schema.all_valid().contains("shaping"));
 }

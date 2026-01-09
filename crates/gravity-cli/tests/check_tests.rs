@@ -5,7 +5,7 @@ use std::fs;
 use tempfile::TempDir;
 
 // Helper function to create CheckArgs with default values for new fields
-fn create_check_args(input: String, verbose: bool) -> CheckArgs {
+fn create_check_args(input: Option<String>, verbose: bool) -> CheckArgs {
     CheckArgs {
         input,
         verbose,
@@ -30,7 +30,7 @@ fn test_valid_ui_file() {
 
     fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_ok());
@@ -50,7 +50,7 @@ fn test_invalid_widget_detection() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -73,7 +73,7 @@ fn test_valid_style_attributes() {
 
     fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_ok());
@@ -92,7 +92,7 @@ fn test_invalid_color_value() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -115,7 +115,7 @@ fn test_valid_layout_attributes() {
 
     fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_ok());
@@ -134,7 +134,7 @@ fn test_invalid_layout_constraints() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -177,7 +177,7 @@ fn test_valid_theme_and_class_references() {
 
     fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_ok());
@@ -222,7 +222,7 @@ fn test_unknown_class_reference() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -243,7 +243,7 @@ fn test_negative_spacing() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -264,7 +264,7 @@ fn test_min_greater_than_max() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -285,7 +285,7 @@ fn test_invalid_opacity() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -306,7 +306,7 @@ fn test_invalid_shadow() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -327,7 +327,7 @@ fn test_invalid_transform() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -348,7 +348,7 @@ fn test_invalid_border_style() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -369,7 +369,7 @@ fn test_invalid_direction() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -390,7 +390,7 @@ fn test_invalid_position() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -417,7 +417,7 @@ fn test_circular_class_dependency() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     let result = execute(&args);
     assert!(result.is_err());
@@ -444,7 +444,7 @@ fn test_backward_compatibility_without_optional_flags() {
     fs::write(ui_dir.join("main.gravity"), ui_content).unwrap();
 
     // Create args without new optional flags (backward compatible mode)
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     // Verify that handlers and model are None (backward compatible)
     assert!(args.handlers.is_none());
@@ -474,7 +474,7 @@ fn test_backward_compatibility_existing_validation_still_works() {
 
     fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
 
-    let args = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args = create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
 
     // Should still fail on unknown widget type
     let result = execute(&args);
@@ -487,9 +487,9 @@ fn test_backward_compatibility_existing_validation_still_works() {
 #[test]
 fn test_backward_compatibility_helper_function() {
     // Verify that the helper function creates backward-compatible args
-    let args = create_check_args("./ui".to_string(), false);
+    let args = create_check_args(Some("./ui".to_string()), false);
 
-    assert_eq!(args.input, "./ui");
+    assert_eq!(args.input, Some("./ui".to_string()));
     assert!(!args.verbose);
     assert!(args.handlers.is_none());
     assert!(args.model.is_none());
@@ -512,10 +512,341 @@ fn test_enhanced_validation_requires_opt_in() {
     fs::write(ui_dir.join("main.gravity"), ui_content).unwrap();
 
     // Without handler registry, should pass (handler validation is opt-in)
-    let args_without_registry = create_check_args(ui_dir.to_string_lossy().to_string(), false);
+    let args_without_registry =
+        create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
     let result = execute(&args_without_registry);
     assert!(
         result.is_ok(),
         "Handler validation should be opt-in via --handlers flag"
+    );
+}
+
+// New tests for auto-detection functionality
+
+#[test]
+fn test_auto_detect_src_ui_directory() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create src/ui/ directory structure
+    let src_ui_dir = temp_dir.path().join("src/ui");
+    fs::create_dir_all(&src_ui_dir).unwrap();
+
+    let valid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <text value=\"Hello World\" />
+</column>";
+
+    fs::write(src_ui_dir.join("main.gravity"), valid_ui).unwrap();
+
+    // Change to temp directory
+    let original_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir(temp_dir.path()).unwrap();
+
+    // Run check without --input flag
+    let args = create_check_args(None, false);
+    let result = execute(&args);
+
+    // Restore original directory
+    std::env::set_current_dir(original_dir).unwrap();
+
+    assert!(result.is_ok(), "Should auto-detect src/ui/ directory");
+}
+
+#[test]
+fn test_auto_detect_ui_directory_fallback() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create only ui/ directory (not src/ui/)
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir(&ui_dir).unwrap();
+
+    let valid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <text value=\"Hello World\" />
+</column>";
+
+    fs::write(ui_dir.join("main.gravity"), valid_ui).unwrap();
+
+    // Change to temp directory
+    let original_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir(temp_dir.path()).unwrap();
+
+    // Run check without --input flag
+    let args = create_check_args(None, false);
+    let result = execute(&args);
+
+    // Restore original directory
+    std::env::set_current_dir(original_dir).unwrap();
+
+    assert!(
+        result.is_ok(),
+        "Should auto-detect ui/ directory as fallback"
+    );
+}
+
+#[test]
+fn test_prefer_src_ui_over_ui() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create both src/ui/ and ui/ directories
+    let src_ui_dir = temp_dir.path().join("src/ui");
+    let ui_dir = temp_dir.path().join("ui");
+    fs::create_dir_all(&src_ui_dir).unwrap();
+    fs::create_dir(&ui_dir).unwrap();
+
+    // Put valid content in src/ui/
+    let valid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <text value=\"From src/ui\" />
+</column>";
+    fs::write(src_ui_dir.join("main.gravity"), valid_ui).unwrap();
+
+    // Put invalid content in ui/ to verify src/ui/ is used
+    let invalid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <invalid_widget value=\"Should not be used\" />
+</column>";
+    fs::write(ui_dir.join("main.gravity"), invalid_ui).unwrap();
+
+    // Change to temp directory
+    let original_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir(temp_dir.path()).unwrap();
+
+    // Run check without --input flag
+    let args = create_check_args(None, false);
+    let result = execute(&args);
+
+    // Restore original directory
+    std::env::set_current_dir(original_dir).unwrap();
+
+    // Should succeed because src/ui/ is preferred
+    assert!(result.is_ok(), "Should prefer src/ui/ over ui/");
+}
+
+#[test]
+fn test_explicit_input_overrides_auto_detection() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create both src/ui/ and custom/ directories
+    let src_ui_dir = temp_dir.path().join("src/ui");
+    let custom_dir = temp_dir.path().join("custom");
+    fs::create_dir_all(&src_ui_dir).unwrap();
+    fs::create_dir(&custom_dir).unwrap();
+
+    // Put content in both
+    let ui1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <text value=\"From src/ui\" />
+</column>";
+    fs::write(src_ui_dir.join("main.gravity"), ui1).unwrap();
+
+    let ui2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <text value=\"From custom\" />
+    <button label=\"Custom button\" />
+</column>";
+    fs::write(custom_dir.join("main.gravity"), ui2).unwrap();
+
+    // Explicitly specify custom directory
+    let args = create_check_args(Some(custom_dir.to_string_lossy().to_string()), false);
+    let result = execute(&args);
+
+    assert!(
+        result.is_ok(),
+        "Explicit --input should override auto-detection"
+    );
+}
+
+#[test]
+fn test_error_when_no_ui_directory_found() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create an empty directory (no ui/ or src/ui/)
+
+    // Change to temp directory
+    let original_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir(temp_dir.path()).unwrap();
+
+    // Run check without --input flag
+    let args = create_check_args(None, false);
+    let result = execute(&args);
+
+    // Restore original directory
+    std::env::set_current_dir(original_dir).unwrap();
+
+    assert!(result.is_err(), "Should error when no UI directory found");
+    let error_msg = result.unwrap_err().to_string();
+    assert!(
+        error_msg.contains("No UI directory found") || error_msg.contains("src/ui"),
+        "Error message should be helpful: {}",
+        error_msg
+    );
+}
+
+#[test]
+fn test_auto_discover_handlers_json_in_root() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create src/ui/ directory
+    let src_ui_dir = temp_dir.path().join("src/ui");
+    fs::create_dir_all(&src_ui_dir).unwrap();
+
+    let ui_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <button label=\"Click\" on_click=\"handle_click\" />
+</column>";
+    fs::write(src_ui_dir.join("main.gravity"), ui_content).unwrap();
+
+    // Create handlers.json in project root
+    let handlers_json = r#"[
+        {
+            "name": "handle_click",
+            "param_type": null,
+            "returns_command": false
+        }
+    ]"#;
+    fs::write(temp_dir.path().join("handlers.json"), handlers_json).unwrap();
+
+    // Change to temp directory
+    let original_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir(temp_dir.path()).unwrap();
+
+    // Run check without --handlers flag (should auto-discover)
+    let args = create_check_args(None, true); // verbose to see discovery
+    let result = execute(&args);
+
+    // Restore original directory
+    std::env::set_current_dir(original_dir).unwrap();
+
+    assert!(result.is_ok(), "Should auto-discover handlers.json in root");
+}
+
+#[test]
+fn test_auto_discover_handlers_json_in_src() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create src/ui/ directory
+    let src_ui_dir = temp_dir.path().join("src/ui");
+    let src_dir = temp_dir.path().join("src");
+    fs::create_dir_all(&src_ui_dir).unwrap();
+
+    let ui_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <button label=\"Click\" on_click=\"handle_click\" />
+</column>";
+    fs::write(src_ui_dir.join("main.gravity"), ui_content).unwrap();
+
+    // Create handlers.json in src/ directory
+    let handlers_json = r#"[
+        {
+            "name": "handle_click",
+            "param_type": null,
+            "returns_command": false
+        }
+    ]"#;
+    fs::write(src_dir.join("handlers.json"), handlers_json).unwrap();
+
+    // Change to temp directory
+    let original_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir(temp_dir.path()).unwrap();
+
+    // Run check without --handlers flag (should auto-discover)
+    let args = create_check_args(None, false);
+    let result = execute(&args);
+
+    // Restore original directory
+    std::env::set_current_dir(original_dir).unwrap();
+
+    assert!(result.is_ok(), "Should auto-discover handlers.json in src/");
+}
+
+#[test]
+fn test_explicit_handlers_overrides_auto_discovery() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create src/ui/ directory
+    let src_ui_dir = temp_dir.path().join("src/ui");
+    fs::create_dir_all(&src_ui_dir).unwrap();
+
+    let ui_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <button label=\"Click\" on_click=\"custom_handler\" />
+</column>";
+    fs::write(src_ui_dir.join("main.gravity"), ui_content).unwrap();
+
+    // Create handlers.json in root (would be auto-discovered)
+    let root_handlers = r#"[
+        {
+            "name": "handle_click",
+            "param_type": null,
+            "returns_command": false
+        }
+    ]"#;
+    fs::write(temp_dir.path().join("handlers.json"), root_handlers).unwrap();
+
+    // Create custom handlers.json
+    let custom_handlers = r#"[
+        {
+            "name": "custom_handler",
+            "param_type": null,
+            "returns_command": false
+        }
+    ]"#;
+    let custom_path = temp_dir.path().join("custom_handlers.json");
+    fs::write(&custom_path, custom_handlers).unwrap();
+
+    // Run with explicit --handlers flag
+    let args = CheckArgs {
+        input: None,
+        verbose: false,
+        handlers: Some(custom_path.to_string_lossy().to_string()),
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    // Change to temp directory
+    let original_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir(temp_dir.path()).unwrap();
+
+    let result = execute(&args);
+
+    // Restore original directory
+    std::env::set_current_dir(original_dir).unwrap();
+
+    assert!(
+        result.is_ok(),
+        "Explicit --handlers should override auto-discovery"
+    );
+}
+
+#[test]
+fn test_backward_compatibility_with_explicit_paths() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create custom directory structure
+    let custom_dir = temp_dir.path().join("custom");
+    fs::create_dir(&custom_dir).unwrap();
+
+    let ui_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<column>
+    <text value=\"Test\" />
+</column>";
+    fs::write(custom_dir.join("main.gravity"), ui_content).unwrap();
+
+    // Old-style explicit path specification
+    let args = CheckArgs {
+        input: Some(custom_dir.to_string_lossy().to_string()),
+        verbose: false,
+        handlers: None,
+        model: None,
+        custom_widgets: None,
+        strict: false,
+    };
+
+    let result = execute(&args);
+    assert!(
+        result.is_ok(),
+        "Backward compatibility: explicit paths should still work"
     );
 }

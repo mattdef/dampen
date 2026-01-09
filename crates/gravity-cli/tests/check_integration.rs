@@ -26,7 +26,7 @@ fn test_unknown_attribute_detection_integration() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -108,7 +108,7 @@ fn test_handler_validation_with_registry() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: Some(registry_path.to_string_lossy().to_string()),
         model: None,
@@ -150,7 +150,7 @@ fn test_handler_validation_with_unknown_handler() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: Some(registry_path.to_string_lossy().to_string()),
         model: None,
@@ -181,7 +181,7 @@ fn test_handler_validation_without_registry() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None, // No registry provided
         model: None,
@@ -234,7 +234,7 @@ fn test_binding_validation_with_model() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: Some(model_path.to_string_lossy().to_string()),
@@ -277,7 +277,7 @@ fn test_binding_validation_with_invalid_field() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: Some(model_path.to_string_lossy().to_string()),
@@ -308,7 +308,7 @@ fn test_binding_validation_without_model() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None, // No model provided
@@ -341,7 +341,7 @@ fn test_valid_radio_group_integration() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -375,7 +375,7 @@ fn test_valid_theme_integration() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -408,7 +408,7 @@ fn test_strict_mode_with_errors() {
 
     // Test without strict mode
     let args_normal = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -422,7 +422,7 @@ fn test_strict_mode_with_errors() {
 
     // Test with strict mode
     let args_strict = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -455,7 +455,7 @@ fn test_strict_mode_with_no_warnings() {
 
     // Test with strict mode
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -486,7 +486,7 @@ fn test_required_attribute_validation_text_missing_value() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -521,7 +521,7 @@ fn test_required_attribute_validation_image_missing_src() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -556,7 +556,7 @@ fn test_required_attribute_validation_radio_missing_label() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -593,7 +593,7 @@ fn test_required_attribute_validation_all_present() {
     fs::write(ui_dir.join("test.gravity"), content).expect("Failed to write test file");
 
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: None,
         model: None,
@@ -680,7 +680,7 @@ fn test_complete_validation_pipeline_all_flags() {
 
     // Test with all flags enabled
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: true,
         handlers: Some(registry_path.to_string_lossy().to_string()),
         model: Some(model_path.to_string_lossy().to_string()),
@@ -739,7 +739,7 @@ fn test_complete_validation_pipeline_with_errors() {
 
     // Test with all flags enabled - should detect all errors
     let args = CheckArgs {
-        input: ui_dir.to_string_lossy().to_string(),
+        input: Some(ui_dir.to_string_lossy().to_string()),
         verbose: false,
         handlers: Some(registry_path.to_string_lossy().to_string()),
         model: Some(model_path.to_string_lossy().to_string()),

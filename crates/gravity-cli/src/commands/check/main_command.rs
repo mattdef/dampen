@@ -155,19 +155,19 @@ pub enum CheckError {
 
 #[derive(Args)]
 pub struct CheckArgs {
-    /// Directory containing .gravity files to check
-    #[arg(short, long, default_value = "ui")]
-    pub input: String,
+    /// Directory containing .gravity files (default: auto-detect src/ui or ui)
+    #[arg(short, long)]
+    pub input: Option<String>,
 
     /// Enable verbose output
     #[arg(short, long)]
     pub verbose: bool,
 
-    /// Path to handler registry JSON file
+    /// Path to handler registry JSON (default: auto-discover handlers.json)
     #[arg(long)]
     pub handlers: Option<String>,
 
-    /// Path to model info JSON file
+    /// Path to model info JSON (default: auto-discover model.json)
     #[arg(long)]
     pub model: Option<String>,
 
@@ -180,28 +180,98 @@ pub struct CheckArgs {
     pub strict: bool,
 }
 
+/// Resolves the UI directory path using smart detection
+fn resolve_ui_directory(explicit_input: Option<&str>) -> Result<PathBuf, String> {
+    // If explicitly provided, use it
+    if let Some(path) = explicit_input {
+        let path_buf = PathBuf::from(path);
+        if path_buf.exists() {
+            return Ok(path_buf);
+        } else {
+            return Err(format!("Specified UI directory does not exist: {}", path));
+        }
+    }
+
+    // Try src/ui/ (Rust convention)
+    let src_ui = PathBuf::from("src/ui");
+    if src_ui.exists() && src_ui.is_dir() {
+        return Ok(src_ui);
+    }
+
+    // Try ui/ (fallback)
+    let ui = PathBuf::from("ui");
+    if ui.exists() && ui.is_dir() {
+        return Ok(ui);
+    }
+
+    // None found
+    Err("No UI directory found. Please create one of:\n\
+         - src/ui/ (recommended for Rust projects)\n\
+         - ui/ (general purpose)\n\n\
+         Or specify a custom path with --input:\n\
+         gravity check --input path/to/ui"
+        .to_string())
+}
+
+/// Resolves optional file paths with auto-discovery
+fn resolve_optional_file(explicit_path: Option<&str>, filename: &str) -> Option<PathBuf> {
+    // If explicitly provided, use it
+    if let Some(path) = explicit_path {
+        let path_buf = PathBuf::from(path);
+        if path_buf.exists() {
+            return Some(path_buf);
+        }
+        // Note: If explicit path doesn't exist, we'll let the caller handle the error
+        return Some(path_buf);
+    }
+
+    // Try project root
+    let root_file = PathBuf::from(filename);
+    if root_file.exists() {
+        return Some(root_file);
+    }
+
+    // Try src/ directory
+    let src_file = PathBuf::from("src").join(filename);
+    if src_file.exists() {
+        return Some(src_file);
+    }
+
+    // Not found - this is OK for optional files
+    None
+}
+
 pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
     use crate::commands::check::handlers::HandlerRegistry;
 
-    let input_path = Path::new(&args.input);
-
-    if !input_path.exists() {
-        return Err(CheckError::DirectoryNotFound(input_path.to_path_buf()));
-    }
+    // Resolve UI directory
+    let input_path = resolve_ui_directory(args.input.as_deref())
+        .map_err(|msg| CheckError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, msg)))?;
 
     if args.verbose {
-        eprintln!("Checking Gravity UI files in: {}", input_path.display());
+        eprintln!("Using UI directory: {}", input_path.display());
     }
 
-    // Load handler registry if provided (US2: Handler Registry Validation)
-    let handler_registry = if let Some(handlers_path) = &args.handlers {
-        if args.verbose {
-            eprintln!("Loading handler registry from: {}", handlers_path);
+    // Resolve optional files
+    let handlers_path = resolve_optional_file(args.handlers.as_deref(), "handlers.json");
+    if args.verbose {
+        if let Some(ref path) = handlers_path {
+            eprintln!("Using handler registry: {}", path.display());
         }
-        let path = Path::new(handlers_path);
-        let registry = HandlerRegistry::load_from_json(path).map_err(|e| {
+    }
+
+    let model_path = resolve_optional_file(args.model.as_deref(), "model.json");
+    if args.verbose {
+        if let Some(ref path) = model_path {
+            eprintln!("Using model info: {}", path.display());
+        }
+    }
+
+    // Load handler registry if provided or auto-discovered (US2: Handler Registry Validation)
+    let handler_registry = if let Some(path) = handlers_path {
+        let registry = HandlerRegistry::load_from_json(&path).map_err(|e| {
             CheckError::HandlerRegistryLoadError {
-                path: path.to_path_buf(),
+                path: path.clone(),
                 source: serde_json::Error::io(std::io::Error::new(
                     std::io::ErrorKind::Other,
                     e.to_string(),
@@ -213,16 +283,12 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         None
     };
 
-    // Load model info if provided (US3: Binding Validation Against Model)
-    let model_info = if let Some(model_path) = &args.model {
-        if args.verbose {
-            eprintln!("Loading model info from: {}", model_path);
-        }
-        let path = Path::new(model_path);
+    // Load model info if provided or auto-discovered (US3: Binding Validation Against Model)
+    let model_info = if let Some(path) = model_path {
         let model =
-            crate::commands::check::model::ModelInfo::load_from_json(path).map_err(|e| {
+            crate::commands::check::model::ModelInfo::load_from_json(&path).map_err(|e| {
                 CheckError::ModelInfoLoadError {
-                    path: path.to_path_buf(),
+                    path: path.clone(),
                     source: serde_json::Error::io(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         e.to_string(),
@@ -1121,7 +1187,8 @@ fn validate_layout_attributes(
                 }
             }
             "position" => {
-                if let AttributeValue::Static(value) = attr_value {
+                if matches!(node.kind, WidgetKind::Tooltip) {
+                } else if let AttributeValue::Static(value) = attr_value {
                     if let Err(msg) = Position::parse(value) {
                         errors.push(CheckError::InvalidStyleValue {
                             attr: attr_name.clone(),

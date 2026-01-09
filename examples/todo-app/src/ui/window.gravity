@@ -362,7 +362,7 @@
                     <row spacing="20">
                         <column spacing="5" align="center">
                             <svg
-                                path="examples/todo-app/assets/priority-low.svg"
+                                src="examples/todo-app/assets/priority-low.svg"
                                 width="32"
                                 height="32"
                             />
@@ -370,7 +370,7 @@
                         </column>
                         <column spacing="5" align="center">
                             <svg
-                                path="examples/todo-app/assets/priority-medium.svg"
+                                src="examples/todo-app/assets/priority-medium.svg"
                                 width="32"
                                 height="32"
                             />
@@ -378,7 +378,7 @@
                         </column>
                         <column spacing="5" align="center">
                             <svg
-                                path="examples/todo-app/assets/priority-high.svg"
+                                src="examples/todo-app/assets/priority-high.svg"
                                 width="32"
                                 height="32"
                             />
