@@ -1,6 +1,6 @@
-use gravity_core::{parse, AttributeValue, WidgetKind, WidgetNode};
-use gravity_iced::style_mapping::{map_length, map_padding};
-use gravity_runtime::resolve_tree_breakpoint_attributes;
+use dampen_core::{parse, AttributeValue, WidgetKind, WidgetNode};
+use dampen_iced::style_mapping::{map_length, map_padding};
+use dampen_runtime::resolve_tree_breakpoint_attributes;
 use iced::widget::{button, column, container, row, text};
 use iced::{window, Element, Padding, Subscription, Task};
 
@@ -13,20 +13,20 @@ pub enum Message {
 }
 
 pub struct AppState {
-    document: gravity_core::GravityDocument,
+    document: dampen_core::DampenDocument,
     viewport_width: f32,
-    resolved_document: Option<gravity_core::GravityDocument>,
+    resolved_document: Option<dampen_core::DampenDocument>,
 }
 
 impl AppState {
     fn new() -> Self {
-        let ui_path = std::path::PathBuf::from("examples/responsive/ui/main.gravity");
+        let ui_path = std::path::PathBuf::from("examples/responsive/ui/main.dampen");
         let xml = match std::fs::read_to_string(&ui_path) {
             Ok(content) => content,
             Err(e) => {
                 eprintln!("Error: Failed to read UI file: {}", e);
                 r#"<column padding="40" spacing="20">
-                    <text value="Error: Could not load ui/main.gravity" size="18" />
+                    <text value="Error: Could not load ui/main.dampen" size="18" />
                 </column>"#
                     .to_string()
             }
@@ -34,7 +34,7 @@ impl AppState {
 
         let document = parse(&xml).unwrap_or_else(|e| {
             eprintln!("Error: Failed to parse UI: {}", e);
-            gravity_core::GravityDocument::default()
+            dampen_core::DampenDocument::default()
         });
 
         Self {
@@ -178,7 +178,7 @@ fn render_node<'a>(node: &'a WidgetNode) -> Element<'a, Message> {
 
             // Apply style if present
             if let Some(style) = &node.style {
-                use gravity_iced::style_mapping::map_style_properties;
+                use dampen_iced::style_mapping::map_style_properties;
                 let iced_style = map_style_properties(style);
                 container_widget = container_widget.style(move |_theme| iced_style);
             }

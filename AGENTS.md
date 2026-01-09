@@ -1,22 +1,22 @@
-# Gravity Development Guidelines
+# Dampen Development Guidelines
 
 Auto-generated from all feature plans. Last updated: 2025-12-30
 
 ## Active Technologies
-- File-based (XML UI definitions, optional separate style files), serialized state in `.gravity-state.json` (002-layout-theming-styling)
+- File-based (XML UI definitions, optional separate style files), serialized state in `.dampen-state.json` (002-layout-theming-styling)
 - Rust Edition 2024, Stable Rust (no nightly features) (003-widget-builder)
 - N/A (runtime interpretation, no persistence required) (003-widget-builder)
 - Rust Edition 2024, MSRV 1.75 + Iced 0.14+ (already in workspace) (004-advanced-widgets-todo)
 - JSON state files via serde_json (existing pattern) (004-advanced-widgets-todo)
-- Rust Edition 2021, MSRV 1.75 + Iced 0.14 (with `image` feature enabled), gravity-core (005-implement-real-widgets)
+- Rust Edition 2021, MSRV 1.75 + Iced 0.14 (with `image` feature enabled), dampen-core (005-implement-real-widgets)
 - N/A (UI widgets only) (005-implement-real-widgets)
-- Rust Edition 2024, MSRV 1.75 (per constitution) + `gravity-core`, `gravity-macros`, `gravity-runtime`, `gravity-iced`, `iced` 0.14+ (006-auto-ui-loading)
+- Rust Edition 2024, MSRV 1.75 (per constitution) + `dampen-core`, `dampen-macros`, `dampen-runtime`, `dampen-iced`, `iced` 0.14+ (006-auto-ui-loading)
 - N/A (compile-time XML loading, no runtime persistence required for this feature) (006-auto-ui-loading)
-- Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `gravity-core`, `gravity-iced` (007-add-radio-widget)
+- Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `dampen-core`, `dampen-iced` (007-add-radio-widget)
 - N/A (UI widget, no persistence) (007-add-radio-widget)
 - Rust Edition 2024, MSRV 1.75+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism (008-prod-codegen)
 - N/A (code generation, no runtime persistence) (008-prod-codegen)
-- Rust Edition 2024, MSRV stable (per constitution) + gravity-core (parser, IR), serde_json (JSON handling), clap (CLI) (001-check-validation-enhancements)
+- Rust Edition 2024, MSRV stable (per constitution) + dampen-core (parser, IR), serde_json (JSON handling), clap (CLI) (001-check-validation-enhancements)
 - JSON files for handler registry (`--handlers`) and model info (`--model`) (001-check-validation-enhancements)
 
 - **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
@@ -33,7 +33,7 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 Cargo.toml                    # Workspace manifest
 
 crates/
-├── gravity-core/             # Parser, AST, IR, trait definitions
+├── dampen-core/              # Parser, AST, IR, trait definitions
 │   ├── src/
 │   │   ├── lib.rs
 │   │   ├── parser/           # XML parsing (mod.rs, lexer.rs, error.rs)
@@ -45,14 +45,14 @@ crates/
 │   │   └── traits/           # Backend abstraction (mod.rs, backend.rs)
 │   └── tests/
 │
-├── gravity-macros/           # Proc macros (#[derive(UiModel)], #[gravity_ui])
+├── dampen-macros/            # Proc macros (#[derive(UiModel)], #[dampen_ui])
 │   ├── src/
 │   │   ├── lib.rs
 │   │   ├── ui_model.rs
 │   │   └── ui_loader.rs
 │   └── tests/
 │
-├── gravity-runtime/          # Interpreter, state management, error handling
+├── dampen-runtime/           # Interpreter, state management, error handling
 │   ├── src/
 │   │   ├── lib.rs
 │   │   ├── interpreter.rs
@@ -60,7 +60,7 @@ crates/
 │   │   └── overlay.rs
 │   └── tests/
 │
-├── gravity-iced/             # Iced backend implementation
+├── dampen-iced/              # Iced backend implementation
 │   ├── src/
 │   │   ├── lib.rs
 │   │   ├── widgets/          # IR-to-Iced widget mapping
@@ -68,7 +68,7 @@ crates/
 │   │   └── commands.rs
 │   └── tests/
 │
-└── gravity-cli/              # Developer CLI
+└── dampen-cli/               # Developer CLI
     ├── src/
     │   ├── main.rs
     │   ├── commands/         # build.rs, check.rs, inspect.rs

@@ -1,0 +1,29 @@
+[package]
+name = "dampen-iced"
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+documentation = { workspace = true }
+description = "Iced backend implementation for Dampen UI framework"
+readme = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+
+[dependencies]
+dampen-core = { path = "../dampen-core" }
+iced = { workspace = true }
+
+[dev-dependencies]
+criterion = "0.5"
+dampen-macros = { path = "../dampen-macros" }
+serde = { workspace = true }
+
+[[bench]]
+name = "builder_bench"
+harness = false
+
+[lints]
+workspace = true

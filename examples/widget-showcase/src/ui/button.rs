@@ -1,9 +1,9 @@
 // Button widget showcase UI module.
 //
-// This file auto-loads the corresponding button.gravity XML file.
+// This file auto-loads the corresponding button.dampen XML file.
 
-use gravity_core::{AppState, HandlerRegistry};
-use gravity_macros::{gravity_ui, UiModel};
+use dampen_core::{AppState, HandlerRegistry};
+use dampen_macros::{dampen_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
@@ -11,7 +11,7 @@ pub struct Model {
     pub click_count: i32,
 }
 
-#[gravity_ui("button.gravity")]
+#[dampen_ui("button.dampen")]
 mod _app {}
 
 pub fn create_app_state() -> AppState<Model> {

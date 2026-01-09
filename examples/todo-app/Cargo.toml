@@ -5,9 +5,9 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-gravity-core = { path = "../../crates/gravity-core" }
-gravity-macros = { path = "../../crates/gravity-macros" }
-gravity-iced = { path = "../../crates/gravity-iced" }
+dampen-core = { path = "../../crates/dampen-core" }
+dampen-macros = { path = "../../crates/dampen-macros" }
+dampen-iced = { path = "../../crates/dampen-iced" }
 iced = { version = "0.14", features = ["tokio"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

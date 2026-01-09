@@ -3,8 +3,8 @@
 //! These tests verify that the auto-loading pattern works correctly
 //! in the context of a complete application.
 
-use gravity_core::{parse, AppState, HandlerRegistry};
-use gravity_macros::UiModel;
+use dampen_core::{parse, AppState, HandlerRegistry};
+use dampen_macros::UiModel;
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -41,7 +41,7 @@ fn test_hello_world_macro_pattern() {
     let document = parse(xml).expect("Failed to parse");
     assert!(matches!(
         document.root.kind,
-        gravity_core::ir::WidgetKind::Column
+        dampen_core::ir::WidgetKind::Column
     ));
 }
 

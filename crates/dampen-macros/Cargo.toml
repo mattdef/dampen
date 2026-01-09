@@ -1,0 +1,31 @@
+[package]
+name = "dampen-macros"
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+documentation = { workspace = true }
+description = "Proc macros for Dampen UI framework"
+readme = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+
+[lib]
+proc-macro = true
+
+[build-dependencies]
+walkdir = "2.5"
+
+[dependencies]
+syn = { workspace = true }
+quote = { workspace = true }
+proc-macro2 = { workspace = true }
+roxmltree = { workspace = true }
+
+[dev-dependencies]
+dampen-core = { path = "../dampen-core" }
+
+[lints]
+workspace = true

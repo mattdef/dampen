@@ -1,15 +1,15 @@
 // Layout widgets showcase UI module.
 //
-// This file auto-loads the corresponding layout.gravity XML file.
+// This file auto-loads the corresponding layout.dampen XML file.
 
-use gravity_core::{AppState, HandlerRegistry};
-use gravity_macros::{gravity_ui, UiModel};
+use dampen_core::{AppState, HandlerRegistry};
+use dampen_macros::{dampen_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
 pub struct Model;
 
-#[gravity_ui("layout.gravity")]
+#[dampen_ui("layout.dampen")]
 mod _app {}
 
 pub fn create_app_state() -> AppState<Model> {

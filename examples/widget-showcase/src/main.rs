@@ -1,11 +1,11 @@
-//! Widget showcase demonstrating all Gravity UI widgets.
+//! Widget showcase demonstrating all Dampen UI widgets.
 //!
-//! This example shows all currently supported widgets in Gravity.
+//! This example shows all currently supported widgets in Dampen.
 
 mod ui;
 
-use gravity_core::{AppState, HandlerRegistry};
-use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
+use dampen_core::{AppState, HandlerRegistry};
+use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -173,26 +173,26 @@ fn update(app: &mut ShowcaseApp, message: HandlerMessage) -> Task<HandlerMessage
 
 fn view(app: &ShowcaseApp) -> Element<'_, HandlerMessage> {
     match app.current_view {
-        CurrentView::Window => GravityWidgetBuilder::from_app_state(&app.window_state),
-        CurrentView::Button => GravityWidgetBuilder::from_app_state(&app.button_state),
-        CurrentView::Text => GravityWidgetBuilder::from_app_state(&app.text_state),
-        CurrentView::TextInput => GravityWidgetBuilder::from_app_state(&app.textinput_state),
-        CurrentView::Checkbox => GravityWidgetBuilder::from_app_state(&app.checkbox_state),
-        CurrentView::Slider => GravityWidgetBuilder::from_app_state(&app.slider_state),
-        CurrentView::Toggler => GravityWidgetBuilder::from_app_state(&app.toggler_state),
-        CurrentView::Image => GravityWidgetBuilder::from_app_state(&app.image_state),
-        CurrentView::Svg => GravityWidgetBuilder::from_app_state(&app.svg_state),
-        CurrentView::Scrollable => GravityWidgetBuilder::from_app_state(&app.scrollable_state),
-        CurrentView::Stack => GravityWidgetBuilder::from_app_state(&app.stack_state),
-        CurrentView::Space => GravityWidgetBuilder::from_app_state(&app.space_state),
-        CurrentView::Layout => GravityWidgetBuilder::from_app_state(&app.layout_state),
-        CurrentView::ForLoop => GravityWidgetBuilder::from_app_state(&app.for_loop_state),
-        CurrentView::Combobox => GravityWidgetBuilder::from_app_state(&app.combobox_state),
-        CurrentView::Picklist => GravityWidgetBuilder::from_app_state(&app.picklist_state),
-        CurrentView::Progressbar => GravityWidgetBuilder::from_app_state(&app.progressbar_state),
-        CurrentView::Radio => GravityWidgetBuilder::from_app_state(&app.radio_state),
-        CurrentView::Tooltip => GravityWidgetBuilder::from_app_state(&app.tooltip_state),
-        CurrentView::Grid => GravityWidgetBuilder::from_app_state(&app.grid_state),
+        CurrentView::Window => DampenWidgetBuilder::from_app_state(&app.window_state),
+        CurrentView::Button => DampenWidgetBuilder::from_app_state(&app.button_state),
+        CurrentView::Text => DampenWidgetBuilder::from_app_state(&app.text_state),
+        CurrentView::TextInput => DampenWidgetBuilder::from_app_state(&app.textinput_state),
+        CurrentView::Checkbox => DampenWidgetBuilder::from_app_state(&app.checkbox_state),
+        CurrentView::Slider => DampenWidgetBuilder::from_app_state(&app.slider_state),
+        CurrentView::Toggler => DampenWidgetBuilder::from_app_state(&app.toggler_state),
+        CurrentView::Image => DampenWidgetBuilder::from_app_state(&app.image_state),
+        CurrentView::Svg => DampenWidgetBuilder::from_app_state(&app.svg_state),
+        CurrentView::Scrollable => DampenWidgetBuilder::from_app_state(&app.scrollable_state),
+        CurrentView::Stack => DampenWidgetBuilder::from_app_state(&app.stack_state),
+        CurrentView::Space => DampenWidgetBuilder::from_app_state(&app.space_state),
+        CurrentView::Layout => DampenWidgetBuilder::from_app_state(&app.layout_state),
+        CurrentView::ForLoop => DampenWidgetBuilder::from_app_state(&app.for_loop_state),
+        CurrentView::Combobox => DampenWidgetBuilder::from_app_state(&app.combobox_state),
+        CurrentView::Picklist => DampenWidgetBuilder::from_app_state(&app.picklist_state),
+        CurrentView::Progressbar => DampenWidgetBuilder::from_app_state(&app.progressbar_state),
+        CurrentView::Radio => DampenWidgetBuilder::from_app_state(&app.radio_state),
+        CurrentView::Tooltip => DampenWidgetBuilder::from_app_state(&app.tooltip_state),
+        CurrentView::Grid => DampenWidgetBuilder::from_app_state(&app.grid_state),
     }
     .build()
 }

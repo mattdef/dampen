@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<gravity>
-    <column padding="40" spacing="20">
-        <text value="Hello, Gravity!" size="32" weight="bold" />
-        <button label="Click me!" on_click="greet" />
-        <text value="{message}" size="24" />
-    </column>
-</gravity>

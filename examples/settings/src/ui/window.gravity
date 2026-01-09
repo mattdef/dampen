@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<gravity>
-    <column padding="40" spacing="20">
-        <text value="Main View" size="32" weight="bold" />
-        <text value="This is the main application view" size="16" />
-        <button label="Go to Settings" on_click="switch_to_settings" />
-    </column>
-</gravity>

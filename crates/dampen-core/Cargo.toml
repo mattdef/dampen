@@ -1,0 +1,37 @@
+[package]
+name = "dampen-core"
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+documentation = { workspace = true }
+description = "Core parser, IR, and traits for Dampen UI framework"
+readme = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+roxmltree = { workspace = true }
+quote = { workspace = true }
+proc-macro2 = { workspace = true }
+syn = { workspace = true }
+thiserror = { workspace = true }
+nom = { workspace = true }
+csscolorparser = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+insta = { workspace = true }
+criterion = "0.5"
+dampen-macros = { path = "../dampen-macros" }
+
+[[bench]]
+name = "parser_bench"
+harness = false
+
+[lints]
+workspace = true

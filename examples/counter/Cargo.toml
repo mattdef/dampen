@@ -5,16 +5,16 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-gravity-core = { path = "../../crates/gravity-core" }
-gravity-macros = { path = "../../crates/gravity-macros" }
-gravity-runtime = { path = "../../crates/gravity-runtime", optional = true }
-gravity-iced = { path = "../../crates/gravity-iced" }
+dampen-core = { path = "../../crates/dampen-core" }
+dampen-macros = { path = "../../crates/dampen-macros" }
+dampen-runtime = { path = "../../crates/dampen-runtime", optional = true }
+dampen-iced = { path = "../../crates/dampen-iced" }
 iced = "0.14"
 serde = { version = "1.0", features = ["derive"] }
 
 [features]
 default = []
-dev = ["gravity-runtime"]
+dev = ["dampen-runtime"]
 
 [[bin]]
 name = "counter"

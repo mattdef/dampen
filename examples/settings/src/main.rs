@@ -5,8 +5,8 @@
 
 mod ui;
 
-use gravity_core::AppState;
-use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
+use dampen_core::AppState;
+use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 
 #[derive(Clone, Debug)]
@@ -48,8 +48,8 @@ fn update(app: &mut SettingsApp, message: HandlerMessage) -> Task<HandlerMessage
 
 fn view(app: &SettingsApp) -> Element<'_, HandlerMessage> {
     match app.current_view {
-        CurrentView::Main => GravityWidgetBuilder::from_app_state(&app.main_state).build(),
-        CurrentView::Settings => GravityWidgetBuilder::from_app_state(&app.settings_state).build(),
+        CurrentView::Main => DampenWidgetBuilder::from_app_state(&app.main_state).build(),
+        CurrentView::Settings => DampenWidgetBuilder::from_app_state(&app.settings_state).build(),
     }
 }
 

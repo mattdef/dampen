@@ -1,13 +1,13 @@
-# Gravity UI Framework
+# Dampen UI Framework
 
-[![Crates.io](https://img.shields.io/crates/v/gravity-core.svg)](https://crates.io/crates/gravity-core)
-[![Documentation](https://docs.rs/gravity-core/badge.svg)](https://docs.rs/gravity-core)
+[![Crates.io](https://img.shields.io/crates/v/dampen-core.svg)](https://crates.io/crates/dampen-core)
+[![Documentation](https://docs.rs/dampen-core/badge.svg)](https://docs.rs/dampen-core)
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://rust-lang.org)
 
 **Framework UI déclaratif pour Rust avec backend Iced, styling avancé, et génération de code.**
 
-Gravity permet de définir votre interface utilisateur en XML et de l'afficher via Iced.
+Dampen permet de définir votre interface utilisateur en XML et de l'afficher via Iced.
 
 ## Fonctionnalités
 
@@ -30,11 +30,11 @@ Gravity permet de définir votre interface utilisateur en XML et de l'afficher v
 ```toml
 [workspace]
 members = [
-    "crates/gravity-core",
-    "crates/gravity-macros", 
-    "crates/gravity-iced",
-    "crates/gravity-runtime",
-    "crates/gravity-cli",
+    "crates/dampen-core",
+    "crates/dampen-macros", 
+    "crates/dampen-iced",
+    "crates/dampen-runtime",
+    "crates/dampen-cli",
 ]
 
 [package]
@@ -43,9 +43,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-gravity-core = { path = "crates/gravity-core" }
-gravity-macros = { path = "crates/gravity-macros" }
-gravity-iced = { path = "crates/gravity-iced" }
+dampen-core = { path = "crates/dampen-core" }
+dampen-macros = { path = "crates/dampen-macros" }
+dampen-iced = { path = "crates/dampen-iced" }
 iced = "0.14"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -61,7 +61,7 @@ my-app/
 │   └── ui/
 │       ├── mod.rs          # Module UI avec AppState
 │       ├── window.rs       # Code de la fenêtre
-│       └── window.gravity  # Definition XML de l'interface
+│       └── window.dampen   # Definition XML de l'interface
 └── target/
 ```
 
@@ -69,11 +69,11 @@ my-app/
 
 ### Creer un nouveau projet
 
-Utilisez la commande CLI pour scaffold un nouveau projet Gravity :
+Utilisez la commande CLI pour scaffold un nouveau projet Dampen :
 
 ```bash
 # Creer un nouveau projet
-gravity new my-app
+dampen new my-app
 
 # Naviguer vers le projet
 cd my-app
@@ -82,7 +82,7 @@ cd my-app
 cargo run
 ```
 
-La commande `gravity new` cree une structure de projet complete :
+La commande `dampen new` cree une structure de projet complete :
 
 ```
 my-app/
@@ -93,8 +93,8 @@ my-app/
 │   ├── main.rs             # Point d'entree de l'application
 │   └── ui/
 │       ├── mod.rs          # Exports du module UI
-│       ├── window.rs       # Model et handlers avec #[gravity_ui]
-│       └── window.gravity  # Definition UI declarative (XML)
+│       ├── window.rs       # Model et handlers avec #[dampen_ui]
+│       └── window.dampen   # Definition UI declarative (XML)
 └── tests/
     └── integration.rs      # Tests d'integration
 ```
@@ -103,34 +103,34 @@ my-app/
 
 | Fichier | Description |
 |---------|-------------|
-| `src/ui/window.gravity` | Definition UI XML avec widgets, bindings, handlers |
+| `src/ui/window.dampen` | Definition UI XML avec widgets, bindings, handlers |
 | `src/ui/window.rs` | Model avec `#[derive(UiModel)]`, registre handlers |
 | `src/main.rs` | Orchestration application (view, update) |
-| `build.rs` | Compile les fichiers `.gravity` en code Rust |
+| `build.rs` | Compile les fichiers `.dampen` en code Rust |
 
 **Exemple UI genere :**
 
 ```xml
-<gravity>
+<dampen>
     <column padding="40" spacing="20">
-        <text value="Hello, Gravity!" size="32" weight="bold" />
+        <text value="Hello, Dampen!" size="32" weight="bold" />
         <button label="Click me!" on_click="greet" />
         <text value="{message}" size="24" />
     </column>
-</gravity>
+</dampen>
 ```
 
 ### Validation du projet
 
 ```bash
 # Valider la syntaxe XML et les noms de widgets
-gravity check
+dampen check
 
 # Construire le projet
-gravity build
+dampen build
 
 # Inspecter l'IR genere
-gravity inspect src/ui/window.gravity
+dampen inspect src/ui/window.dampen
 ```
 
 ### Structure du projet (manuelle)
@@ -145,7 +145,7 @@ my-app/
 │   └── ui/
 │       ├── mod.rs          # Module UI avec AppState
 │       ├── window.rs       # Code de la fenetre
-│       └── window.gravity  # Definition XML de l'interface
+│       └── window.dampen   # Definition XML de l'interface
 └── target/
 ```
 
@@ -290,24 +290,24 @@ fn toggle_item(model: &mut Model, id: usize) {
 
 ```
 crates/
-├── gravity-core/         # Parser XML, IR, traits (sans dependance Iced)
-├── gravity-macros/       # Macros #[derive(UiModel)], #[gravity_ui]
-├── gravity-runtime/      # Interpretation, gestion d'etat, erreurs
-├── gravity-iced/         # Implementation backend Iced
-└── gravity-cli/          # CLI developpeur (build, check, inspect)
+├── dampen-core/           # Parser XML, IR, traits (sans dependance Iced)
+├── dampen-macros/         # Macros #[derive(UiModel)], #[dampen_ui]
+├── dampen-runtime/        # Interpretation, gestion d'etat, erreurs
+├── dampen-iced/           # Implementation backend Iced
+└── dampen-cli/            # CLI developpeur (build, check, inspect)
 
 examples/
-├── hello-world/          # Application minimale
-├── counter/              # Gestionnaires d'evenements interactifs
-├── todo-app/             # Liaison de donnees complete
-├── styling/              # Themes et classes de style
-├── responsive/           # Design responsive
-├── settings/             # Vues multiples
-├── widget-showcase/      # Demonstration des widgets
-└── builder-demo/         # Patterns widget custom
+├── hello-world/           # Application minimale
+├── counter/               # Gestionnaires d'evenements interactifs
+├── todo-app/              # Liaison de donnees complete
+├── styling/               # Themes et classes de style
+├── responsive/            # Design responsive
+├── settings/              # Vues multiples
+├── widget-showcase/       # Demonstration des widgets
+└── builder-demo/          # Patterns widget custom
 
 specs/
-└── 001-006-*/            # Specifications techniques
+└── 001-006-*/             # Specifications techniques
 ```
 
 ### Principes fondamentaux
@@ -321,19 +321,19 @@ specs/
 ### Flux de donnees
 
 ```
-XML (main.gravity)
+XML (main.dampen)
         |
         v
     Parser XML
         |
         v
-   GravityDocument
+   DampenDocument
         |
         v
- GravityWidgetBuilder
+  DampenWidgetBuilder
         |
         v
-    Element<Iced>
+     Element<Iced>
 ```
 
 ## Exemples
@@ -354,14 +354,14 @@ Voir le repertoire [examples/](examples/) pour des demonstrations progressives :
 
 ```bash
 # Generer du code de production
-gravity build --ui ui --output src/ui_genere.rs
+dampen build --ui ui --output src/ui_genere.rs
 
 # Valider les fichiers UI sans executer
-gravity check --ui ui
+dampen check --ui ui
 
 # Inspecter l'IR ou le code genere
-gravity inspect --file ui/main.gravity
-gravity inspect --file ui/main.gravity --codegen --handlers increment,decrement
+dampen inspect --file ui/main.dampen
+dampen inspect --file ui/main.dampen --codegen --handlers increment,decrement
 ```
 
 ## Performance
@@ -374,7 +374,7 @@ gravity inspect --file ui/main.gravity --codegen --handlers increment,decrement
 
 ## Documentation
 
-- **[Documentation API](https://docs.rs/gravity-core)** - Rustdoc complet
+- **[Documentation API](https://docs.rs/dampen-core)** - Rustdoc complet
 - **[Reference Schema XML](specs/001-framework-technical-specs/contracts/xml-schema.md)** - Widgets et attributs
 - **[Guide de style](examples/styling/README.md)** - Themes, classes, styles etat
 - **[Exemples](examples/)** - Projets examples progressifs

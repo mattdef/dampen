@@ -1,10 +1,10 @@
 // Auto-loaded UI module for counter example.
 
-use gravity_core::{AppState, HandlerRegistry};
-use gravity_macros::{gravity_ui, UiModel};
+use dampen_core::{AppState, HandlerRegistry};
+use dampen_macros::{dampen_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
-#[gravity_ui("window.gravity")]
+#[dampen_ui("window.dampen")]
 mod _app {}
 
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]

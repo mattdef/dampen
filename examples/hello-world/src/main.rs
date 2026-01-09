@@ -4,8 +4,8 @@
 //! with minimal boilerplate using the new AppState pattern.
 mod ui;
 
-use gravity_core::AppState;
-use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
+use dampen_core::AppState;
+use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -40,9 +40,9 @@ fn update(app: &mut GravityApp, message: HandlerMessage) -> Task<HandlerMessage>
     Task::none()
 }
 
-/// View function using GravityWidgetBuilder
+/// View function using DampenWidgetBuilder
 fn view(app: &GravityApp) -> Element<'_, HandlerMessage> {
-    GravityWidgetBuilder::from_app_state(&app.window_state).build()
+    DampenWidgetBuilder::from_app_state(&app.window_state).build()
 }
 
 /// Initialize the application

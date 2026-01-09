@@ -1,6 +1,0 @@
-// UI module for {{PROJECT_NAME}} example.
-//
-// This module demonstrates the auto-loading pattern where
-// the window module automatically loads window.gravity.
-
-pub mod window;

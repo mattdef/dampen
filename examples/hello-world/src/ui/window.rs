@@ -1,9 +1,9 @@
 // Auto-loaded UI module for hello-world example.
 //
-// This file is automatically compiled and loads the corresponding app.gravity XML file.
+// This file is automatically compiled and loads the corresponding app.dampen XML file.
 
-use gravity_core::{AppState, HandlerRegistry};
-use gravity_macros::{gravity_ui, UiModel};
+use dampen_core::{AppState, HandlerRegistry};
+use dampen_macros::{dampen_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
 /// The application model.
@@ -12,9 +12,9 @@ pub struct Model {
     pub message: String,
 }
 
-/// Auto-load the app.gravity XML file.
+/// Auto-load the app.dampen XML file.
 /// Path is relative to this file (src/ui/).
-#[gravity_ui("window.gravity")]
+#[dampen_ui("window.dampen")]
 mod _app {}
 
 /// Create the AppState for the hello-world example.

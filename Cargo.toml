@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/gravity-core",
-    "crates/gravity-macros",
-    "crates/gravity-runtime",
-    "crates/gravity-iced",
-    "crates/gravity-cli",
+    "crates/dampen-core",
+    "crates/dampen-macros",
+    "crates/dampen-runtime",
+    "crates/dampen-iced",
+    "crates/dampen-cli",
     "examples/hello-world",
     "examples/counter",
     "examples/todo-app",
@@ -19,10 +19,10 @@ members = [
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
-authors = ["Gravity Developers <dev@gravity-ui.dev>"]
+authors = ["Dampen Developers <dev@dampen.dev>"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/gravity-ui/gravity"
-documentation = "https://docs.rs/gravity-core"
+repository = "https://github.com/anomalyco/dampen"
+documentation = "https://docs.rs/dampen-core"
 readme = "README.md"
 keywords = ["ui", "iced", "declarative", "gui", "framework"]
 categories = ["gui", "development-tools"]

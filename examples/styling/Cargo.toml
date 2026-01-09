@@ -5,10 +5,10 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-gravity-core = { path = "../../crates/gravity-core" }
-gravity-macros = { path = "../../crates/gravity-macros" }
-gravity-runtime = { path = "../../crates/gravity-runtime" }
-gravity-iced = { path = "../../crates/gravity-iced" }
+dampen-core = { path = "../../crates/dampen-core" }
+dampen-macros = { path = "../../crates/dampen-macros" }
+dampen-runtime = { path = "../../crates/dampen-runtime" }
+dampen-iced = { path = "../../crates/dampen-iced" }
 iced = { workspace = true }
 serde = { workspace = true }
 

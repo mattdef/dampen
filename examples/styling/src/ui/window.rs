@@ -1,7 +1,7 @@
 // Auto-loaded UI module for counter example.
 
-use gravity_core::{AppState, HandlerRegistry};
-use gravity_macros::{gravity_ui, UiModel};
+use dampen_core::{AppState, HandlerRegistry};
+use dampen_macros::{dampen_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
@@ -24,7 +24,7 @@ fn reset(model: &mut Model) {
     println!("Reset to: {}", model.count);
 }
 
-#[gravity_ui("window.gravity")]
+#[dampen_ui("window.dampen")]
 mod _app {}
 
 pub fn create_app_state() -> AppState<Model> {

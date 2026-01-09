@@ -1,6 +1,6 @@
 // UI module for hello-world example.
 //
 // This module demonstrates the auto-loading pattern where
-// `app.gravity.rs` automatically loads `app.gravity`.
+// `app.dampen.rs` automatically loads `app.dampen`.
 
 pub mod window;

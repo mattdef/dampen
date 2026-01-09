@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen>
+    <scrollable width="600">
+        <column padding="20" spacing="20">
+            <row spacing="10">
+                <button label="← Back" on_click="switch_to_window" />
+                <text value="Image Widget" size="24" weight="bold" />
+            </row>
+
+            <text value="Image Sizes" size="18" weight="bold" />
+            <text value="Small (100x100)" size="14" />
+            <image
+                src="examples/widget-showcase/assets/image_01.jpg"
+                width="100"
+                height="100"
+            />
+
+            <text value="Medium (200x150)" size="14" />
+            <image
+                src="examples/widget-showcase/assets/image_01.jpg"
+                width="200"
+                height="150"
+            />
+
+            <text value="Large (300x200)" size="14" />
+            <image
+                src="examples/widget-showcase/assets/image_01.jpg"
+                width="300"
+                height="200"
+            />
+
+            <text value="Fit Modes" size="18" weight="bold" />
+            <text value="Contain" size="14" />
+            <image
+                src="examples/widget-showcase/assets/image_01.jpg"
+                width="200"
+                height="100"
+                fit="contain"
+            />
+
+            <text value="Cover" size="14" />
+            <image
+                src="examples/widget-showcase/assets/image_01.jpg"
+                width="200"
+                height="100"
+                fit="cover"
+            />
+
+            <text value="Fill" size="14" />
+            <image
+                src="examples/widget-showcase/assets/image_01.jpg"
+                width="200"
+                height="100"
+                fit="fill"
+            />
+        </column>
+    </scrollable>
+</dampen>

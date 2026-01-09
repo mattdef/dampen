@@ -1,15 +1,15 @@
 // Space and Rule widgets showcase UI module.
 //
-// This file auto-loads the corresponding space.gravity XML file.
+// This file auto-loads the corresponding space.dampen XML file.
 
-use gravity_core::{AppState, HandlerRegistry};
-use gravity_macros::{gravity_ui, UiModel};
+use dampen_core::{AppState, HandlerRegistry};
+use dampen_macros::{dampen_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
 pub struct Model;
 
-#[gravity_ui("space.gravity")]
+#[dampen_ui("space.dampen")]
 mod _app {}
 
 pub fn create_app_state() -> AppState<Model> {

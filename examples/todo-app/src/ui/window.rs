@@ -1,7 +1,7 @@
 // Auto-loaded UI module for todo-app example.
 
-use gravity_core::{BindingValue, HandlerRegistry, ToBindingValue};
-use gravity_macros::{gravity_ui, UiModel};
+use dampen_core::{BindingValue, HandlerRegistry, ToBindingValue};
+use dampen_macros::{dampen_ui, UiModel};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -161,7 +161,7 @@ pub struct StatisticsChart {
     pub completion_history: Vec<f32>,
 }
 
-#[gravity_ui("window.gravity")]
+#[dampen_ui("window.dampen")]
 mod _app {}
 
 fn add_item(model: &mut Model) {
@@ -302,18 +302,18 @@ fn update_computed_fields(model: &mut Model) {
     model.current_filter_display = model.current_filter.to_string();
 }
 
-pub fn create_app_state() -> gravity_core::AppState<Model> {
+pub fn create_app_state() -> dampen_core::AppState<Model> {
     let document = _app::document();
     let handler_registry = create_handler_registry();
-    let mut state = gravity_core::AppState::with_handlers(document, handler_registry);
+    let mut state = dampen_core::AppState::with_handlers(document, handler_registry);
     update_computed_fields(&mut state.model);
     state
 }
 
-pub fn create_app_state_with_model(model: Model) -> gravity_core::AppState<Model> {
+pub fn create_app_state_with_model(model: Model) -> dampen_core::AppState<Model> {
     let document = _app::document();
     let handler_registry = create_handler_registry();
-    let mut state = gravity_core::AppState::with_handlers(document, handler_registry);
+    let mut state = dampen_core::AppState::with_handlers(document, handler_registry);
     state.model = model;
     state
 }

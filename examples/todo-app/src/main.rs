@@ -2,8 +2,8 @@
 
 mod ui;
 
-use gravity_core::AppState;
-use gravity_iced::{GravityWidgetBuilder, HandlerMessage};
+use dampen_core::AppState;
+use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -37,7 +37,7 @@ fn update(app: &mut TodoApp, message: HandlerMessage) -> Task<HandlerMessage> {
 
 fn view(app: &TodoApp) -> Element<'_, HandlerMessage> {
     match app.current_view {
-        CurrentView::Window => GravityWidgetBuilder::from_app_state(&app.window_state),
+        CurrentView::Window => DampenWidgetBuilder::from_app_state(&app.window_state),
     }
     .build()
 }
