@@ -83,3 +83,32 @@ todo = "warn"
 dbg_macro = "warn"
 print_stdout = "warn"
 print_stderr = "warn"
+
+# Profile configurations for dual-mode architecture
+# Note: Cargo does not support 'features = [...]' syntax in profile sections.
+# Applications should set 'default = ["interpreted"]' in their [features] section
+# and use '--features codegen --no-default-features' for production builds.
+# See examples/counter/Cargo.toml for reference implementation.
+
+[profile.dev]
+# Development profile: Optimized for fast compilation and hot-reload
+# Recommended: Use with --features interpreted (or set as package default)
+opt-level = 0
+debug = true
+split-debuginfo = "unpacked"
+debug-assertions = true
+overflow-checks = true
+incremental = true
+codegen-units = 256
+
+[profile.release]
+# Release profile: Optimized for runtime performance with codegen
+# Recommended: Use with --features codegen --no-default-features
+opt-level = 3
+debug = false
+debug-assertions = false
+overflow-checks = false
+lto = "thin"
+incremental = false
+codegen-units = 16
+strip = "debuginfo"

@@ -208,9 +208,9 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 5.1 Feature Flag Automation
 
-- [ ] T094 [US3] Update dampen-core/Cargo.toml with profile-specific default features
-- [ ] T095 [US3] Add [profile.dev] section with features = ["interpreted"] to workspace Cargo.toml
-- [ ] T096 [US3] Add [profile.release] section with features = ["codegen"] to workspace Cargo.toml
+- [X] T094 [US3] Update dampen-core/Cargo.toml with profile-specific default features
+- [X] T095 [US3] Add [profile.dev] section with features = ["interpreted"] to workspace Cargo.toml
+- [X] T096 [US3] Add [profile.release] section with features = ["codegen"] to workspace Cargo.toml
 - [ ] T097 [US3] Update #[dampen_ui] macro in dampen-macros/src/ui_loader.rs to respect feature flags
 - [ ] T098 [US3] Add conditional compilation guards in dampen-macros/src/ui_loader.rs for both modes
 - [ ] T099 [US3] Write test for macro behavior with codegen feature in dampen-macros/tests/codegen_mode_tests.rs

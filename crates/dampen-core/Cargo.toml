@@ -15,6 +15,7 @@ categories = { workspace = true }
 [features]
 default = []
 codegen = []
+interpreted = []
 
 [dependencies]
 serde = { workspace = true }
