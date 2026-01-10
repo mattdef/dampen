@@ -43,6 +43,8 @@ Dampen allows you to define your user interface in XML and render it via Iced.
 - ✅ **Radio button groups** with single-selection behavior
 - ✅ **Data binding** with `#[derive(UiModel)]`
 - ✅ **CLI validation** tools for syntax checking
+- ✅ **Dual-mode architecture**: Hot-reload for development, codegen for production
+- ✅ **Hot-reload support**: See UI changes instantly without recompiling
 
 ## Installation
 
@@ -309,6 +311,86 @@ fn toggle_item(model: &mut Model, id: usize) {
 | `progress_bar` | Progress bar | min, max, value |
 | `svg` | SVG image | path, width, height |
 | `tooltip` | Tooltip | message, position |
+
+## Dual-Mode Architecture
+
+Dampen supports two compilation modes optimized for different use cases:
+
+### Interpreted Mode (Development)
+
+**Enabled by default in development builds**
+
+- ✅ **Fast iteration**: Hot-reload UI changes without recompiling
+- ✅ **Runtime parsing**: XML loaded and parsed at application startup
+- ✅ **Instant feedback**: See changes in <300ms
+- ✅ **Debugging friendly**: Error overlays with detailed messages
+
+```bash
+# Development mode (automatic)
+cargo run
+
+# Explicit interpreted mode
+cargo run --features interpreted
+```
+
+**Hot-reload example:**
+
+```rust
+use dampen_dev::watch_files;
+
+fn subscription(app: &App) -> Subscription<Message> {
+    watch_files(vec![PathBuf::from("src/ui/window.dampen")], "xml")
+        .map(|_| Message::ReloadUI)
+}
+```
+
+### Codegen Mode (Production)
+
+**Enabled by default in release builds**
+
+- ✅ **Zero runtime overhead**: All XML parsed at compile time
+- ✅ **Optimal performance**: Direct widget construction
+- ✅ **Smaller binaries**: No runtime parser included
+- ✅ **Build-time validation**: Catch errors before deployment
+
+```bash
+# Production mode (automatic)
+cargo build --release
+
+# Explicit codegen mode
+cargo build --features codegen
+```
+
+**How it works:**
+
+1. `build.rs` processes `.dampen` files at compile time
+2. Generated Rust code embedded via macros
+3. No runtime XML parsing required
+
+### Mode Selection
+
+Mode selection is **automatic** based on build profile:
+
+| Build Command | Mode | Use Case |
+|---------------|------|----------|
+| `cargo run` | Interpreted | Development with hot-reload |
+| `cargo build` | Interpreted | Development builds |
+| `cargo build --release` | Codegen | Production deployments |
+| `cargo test` | Interpreted | Fast test iteration |
+
+**Manual override:**
+
+```bash
+# Force interpreted in release
+cargo build --release --no-default-features --features interpreted
+
+# Force codegen in dev
+cargo build --features codegen
+```
+
+### Migration Guide
+
+Migrating existing projects to dual-mode architecture? See our [Migration Guide](docs/migration/dual-mode.md) for step-by-step instructions.
 
 ## Architecture
 

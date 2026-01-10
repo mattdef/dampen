@@ -281,12 +281,12 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 6.4 Documentation
 
-- [ ] T134 Write migration guide in docs/migration/dual-mode.md (NEW) for existing projects
-- [ ] T135 Update main README.md with dual-mode feature description
-- [ ] T136 Create developer guide in docs/development/dual-mode.md (NEW) explaining both modes
-- [ ] T137 Add examples to quickstart.md for common workflows
-- [ ] T138 Document performance benchmarks and targets in docs/performance.md (NEW)
-- [ ] T139 Update CHANGELOG.md with dual-mode architecture feature
+- [X] T134 Write migration guide in docs/migration/dual-mode.md (NEW) for existing projects
+- [X] T135 Update main README.md with dual-mode feature description
+- [X] T136 Create developer guide in docs/development/dual-mode.md (NEW) explaining both modes
+- [X] T137 Add examples to quickstart.md for common workflows
+- [X] T138 Document performance benchmarks and targets in docs/performance.md (NEW)
+- [X] T139 Update CHANGELOG.md with dual-mode architecture feature
 
 ### 6.5 Testing Completeness
 

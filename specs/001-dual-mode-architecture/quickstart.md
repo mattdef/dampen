@@ -416,5 +416,250 @@ After completing this feature:
 
 ---
 
+## Common Workflows for End Users
+
+### Workflow 1: Creating a New Project
+
+```bash
+# Create project with dual-mode support
+dampen new my-todo-app
+cd my-todo-app
+
+# Project structure created:
+# - Cargo.toml (with dual-mode features)
+# - build.rs (for codegen mode)
+# - src/ui/window.dampen (UI definition)
+# - src/ui/window.rs (model + handlers)
+
+# Run in development mode (hot-reload enabled)
+cargo run
+
+# Edit UI and see changes live
+# No restart needed!
+```
+
+### Workflow 2: Adding Hot-Reload to Existing Project
+
+```bash
+# 1. Update Cargo.toml
+cat >> Cargo.toml << 'EOF'
+[dependencies.dampen-dev]
+version = "0.1"
+optional = true
+
+[features]
+interpreted = ["dampen-dev"]
+codegen = []
+
+[profile.dev]
+features = ["interpreted"]
+
+[profile.release]
+features = ["codegen"]
+EOF
+
+# 2. Add subscription in main.rs
+# (See migration guide for full code)
+
+# 3. Test hot-reload
+cargo run
+# Edit .dampen files and save to see instant updates
+```
+
+### Workflow 3: Development Iteration Cycle
+
+```bash
+# Day-to-day development with hot-reload:
+
+# 1. Start app in interpreted mode
+cargo run
+
+# 2. Make UI changes
+vim src/ui/window.dampen
+# - Change text values
+# - Adjust layouts
+# - Add new widgets
+# - Modify styling
+
+# 3. Save file (Ctrl+S)
+# App auto-reloads in <300ms
+
+# 4. Test interactivity
+# Click buttons, type in fields, etc.
+
+# 5. If you see parse errors:
+# - Check terminal for error message
+# - Fix XML syntax
+# - Save again to retry
+```
+
+### Workflow 4: Preparing for Production Release
+
+```bash
+# 1. Test in both modes for parity
+cargo run                        # Interpreted
+cargo run --release             # Codegen
+
+# 2. Run validation
+dampen check src/ui/*.dampen
+
+# 3. Run tests
+cargo test --workspace
+
+# 4. Build release binary
+cargo build --release
+
+# 5. Binary is optimized:
+# - No runtime XML parser
+# - Static widget tree
+# - Minimal size
+# - Maximum performance
+
+# 6. Deploy
+./target/release/my-todo-app
+```
+
+### Workflow 5: Debugging Parse Errors
+
+```bash
+# Enable detailed logging
+RUST_LOG=dampen_dev=debug cargo run
+
+# You'll see:
+# - File watch events
+# - Parse attempts
+# - Error details with line/column
+# - Suggested fixes
+
+# Example error output:
+# ✗ Hot-reload failed: Parse error at line 15, column 8
+#   Unexpected closing tag '</button>'
+#   Suggestion: Check that all tags are properly balanced
+```
+
+### Workflow 6: Performance Profiling
+
+```bash
+# 1. Run benchmarks
+cd benchmarks
+cargo bench
+
+# 2. Compare modes
+cargo bench --features interpreted  # ~50ms init
+cargo bench --features codegen      # <1ms init
+
+# 3. Profile hot-reload
+cargo run --features interpreted
+# Edit file and watch terminal for:
+# ✓ Hot-reload succeeded in 247ms
+#   - Parse: 156ms
+#   - Rebuild: 91ms
+
+# 4. Check memory usage
+cargo run --release
+# Monitor with: htop or Activity Monitor
+```
+
+### Workflow 7: Switching Between Modes
+
+```bash
+# Force interpreted in release (for debugging)
+cargo build --release --no-default-features --features interpreted
+
+# Force codegen in dev (to test production build)
+cargo build --no-default-features --features codegen
+
+# Test mode parity
+cargo test mode_parity
+
+# Should output:
+# test mode_parity_tests::test_parse_parity ... ok
+# test mode_parity_tests::test_binding_parity ... ok
+# test mode_parity_tests::test_handler_parity ... ok
+```
+
+### Workflow 8: Migrating to Dual-Mode
+
+For existing Dampen projects:
+
+```bash
+# 1. Backup project
+git commit -am "Before dual-mode migration"
+
+# 2. Follow migration guide
+cat docs/migration/dual-mode.md
+
+# 3. Update dependencies (Cargo.toml)
+# 4. Add build.rs
+# 5. Replace manual parse calls with #[dampen_ui]
+# 6. Add hot-reload subscription (optional)
+
+# 7. Test both modes
+cargo run                    # Interpreted
+cargo build --release        # Codegen
+
+# 8. Verify parity
+cargo test
+
+# 9. Commit changes
+git commit -am "Migrate to dual-mode architecture"
+```
+
+### Workflow 9: Contributing to Dampen
+
+```bash
+# 1. Clone repository
+git clone https://github.com/dampen/dampen.git
+cd dampen
+
+# 2. Create feature branch
+git checkout -b fix/hot-reload-issue
+
+# 3. Make changes
+vim crates/dampen-dev/src/reload.rs
+
+# 4. Run tests
+cargo test --workspace
+cargo clippy --workspace
+
+# 5. Run benchmarks
+cd benchmarks
+cargo bench
+
+# 6. Test examples
+cd examples/counter
+cargo run                    # Test interpreted
+cargo run --release          # Test codegen
+
+# 7. Submit PR
+git commit -am "Fix: Improve hot-reload error messages"
+git push origin fix/hot-reload-issue
+```
+
+### Workflow 10: Inspecting Generated Code
+
+```bash
+# In codegen mode, view what Rust code is generated:
+
+# 1. Build with codegen
+cargo build --features codegen
+
+# 2. Find generated files
+ls target/debug/build/my-app-*/out/
+
+# 3. Read generated code
+cat target/debug/build/my-app-*/out/window.rs
+
+# You'll see:
+# - Static DampenDocument construction
+# - Inline widget tree
+# - No runtime parsing
+
+# 4. Compare with source
+diff src/ui/window.dampen target/.../window.rs
+```
+
+---
+
 **Document Status**: ✅ Complete  
 **Ready for Implementation**: Yes
