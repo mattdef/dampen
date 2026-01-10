@@ -1,4 +1,4 @@
-<img src="assets/logo_mini_f.svg" height="100" alt="Dampen Logo" />   
+<img src="assets/logo_full_light.jpg" height="150" alt="Dampen Logo" />   
 
 # Dampen UI Framework
 
@@ -11,10 +11,7 @@
 
 Dampen allows you to define your user interface in XML and render it via Iced.
 
-<video width="640" controls>
-  <source src="assets/preview.webm" type="video/webm">
-  Votre navigateur ne supporte pas les vidéos WebM.
-</video>
+<img src="assets/preview.gif" width="400" alt="Exemple" />  
 
 ---
 
