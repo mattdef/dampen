@@ -157,6 +157,42 @@ impl<M: UiBindable> AppState<M> {
         }
     }
 
+    /// Creates an AppState with custom model and handler registry.
+    ///
+    /// This is the most flexible constructor, allowing you to specify all components
+    /// of the application state. Useful for hot-reload scenarios where both model
+    /// and handlers need to be specified.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::{parse, AppState, HandlerRegistry};
+    /// use dampen_macros::UiModel;
+    ///
+    /// #[derive(UiModel, Default)]
+    /// struct MyModel {
+    ///     count: i32,
+    /// }
+    ///
+    /// let xml = r#"<column><text value="Hello!" /></column>"#;
+    /// let document = parse(xml).unwrap();
+    /// let model = MyModel { count: 42 };
+    /// let mut registry = HandlerRegistry::new();
+    /// registry.register_simple("increment", |model| {
+    ///     let model = model.downcast_mut::<MyModel>().unwrap();
+    ///     model.count += 1;
+    /// });
+    /// let state = AppState::with_all(document, model, registry);
+    /// ```
+    pub fn with_all(document: DampenDocument, model: M, handler_registry: HandlerRegistry) -> Self {
+        Self {
+            document,
+            model,
+            handler_registry,
+            _marker: PhantomData,
+        }
+    }
+
     /// Hot-reload: updates the UI document while preserving the model and handlers.
     ///
     /// This method is designed for development mode hot-reload scenarios where the UI

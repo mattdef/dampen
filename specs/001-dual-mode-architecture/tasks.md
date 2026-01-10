@@ -172,10 +172,10 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 4.3 State Preservation & Hot-Reload (Week 3)
 
-- [ ] T078 [US2] Implement HotReloadContext::snapshot_model() using serde_json in dampen-dev/src/reload.rs
-- [ ] T079 [US2] Implement HotReloadContext::restore_model() with graceful fallback to M::default() in dampen-dev/src/reload.rs
-- [ ] T080 [US2] Implement attempt_hot_reload() function in dampen-dev/src/reload.rs with full error handling
-- [ ] T081 [US2] Add validation step before accepting reload in dampen-dev/src/reload.rs
+- [X] T078 [US2] Implement HotReloadContext::snapshot_model() using serde_json in dampen-dev/src/reload.rs
+- [X] T079 [US2] Implement HotReloadContext::restore_model() with graceful fallback to M::default() in dampen-dev/src/reload.rs
+- [X] T080 [US2] Implement attempt_hot_reload() function in dampen-dev/src/reload.rs with full error handling
+- [X] T081 [US2] Add validation step before accepting reload in dampen-dev/src/reload.rs
 - [ ] T082 [US2] Implement handler registry rebuild in attempt_hot_reload() in dampen-dev/src/reload.rs
 - [ ] T083 [US2] Implement ErrorOverlay::render() widget in dampen-dev/src/overlay.rs showing error with file/line/column
 - [ ] T084 [US2] Add error overlay styling (red background, white text) in dampen-dev/src/overlay.rs

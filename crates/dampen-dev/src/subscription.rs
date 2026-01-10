@@ -250,13 +250,12 @@ impl Recipe for FileWatcherRecipe {
 ///
 /// # Example
 /// ```no_run
-/// use dampen_dev::subscription::watch_files;
+/// use dampen_dev::subscription::{watch_files, FileEvent};
 /// use std::path::PathBuf;
 ///
-/// fn subscription(&self) -> iced::Subscription<Message> {
-///     watch_files(vec![PathBuf::from("src/ui")], 100)
-///         .map(Message::FileChanged)
-/// }
+/// // Create a subscription that watches UI files
+/// let subscription = watch_files(vec![PathBuf::from("src/ui")], 100);
+/// // The subscription yields FileEvent values
 /// ```
 pub fn watch_files<P: AsRef<std::path::Path>>(
     paths: Vec<P>,
