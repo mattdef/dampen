@@ -1,8 +1,6 @@
 //! Code generation snapshot tests
 
-use dampen_core::{
-    generate_application, parse, validate_handlers, EventKind, HandlerSignature, WidgetKind,
-};
+use dampen_core::{generate_application, parse, validate_handlers, HandlerSignature};
 
 #[test]
 fn test_simple_button_codegen() {
@@ -344,7 +342,6 @@ fn test_complex_example() {
 
 #[cfg(test)]
 mod expression_codegen_tests {
-    use super::*;
     use dampen_core::codegen::bindings::{generate_expr, generate_interpolated};
     use dampen_core::expr::ast::{
         BinaryOp, BinaryOpExpr, ConditionalExpr, Expr, FieldAccessExpr, LiteralExpr,

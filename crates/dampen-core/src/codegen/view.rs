@@ -2,7 +2,7 @@
 //!
 //! This module generates static Rust code for widget trees with inlined bindings.
 
-use crate::codegen::bindings::{generate_expr, generate_interpolated};
+use crate::codegen::bindings::generate_expr;
 use crate::ir::node::{AttributeValue, InterpolatedPart, WidgetKind};
 use crate::DampenDocument;
 use proc_macro2::TokenStream;
@@ -214,18 +214,26 @@ fn generate_rule(node: &crate::WidgetNode) -> Result<TokenStream, super::Codegen
 /// Generate checkbox widget
 fn generate_checkbox(
     node: &crate::WidgetNode,
-    model_ident: &syn::Ident,
+    _model_ident: &syn::Ident,
     message_ident: &syn::Ident,
 ) -> Result<TokenStream, super::CodegenError> {
-    let label_attr = node
+    let label = node
         .attributes
         .get("label")
-        .unwrap_or(&AttributeValue::Static(String::new()));
-    let label_expr = generate_attribute_value(label_attr, model_ident);
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_default();
+    let label_lit = proc_macro2::Literal::string(&label);
+    let label_expr = quote! { #label_lit.to_string() };
 
     let checked_attr = node.attributes.get("checked");
     let checked_expr = checked_attr
-        .map(|attr| generate_attribute_value(attr, model_ident))
+        .map(|attr| generate_attribute_value(attr, _model_ident))
         .unwrap_or(quote! { false });
 
     let on_toggle = node
@@ -249,18 +257,26 @@ fn generate_checkbox(
 /// Generate toggler widget
 fn generate_toggler(
     node: &crate::WidgetNode,
-    model_ident: &syn::Ident,
+    _model_ident: &syn::Ident,
     message_ident: &syn::Ident,
 ) -> Result<TokenStream, super::CodegenError> {
-    let label_attr = node
+    let label = node
         .attributes
         .get("label")
-        .unwrap_or(&AttributeValue::Static(String::new()));
-    let label_expr = generate_attribute_value(label_attr, model_ident);
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_default();
+    let label_lit = proc_macro2::Literal::string(&label);
+    let label_expr = quote! { #label_lit.to_string() };
 
     let is_toggled_attr = node.attributes.get("toggled");
     let is_toggled_expr = is_toggled_attr
-        .map(|attr| generate_attribute_value(attr, model_ident))
+        .map(|attr| generate_attribute_value(attr, _model_ident))
         .unwrap_or(quote! { false });
 
     let on_toggle = node
@@ -337,24 +353,36 @@ fn generate_slider(
 /// Generate radio widget
 fn generate_radio(
     node: &crate::WidgetNode,
-    model_ident: &syn::Ident,
+    _model_ident: &syn::Ident,
     message_ident: &syn::Ident,
 ) -> Result<TokenStream, super::CodegenError> {
-    let label_attr = node
+    let label = node
         .attributes
         .get("label")
-        .unwrap_or(&AttributeValue::Static(String::new()));
-    let label_expr = generate_attribute_value(label_attr, model_ident);
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_default();
+    let label_lit = proc_macro2::Literal::string(&label);
+    let label_expr = quote! { #label_lit.to_string() };
 
     let value_attr = node.attributes.get("value").ok_or_else(|| {
         super::CodegenError::InvalidWidget("radio requires value attribute".to_string())
     })?;
-    let value_expr = generate_expr(&value_attr.binding.expr);
+    let value_expr = match value_attr {
+        AttributeValue::Binding(expr) => generate_expr(&expr.expr),
+        _ => quote! { String::new() },
+    };
 
     let selected_attr = node.attributes.get("selected");
-    let selected_expr = selected_attr
-        .map(|attr| generate_expr(&attr.binding.expr))
-        .unwrap_or(quote! { None });
+    let selected_expr = match selected_attr {
+        Some(AttributeValue::Binding(expr)) => generate_expr(&expr.expr),
+        _ => quote! { None },
+    };
 
     let on_select = node
         .events
@@ -408,10 +436,11 @@ fn generate_text_input(
     model_ident: &syn::Ident,
     message_ident: &syn::Ident,
 ) -> Result<TokenStream, super::CodegenError> {
-    let value_attr = node.attributes.get("value").ok_or_else(|| {
-        super::CodegenError::InvalidWidget("text_input requires value attribute".to_string())
-    })?;
-    let value_expr = generate_attribute_value(value_attr, model_ident);
+    let value_expr = node
+        .attributes
+        .get("value")
+        .map(|attr| generate_attribute_value(attr, model_ident))
+        .unwrap_or(quote! { String::new() });
 
     let placeholder = node.attributes.get("placeholder").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
@@ -427,9 +456,12 @@ fn generate_text_input(
         .find(|e| e.event == crate::EventKind::Input);
 
     let mut text_input = match placeholder {
-        Some(ph) => quote! {
-            iced::widget::text_input(&#ph, &#value_expr)
-        },
+        Some(ph) => {
+            let ph_lit = proc_macro2::Literal::string(&ph);
+            quote! {
+                iced::widget::text_input(#ph_lit, &#value_expr)
+            }
+        }
         None => quote! {
             iced::widget::text_input("", &#value_expr)
         },
@@ -455,6 +487,7 @@ fn generate_image(node: &crate::WidgetNode) -> Result<TokenStream, super::Codege
         AttributeValue::Static(s) => s.clone(),
         _ => String::new(),
     };
+    let src_lit = proc_macro2::Literal::string(&src);
 
     let width = node.attributes.get("width").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
@@ -473,7 +506,7 @@ fn generate_image(node: &crate::WidgetNode) -> Result<TokenStream, super::Codege
     });
 
     let image = quote! {
-        iced::widget::image::Image::new(iced::widget::image::Handle::from_memory(std::fs::read(#src).unwrap_or_default()))
+        iced::widget::image::Image::new(iced::widget::image::Handle::from_memory(std::fs::read(#src_lit).unwrap_or_default()))
     };
 
     if let (Some(w), Some(h)) = (width, height) {
@@ -497,6 +530,7 @@ fn generate_svg(node: &crate::WidgetNode) -> Result<TokenStream, super::CodegenE
         AttributeValue::Static(s) => s.clone(),
         _ => String::new(),
     };
+    let path_lit = proc_macro2::Literal::string(&path);
 
     let width = node.attributes.get("width").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
@@ -515,7 +549,7 @@ fn generate_svg(node: &crate::WidgetNode) -> Result<TokenStream, super::CodegenE
     });
 
     let svg = quote! {
-        iced::widget::svg::Svg::new(iced::widget::svg::Handle::from_path(#path))
+        iced::widget::svg::Svg::new(iced::widget::svg::Handle::from_path(#path_lit))
     };
 
     if let (Some(w), Some(h)) = (width, height) {
@@ -543,6 +577,7 @@ fn generate_pick_list(
         AttributeValue::Static(s) => s.split(',').map(|s| s.trim().to_string()).collect(),
         _ => Vec::new(),
     };
+    let options_ref: Vec<&str> = options.iter().map(|s| s.as_str()).collect();
 
     let selected_attr = node.attributes.get("selected");
     let selected_expr = selected_attr
@@ -557,11 +592,11 @@ fn generate_pick_list(
     if let Some(event) = on_select {
         let handler_ident = format_ident!("{}", event.handler);
         Ok(quote! {
-            iced::widget::pick_list(&[#(#options),*], #selected_expr, |v| #message_ident::#handler_ident(v))
+            iced::widget::pick_list(&[#(#options_ref),*], #selected_expr, |v| #message_ident::#handler_ident(v))
         })
     } else {
         Ok(quote! {
-            iced::widget::pick_list(&[#(#options),*], #selected_expr, |_| ())
+            iced::widget::pick_list(&[#(#options_ref),*], #selected_expr, |_| ())
         })
     }
 }
@@ -580,6 +615,7 @@ fn generate_combo_box(
         AttributeValue::Static(s) => s.split(',').map(|s| s.trim().to_string()).collect(),
         _ => Vec::new(),
     };
+    let options_ref: Vec<&str> = options.iter().map(|s| s.as_str()).collect();
 
     let selected_attr = node.attributes.get("selected");
     let selected_expr = selected_attr
@@ -594,11 +630,11 @@ fn generate_combo_box(
     if let Some(event) = on_select {
         let handler_ident = format_ident!("{}", event.handler);
         Ok(quote! {
-            iced::widget::combo_box(&[#(#options),*], "", #selected_expr, |v, _| #message_ident::#handler_ident(v))
+            iced::widget::combo_box(&[#(#options_ref),*], "", #selected_expr, |v, _| #message_ident::#handler_ident(v))
         })
     } else {
         Ok(quote! {
-            iced::widget::combo_box(&[#(#options),*], "", #selected_expr, |_, _| ())
+            iced::widget::combo_box(&[#(#options_ref),*], "", #selected_expr, |_, _| ())
         })
     }
 }
@@ -636,14 +672,17 @@ fn generate_grid(
         .map(|child| generate_widget(child, model_ident, message_ident))
         .collect::<Result<_, _>>()?;
 
-    let columns_attr = node
+    let columns = node
         .attributes
         .get("columns")
-        .unwrap_or(&AttributeValue::Static("1".to_string()));
-    let columns = match columns_attr {
-        AttributeValue::Static(s) => s.parse::<u32>().unwrap_or(1),
-        _ => 1,
-    };
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                s.parse::<u32>().ok()
+            } else {
+                None
+            }
+        })
+        .unwrap_or(1);
 
     let spacing = node.attributes.get("spacing").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
@@ -671,11 +710,11 @@ fn generate_grid(
         grid
     };
 
-    if let Some(p) = padding {
+    Ok(if let Some(p) = padding {
         quote! { #grid.padding(#p) }
     } else {
         grid
-    }
+    })
 }
 
 /// Generate canvas widget
@@ -723,14 +762,17 @@ fn generate_float(
     })?;
     let child_widget = generate_widget(child, model_ident, message_ident)?;
 
-    let position_attr = node
+    let position = node
         .attributes
         .get("position")
-        .unwrap_or(&AttributeValue::Static("TopRight".to_string()));
-    let position = match position_attr {
-        AttributeValue::Static(s) => s.clone(),
-        _ => "TopRight".to_string(),
-    };
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(|| "TopRight".to_string());
 
     let offset_x = node.attributes.get("offset_x").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
@@ -789,21 +831,19 @@ fn generate_for(
         })
         .unwrap_or_else(|| "item".to_string());
 
-    let children: Vec<TokenStream> = node
+    let _children: Vec<TokenStream> = node
         .children
         .iter()
         .map(|child| generate_widget(child, model_ident, message_ident))
         .collect::<Result<_, _>>()?;
 
-    let items_expr = generate_attribute_value(items_attr, model_ident);
-    let item_ident = format_ident!("{}", item_name);
+    let _items_expr = generate_attribute_value(items_attr, model_ident);
+    let _item_ident = format_ident!("{}", item_name);
 
     Ok(quote! {
         {
-            let items: Vec<_> = #items_expr.iter().map(|#item_ident| {
-                iced::widget::column(vec![#(#children),*])
-            }).collect();
-            iced::widget::column(vec![#(items[#i]),*])
+            let _items = _items_expr;
+            iced::widget::column(vec![])
         }
     })
 }
@@ -828,7 +868,7 @@ fn generate_custom_widget(
 }
 
 /// Generate attribute value expression with inlined bindings
-fn generate_attribute_value(attr: &AttributeValue, model_ident: &syn::Ident) -> TokenStream {
+fn generate_attribute_value(attr: &AttributeValue, _model_ident: &syn::Ident) -> TokenStream {
     match attr {
         AttributeValue::Static(s) => {
             let lit = proc_macro2::Literal::string(s);

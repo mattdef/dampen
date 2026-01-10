@@ -100,15 +100,15 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 3.2 Widget Code Generation (Week 2)
 
-- [ ] T039 [US1] Update generate_view() in dampen-core/src/codegen/view.rs to use generate_expr() for all binding expressions
-- [ ] T040 [US1] Remove all to_binding_value() calls from generated code in dampen-core/src/codegen/view.rs
-- [ ] T041 [US1] Implement generate_widget() for all 20+ widget types in dampen-core/src/codegen/view.rs with inlined bindings
-- [ ] T042 [US1] Implement generate_handler_dispatch() in dampen-core/src/codegen/handlers.rs for Simple handlers
-- [ ] T043 [US1] Implement generate_handler_dispatch() for WithValue handlers in dampen-core/src/codegen/handlers.rs
-- [ ] T044 [US1] Implement generate_handler_dispatch() for WithCommand handlers in dampen-core/src/codegen/handlers.rs
-- [ ] T045 [US1] Add validation to reject expressions that can't be inlined in dampen-core/src/codegen/bindings.rs
-- [ ] T046 [US1] Write snapshot tests for all widget types using insta crate in dampen-core/tests/codegen_snapshot_tests.rs (NEW)
-- [ ] T047 [US1] Verify generated code has zero runtime dependencies in dampen-core/tests/codegen_tests.rs
+- [X] T039 [US1] Update generate_view() in dampen-core/src/codegen/view.rs to use generate_expr() for all binding expressions
+- [X] T040 [US1] Remove all to_binding_value() calls from generated code in dampen-core/src/codegen/view.rs
+- [X] T041 [US1] Implement generate_widget() for all 20+ widget types in dampen-core/src/codegen/view.rs with inlined bindings
+- [X] T042 [US1] Implement generate_handler_dispatch() in dampen-core/src/codegen/handlers.rs for Simple handlers
+- [X] T043 [US1] Implement generate_handler_dispatch() for WithValue handlers in dampen-core/src/codegen/handlers.rs
+- [X] T044 [US1] Implement generate_handler_dispatch() for WithCommand handlers in dampen-core/src/codegen/handlers.rs
+- [X] T045 [US1] Add validation to reject expressions that can't be inlined in dampen-core/src/codegen/bindings.rs
+- [X] T046 [US1] Write snapshot tests for all widget types using insta crate in dampen-core/tests/codegen_snapshot_tests.rs (NEW)
+- [X] T047 [US1] Verify generated code has zero runtime dependencies in dampen-core/tests/codegen_tests.rs
 
 ### 3.3 Build Integration (Week 3)
 

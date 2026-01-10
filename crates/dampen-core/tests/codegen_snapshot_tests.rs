@@ -184,3 +184,37 @@ fn test_codegen_conditional_expressions() {
 
     insta::assert_snapshot!(output.code);
 }
+
+#[test]
+fn test_codegen_zero_runtime_dependencies() {
+    let xml = r#"
+        <column>
+            <text value="{name}" />
+            <text value="Count: {count + 1}" />
+            <button label="Click" on_click="handle_click" />
+        </column>
+    "#;
+    let doc = parse(xml).unwrap();
+
+    let handlers = vec![HandlerSignature {
+        name: "handle_click".to_string(),
+        param_type: None,
+        returns_command: false,
+    }];
+
+    let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();
+    let code = output.code;
+
+    assert!(
+        !code.contains("to_binding_value"),
+        "Generated code should not contain to_binding_value() calls"
+    );
+    assert!(
+        !code.contains("BindingValue"),
+        "Generated code should not contain BindingValue type"
+    );
+    assert!(
+        code.contains("to_string"),
+        "Generated code should use to_string() for string conversion"
+    );
+}

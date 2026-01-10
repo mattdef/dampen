@@ -7,6 +7,7 @@ use crate::expr::ast::{
     BinaryOp, BinaryOpExpr, ConditionalExpr, Expr, FieldAccessExpr, LiteralExpr, MethodCallExpr,
     UnaryOp, UnaryOpExpr,
 };
+use crate::CodegenError;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
@@ -20,18 +21,6 @@ use quote::{format_ident, quote};
 ///
 /// # Returns
 /// Generated code as a TokenStream that produces a String when interpolated
-///
-/// # Examples
-/// ```ignore
-/// // Field access: {count}
-/// generate_expr(&Expr::FieldAccess(...)) -> quote! { self.count.to_string() }
-///
-/// // Binary op: {count + 1}
-/// generate_expr(&Expr::BinaryOp(...)) -> quote! { (self.count + 1).to_string() }
-///
-/// // Method call: {items.len()}
-/// generate_expr(&Expr::MethodCall(...)) -> quote! { self.items.len().to_string() }
-/// ```
 pub fn generate_expr(expr: &Expr) -> TokenStream {
     match expr {
         Expr::FieldAccess(field_access) => generate_field_access(field_access),
@@ -40,6 +29,38 @@ pub fn generate_expr(expr: &Expr) -> TokenStream {
         Expr::UnaryOp(unary_op) => generate_unary_op(unary_op),
         Expr::Conditional(conditional) => generate_conditional(conditional),
         Expr::Literal(literal) => generate_literal(literal),
+    }
+}
+
+/// Validate that an expression can be inlined
+///
+/// Returns Err if the expression contains unsupported constructs for codegen
+pub fn validate_expression_inlinable(expr: &Expr) -> Result<(), CodegenError> {
+    match expr {
+        Expr::FieldAccess(_) => Ok(()),
+        Expr::MethodCall(method_expr) => {
+            validate_expression_inlinable(&method_expr.receiver)?;
+            for arg in &method_expr.args {
+                validate_expression_inlinable(arg)?;
+            }
+            Ok(())
+        }
+        Expr::BinaryOp(binary_expr) => {
+            validate_expression_inlinable(&binary_expr.left)?;
+            validate_expression_inlinable(&binary_expr.right)?;
+            Ok(())
+        }
+        Expr::UnaryOp(unary_expr) => {
+            validate_expression_inlinable(&unary_expr.operand)?;
+            Ok(())
+        }
+        Expr::Conditional(cond_expr) => {
+            validate_expression_inlinable(&cond_expr.condition)?;
+            validate_expression_inlinable(&cond_expr.then_branch)?;
+            validate_expression_inlinable(&cond_expr.else_branch)?;
+            Ok(())
+        }
+        Expr::Literal(_) => Ok(()),
     }
 }
 

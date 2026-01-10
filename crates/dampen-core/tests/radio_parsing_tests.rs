@@ -50,7 +50,7 @@ fn test_parse_radio_group() {
     assert_eq!(doc.root.kind, WidgetKind::Column);
     assert_eq!(doc.root.children.len(), 3);
 
-    for (i, child) in doc.root.children.iter().enumerate() {
+    for (_i, child) in doc.root.children.iter().enumerate() {
         assert_eq!(child.kind, WidgetKind::Radio);
     }
 }

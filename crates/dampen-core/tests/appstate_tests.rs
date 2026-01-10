@@ -98,11 +98,6 @@ fn test_appstate_clonable() {
 
     let document = dampen_core::parse(xml).expect("Failed to parse XML");
 
-    let model = TestModel {
-        count: 99,
-        name: "Clone".to_string(),
-    };
-
     let registry = HandlerRegistry::new();
     let state: AppState<TestModel> = AppState::with_handlers(document.clone(), registry);
 
@@ -250,7 +245,7 @@ fn test_hot_reload_preserves_handlers() {
     let called = std::sync::Arc::new(std::sync::Mutex::new(false));
     let called_clone = called.clone();
 
-    let mut registry = HandlerRegistry::new();
+    let registry = HandlerRegistry::new();
     registry.register_simple("test_handler", move |_model: &mut dyn std::any::Any| {
         *called_clone.lock().unwrap() = true;
     });
