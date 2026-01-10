@@ -6,13 +6,13 @@
 #![warn(missing_docs)]
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-pub mod watcher;
-pub mod subscription;
-pub mod reload;
 pub mod overlay;
+pub mod reload;
+pub mod subscription;
+pub mod watcher;
 
 // Re-export key types for convenience
-pub use watcher::{FileWatcher, FileWatcherConfig, FileWatcherState};
-pub use subscription::{FileEvent, watch_files};
-pub use reload::{HotReloadContext, ReloadResult};
 pub use overlay::ErrorOverlay;
+pub use reload::{HotReloadContext, ReloadResult};
+pub use subscription::{watch_files, FileEvent};
+pub use watcher::{FileWatcher, FileWatcherConfig, FileWatcherState};

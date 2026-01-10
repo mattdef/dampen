@@ -3,10 +3,10 @@
 //! This module provides an Iced subscription that bridges file system events
 //! from the notify crate into Iced's async message system.
 
-use std::path::PathBuf;
 use dampen_core::ir::DampenDocument;
 use dampen_core::parser::error::ParseError;
 use iced::Subscription;
+use std::path::PathBuf;
 
 /// Domain event for file watcher subscription output
 #[derive(Debug, Clone)]

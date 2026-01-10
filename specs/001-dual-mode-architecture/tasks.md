@@ -86,17 +86,17 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 3.1 Expression Inlining (Week 1)
 
-- [ ] T028 [US1] Implement generate_expr() function in dampen-core/src/codegen/bindings.rs for FieldAccess expressions (returns quote! { #model.#field.to_string() })
-- [ ] T029 [US1] Implement generate_expr() for BinaryOp expressions in dampen-core/src/codegen/bindings.rs
-- [ ] T030 [US1] Implement generate_expr() for MethodCall expressions in dampen-core/src/codegen/bindings.rs
-- [ ] T031 [US1] Implement generate_expr() for Conditional expressions in dampen-core/src/codegen/bindings.rs
-- [ ] T032 [US1] Implement generate_expr() for Literal expressions in dampen-core/src/codegen/bindings.rs
-- [ ] T033 [US1] Implement generate_interpolated() function for interpolated strings in dampen-core/src/codegen/bindings.rs (uses format!() macro)
-- [ ] T034 [US1] Write contract test for field access codegen in dampen-core/tests/codegen_tests.rs
-- [ ] T035 [US1] Write contract test for binary op codegen in dampen-core/tests/codegen_tests.rs
-- [ ] T036 [US1] Write contract test for method call codegen in dampen-core/tests/codegen_tests.rs
-- [ ] T037 [US1] Write contract test for conditional codegen in dampen-core/tests/codegen_tests.rs
-- [ ] T038 [US1] Write contract test for interpolated string codegen in dampen-core/tests/codegen_tests.rs
+- [X] T028 [US1] Implement generate_expr() function in dampen-core/src/codegen/bindings.rs for FieldAccess expressions (returns quote! { #model.#field.to_string() })
+- [X] T029 [US1] Implement generate_expr() for BinaryOp expressions in dampen-core/src/codegen/bindings.rs
+- [X] T030 [US1] Implement generate_expr() for MethodCall expressions in dampen-core/src/codegen/bindings.rs
+- [X] T031 [US1] Implement generate_expr() for Conditional expressions in dampen-core/src/codegen/bindings.rs
+- [X] T032 [US1] Implement generate_expr() for Literal expressions in dampen-core/src/codegen/bindings.rs
+- [X] T033 [US1] Implement generate_interpolated() function for interpolated strings in dampen-core/src/codegen/bindings.rs (uses format!() macro)
+- [X] T034 [US1] Write contract test for field access codegen in dampen-core/tests/codegen_tests.rs
+- [X] T035 [US1] Write contract test for binary op codegen in dampen-core/tests/codegen_tests.rs
+- [X] T036 [US1] Write contract test for method call codegen in dampen-core/tests/codegen_tests.rs
+- [X] T037 [US1] Write contract test for conditional codegen in dampen-core/tests/codegen_tests.rs
+- [X] T038 [US1] Write contract test for interpolated string codegen in dampen-core/tests/codegen_tests.rs
 
 ### 3.2 Widget Code Generation (Week 2)
 

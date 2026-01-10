@@ -3,8 +3,8 @@
 //! This module provides UI widgets for displaying error overlays during
 //! hot-reload when XML parsing or validation fails.
 
-use std::time::Instant;
 use dampen_core::parser::error::ParseError;
+use std::time::Instant;
 
 /// UI state for displaying parse errors during hot-reload
 #[derive(Debug, Clone)]

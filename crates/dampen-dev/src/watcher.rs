@@ -41,13 +41,13 @@ pub enum FileWatcherState {
     /// Actively watching for changes
     Watching {
         /// Paths being watched
-        paths: Vec<PathBuf>
+        paths: Vec<PathBuf>,
     },
 
     /// Error state (watcher failed to initialize)
     Failed {
         /// Error description
-        error: String
+        error: String,
     },
 }
 
