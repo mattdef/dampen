@@ -1,0 +1,5 @@
+---
+source: crates/dampen-core/tests/codegen_snapshot_tests.rs
+expression: output.code
+---
+use crate :: ui :: window :: { self , Model } ; use iced :: { Element , Task , executor } ; # [derive (Clone , Debug)] pub enum Message { ToggleAccept (bool) } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { Message :: ToggleAccept (value) => { ui :: window :: toggle_accept (model , value) ; iced :: Task :: none () } } } pub fn view_model (model : & Model) -> Element < '_ , Message > { let count = & model . count ; iced :: widget :: checkbox ("Accept Terms" . to_string () , accepted . to_string ()) . on_toggle (Message :: toggle_accept) }

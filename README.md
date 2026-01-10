@@ -48,48 +48,8 @@ Dampen allows you to define your user interface in XML and render it via Iced.
 
 ## Installation
 
-### Prerequisites
-
-- Rust 1.75 or higher (stable)
-- Edition 2021 or 2024
-
-### Project Configuration
-
-```toml
-[workspace]
-members = [
-    "crates/dampen-core",
-    "crates/dampen-macros", 
-    "crates/dampen-iced",
-    "crates/dampen-cli",
-]
-
-[package]
-name = "my-app"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-dampen-core = { path = "crates/dampen-core" }
-dampen-macros = { path = "crates/dampen-macros" }
-dampen-iced = { path = "crates/dampen-iced" }
-iced = "0.14"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-```
-
-## Project Structure
-
-```
-my-app/
-├── Cargo.toml
-├── src/
-│   ├── main.rs             # Application entry point
-│   └── ui/
-│       ├── mod.rs          # UI module with AppState
-│       ├── window.rs       # Window code
-│       └── window.dampen   # XML interface definition
-└── target/
+```bash
+cargo install dampen-cli
 ```
 
 ## Quick Start
@@ -106,8 +66,10 @@ dampen new my-app
 cd my-app
 
 # Run the application
-cargo run
+dampen run
 ```
+
+## Project Structure
 
 The `dampen new` command creates a complete project structure:
 
@@ -160,22 +122,6 @@ dampen build
 dampen inspect src/ui/window.dampen
 ```
 
-### Manual Project Structure
-
-If you prefer to create the project manually:
-
-```
-my-app/
-├── Cargo.toml
-├── src/
-│   ├── main.rs             # Application entry point
-│   └── ui/
-│       ├── mod.rs          # UI module with AppState
-│       ├── window.rs       # Window code
-│       └── window.dampen   # XML interface definition
-└── target/
-```
-
 ## Advanced Features
 
 ### Data Binding
@@ -199,10 +145,12 @@ struct TodoItem {
 ### Type-Safe Event Handlers
 
 ```rust
+#[ui_handler]
 fn increment(model: &mut Model) {
     model.count += 1;
 }
 
+#[ui_handler]
 fn add_item(model: &mut Model, text: String) {
     model.items.push(TodoItem {
         id: model.next_id,
@@ -212,6 +160,7 @@ fn add_item(model: &mut Model, text: String) {
     model.next_id += 1;
 }
 
+#[ui_handler]
 fn toggle_item(model: &mut Model, id: usize) {
     if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
         item.completed = !item.completed;
@@ -401,17 +350,8 @@ crates/
 ├── dampen-core/           # XML parser, IR, traits (no Iced dependency)
 ├── dampen-macros/         # Macros #[derive(UiModel)], #[dampen_ui]
 ├── dampen-iced/           # Iced backend implementation
+├── dampen-dev/            # Development mode tooling for Dampen
 └── dampen-cli/            # Developer CLI (build, check, inspect)
-
-examples/
-├── hello-world/           # Minimal application
-├── counter/               # Interactive event handlers
-├── todo-app/              # Complete data binding
-├── styling/               # Themes and style classes
-├── responsive/            # Responsive design
-├── settings/              # Multiple views
-├── widget-showcase/       # Widget demonstration
-└── builder-demo/          # Custom widget patterns
 
 ```
 
@@ -423,23 +363,6 @@ examples/
 4. **Backend-Agnostic**: Core crate has no Iced dependency
 5. **Test-First**: TDD for all features
 
-### Data Flow
-
-```
-XML (main.dampen)
-        |
-        v
-    XML Parser
-        |
-        v
-   DampenDocument
-        |
-        v
-  DampenWidgetBuilder
-        |
-        v
-     Element<Iced>
-```
 
 ## Examples
 
@@ -468,14 +391,6 @@ dampen check --ui ui
 dampen inspect --file ui/main.dampen
 dampen inspect --file ui/main.dampen --codegen --handlers increment,decrement
 ```
-
-## Performance
-
-| Metric | Target |
-|--------|--------|
-| XML parsing | <10ms for 1000 widgets |
-| Code generation | <5s for typical application |
-| Runtime memory | <50MB baseline |
 
 ## Documentation
 
