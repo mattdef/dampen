@@ -8,8 +8,22 @@ build = "build.rs"
 dampen-core = { workspace = true }
 dampen-macros = { workspace = true }
 dampen-iced = { workspace = true }
+dampen-dev = { workspace = true, optional = true }
 iced = { workspace = true }
 serde = { workspace = true }
+toml = "0.8"
+
+[build-dependencies]
+dampen-core = { workspace = true }
+toml = "0.8"
+syn = { version = "2.0", features = ["full", "visit"] }
+quote = "1.0"
+walkdir = "2.5"
+
+[features]
+default = []
+codegen = []
+interpreted = ["dampen-dev"]
 
 [[bin]]
 name = "styling"

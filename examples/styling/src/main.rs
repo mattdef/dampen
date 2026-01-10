@@ -11,9 +11,22 @@ enum CurrentView {
     Window,
 }
 
+#[derive(Clone, Debug)]
 struct StylingApp {
     current_view: CurrentView,
     window_state: AppState<ui::window::Model>,
+}
+
+impl StylingApp {
+    fn new() -> (Self, Task<HandlerMessage>) {
+        (
+            StylingApp {
+                current_view: CurrentView::Window,
+                window_state: ui::window::create_app_state(),
+            },
+            Task::none(),
+        )
+    }
 }
 
 fn dispatch_handler(app: &mut StylingApp, handler_name: &str, value: Option<String>) {
@@ -40,13 +53,7 @@ fn view(app: &StylingApp) -> Element<'_, HandlerMessage> {
 }
 
 fn init() -> (StylingApp, Task<HandlerMessage>) {
-    (
-        StylingApp {
-            current_view: CurrentView::Window,
-            window_state: ui::window::create_app_state(),
-        },
-        Task::none(),
-    )
+    StylingApp::new()
 }
 
 pub fn main() -> iced::Result {
