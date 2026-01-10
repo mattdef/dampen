@@ -180,11 +180,11 @@ This document provides an actionable task breakdown for implementing Dampen's du
 - [X] T083 [US2] Implement ErrorOverlay::render() widget in dampen-dev/src/overlay.rs showing error with file/line/column
 - [X] T084 [US2] Add error overlay styling (red background, white text) in dampen-dev/src/overlay.rs
 - [X] T085 [US2] Add dismiss button to error overlay in dampen-dev/src/overlay.rs
-- [ ] T086 [US2] Update examples/counter/src/main.rs with hot-reload subscription for interpreted mode
-- [ ] T087 [US2] Update examples/counter/src/main.rs with Message::HotReload handler
-- [ ] T088 [US2] Write integration test for state preservation across reload in tests/integration/hot_reload_tests.rs (NEW)
-- [ ] T089 [US2] Write integration test for parse error handling in tests/integration/hot_reload_tests.rs
-- [ ] T090 [US2] Write integration test for rapid successive saves in tests/integration/hot_reload_tests.rs
+- [X] T086 [US2] Update examples/counter/src/main.rs with hot-reload subscription for interpreted mode
+- [X] T087 [US2] Update examples/counter/src/main.rs with Message::HotReload handler
+- [X] T088 [US2] Write integration test for state preservation across reload in tests/integration/hot_reload_tests.rs
+- [X] T089 [US2] Write integration test for parse error handling in tests/integration/hot_reload_tests.rs
+- [X] T090 [US2] Write integration test for rapid successive saves in tests/integration/hot_reload_tests.rs
 - [ ] T091 [US2] Verify hot-reload latency <300ms (FR-012, SC-002) with 1000 widget file
 - [ ] T092 [US2] Verify state preserved across 100% of reloads (SC-004)
 - [ ] T093 [US2] Verify error overlay shows within 50ms (SC-008)

@@ -22,8 +22,8 @@ pub enum FileEvent {
     Success {
         /// Path to the changed file
         path: PathBuf,
-        /// Parsed document
-        document: DampenDocument,
+        /// Parsed document (boxed to reduce enum size)
+        document: Box<DampenDocument>,
     },
 
     /// Parse error (XML syntax or validation)
@@ -212,10 +212,10 @@ impl Recipe for FileWatcherRecipe {
                 // Parse the XML content
                 match parser::parse(&content) {
                     Ok(document) => {
-                        // Success: send parsed document
+                        // Success: send parsed document (boxed to reduce enum size)
                         let _ = tx.blocking_send(FileEvent::Success {
                             path: path.clone(),
-                            document,
+                            document: Box::new(document),
                         });
                     }
                     Err(error) => {
