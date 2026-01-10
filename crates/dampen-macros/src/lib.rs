@@ -21,7 +21,20 @@ pub fn ui_model_derive(input: TokenStream) -> TokenStream {
 
 /// Attribute macro to automatically load Dampen UI files.
 ///
-/// See the [`ui_loader`](ui_loader) module for documentation.
+/// This macro generates code to load and parse `.dampen` XML files at compile time.
+/// The behavior depends on the active feature flags (codegen vs interpreted mode).
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use dampen_macros::dampen_ui;
+///
+/// #[dampen_ui("app.dampen")]
+/// mod _app {}
+///
+/// // Use the generated module
+/// let document = _app::document();
+/// ```
 #[proc_macro_attribute]
 pub fn dampen_ui(attr: TokenStream, item: TokenStream) -> TokenStream {
     ui_loader::process_dampen_ui(attr, item)

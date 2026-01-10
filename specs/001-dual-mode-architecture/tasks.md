@@ -211,10 +211,10 @@ This document provides an actionable task breakdown for implementing Dampen's du
 - [X] T094 [US3] Update dampen-core/Cargo.toml with profile-specific default features
 - [X] T095 [US3] Add [profile.dev] section with features = ["interpreted"] to workspace Cargo.toml
 - [X] T096 [US3] Add [profile.release] section with features = ["codegen"] to workspace Cargo.toml
-- [ ] T097 [US3] Update #[dampen_ui] macro in dampen-macros/src/ui_loader.rs to respect feature flags
-- [ ] T098 [US3] Add conditional compilation guards in dampen-macros/src/ui_loader.rs for both modes
-- [ ] T099 [US3] Write test for macro behavior with codegen feature in dampen-macros/tests/codegen_mode_tests.rs
-- [ ] T100 [US3] Write test for macro behavior with interpreted feature in dampen-macros/tests/interpreted_mode_tests.rs (NEW)
+- [X] T097 [US3] Update #[dampen_ui] macro in dampen-macros/src/ui_loader.rs to respect feature flags
+- [X] T098 [US3] Add conditional compilation guards in dampen-macros/src/ui_loader.rs for both modes
+- [X] T099 [US3] Write test for macro behavior with codegen feature in dampen-macros/tests/codegen_mode_tests.rs
+- [X] T100 [US3] Write test for macro behavior with interpreted feature in dampen-macros/tests/interpreted_mode_tests.rs (NEW)
 
 ### 5.2 CLI Commands
 

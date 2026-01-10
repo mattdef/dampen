@@ -1,7 +1,10 @@
 //! Contract tests for the auto-loading mechanism.
 //!
 //! These tests verify that the #[dampen_ui] macro correctly generates
-//!
+//! code for loading and parsing Dampen UI files at runtime.
+
+#![allow(clippy::expect_used)]
+#![allow(clippy::incompatible_msrv)] // LazyLock is used project-wide
 
 use dampen_core::parse;
 use std::sync::LazyLock;
