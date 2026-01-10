@@ -1,3 +1,5 @@
+<img src="assets/logo_mini_f.svg" height="100" alt="Dampen Logo" />   
+
 # Dampen UI Framework
 
 [![Crates.io](https://img.shields.io/crates/v/dampen-core.svg)](https://crates.io/crates/dampen-core)
@@ -8,6 +10,11 @@
 **Declarative UI framework for Rust with Iced backend, advanced styling, and code generation.**
 
 Dampen allows you to define your user interface in XML and render it via Iced.
+
+<video width="640" controls>
+  <source src="assets/preview.webm" type="video/webm">
+  Votre navigateur ne supporte pas les vidéos WebM.
+</video>
 
 ---
 
