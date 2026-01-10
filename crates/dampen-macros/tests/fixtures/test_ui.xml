@@ -1,0 +1,6 @@
+<dampen>
+    <column padding="20" spacing="10">
+        <text value="Test UI" size="24" weight="bold" />
+        <button label="Click me" />
+    </column>
+</dampen>
