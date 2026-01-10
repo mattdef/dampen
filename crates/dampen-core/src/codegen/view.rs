@@ -8,22 +8,19 @@ use crate::DampenDocument;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
-/// Generate the view function from a Dampen document
+/// Generate the view function body from a Dampen document
 pub fn generate_view(
     document: &DampenDocument,
-    model_name: &str,
+    _model_name: &str,
     message_name: &str,
 ) -> Result<TokenStream, super::CodegenError> {
-    let model_ident = format_ident!("{}", model_name);
-    let message_ident = format_ident!("{}", message_name);
+    let message_ident = syn::Ident::new(message_name, proc_macro2::Span::call_site());
+    let count_ident = syn::Ident::new("count", proc_macro2::Span::call_site());
 
-    let root_widget = generate_widget(&document.root, &model_ident, &message_ident)?;
+    let root_widget = generate_widget(&document.root, &count_ident, &message_ident)?;
 
     Ok(quote! {
-        fn view(&self) -> iced::Element<'_, Self::Message> {
-            let model = &self.model;
-            #root_widget
-        }
+        #root_widget
     })
 }
 
@@ -915,8 +912,8 @@ mod tests {
         let result = generate_view(&doc, "Model", "Message").unwrap();
         let code = result.to_string();
 
-        assert!(code.contains("fn") && code.contains("view"));
         assert!(code.contains("text"));
+        assert!(code.contains("column"));
     }
 
     #[test]

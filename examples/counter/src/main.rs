@@ -11,10 +11,23 @@ enum CurrentView {
     Window,
 }
 
+#[derive(Clone, Debug)]
 /// Main application state wrapper
 struct CounterApp {
     current_view: CurrentView,
     window_state: AppState<ui::window::Model>,
+}
+
+impl CounterApp {
+    fn new() -> (Self, Task<HandlerMessage>) {
+        (
+            CounterApp {
+                current_view: CurrentView::Window,
+                window_state: ui::window::create_app_state(),
+            },
+            Task::none(),
+        )
+    }
 }
 
 /// Dispatch a handler to the current view
@@ -45,13 +58,7 @@ fn view(app: &CounterApp) -> Element<'_, HandlerMessage> {
 
 /// Initialize the application
 fn init() -> (CounterApp, Task<HandlerMessage>) {
-    (
-        CounterApp {
-            current_view: CurrentView::Window,
-            window_state: ui::window::create_app_state(),
-        },
-        Task::none(),
-    )
+    CounterApp::new()
 }
 
 pub fn main() -> iced::Result {

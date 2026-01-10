@@ -70,7 +70,7 @@ pub fn validate_expression_inlinable(expr: &Expr) -> Result<(), CodegenError> {
 /// * `expr` - Field access with path components
 ///
 /// # Returns
-/// TokenStream generating `self.field.subfield.to_string()`
+/// TokenStream generating `field.to_string()` (without self prefix)
 fn generate_field_access(expr: &FieldAccessExpr) -> TokenStream {
     if expr.path.is_empty() {
         return quote! { String::new() };
@@ -78,7 +78,7 @@ fn generate_field_access(expr: &FieldAccessExpr) -> TokenStream {
 
     let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
 
-    quote! { self.#(#field_access).*.to_string() }
+    quote! { #(#field_access).*.to_string() }
 }
 
 /// Generate code for a method call expression
@@ -213,7 +213,7 @@ fn generate_literal(expr: &LiteralExpr) -> TokenStream {
 /// # Examples
 /// ```ignore
 /// // "Count: {count}"
-/// generate_interpolated(...) -> quote! { format!("Count: {}", self.count) }
+/// generate_interpolated(...) -> quote! { format!("Count: {}", count) }
 /// ```
 pub fn generate_interpolated(parts: &[String]) -> TokenStream {
     if parts.is_empty() {
@@ -231,7 +231,7 @@ pub fn generate_interpolated(parts: &[String]) -> TokenStream {
                 .map(|s| format_ident!("{}", s))
                 .collect();
             format_args.push("{}");
-            arg_exprs.push(quote! { self.#(#field_parts).*.to_string() });
+            arg_exprs.push(quote! { #(#field_parts).*.to_string() });
         } else {
             format_args.push(part);
         }

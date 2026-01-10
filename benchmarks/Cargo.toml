@@ -1,0 +1,27 @@
+[package]
+name = "dampen-benchmarks"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bench]]
+name = "prod_mode_bench"
+harness = false
+
+[[bench]]
+name = "startup_bench"
+harness = false
+
+[[bench]]
+name = "parser_bench"
+harness = false
+
+[dependencies]
+dampen-core = { workspace = true }
+dampen-macros = { workspace = true }
+dampen-iced = { workspace = true }
+iced = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }

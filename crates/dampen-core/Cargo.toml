@@ -34,9 +34,5 @@ insta = { workspace = true }
 criterion = "0.5"
 dampen-macros = { path = "../dampen-macros" }
 
-[[bench]]
-name = "parser_bench"
-harness = false
-
 [lints]
 workspace = true

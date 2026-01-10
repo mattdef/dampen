@@ -199,7 +199,9 @@ fn test_application_trait_generation() {
     let output = generate_application(&doc, "TestModel", "TestMessage", &handlers).unwrap();
 
     let code = &output.code;
-    assert!(code.contains("impl") && code.contains("Application") && code.contains("TestModel"));
+    assert!(code.contains("fn new_model") && code.contains("TestModel"));
+    assert!(code.contains("fn update_model") && code.contains("TestModel"));
+    assert!(code.contains("fn view_model") && code.contains("TestModel"));
     assert!(code.contains("Message") && code.contains("TestMessage"));
 }
 

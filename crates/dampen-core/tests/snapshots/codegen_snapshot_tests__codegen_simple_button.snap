@@ -1,5 +1,6 @@
 ---
 source: crates/dampen-core/tests/codegen_snapshot_tests.rs
+assertion_line: 22
 expression: output.code
 ---
-# [derive (Clone , Debug)] pub enum Message { handle_click } impl iced :: Application for Model { type Executor = iced :: executor :: Default ; type Flags = () ; type Message = Message ; fn new (_flags : ()) -> (Self , iced :: Task < Self :: Message >) { (Self :: default () , iced :: Task :: none ()) } fn title (& self) -> String { "Dampen Application" . to_string () } } fn view (& self) -> iced :: Element < '_ , Self :: Message > { let model = & self . model ; iced :: widget :: button ("Click" . to_string ()) . on_press (Message :: handle_click (None)) } fn update (& mut self , message : Self :: Message) -> iced :: Task < Self :: Message > { match message { Message :: handle_click => { handle_click (self) ; iced :: Task :: none () } } }
+use crate :: ui :: window :: { self , Model } ; use iced :: { Element , Task , executor } ; # [derive (Clone , Debug)] pub enum Message { HandleClick } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { Message :: HandleClick => { ui :: window :: handle_click (model) ; iced :: Task :: none () } } } pub fn view_model (model : & Model) -> Element < '_ , Message > { let count = & model . count ; iced :: widget :: button ("Click" . to_string ()) . on_press (Message :: handle_click (None)) }

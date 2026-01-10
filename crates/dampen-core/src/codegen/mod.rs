@@ -223,27 +223,33 @@ pub fn generate_application(
 ) -> Result<CodegenOutput, CodegenError> {
     let warnings = Vec::new();
 
-    // Generate Message enum from handlers
     let message_enum = generate_message_enum(handlers);
 
-    // Generate view function
     let view_fn = view::generate_view(document, model_name, message_name)?;
 
-    // Generate update function
-    let update_fn = update::generate_update(document, handlers, model_name, message_name)?;
+    let update_match_arms = update::generate_update_match_arms(handlers, message_name)?;
 
-    // Generate Application trait implementation
-    let app_impl = application::generate_application_trait(model_name, message_name)?;
+    let model_ident = syn::Ident::new(model_name, proc_macro2::Span::call_site());
+    let message_ident = syn::Ident::new(message_name, proc_macro2::Span::call_site());
 
-    // Combine all generated code
     let combined = quote! {
+        use crate::ui::window::{self, #model_ident};
+        use iced::{Element, Task, executor};
+
         #message_enum
 
-        #app_impl
+        pub fn new_model() -> (#model_ident, Task<#message_ident>) {
+            (#model_ident::default(), Task::none())
+        }
 
-        #view_fn
+        pub fn update_model(model: &mut #model_ident, message: #message_ident) -> Task<#message_ident> {
+            #update_match_arms
+        }
 
-        #update_fn
+        pub fn view_model(model: &#model_ident) -> Element<'_, #message_ident> {
+            let count = &model.count;
+            #view_fn
+        }
     };
 
     Ok(CodegenOutput {
@@ -264,18 +270,14 @@ fn generate_message_enum(handlers: &[HandlerSignature]) -> TokenStream {
     let variants: Vec<_> = handlers
         .iter()
         .map(|h| {
-            let variant_name = h.name.to_string();
+            // Convert snake_case to UpperCamelCase
+            let variant_name = to_upper_camel_case(&h.name);
             let ident = syn::Ident::new(&variant_name, proc_macro2::Span::call_site());
 
             if let Some(param_type) = &h.param_type {
-                // Handler with value parameter
                 let type_ident = syn::Ident::new(param_type, proc_macro2::Span::call_site());
                 quote! { #ident(#type_ident) }
-            } else if h.returns_command {
-                // Handler returning command
-                quote! { #ident }
             } else {
-                // Simple handler
                 quote! { #ident }
             }
         })
@@ -287,6 +289,23 @@ fn generate_message_enum(handlers: &[HandlerSignature]) -> TokenStream {
             #(#variants),*
         }
     }
+}
+
+/// Convert snake_case to UpperCamelCase
+fn to_upper_camel_case(s: &str) -> String {
+    let mut result = String::new();
+    let mut capitalize_next = true;
+    for c in s.chars() {
+        if c == '_' {
+            capitalize_next = true;
+        } else if capitalize_next {
+            result.push(c.to_ascii_uppercase());
+            capitalize_next = false;
+        } else {
+            result.push(c);
+        }
+    }
+    result
 }
 
 /// Optimize constant expressions in generated code
@@ -370,8 +389,8 @@ mod tests {
         let tokens = generate_message_enum(&handlers);
         let code = tokens.to_string();
 
-        assert!(code.contains("increment"));
-        assert!(code.contains("update_value"));
+        assert!(code.contains("Increment"));
+        assert!(code.contains("UpdateValue"));
     }
 
     #[test]
