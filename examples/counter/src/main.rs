@@ -117,8 +117,15 @@ fn view(app: &CounterApp) -> Element<'_, Message> {
 fn subscription(_app: &CounterApp) -> Subscription<Message> {
     #[cfg(debug_assertions)]
     {
+        // Resolve UI file path relative to the manifest directory
+        // This works whether running from workspace root or example directory
+        let manifest_dir = env!("CARGO_MANIFEST_DIR");
+        let ui_file = PathBuf::from(manifest_dir).join("src/ui/window.dampen");
+
+        println!("👀 Watching for changes: {}", ui_file.display());
+
         // Watch the UI file for changes in development mode (100ms debounce)
-        watch_files(vec![PathBuf::from("src/ui/window.dampen")], 100).map(Message::HotReload)
+        watch_files(vec![ui_file], 100).map(Message::HotReload)
     }
 
     #[cfg(not(debug_assertions))]

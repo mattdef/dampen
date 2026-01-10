@@ -185,9 +185,9 @@ This document provides an actionable task breakdown for implementing Dampen's du
 - [X] T088 [US2] Write integration test for state preservation across reload in tests/integration/hot_reload_tests.rs
 - [X] T089 [US2] Write integration test for parse error handling in tests/integration/hot_reload_tests.rs
 - [X] T090 [US2] Write integration test for rapid successive saves in tests/integration/hot_reload_tests.rs
-- [ ] T091 [US2] Verify hot-reload latency <300ms (FR-012, SC-002) with 1000 widget file
-- [ ] T092 [US2] Verify state preserved across 100% of reloads (SC-004)
-- [ ] T093 [US2] Verify error overlay shows within 50ms (SC-008)
+- [X] T091 [US2] Verify hot-reload latency <300ms (FR-012, SC-002) with 1000 widget file
+- [X] T092 [US2] Verify state preserved across 100% of reloads (SC-004)
+- [X] T093 [US2] Verify error overlay shows within 50ms (SC-008)
 
 **US2 Success Criteria**:
 - ✅ File changes detected in <100ms

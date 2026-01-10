@@ -7,7 +7,7 @@ use crate::watcher::{FileWatcher, FileWatcherConfig};
 use dampen_core::ir::DampenDocument;
 use dampen_core::parser;
 use dampen_core::parser::error::ParseError;
-use futures::stream;
+
 use iced::advanced::subscription::{EventStream, Hasher, Recipe};
 use iced::Subscription;
 use std::hash::Hash;
@@ -170,10 +170,19 @@ impl Recipe for FileWatcherRecipe {
                 recursive,
             };
 
+            eprintln!(
+                "[dampen-dev] Creating file watcher with config: paths={:?}, debounce={}ms",
+                paths, debounce_ms
+            );
+
             // Create the file watcher
             let mut watcher = match FileWatcher::new(config) {
-                Ok(w) => w,
+                Ok(w) => {
+                    eprintln!("[dampen-dev] File watcher created successfully");
+                    w
+                }
                 Err(e) => {
+                    eprintln!("[dampen-dev] Failed to create file watcher: {}", e);
                     // Send initialization error and return
                     let _ = tx.blocking_send(FileEvent::WatcherError {
                         path: PathBuf::new(),
@@ -185,17 +194,23 @@ impl Recipe for FileWatcherRecipe {
 
             // Start watching all configured paths
             for path in &paths {
+                eprintln!("[dampen-dev] Attempting to watch: {}", path.display());
                 if let Err(e) = watcher.watch(path.clone()) {
+                    eprintln!("[dampen-dev] Failed to watch {}: {}", path.display(), e);
                     let _ = tx.blocking_send(FileEvent::WatcherError {
                         path: path.clone(),
                         error: format!("Failed to watch path: {}", e),
                     });
+                } else {
+                    eprintln!("[dampen-dev] Successfully watching: {}", path.display());
                 }
             }
 
             // Read events from the file watcher's channel
+            eprintln!("[dampen-dev] File watcher ready, waiting for events...");
             let receiver = watcher.receiver();
             while let Ok(path) = receiver.recv() {
+                eprintln!("[dampen-dev] File changed: {}", path.display());
                 // Read the file content
                 let content = match std::fs::read_to_string(&path) {
                     Ok(c) => c,
@@ -264,14 +279,10 @@ pub fn watch_files<P: AsRef<std::path::Path>>(
     // Convert paths to PathBuf
     let path_bufs: Vec<PathBuf> = paths.iter().map(|p| p.as_ref().to_path_buf()).collect();
 
-    // Create the recipe - it will be used in T071 when we implement the full stream
-    let _recipe = FileWatcherRecipe::new(path_bufs, debounce_ms);
+    // Create the recipe
+    let recipe = FileWatcherRecipe::new(path_bufs, debounce_ms);
 
-    // For now, return a pending subscription until T071 implements the stream properly
-    // This satisfies the type system and allows compilation
-    Subscription::run(|| {
-        // Return a pending stream that never emits events
-        // This will be replaced with actual file watching implementation in T071
-        stream::pending::<FileEvent>()
-    })
+    // Use the advanced API to create a subscription from our Recipe
+    use iced::advanced::subscription::from_recipe;
+    from_recipe(recipe)
 }
