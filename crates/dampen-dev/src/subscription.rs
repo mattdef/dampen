@@ -209,40 +209,74 @@ impl Recipe for FileWatcherRecipe {
             // Read events from the file watcher's channel
             eprintln!("[dampen-dev] File watcher ready, waiting for events...");
             let receiver = watcher.receiver();
-            while let Ok(path) = receiver.recv() {
-                eprintln!("[dampen-dev] File changed: {}", path.display());
-                // Read the file content
-                let content = match std::fs::read_to_string(&path) {
-                    Ok(c) => c,
-                    Err(e) => {
-                        // File read error (permissions, deleted, etc.)
-                        let _ = tx.blocking_send(FileEvent::WatcherError {
-                            path: path.clone(),
-                            error: format!("Failed to read file: {}", e),
-                        });
-                        continue;
-                    }
-                };
 
-                // Parse the XML content
-                match parser::parse(&content) {
-                    Ok(document) => {
-                        // Success: send parsed document (boxed to reduce enum size)
-                        let _ = tx.blocking_send(FileEvent::Success {
-                            path: path.clone(),
-                            document: Box::new(document),
-                        });
+            // Use recv_timeout to allow graceful shutdown detection
+            // When the async channel (tx) is dropped, blocking_send will fail
+            loop {
+                match receiver.recv_timeout(std::time::Duration::from_millis(100)) {
+                    Ok(path) => {
+                        eprintln!("[dampen-dev] File changed: {}", path.display());
+                        // Read the file content
+                        let content = match std::fs::read_to_string(&path) {
+                            Ok(c) => c,
+                            Err(e) => {
+                                // File read error (permissions, deleted, etc.)
+                                if tx
+                                    .blocking_send(FileEvent::WatcherError {
+                                        path: path.clone(),
+                                        error: format!("Failed to read file: {}", e),
+                                    })
+                                    .is_err()
+                                {
+                                    // Channel closed, subscription dropped, exit gracefully
+                                    eprintln!("[dampen-dev] Channel closed, stopping file watcher");
+                                    break;
+                                }
+                                continue;
+                            }
+                        };
+
+                        // Parse the XML content
+                        let event = match parser::parse(&content) {
+                            Ok(document) => {
+                                // Success: send parsed document (boxed to reduce enum size)
+                                FileEvent::Success {
+                                    path: path.clone(),
+                                    document: Box::new(document),
+                                }
+                            }
+                            Err(error) => {
+                                // Parse error: send error with content for overlay
+                                FileEvent::ParseError {
+                                    path: path.clone(),
+                                    error,
+                                    content,
+                                }
+                            }
+                        };
+
+                        // Send the event; if channel is closed, stop watching
+                        if tx.blocking_send(event).is_err() {
+                            eprintln!("[dampen-dev] Channel closed, stopping file watcher");
+                            break;
+                        }
                     }
-                    Err(error) => {
-                        // Parse error: send error with content for overlay
-                        let _ = tx.blocking_send(FileEvent::ParseError {
-                            path: path.clone(),
-                            error,
-                            content,
-                        });
+                    Err(crossbeam_channel::RecvTimeoutError::Timeout) => {
+                        // No file events, check if async channel is still alive
+                        if tx.is_closed() {
+                            eprintln!("[dampen-dev] Channel closed, stopping file watcher");
+                            break;
+                        }
+                        // Continue waiting for file events
+                    }
+                    Err(crossbeam_channel::RecvTimeoutError::Disconnected) => {
+                        // File watcher channel closed (shouldn't happen normally)
+                        eprintln!("[dampen-dev] File watcher disconnected");
+                        break;
                     }
                 }
             }
+            eprintln!("[dampen-dev] File watcher task exiting gracefully");
         });
 
         // Convert the tokio receiver into a stream and return it

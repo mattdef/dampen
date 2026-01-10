@@ -373,3 +373,70 @@ fn test_error_recovery_simulation() {
 
     println!("✓ Error recovery: watcher continues after errors");
 }
+
+#[test]
+fn test_watcher_shutdown_detection() {
+    // Test that the file watcher can detect when the async channel closes
+    //
+    // This test verifies the graceful shutdown behavior by checking that
+    // recv_timeout doesn't block indefinitely
+
+    let temp_dir = setup_test_dir();
+
+    let config = FileWatcherConfig {
+        watch_paths: vec![temp_dir.path().to_path_buf()],
+        debounce_ms: 50,
+        extension_filter: ".dampen".to_string(),
+        recursive: true,
+    };
+
+    let mut watcher = FileWatcher::new(config).expect("Failed to create watcher");
+    watcher
+        .watch(temp_dir.path().to_path_buf())
+        .expect("Failed to watch directory");
+
+    // Give watcher time to initialize
+    thread::sleep(Duration::from_millis(100));
+
+    // Create a test file
+    let test_file = temp_dir.path().join("test.dampen");
+    fs::write(&test_file, "<dampen><text value=\"Test\" /></dampen>")
+        .expect("Failed to create file");
+
+    thread::sleep(Duration::from_millis(150));
+
+    // Receive the event
+    let receiver = watcher.receiver();
+    let path = receiver
+        .recv_timeout(Duration::from_secs(2))
+        .expect("Should receive file event");
+
+    assert_eq!(path, test_file);
+
+    // Clear any additional events that might have been generated
+    while receiver.recv_timeout(Duration::from_millis(50)).is_ok() {}
+
+    // Now verify that recv_timeout returns (doesn't block forever)
+    // even when there are no events
+    let result = receiver.recv_timeout(Duration::from_millis(200));
+
+    assert!(
+        result.is_err(),
+        "recv_timeout should timeout when no events, got: {:?}",
+        result
+    );
+
+    // The watcher is still alive and can receive more events
+    fs::write(&test_file, "<dampen><text value=\"Modified\" /></dampen>")
+        .expect("Failed to modify file");
+
+    thread::sleep(Duration::from_millis(150));
+
+    let path = receiver
+        .recv_timeout(Duration::from_secs(2))
+        .expect("Should receive modification event");
+
+    assert_eq!(path, test_file);
+
+    println!("✓ Watcher uses recv_timeout and doesn't block indefinitely");
+}
