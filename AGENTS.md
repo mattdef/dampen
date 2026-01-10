@@ -4,21 +4,21 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 
 ## Active Technologies
 - File-based (XML UI definitions, optional separate style files), serialized state in `.dampen-state.json` (002-layout-theming-styling)
-- Rust Edition 2024, Stable Rust (no nightly features) (003-widget-builder)
-- Rust Edition 2024, MSRV 1.75 + Iced 0.14+ (already in workspace) (004-advanced-widgets-todo)
+- Rust Edition 2024, MSRV 1.85, Stable Rust (no nightly features) (003-widget-builder)
+- Rust Edition 2024, MSRV 1.85 + Iced 0.14+ (already in workspace) (004-advanced-widgets-todo)
 - JSON state files via serde_json (existing pattern) (004-advanced-widgets-todo)
-- Rust Edition 2021, MSRV 1.75 + Iced 0.14 (with `image` feature enabled), dampen-core (005-implement-real-widgets)
+- Rust Edition 2024, MSRV 1.85 + Iced 0.14 (with `image` feature enabled), dampen-core (005-implement-real-widgets)
 - N/A (UI widgets only) (005-implement-real-widgets)
-- Rust Edition 2024, MSRV 1.75 (per constitution) + `dampen-core`, `dampen-macros`, `dampen-iced`, `iced` 0.14+ (006-auto-ui-loading)
+- Rust Edition 2024, MSRV 1.85 (aligned with Edition 2024) + `dampen-core`, `dampen-macros`, `dampen-iced`, `iced` 0.14+ (006-auto-ui-loading)
 - N/A (compile-time XML loading, no runtime persistence required for this feature) (006-auto-ui-loading)
-- Rust Edition 2024, MSRV 1.75 (per constitution) + `iced` 0.14+ (reference backend), `dampen-core`, `dampen-iced` (007-add-radio-widget)
+- Rust Edition 2024, MSRV 1.85 (aligned with Edition 2024) + `iced` 0.14+ (reference backend), `dampen-core`, `dampen-iced` (007-add-radio-widget)
 - N/A (UI widget, no persistence) (007-add-radio-widget)
-- Rust Edition 2024, MSRV 1.75+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism (008-prod-codegen)
-- Rust Edition 2024, MSRV stable (per constitution) + dampen-core (parser, IR), serde_json (JSON handling), clap (CLI) (001-check-validation-enhancements)
+- Rust Edition 2024, MSRV 1.85+ + roxmltree (XML parsing), proc-macro2/syn/quote (macro generation), Cargo build.rs mechanism (008-prod-codegen)
+- Rust Edition 2024, MSRV 1.85 (aligned with Edition 2024) + dampen-core (parser, IR), serde_json (JSON handling), clap (CLI) (001-check-validation-enhancements)
 - JSON files for handler registry (`--handlers`) and model info (`--model`) (001-check-validation-enhancements)
 - File-based (`.dampen` XML UI definitions, optional `.dampen-state.json` for state persistence) (001-dual-mode-architecture)
 
-- **Language**: Rust Edition 2024, MSRV stable (no nightly features in public API)
+- **Language**: Rust Edition 2024, MSRV 1.85 (minimum for Edition 2024, enables LazyLock from std)
 - **UI Framework**: `iced` 0.14+
 - **XML Parsing**: `roxmltree` 0.19+
 - **Serialization**: `serde`, `serde_json` 1.0+
@@ -122,8 +122,8 @@ cargo bench -p dampen-core
 
 ### Rust Conventions
 
-- **Edition**: 2024 (or 2021 until 2024 stabilizes)
-- **MSRV**: Stable Rust only, no nightly features in public API
+- **Edition**: 2024
+- **MSRV**: 1.85 (minimum for Edition 2024, enables LazyLock from std)
 - **Formatting**: Default rustfmt configuration
 - **Linting**: `cargo clippy` with `-D warnings`
 - **Documentation**: All public items must have rustdoc comments

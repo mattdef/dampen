@@ -1,5 +1,5 @@
-# Formatting configuration for Gravity project
-edition = "2021"
+# Formatting configuration for Dampen project
+edition = "2024"
 max_width = 100
 tab_spaces = 4
 use_small_heuristics = "Default"

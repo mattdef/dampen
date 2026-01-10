@@ -3,7 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/dampen-core.svg)](https://crates.io/crates/dampen-core)
 [![Documentation](https://docs.rs/dampen-core/badge.svg)](https://docs.rs/dampen-core)
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
-[![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://rust-lang.org)
+[![Rust Version](https://img.shields.io/badge/rustc-1.85+-lightgray.svg)](https://rust-lang.org)
 
 **Declarative UI framework for Rust with Iced backend, advanced styling, and code generation.**
 

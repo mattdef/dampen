@@ -14,7 +14,6 @@
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::expect_used)]
 #![allow(clippy::unwrap_used)]
-#![allow(clippy::incompatible_msrv)] // LazyLock is used project-wide
 
 use dampen_core::parse;
 use std::sync::LazyLock;
