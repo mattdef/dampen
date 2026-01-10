@@ -3,11 +3,12 @@
 //! This module handles the hot-reload process, including model snapshotting,
 //! state restoration, and error recovery.
 
-use std::marker::PhantomData;
-use std::time::Instant;
-use dampen_core::state::AppState;
 use dampen_core::binding::UiBindable;
 use dampen_core::parser::error::ParseError;
+use dampen_core::state::AppState;
+use serde::{de::DeserializeOwned, Serialize};
+use std::marker::PhantomData;
+use std::time::{Duration, Instant};
 
 /// Tracks hot-reload state and history for debugging
 pub struct HotReloadContext<M> {
@@ -36,6 +37,48 @@ impl<M: UiBindable> HotReloadContext<M> {
             error: None,
             _marker: PhantomData,
         }
+    }
+
+    /// Snapshot the current model state to JSON
+    pub fn snapshot_model(&mut self, model: &M) -> Result<(), String>
+    where
+        M: Serialize,
+    {
+        match serde_json::to_string(model) {
+            Ok(json) => {
+                self.last_model_snapshot = Some(json);
+                Ok(())
+            }
+            Err(e) => Err(format!("Failed to serialize model: {}", e)),
+        }
+    }
+
+    /// Restore the model from the last snapshot
+    pub fn restore_model(&self) -> Result<M, String>
+    where
+        M: DeserializeOwned,
+    {
+        match &self.last_model_snapshot {
+            Some(json) => serde_json::from_str(json)
+                .map_err(|e| format!("Failed to deserialize model: {}", e)),
+            None => Err("No model snapshot available".to_string()),
+        }
+    }
+
+    /// Record a reload attempt
+    pub fn record_reload(&mut self, success: bool) {
+        self.reload_count += 1;
+        self.last_reload_timestamp = Instant::now();
+        if !success {
+            self.error = Some("Reload failed".to_string());
+        } else {
+            self.error = None;
+        }
+    }
+
+    /// Get the latency of the last reload
+    pub fn last_reload_latency(&self) -> Duration {
+        self.last_reload_timestamp.elapsed()
     }
 }
 

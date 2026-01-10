@@ -145,3 +145,180 @@ fn test_handler_registry_simple_handler() {
         panic!("Handler not found");
     }
 }
+
+// ===== Hot-Reload Tests =====
+
+#[test]
+fn test_hot_reload_preserves_model() {
+    // Create initial state with a model
+    let xml_v1 = r#"
+        <dampen>
+            <column>
+                <text value="Old UI" />
+            </column>
+        </dampen>
+    "#;
+
+    let document_v1 = dampen_core::parse(xml_v1).expect("Failed to parse XML v1");
+    let model = TestModel {
+        count: 42,
+        name: "Preserved".to_string(),
+    };
+    let mut state = AppState::with_model(document_v1, model);
+
+    // Verify initial state
+    assert_eq!(state.model.count, 42);
+    assert_eq!(state.model.name, "Preserved");
+
+    // Parse new UI definition
+    let xml_v2 = r#"
+        <dampen>
+            <column>
+                <text value="New UI" />
+                <button label="Click me" />
+            </column>
+        </dampen>
+    "#;
+
+    let document_v2 = dampen_core::parse(xml_v2).expect("Failed to parse XML v2");
+
+    // Hot-reload with new document
+    state.hot_reload(document_v2.clone());
+
+    // Model should be preserved
+    assert_eq!(state.model.count, 42);
+    assert_eq!(state.model.name, "Preserved");
+
+    // Document should be updated
+    assert_eq!(
+        state.document.root.children.len(),
+        document_v2.root.children.len()
+    );
+}
+
+#[test]
+fn test_hot_reload_updates_document() {
+    let xml_v1 = r#"
+        <dampen>
+            <column>
+                <text value="Version 1" />
+            </column>
+        </dampen>
+    "#;
+
+    let document_v1 = dampen_core::parse(xml_v1).expect("Failed to parse XML v1");
+    let mut state = AppState::<TestModel>::new(document_v1);
+
+    // Count children in original document
+    let original_widget_count = state.document.root.children.len();
+
+    // Parse new UI with more widgets
+    let xml_v2 = r#"
+        <dampen>
+            <column>
+                <text value="Version 2" />
+                <button label="Button 1" />
+                <button label="Button 2" />
+            </column>
+        </dampen>
+    "#;
+
+    let document_v2 = dampen_core::parse(xml_v2).expect("Failed to parse XML v2");
+    let new_widget_count = document_v2.root.children.len();
+
+    // Hot-reload
+    state.hot_reload(document_v2);
+
+    // Document should be updated
+    assert_eq!(state.document.root.children.len(), new_widget_count);
+    assert_ne!(original_widget_count, new_widget_count);
+}
+
+#[test]
+fn test_hot_reload_preserves_handlers() {
+    let xml = r#"
+        <dampen>
+            <column>
+                <text value="Test" />
+            </column>
+        </dampen>
+    "#;
+
+    let document_v1 = dampen_core::parse(xml).expect("Failed to parse XML");
+
+    // Create handler registry
+    let called = std::sync::Arc::new(std::sync::Mutex::new(false));
+    let called_clone = called.clone();
+
+    let mut registry = HandlerRegistry::new();
+    registry.register_simple("test_handler", move |_model: &mut dyn std::any::Any| {
+        *called_clone.lock().unwrap() = true;
+    });
+
+    let mut state = AppState::<TestModel>::with_handlers(document_v1, registry);
+
+    // Verify handler works before hot-reload
+    if let Some(dampen_core::HandlerEntry::Simple(handler)) =
+        state.handler_registry.get("test_handler")
+    {
+        let mut any_model: Box<dyn std::any::Any> = Box::new(());
+        handler(&mut *any_model);
+        assert!(*called.lock().unwrap());
+    } else {
+        panic!("Handler not found before hot-reload");
+    }
+
+    // Reset the flag
+    *called.lock().unwrap() = false;
+
+    // Hot-reload with new document
+    let xml_v2 = r#"
+        <dampen>
+            <column>
+                <text value="Updated" />
+            </column>
+        </dampen>
+    "#;
+
+    let document_v2 = dampen_core::parse(xml_v2).expect("Failed to parse XML v2");
+    state.hot_reload(document_v2);
+
+    // Verify handler still works after hot-reload
+    if let Some(dampen_core::HandlerEntry::Simple(handler)) =
+        state.handler_registry.get("test_handler")
+    {
+        let mut any_model: Box<dyn std::any::Any> = Box::new(());
+        handler(&mut *any_model);
+        assert!(*called.lock().unwrap());
+    } else {
+        panic!("Handler not found after hot-reload");
+    }
+}
+
+#[test]
+fn test_hot_reload_multiple_times() {
+    let xml_v1 = r#"<dampen><column><text value="V1" /></column></dampen>"#;
+    let xml_v2 = r#"<dampen><column><text value="V2" /></column></dampen>"#;
+    let xml_v3 = r#"<dampen><column><text value="V3" /></column></dampen>"#;
+
+    let document_v1 = dampen_core::parse(xml_v1).unwrap();
+    let model = TestModel {
+        count: 100,
+        name: "Stable".to_string(),
+    };
+    let mut state = AppState::with_model(document_v1, model);
+
+    // First reload
+    let document_v2 = dampen_core::parse(xml_v2).unwrap();
+    state.hot_reload(document_v2);
+    assert_eq!(state.model.count, 100);
+    assert_eq!(state.model.name, "Stable");
+
+    // Second reload
+    let document_v3 = dampen_core::parse(xml_v3).unwrap();
+    state.hot_reload(document_v3);
+    assert_eq!(state.model.count, 100);
+    assert_eq!(state.model.name, "Stable");
+
+    // Model remains unchanged through multiple reloads
+}

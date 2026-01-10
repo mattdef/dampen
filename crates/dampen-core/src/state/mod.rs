@@ -156,4 +156,36 @@ impl<M: UiBindable> AppState<M> {
             _marker: PhantomData,
         }
     }
+
+    /// Hot-reload: updates the UI document while preserving the model and handlers.
+    ///
+    /// This method is designed for development mode hot-reload scenarios where the UI
+    /// definition (XML) changes but the application state (model) should be preserved.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::{parse, AppState};
+    /// use dampen_macros::UiModel;
+    ///
+    /// #[derive(UiModel, Default)]
+    /// struct MyModel {
+    ///     count: i32,
+    /// }
+    ///
+    /// let xml_v1 = r#"<column><text value="Old UI" /></column>"#;
+    /// let document_v1 = parse(xml_v1).unwrap();
+    /// let mut state = AppState::with_model(document_v1, MyModel { count: 42 });
+    ///
+    /// // Later, the UI file changes...
+    /// let xml_v2 = r#"<column><text value="New UI" /></column>"#;
+    /// let document_v2 = parse(xml_v2).unwrap();
+    /// state.hot_reload(document_v2);
+    ///
+    /// // Model state (count: 42) is preserved
+    /// assert_eq!(state.model.count, 42);
+    /// ```
+    pub fn hot_reload(&mut self, new_document: DampenDocument) {
+        self.document = new_document;
+    }
 }

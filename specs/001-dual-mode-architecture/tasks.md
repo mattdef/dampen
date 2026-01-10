@@ -56,23 +56,23 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### Tasks
 
-- [ ] T016 Implement AppState::hot_reload() method in dampen-core/src/state/mod.rs to update document while preserving model
-- [ ] T017 Implement AppState::with_handlers() constructor in dampen-core/src/state/mod.rs
-- [ ] T018 [P] Create HotReloadContext struct in dampen-dev/src/reload.rs with model snapshot fields
-- [ ] T019 [P] Create FileEvent enum in dampen-dev/src/subscription.rs (Success, ParseError, WatcherError variants)
-- [ ] T020 [P] Create ReloadResult enum in dampen-dev/src/reload.rs (Success, ParseError, ValidationError, StateRestoreWarning)
-- [ ] T021 [P] Create FileWatcherConfig struct in dampen-dev/src/watcher.rs with watch_paths, debounce_ms, extension_filter fields
-- [ ] T022 [P] Create ErrorOverlay struct in dampen-dev/src/overlay.rs with error, visible, timestamp fields
-- [ ] T023 [P] Create CodegenConfig struct in dampen-core/src/codegen/config.rs (NEW file) with output_dir, format_output, validate_syntax fields
-- [ ] T024 [P] Create GeneratedCode struct in dampen-core/src/codegen/mod.rs with code, module_name, source_file, timestamp fields
-- [ ] T025 Implement GeneratedCode::validate() method using syn::parse_file in dampen-core/src/codegen/mod.rs
-- [ ] T026 Implement GeneratedCode::format() method using prettyplease in dampen-core/src/codegen/mod.rs
-- [ ] T027 Write unit tests for AppState::hot_reload() in dampen-core/tests/appstate_tests.rs
+- [X] T016 Implement AppState::hot_reload() method in dampen-core/src/state/mod.rs to update document while preserving model
+- [X] T017 Implement AppState::with_handlers() constructor in dampen-core/src/state/mod.rs
+- [X] T018 [P] Create HotReloadContext struct in dampen-dev/src/reload.rs with model snapshot fields
+- [X] T019 [P] Create FileEvent enum in dampen-dev/src/subscription.rs (Success, ParseError, WatcherError variants)
+- [X] T020 [P] Create ReloadResult enum in dampen-dev/src/reload.rs (Success, ParseError, ValidationError, StateRestoreWarning)
+- [X] T021 [P] Create FileWatcherConfig struct in dampen-dev/src/watcher.rs with watch_paths, debounce_ms, extension_filter fields
+- [X] T022 [P] Create ErrorOverlay struct in dampen-dev/src/overlay.rs with error, visible, timestamp fields
+- [X] T023 [P] Create CodegenConfig struct in dampen-core/src/codegen/config.rs (NEW file) with output_dir, format_output, validate_syntax fields
+- [X] T024 [P] Create GeneratedCode struct in dampen-core/src/codegen/mod.rs with code, module_name, source_file, timestamp fields
+- [X] T025 Implement GeneratedCode::validate() method using syn::parse_file in dampen-core/src/codegen/mod.rs
+- [X] T026 Implement GeneratedCode::format() method using prettyplease in dampen-core/src/codegen/mod.rs
+- [X] T027 Write unit tests for AppState::hot_reload() in dampen-core/tests/appstate_tests.rs
 
 **Validation**:
-- All foundational types compile
-- AppState hot-reload preserves model
-- Unit tests pass
+- ✅ All foundational types compile
+- ✅ AppState hot-reload preserves model
+- ✅ Unit tests pass (11 tests including 5 new hot-reload tests)
 
 ---
 

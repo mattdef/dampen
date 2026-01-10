@@ -31,15 +31,18 @@
 //! - Inlined widget tree with evaluated bindings
 
 pub mod application;
+pub mod bindings;
+pub mod config;
+pub mod handlers;
 pub mod update;
 pub mod view;
-pub mod bindings;
-pub mod handlers;
 
 use crate::DampenDocument;
 use crate::HandlerSignature;
 use proc_macro2::TokenStream;
 use quote::quote;
+use std::path::PathBuf;
+use std::time::SystemTime;
 
 /// Handler signature classification for code generation
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -104,6 +107,91 @@ pub struct GeneratedApplication {
 
     /// Any warnings generated during code gen
     pub warnings: Vec<String>,
+}
+
+/// Container for generated Rust code with metadata
+///
+/// This structure holds generated code along with metadata about the source
+/// file and validation status. It provides methods for validating and formatting
+/// the generated code.
+#[derive(Debug, Clone)]
+pub struct GeneratedCode {
+    /// Generated Rust source code
+    pub code: String,
+
+    /// Module path (e.g., "ui_window")
+    pub module_name: String,
+
+    /// Source .dampen file path
+    pub source_file: PathBuf,
+
+    /// Generated at timestamp
+    pub timestamp: SystemTime,
+
+    /// Validation status
+    pub validated: bool,
+}
+
+impl GeneratedCode {
+    /// Create a new GeneratedCode instance
+    ///
+    /// # Arguments
+    /// * `code` - The generated Rust source code
+    /// * `module_name` - Module name (e.g., "ui_window")
+    /// * `source_file` - Path to the source .dampen file
+    ///
+    /// # Returns
+    /// A new GeneratedCode instance with validated set to false
+    pub fn new(code: String, module_name: String, source_file: PathBuf) -> Self {
+        Self {
+            code,
+            module_name,
+            source_file,
+            timestamp: SystemTime::now(),
+            validated: false,
+        }
+    }
+
+    /// Validate syntax by parsing with syn
+    ///
+    /// # Returns
+    /// Ok(()) if the code is valid Rust, Err with message otherwise
+    pub fn validate(&mut self) -> Result<(), String> {
+        match syn::parse_file(&self.code) {
+            Ok(_) => {
+                self.validated = true;
+                Ok(())
+            }
+            Err(e) => Err(format!("Syntax validation failed: {}", e)),
+        }
+    }
+
+    /// Format code with prettyplease
+    ///
+    /// # Returns
+    /// Ok(()) if formatting succeeded, Err with message otherwise
+    pub fn format(&mut self) -> Result<(), String> {
+        // First parse the code
+        match syn::parse_file(&self.code) {
+            Ok(syntax_tree) => {
+                // Format using prettyplease
+                self.code = prettyplease::unparse(&syntax_tree);
+                Ok(())
+            }
+            Err(e) => Err(format!("Failed to parse code for formatting: {}", e)),
+        }
+    }
+
+    /// Write to output directory
+    ///
+    /// # Arguments
+    /// * `path` - Path to write the generated code to
+    ///
+    /// # Returns
+    /// Ok(()) if write succeeded, Err with IO error otherwise
+    pub fn write_to_file(&self, path: &std::path::Path) -> std::io::Result<()> {
+        std::fs::write(path, &self.code)
+    }
 }
 
 /// Generate complete application code from a Dampen document
