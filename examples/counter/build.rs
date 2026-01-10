@@ -8,9 +8,9 @@ use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use quote::quote;
 use syn::{Attribute, FnArg, ItemFn, ReturnType};
 use walkdir::WalkDir;
-use quote::quote;
 
 fn main() {
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR not set");
@@ -35,7 +35,7 @@ fn main() {
         println!("cargo:rerun-if-changed={}", file.display());
     }
     println!("cargo:rerun-if-changed=src/ui/");
-    println!("cargo:rerun-if-changed=src/");  // Watch all source files for handler changes
+    println!("cargo:rerun-if-changed=src/"); // Watch all source files for handler changes
     println!("cargo:rerun-if-changed=Cargo.toml");
 
     // Generate code for each .dampen file

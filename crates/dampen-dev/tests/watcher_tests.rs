@@ -457,10 +457,19 @@ fn test_file_change_detection_latency() {
     // Print results
     println!("\n=== File Change Detection Latency (FR-010, SC-003) ===");
     println!("Measurements: {}", NUM_MEASUREMENTS);
-    println!("Average latency: {:.2}ms", average_latency.as_secs_f64() * 1000.0);
+    println!(
+        "Average latency: {:.2}ms",
+        average_latency.as_secs_f64() * 1000.0
+    );
     println!("Min latency: {:.2}ms", min_latency.as_secs_f64() * 1000.0);
     println!("Max latency: {:.2}ms", max_latency.as_secs_f64() * 1000.0);
-    println!("All latencies: {:?}", latencies.iter().map(|d| format!("{:.2}ms", d.as_secs_f64() * 1000.0)).collect::<Vec<_>>());
+    println!(
+        "All latencies: {:?}",
+        latencies
+            .iter()
+            .map(|d| format!("{:.2}ms", d.as_secs_f64() * 1000.0))
+            .collect::<Vec<_>>()
+    );
 
     // Verify FR-010, SC-003: file change detection < 100ms
     // With minimal debounce (10ms), the detection should be very fast

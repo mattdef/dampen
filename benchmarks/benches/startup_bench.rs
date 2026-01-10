@@ -12,10 +12,7 @@ fn generate_large_ui_xml(widget_count: usize) -> String {
     let mut xml = String::from("<dampen>\n  <column spacing=\"10\" padding=\"20\">\n");
 
     for i in 0..widget_count {
-        xml.push_str(&format!(
-            "    <text value=\"Item {}\" size=\"14\" />\n",
-            i
-        ));
+        xml.push_str(&format!("    <text value=\"Item {}\" size=\"14\" />\n", i));
     }
 
     xml.push_str("  </column>\n</dampen>");

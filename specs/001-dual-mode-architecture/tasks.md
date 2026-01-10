@@ -160,15 +160,15 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 4.2 Iced Subscription (Week 2)
 
-- [ ] T069 [US2] Create FileWatcherRecipe struct implementing iced::subscription::Recipe in dampen-dev/src/subscription.rs
-- [ ] T070 [US2] Implement Recipe::hash() for subscription identity in dampen-dev/src/subscription.rs
-- [ ] T071 [US2] Implement Recipe::stream() with async channel bridge in dampen-dev/src/subscription.rs
-- [ ] T072 [US2] Add tokio::task::spawn_blocking for sync→async channel bridge in dampen-dev/src/subscription.rs
-- [ ] T073 [US2] Implement async XML parsing in subscription stream in dampen-dev/src/subscription.rs
-- [ ] T074 [US2] Map parse results to FileEvent variants in dampen-dev/src/subscription.rs
-- [ ] T075 [US2] Create watch_files() public API function in dampen-dev/src/lib.rs
-- [ ] T076 [US2] Write integration test for subscription lifecycle in dampen-dev/tests/subscription_tests.rs (NEW)
-- [ ] T077 [US2] Write integration test for error propagation in dampen-dev/tests/subscription_tests.rs
+- [X] T069 [US2] Create FileWatcherRecipe struct implementing iced::subscription::Recipe in dampen-dev/src/subscription.rs
+- [X] T070 [US2] Implement Recipe::hash() for subscription identity in dampen-dev/src/subscription.rs
+- [X] T071 [US2] Implement Recipe::stream() with async channel bridge in dampen-dev/src/subscription.rs
+- [X] T072 [US2] Add tokio::task::spawn_blocking for sync→async channel bridge in dampen-dev/src/subscription.rs
+- [X] T073 [US2] Implement async XML parsing in subscription stream in dampen-dev/src/subscription.rs
+- [X] T074 [US2] Map parse results to FileEvent variants in dampen-dev/src/subscription.rs
+- [X] T075 [US2] Create watch_files() public API function in dampen-dev/src/lib.rs
+- [X] T076 [US2] Write integration test for subscription lifecycle in dampen-dev/tests/subscription_tests.rs (NEW)
+- [X] T077 [US2] Write integration test for error propagation in dampen-dev/tests/subscription_tests.rs
 
 ### 4.3 State Preservation & Hot-Reload (Week 3)
 

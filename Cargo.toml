@@ -54,7 +54,7 @@ proc-macro2 = "1.0"
 clap = { version = "4.0", features = ["derive"] }
 
 # UI Backend
-iced = { version = "0.14", features = ["tokio", "canvas", "image", "svg"] }
+iced = { version = "0.14", features = ["tokio", "canvas", "image", "svg", "advanced"] }
 
 # Error handling
 thiserror = "1.0"

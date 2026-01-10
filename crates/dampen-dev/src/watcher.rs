@@ -157,7 +157,8 @@ impl FileWatcher {
                 // notify::Error wraps std::io::Error, so we check the source
                 let error_string = e.to_string().to_lowercase();
                 if error_string.contains("permission denied")
-                    || error_string.contains("access is denied") {
+                    || error_string.contains("access is denied")
+                {
                     return FileWatcherError::PermissionDenied(path.clone());
                 }
 
