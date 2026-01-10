@@ -886,4 +886,120 @@ mod tests {
             _ => panic!("Expected Success, got {:?}", result),
         }
     }
+
+    #[test]
+    fn test_handler_registry_complete_replacement() {
+        use dampen_core::handler::HandlerRegistry;
+        use dampen_core::parser;
+
+        // Create initial state with handler "old_handler"
+        let xml_v1 = r#"
+            <dampen>
+                <column>
+                    <button label="Old" on_click="old_handler" />
+                </column>
+            </dampen>
+        "#;
+        let doc_v1 = parser::parse(xml_v1).unwrap();
+        let model_v1 = TestModel {
+            count: 1,
+            name: "Initial".to_string(),
+        };
+
+        let registry_v1 = HandlerRegistry::new();
+        registry_v1.register_simple("old_handler", |_model| {});
+
+        let state_v1 = AppState::with_all(doc_v1, model_v1, registry_v1);
+
+        // Verify old handler exists
+        assert!(state_v1.handler_registry.get("old_handler").is_some());
+
+        let mut context = HotReloadContext::<TestModel>::new();
+
+        // New XML with completely different handler
+        let xml_v2 = r#"
+            <dampen>
+                <column>
+                    <button label="New" on_click="new_handler" />
+                    <button label="Another" on_click="another_handler" />
+                </column>
+            </dampen>
+        "#;
+
+        // Rebuild registry with NEW handlers only (old_handler not included)
+        let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || {
+            let registry = HandlerRegistry::new();
+            registry.register_simple("new_handler", |_model| {});
+            registry.register_simple("another_handler", |_model| {});
+            registry
+        });
+
+        // Should succeed
+        match result {
+            ReloadResult::Success(new_state) => {
+                // Model preserved
+                assert_eq!(new_state.model.count, 1);
+                assert_eq!(new_state.model.name, "Initial");
+
+                // Old handler should NOT exist in new registry
+                assert!(new_state.handler_registry.get("old_handler").is_none());
+
+                // New handlers should exist
+                assert!(new_state.handler_registry.get("new_handler").is_some());
+                assert!(new_state.handler_registry.get("another_handler").is_some());
+            }
+            _ => panic!("Expected Success, got {:?}", result),
+        }
+    }
+
+    #[test]
+    fn test_handler_registry_rebuild_before_validation() {
+        use dampen_core::handler::HandlerRegistry;
+        use dampen_core::parser;
+
+        // This test validates that registry is rebuilt BEFORE validation happens
+        // Scenario: Old state has handler A, new XML needs handler B
+        // If registry is rebuilt before validation, it should succeed
+
+        let xml_v1 =
+            r#"<dampen><column><button on_click="handler_a" label="A" /></column></dampen>"#;
+        let doc_v1 = parser::parse(xml_v1).unwrap();
+        let model_v1 = TestModel {
+            count: 100,
+            name: "Test".to_string(),
+        };
+
+        let registry_v1 = HandlerRegistry::new();
+        registry_v1.register_simple("handler_a", |_model| {});
+
+        let state_v1 = AppState::with_all(doc_v1, model_v1, registry_v1);
+
+        let mut context = HotReloadContext::<TestModel>::new();
+
+        // New XML references handler_b (different from handler_a)
+        let xml_v2 =
+            r#"<dampen><column><button on_click="handler_b" label="B" /></column></dampen>"#;
+
+        // Registry rebuild provides handler_b
+        let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || {
+            let registry = HandlerRegistry::new();
+            registry.register_simple("handler_b", |_model| {}); // Different handler!
+            registry
+        });
+
+        // Should succeed because registry was rebuilt with handler_b BEFORE validation
+        match result {
+            ReloadResult::Success(new_state) => {
+                assert_eq!(new_state.model.count, 100);
+                // Verify new handler exists
+                assert!(new_state.handler_registry.get("handler_b").is_some());
+                // Verify old handler is gone
+                assert!(new_state.handler_registry.get("handler_a").is_none());
+            }
+            _ => panic!(
+                "Expected Success (registry rebuilt before validation), got {:?}",
+                result
+            ),
+        }
+    }
 }

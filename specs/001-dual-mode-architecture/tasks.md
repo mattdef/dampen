@@ -176,10 +176,10 @@ This document provides an actionable task breakdown for implementing Dampen's du
 - [X] T079 [US2] Implement HotReloadContext::restore_model() with graceful fallback to M::default() in dampen-dev/src/reload.rs
 - [X] T080 [US2] Implement attempt_hot_reload() function in dampen-dev/src/reload.rs with full error handling
 - [X] T081 [US2] Add validation step before accepting reload in dampen-dev/src/reload.rs
-- [ ] T082 [US2] Implement handler registry rebuild in attempt_hot_reload() in dampen-dev/src/reload.rs
-- [ ] T083 [US2] Implement ErrorOverlay::render() widget in dampen-dev/src/overlay.rs showing error with file/line/column
-- [ ] T084 [US2] Add error overlay styling (red background, white text) in dampen-dev/src/overlay.rs
-- [ ] T085 [US2] Add dismiss button to error overlay in dampen-dev/src/overlay.rs
+- [X] T082 [US2] Implement handler registry rebuild in attempt_hot_reload() in dampen-dev/src/reload.rs
+- [X] T083 [US2] Implement ErrorOverlay::render() widget in dampen-dev/src/overlay.rs showing error with file/line/column
+- [X] T084 [US2] Add error overlay styling (red background, white text) in dampen-dev/src/overlay.rs
+- [X] T085 [US2] Add dismiss button to error overlay in dampen-dev/src/overlay.rs
 - [ ] T086 [US2] Update examples/counter/src/main.rs with hot-reload subscription for interpreted mode
 - [ ] T087 [US2] Update examples/counter/src/main.rs with Message::HotReload handler
 - [ ] T088 [US2] Write integration test for state preservation across reload in tests/integration/hot_reload_tests.rs (NEW)
