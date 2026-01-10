@@ -148,13 +148,24 @@ impl FileWatcher {
             RecursiveMode::NonRecursive
         };
 
-        // Add path to watcher
+        // Add path to watcher with enhanced error handling
         self.debouncer
             .watcher()
             .watch(&path, recursive_mode)
-            .map_err(|e| FileWatcherError::WatchError {
-                path: path.clone(),
-                error: e.to_string(),
+            .map_err(|e| {
+                // Check if this is a permission error by examining the error chain
+                // notify::Error wraps std::io::Error, so we check the source
+                let error_string = e.to_string().to_lowercase();
+                if error_string.contains("permission denied")
+                    || error_string.contains("access is denied") {
+                    return FileWatcherError::PermissionDenied(path.clone());
+                }
+
+                // Generic watch error for other cases
+                FileWatcherError::WatchError {
+                    path: path.clone(),
+                    error: e.to_string(),
+                }
             })?;
 
         Ok(())
@@ -231,6 +242,10 @@ impl FileWatcher {
 /// This function is called by the notify-debouncer when file events occur.
 /// It filters events to only include files matching the extension filter
 /// and sends the paths through the channel.
+///
+/// **File Deletion Handling**: If a file is deleted during watching, the event
+/// is silently ignored. This is graceful behavior - deleted files don't trigger
+/// hot-reload attempts.
 fn handle_debounced_events(
     result: DebounceEventResult,
     sender: &Sender<PathBuf>,
@@ -242,16 +257,29 @@ fn handle_debounced_events(
                 // Extract paths from the event
                 for path in &event.paths {
                     // Filter by extension
-                    if path_matches_extension(path, extension_filter) {
-                        // Send the path through the channel
-                        // If the receiver is dropped, we silently ignore the error
-                        let _ = sender.send(path.clone());
+                    if !path_matches_extension(path, extension_filter) {
+                        continue;
                     }
+
+                    // Check if file still exists (handles deletion gracefully)
+                    if !path.exists() {
+                        // File was deleted - this is normal, don't send event
+                        // In development mode, file deletions are intentional (e.g., cleanup)
+                        // and don't require hot-reload attempts
+                        #[cfg(debug_assertions)]
+                        eprintln!("File watcher: ignoring deleted file {:?}", path);
+                        continue;
+                    }
+
+                    // Send the path through the channel
+                    // If the receiver is dropped, we silently ignore the error
+                    let _ = sender.send(path.clone());
                 }
             }
         }
         Err(errors) => {
             // Log errors but don't stop watching
+            // These could be permission errors, I/O errors, etc.
             for error in errors {
                 eprintln!("File watcher error: {:?}", error);
             }
