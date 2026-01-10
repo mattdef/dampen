@@ -33,6 +33,8 @@
 pub mod application;
 pub mod update;
 pub mod view;
+pub mod bindings;
+pub mod handlers;
 
 use crate::DampenDocument;
 use crate::HandlerSignature;

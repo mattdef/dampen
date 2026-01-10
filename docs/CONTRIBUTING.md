@@ -108,7 +108,6 @@ dampen/
 ├── crates/
 │   ├── dampen-core/       # Core parser, IR, traits (no Iced dependency)
 │   ├── dampen-macros/     # Procedural macros
-│   ├── dampen-runtime/    # Runtime interpretation and state management
 │   ├── dampen-iced/       # Iced backend implementation
 │   └── dampen-cli/        # Developer CLI tools
 ├── examples/              # Example applications

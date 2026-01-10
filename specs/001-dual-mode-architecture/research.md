@@ -270,7 +270,6 @@ fn generate_expr(expr: &Expr, model: &syn::Ident) -> TokenStream {
 [features]
 default = ["codegen"]
 codegen = []
-interpreted = ["dampen-runtime"]
 
 [profile.dev]
 features = ["interpreted"]  # Hot-reload enabled
@@ -591,7 +590,6 @@ Not a problem—just a documented trade-off.
 - [ ] Snapshot tests for all widget types
 
 **Success Criteria**:
-- Generated code has zero `dampen-runtime` dependencies
 - All binding expressions inline correctly
 - Code is clippy-clean with minimal suppressions
 - Performance within 5% of hand-written baseline

@@ -31,7 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[dampen_ui]` macro for automatic XML loading
 - `dampen-core`: Parser, IR, and trait definitions
 - `dampen-macros`: Proc macros for code generation
-- `dampen-runtime`: Runtime interpreter and state management
 - `dampen-iced`: Iced widget mapping
 - `dampen-cli`: Developer CLI tool
   - `dampen new` - Create new projects

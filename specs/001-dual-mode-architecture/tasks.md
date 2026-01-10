@@ -25,21 +25,21 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### Tasks
 
-- [ ] T001 Create `dampen-dev` crate directory at crates/dampen-dev/
-- [ ] T002 Add dampen-dev to workspace Cargo.toml dependencies
-- [ ] T003 [P] Create dampen-dev/Cargo.toml with dependencies (notify 6.1, notify-debouncer-full 0.3, crossbeam-channel 0.5, futures 0.3, serde_json 1.0, iced workspace, dampen-core path)
-- [ ] T004 [P] Create dampen-dev/src/lib.rs with module exports
-- [ ] T005 [P] Create dampen-dev/src/watcher.rs stub file
-- [ ] T006 [P] Create dampen-dev/src/subscription.rs stub file
-- [ ] T007 [P] Create dampen-dev/src/reload.rs stub file
-- [ ] T008 [P] Create dampen-dev/src/overlay.rs stub file
-- [ ] T009 [P] Create dampen-core/src/codegen/bindings.rs stub file for expression inlining
-- [ ] T010 [P] Create dampen-core/src/codegen/handlers.rs stub file for handler dispatch
-- [ ] T011 Add feature flags to dampen-core/Cargo.toml (codegen = [], interpreted = ["dampen-runtime"])
-- [ ] T012 Add prettyplease = "0.2" to dampen-core dependencies for code formatting
-- [ ] T013 Create tests/integration/ directory for dual-mode integration tests
-- [ ] T014 [P] Create tests/benchmarks/ directory for performance benchmarks
-- [ ] T015 Verify workspace builds with cargo build --workspace
+- [X] T001 Create `dampen-dev` crate directory at crates/dampen-dev/
+- [X] T002 Add dampen-dev to workspace Cargo.toml dependencies
+- [X] T003 [P] Create dampen-dev/Cargo.toml with dependencies (notify 6.1, notify-debouncer-full 0.3, crossbeam-channel 0.5, futures 0.3, serde_json 1.0, iced workspace, dampen-core path)
+- [X] T004 [P] Create dampen-dev/src/lib.rs with module exports
+- [X] T005 [P] Create dampen-dev/src/watcher.rs stub file
+- [X] T006 [P] Create dampen-dev/src/subscription.rs stub file
+- [X] T007 [P] Create dampen-dev/src/reload.rs stub file
+- [X] T008 [P] Create dampen-dev/src/overlay.rs stub file
+- [X] T009 [P] Create dampen-core/src/codegen/bindings.rs stub file for expression inlining
+- [X] T010 [P] Create dampen-core/src/codegen/handlers.rs stub file for handler dispatch
+- [X] T011 Add feature flags to dampen-core/Cargo.toml (codegen = [])
+- [X] T012 Add prettyplease = "0.2" to dampen-core dependencies for code formatting
+- [X] T013 Create tests/integration/ directory for dual-mode integration tests
+- [X] T014 [P] Create tests/benchmarks/ directory for performance benchmarks
+- [X] T015 Verify workspace builds with cargo build --workspace
 
 **Validation**:
 - All new crate directories exist
@@ -108,7 +108,7 @@ This document provides an actionable task breakdown for implementing Dampen's du
 - [ ] T044 [US1] Implement generate_handler_dispatch() for WithCommand handlers in dampen-core/src/codegen/handlers.rs
 - [ ] T045 [US1] Add validation to reject expressions that can't be inlined in dampen-core/src/codegen/bindings.rs
 - [ ] T046 [US1] Write snapshot tests for all widget types using insta crate in dampen-core/tests/codegen_snapshot_tests.rs (NEW)
-- [ ] T047 [US1] Verify generated code has zero dampen-runtime dependencies in dampen-core/tests/codegen_tests.rs
+- [ ] T047 [US1] Verify generated code has zero runtime dependencies in dampen-core/tests/codegen_tests.rs
 
 ### 3.3 Build Integration (Week 3)
 

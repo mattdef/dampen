@@ -117,14 +117,6 @@ crates/
 │   └── tests/
 │       └── codegen_mode_tests.rs  # NEW - Test codegen mode compilation
 │
-├── dampen-runtime/           # Existing - Interpreter
-│   ├── src/
-│   │   ├── lib.rs
-│   │   ├── interpreter.rs    # Runtime binding evaluation (existing)
-│   │   ├── state.rs          # State management (existing)
-│   │   └── overlay.rs        # Error overlay (existing)
-│   └── tests/
-│
 ├── dampen-dev/               # NEW - Development mode tooling
 │   ├── Cargo.toml
 │   ├── src/
@@ -193,4 +185,3 @@ tests/
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
 **Status**: No violations detected. All constitutional principles are satisfied by this feature design.
-

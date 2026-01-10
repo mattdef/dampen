@@ -277,16 +277,6 @@ let widget = DampenWidgetBuilder::new(&node, &model, Some(®istry))
 
 ## Integration
 
-### With Hot-Reload
-
-```rust
-use dampen_runtime::{watcher::FileWatcher, interpreter::HotReloadInterpreter};
-
-let mut interpreter = HotReloadInterpreter::new(registry);
-interpreter.load_document(xml)?;
-// File watcher triggers reload on changes
-```
-
 ### With CLI
 
 ```bash

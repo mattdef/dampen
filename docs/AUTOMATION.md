@@ -47,8 +47,6 @@ graph TD
     D --> E[Attendre 30s]
     E --> F[Publier dampen-macros]
     F --> G[Attendre 30s]
-    G --> H[Publier dampen-runtime]
-    H --> I[Attendre 30s]
     I --> J[Publier dampen-iced]
     J --> K[Attendre 30s]
     K --> L[Publier dampen-cli]

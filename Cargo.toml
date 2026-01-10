@@ -3,15 +3,14 @@ resolver = "2"
 members = [
     "crates/dampen-core",
     "crates/dampen-macros",
-    "crates/dampen-runtime",
     "crates/dampen-iced",
+    "crates/dampen-dev",
     "crates/dampen-cli",
     "examples/hello-world",
     "examples/counter",
     "examples/todo-app",
     "examples/styling",
     "examples/widget-showcase",
-    "examples/responsive",
     "examples/settings",
 ]
 
@@ -32,8 +31,8 @@ publish = true
 # Dampen crates
 dampen-core = { path = "./crates/dampen-core", version = "0.1.0" }
 dampen-macros = { path = "./crates/dampen-macros", version = "0.1.0" }
-dampen-runtime = { path = "./crates/dampen-runtime", version = "0.1.0" }
 dampen-iced = { path = "./crates/dampen-iced", version = "0.1.0" }
+dampen-dev = { path = "./crates/dampen-dev", version = "0.1.0" }
 dampen-cli = { path = "./crates/dampen-cli", version = "0.1.0" }
 
 # Core dependencies

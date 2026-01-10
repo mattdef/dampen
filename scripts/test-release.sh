@@ -26,7 +26,6 @@ sed "s/^version = \".*\"/version = \"$NEW_VERSION\"/" Cargo.toml | grep "^versio
 cat Cargo.toml | \
   sed "s/dampen-core = { path = \"\.\/crates\/dampen-core\", version = \".*\" }/dampen-core = { path = \".\/crates\/dampen-core\", version = \"$NEW_VERSION\" }/" | \
   sed "s/dampen-macros = { path = \"\.\/crates\/dampen-macros\", version = \".*\" }/dampen-macros = { path = \".\/crates\/dampen-macros\", version = \"$NEW_VERSION\" }/" | \
-  sed "s/dampen-runtime = { path = \"\.\/crates\/dampen-runtime\", version = \".*\" }/dampen-runtime = { path = \".\/crates\/dampen-runtime\", version = \"$NEW_VERSION\" }/" | \
   sed "s/dampen-iced = { path = \"\.\/crates\/dampen-iced\", version = \".*\" }/dampen-iced = { path = \".\/crates\/dampen-iced\", version = \"$NEW_VERSION\" }/" | \
   sed "s/dampen-cli = { path = \"\.\/crates\/dampen-cli\", version = \".*\" }/dampen-cli = { path = \".\/crates\/dampen-cli\", version = \"$NEW_VERSION\" }/" | \
   grep "dampen-.* = { path"

@@ -15,7 +15,6 @@ categories = { workspace = true }
 [dependencies]
 dampen-core = { workspace = true }
 dampen-macros = { workspace = true }
-dampen-runtime = { workspace = true }
 dampen-iced = { workspace = true }
 clap = { workspace = true }
 serde = { workspace = true }

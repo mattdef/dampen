@@ -59,7 +59,6 @@ members = [
     "crates/dampen-core",
     "crates/dampen-macros", 
     "crates/dampen-iced",
-    "crates/dampen-runtime",
     "crates/dampen-cli",
 ]
 
@@ -319,7 +318,6 @@ fn toggle_item(model: &mut Model, id: usize) {
 crates/
 ├── dampen-core/           # XML parser, IR, traits (no Iced dependency)
 ├── dampen-macros/         # Macros #[derive(UiModel)], #[dampen_ui]
-├── dampen-runtime/        # Interpretation, state management, errors
 ├── dampen-iced/           # Iced backend implementation
 └── dampen-cli/            # Developer CLI (build, check, inspect)
 
