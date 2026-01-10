@@ -15,4 +15,4 @@ pub mod watcher;
 pub use overlay::ErrorOverlay;
 pub use reload::{HotReloadContext, ReloadResult};
 pub use subscription::{watch_files, FileEvent};
-pub use watcher::{FileWatcher, FileWatcherConfig, FileWatcherState};
+pub use watcher::{FileWatcher, FileWatcherConfig, FileWatcherError, FileWatcherState};

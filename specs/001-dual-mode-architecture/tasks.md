@@ -146,7 +146,7 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 4.1 File Watching (Week 1)
 
-- [ ] T058 [US2] Implement FileWatcher struct in dampen-dev/src/watcher.rs wrapping notify::RecommendedWatcher
+- [X] T058 [US2] Implement FileWatcher struct in dampen-dev/src/watcher.rs wrapping notify::RecommendedWatcher
 - [ ] T059 [US2] Implement FileWatcher::new() with crossbeam_channel setup in dampen-dev/src/watcher.rs
 - [ ] T060 [US2] Implement FileWatcher::watch() to add paths with RecursiveMode in dampen-dev/src/watcher.rs
 - [ ] T061 [US2] Add .dampen extension filter in FileWatcher event callback in dampen-dev/src/watcher.rs
