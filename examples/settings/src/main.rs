@@ -11,21 +11,35 @@ use iced::{Element, Task};
 
 #[derive(Clone, Debug)]
 enum CurrentView {
-    Main,
+    Window,
     Settings,
 }
 
+#[derive(Clone, Debug)]
 struct SettingsApp {
     current_view: CurrentView,
-    main_state: AppState<ui::window::Model>,
+    window_state: AppState<ui::window::Model>,
     settings_state: AppState<ui::settings::Model>,
+}
+
+impl SettingsApp {
+    fn new() -> (Self, Task<HandlerMessage>) {
+        (
+            SettingsApp {
+                current_view: CurrentView::Window,
+                window_state: ui::window::create_app_state(),
+                settings_state: ui::settings::create_app_state(),
+            },
+            Task::none(),
+        )
+    }
 }
 
 fn dispatch_handler(app: &mut SettingsApp, handler_name: &str, value: Option<String>) {
     let (model, registry) = match app.current_view {
-        CurrentView::Main => (
-            &mut app.main_state.model as &mut dyn std::any::Any,
-            &app.main_state.handler_registry,
+        CurrentView::Window => (
+            &mut app.window_state.model as &mut dyn std::any::Any,
+            &app.window_state.handler_registry,
         ),
         CurrentView::Settings => (
             &mut app.settings_state.model as &mut dyn std::any::Any,
@@ -38,7 +52,7 @@ fn dispatch_handler(app: &mut SettingsApp, handler_name: &str, value: Option<Str
 fn update(app: &mut SettingsApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
         HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
-            "switch_to_main" => app.current_view = CurrentView::Main,
+            "switch_to_main" => app.current_view = CurrentView::Window,
             "switch_to_settings" => app.current_view = CurrentView::Settings,
             _ => dispatch_handler(app, &handler_name, value),
         },
@@ -48,20 +62,13 @@ fn update(app: &mut SettingsApp, message: HandlerMessage) -> Task<HandlerMessage
 
 fn view(app: &SettingsApp) -> Element<'_, HandlerMessage> {
     match app.current_view {
-        CurrentView::Main => DampenWidgetBuilder::from_app_state(&app.main_state).build(),
+        CurrentView::Window => DampenWidgetBuilder::from_app_state(&app.window_state).build(),
         CurrentView::Settings => DampenWidgetBuilder::from_app_state(&app.settings_state).build(),
     }
 }
 
 fn init() -> (SettingsApp, Task<HandlerMessage>) {
-    (
-        SettingsApp {
-            current_view: CurrentView::Main,
-            main_state: ui::window::create_app_state(),
-            settings_state: ui::settings::create_app_state(),
-        },
-        Task::none(),
-    )
+    SettingsApp::new()
 }
 
 pub fn main() -> iced::Result {

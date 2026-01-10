@@ -6,11 +6,11 @@ use dampen_core::{AppState, HandlerRegistry};
 use dampen_macros::{dampen_ui, UiModel};
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
-pub struct Model;
-
 #[dampen_ui("window.dampen")]
 mod _app {}
+
+#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
+pub struct Model;
 
 pub fn create_app_state() -> AppState<Model> {
     let document = _app::document();
