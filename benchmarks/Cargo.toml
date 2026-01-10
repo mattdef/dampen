@@ -16,12 +16,22 @@ harness = false
 name = "parser_bench"
 harness = false
 
+[[bench]]
+name = "hot_reload_bench"
+harness = false
+
+[[bench]]
+name = "dual_mode_bench"
+harness = false
+
 [dependencies]
 dampen-core = { workspace = true }
 dampen-macros = { workspace = true }
 dampen-iced = { workspace = true }
+dampen-dev = { path = "../crates/dampen-dev" }
 iced = { workspace = true }
 serde = { workspace = true }
+serde_json = "1.0"
 
 [dev-dependencies]
 criterion = { workspace = true }

@@ -3,11 +3,11 @@
 //! This module provides functions to generate pure Rust code from binding expressions,
 //! eliminating runtime interpretation overhead in production builds.
 
+use crate::CodegenError;
 use crate::expr::ast::{
     BinaryOp, BinaryOpExpr, ConditionalExpr, Expr, FieldAccessExpr, LiteralExpr, MethodCallExpr,
     UnaryOp, UnaryOpExpr,
 };
-use crate::CodegenError;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 

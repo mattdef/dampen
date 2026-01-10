@@ -3,21 +3,35 @@
 //! This script parses the workspace Cargo.toml and exports dependency versions
 //! as environment variables for use in the `dampen new` template generation.
 
+// Allow clippy lints for build scripts - these run at compile-time only
+#![allow(clippy::expect_used, clippy::unwrap_used, clippy::panic)]
+
 use std::env;
 use std::fs;
 use std::path::PathBuf;
 
 fn main() {
     // Get the workspace root (two levels up from dampen-cli/build.rs)
-    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-    let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
+    let manifest_dir = PathBuf::from(
+        env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR must be set during build"),
+    );
+    let workspace_root = manifest_dir
+        .parent()
+        .and_then(|p| p.parent())
+        .expect("Failed to find workspace root (expected two levels up)");
     let workspace_toml = workspace_root.join("Cargo.toml");
 
     // Re-run if workspace Cargo.toml changes
     println!("cargo:rerun-if-changed={}", workspace_toml.display());
 
     // Read and parse workspace Cargo.toml
-    let content = fs::read_to_string(&workspace_toml).expect("Failed to read workspace Cargo.toml");
+    let content = fs::read_to_string(&workspace_toml).unwrap_or_else(|e| {
+        panic!(
+            "Failed to read workspace Cargo.toml at {}: {}",
+            workspace_toml.display(),
+            e
+        )
+    });
 
     // Extract versions using simple string parsing
     // Note: This is a simple approach. For more complex scenarios, consider using toml crate.

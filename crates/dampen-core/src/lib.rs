@@ -88,9 +88,9 @@ pub use binding::{BindingValue, ToBindingValue, UiBindable};
 /// This module handles parsing and evaluating binding expressions like
 /// `{counter}`, `{items.len()}`, and `{if x > 0 then 'yes' else 'no'}`.
 pub use expr::{
-    evaluate_binding_expr, evaluate_expr, evaluate_formatted, BinaryOp, BinaryOpExpr, BindingError,
-    BindingErrorKind, BindingExpr, ConditionalExpr, Expr, FieldAccessExpr, LiteralExpr,
-    MethodCallExpr, UnaryOp, UnaryOpExpr,
+    BinaryOp, BinaryOpExpr, BindingError, BindingErrorKind, BindingExpr, ConditionalExpr, Expr,
+    FieldAccessExpr, LiteralExpr, MethodCallExpr, UnaryOp, UnaryOpExpr, evaluate_binding_expr,
+    evaluate_expr, evaluate_formatted,
 };
 
 /// Event handler management and signatures.
@@ -124,7 +124,7 @@ pub use traits::Backend;
 ///
 /// This module generates static Rust code from Dampen documents,
 /// eliminating runtime parsing overhead.
-pub use codegen::{generate_application, validate_handlers, CodegenError, CodegenOutput};
+pub use codegen::{CodegenError, CodegenOutput, generate_application, validate_handlers};
 
 /// Application state container for UI views.
 ///

@@ -9,7 +9,9 @@ publish = false
 dampen-core = { workspace = true }
 dampen-macros = { workspace = true }
 dampen-iced = { workspace = true }
+dampen-dev = { path = "../../crates/dampen-dev" }
 serde = { workspace = true }
+tempfile = "3.0"
 
 [lib]
 path = "lib.rs"

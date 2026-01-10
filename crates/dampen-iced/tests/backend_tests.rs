@@ -302,7 +302,7 @@ fn test_layout_with_position() {
 #[test]
 fn test_position_helper_functions() {
     use dampen_core::ir::layout::Position;
-    use dampen_iced::style_mapping::{get_z_index, has_positioning, IcedLayout};
+    use dampen_iced::style_mapping::{IcedLayout, get_z_index, has_positioning};
 
     // Test has_positioning with position
     let layout_with_pos = IcedLayout {

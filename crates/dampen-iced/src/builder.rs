@@ -51,6 +51,16 @@
 //!
 //! See the [README](../README.md) for complete documentation.
 
+// Allow eprintln! for development debugging (gated by verbose flag)
+// Allow type complexity for backend abstraction (message_factory closures)
+// Allow collapsible if/match for better code clarity
+#![allow(
+    clippy::print_stderr,
+    clippy::type_complexity,
+    clippy::collapsible_match,
+    clippy::collapsible_else_if
+)]
+
 use crate::HandlerMessage;
 use crate::convert::{map_layout_constraints, map_style_properties};
 use crate::state::WidgetStateManager;
@@ -2302,9 +2312,9 @@ fn merge_styles(
 
     StyleProperties {
         background: override_style.background.clone().or(base.background),
-        color: override_style.color.clone().or(base.color),
+        color: override_style.color.or(base.color),
         border: override_style.border.clone().or(base.border),
-        shadow: override_style.shadow.clone().or(base.shadow),
+        shadow: override_style.shadow.or(base.shadow),
         opacity: override_style.opacity.or(base.opacity),
         transform: override_style.transform.clone().or(base.transform),
     }

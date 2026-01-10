@@ -247,6 +247,12 @@ impl FileWatcher {
 /// **File Deletion Handling**: If a file is deleted during watching, the event
 /// is silently ignored. This is graceful behavior - deleted files don't trigger
 /// hot-reload attempts.
+///
+/// **Simultaneous Multi-File Changes** (T124): The debouncing mechanism (100ms window)
+/// naturally batches rapid file changes together. When multiple files are modified
+/// simultaneously (e.g., save-all in IDE), all events within the debounce window
+/// are processed together in a single batch. Each file change triggers its own
+/// hot-reload attempt sequentially, with the most recent change winning.
 fn handle_debounced_events(
     result: DebounceEventResult,
     sender: &Sender<PathBuf>,

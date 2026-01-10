@@ -46,9 +46,9 @@ fn dispatch_handler(app: &mut HelloApp, handler_name: &str, value: Option<String
 /// Update function
 fn update(app: &mut HelloApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
-        HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
-            _ => dispatch_handler(app, &handler_name, value),
-        },
+        HandlerMessage::Handler(handler_name, value) => {
+            dispatch_handler(app, &handler_name, value);
+        }
     }
     Task::none()
 }

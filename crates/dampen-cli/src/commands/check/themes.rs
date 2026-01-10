@@ -6,7 +6,7 @@ use std::path::PathBuf;
 /// Information about a style class for validation
 #[derive(Debug, Clone)]
 struct StyleClassInfo {
-    name: String,
+    _name: String,
     extends: Vec<String>,
     file: PathBuf,
     line: u32,
@@ -46,7 +46,7 @@ impl ThemeValidator {
         col: u32,
     ) {
         let info = StyleClassInfo {
-            name: name.to_string(),
+            _name: name.to_string(),
             extends,
             file: PathBuf::from(file),
             line,
@@ -96,7 +96,7 @@ impl ThemeValidator {
         }
 
         // Check for circular dependencies
-        for (class_name, _class_info) in &self.style_classes {
+        for class_name in self.style_classes.keys() {
             let mut path = Vec::new();
             if let Err(cycle_error) = self.check_circular_dependency(class_name, &mut path) {
                 errors.push(cycle_error);
@@ -129,6 +129,7 @@ impl ThemeValidator {
     }
 
     /// Check for circular dependencies in style class inheritance
+    #[allow(clippy::result_large_err)]
     fn check_circular_dependency(
         &self,
         class_name: &str,

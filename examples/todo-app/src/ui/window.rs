@@ -1,16 +1,18 @@
 // Auto-loaded UI module for todo-app example.
 
 use dampen_core::{BindingValue, HandlerRegistry, ToBindingValue};
-use dampen_macros::{dampen_ui, UiModel};
+use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+#[allow(dead_code)]
 pub fn save_to_path(model: &Model, path: &PathBuf) {
     if let Ok(data) = serde_json::to_string_pretty(model) {
         let _ = std::fs::write(path, data);
     }
 }
 
+#[allow(dead_code)]
 pub fn load_from_path(path: &PathBuf) -> Model {
     if let Ok(data) = std::fs::read_to_string(path) {
         if let Ok(model) = serde_json::from_str::<Model>(&data) {
@@ -25,9 +27,10 @@ pub fn load_from_path(path: &PathBuf) -> Model {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum Priority {
     Low,
+    #[default]
     Medium,
     High,
 }
@@ -39,12 +42,6 @@ impl Priority {
             Priority::Medium => "Medium",
             Priority::High => "High",
         }
-    }
-}
-
-impl Default for Priority {
-    fn default() -> Self {
-        Priority::Medium
     }
 }
 
@@ -60,8 +57,9 @@ impl ToBindingValue for Priority {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum TodoFilter {
+    #[default]
     All,
     Active,
     Completed,
@@ -76,18 +74,13 @@ impl TodoFilter {
         }
     }
 
+    #[allow(dead_code)]
     pub fn matches(&self, completed: bool) -> bool {
         match self {
             TodoFilter::All => true,
             TodoFilter::Active => !completed,
             TodoFilter::Completed => completed,
         }
-    }
-}
-
-impl Default for TodoFilter {
-    fn default() -> Self {
-        TodoFilter::All
     }
 }
 
@@ -310,6 +303,7 @@ pub fn create_app_state() -> dampen_core::AppState<Model> {
     state
 }
 
+#[allow(dead_code)]
 pub fn create_app_state_with_model(model: Model) -> dampen_core::AppState<Model> {
     let document = _app::document();
     let handler_registry = create_handler_registry();

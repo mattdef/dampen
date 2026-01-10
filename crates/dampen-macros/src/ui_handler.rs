@@ -28,7 +28,7 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, FnArg, ItemFn, ReturnType};
+use syn::{FnArg, ItemFn, ReturnType, parse_macro_input};
 
 /// Process the #[ui_handler] attribute macro.
 ///

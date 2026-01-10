@@ -41,9 +41,9 @@ fn dispatch_handler(app: &mut StylingApp, handler_name: &str, value: Option<Stri
 
 fn update(app: &mut StylingApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
-        HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
-            _ => dispatch_handler(app, &handler_name, value),
-        },
+        HandlerMessage::Handler(handler_name, value) => {
+            dispatch_handler(app, &handler_name, value);
+        }
     }
     Task::none()
 }

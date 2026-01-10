@@ -1,7 +1,7 @@
 //! Integration tests for widget rendering with IR nodes
 
-use dampen_core::{parse, AttributeValue, EventBinding, EventKind, WidgetKind, WidgetNode};
-use dampen_iced::{render, IcedBackend};
+use dampen_core::{AttributeValue, EventBinding, EventKind, WidgetKind, WidgetNode, parse};
+use dampen_iced::{IcedBackend, render};
 
 /// Helper to create a test backend
 fn create_backend() -> IcedBackend {

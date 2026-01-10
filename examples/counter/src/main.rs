@@ -8,7 +8,7 @@ use iced::{Element, Subscription, Task};
 use std::path::PathBuf;
 
 #[cfg(debug_assertions)]
-use dampen_dev::{watch_files, ErrorOverlay, FileEvent};
+use dampen_dev::{ErrorOverlay, FileEvent, watch_files};
 
 #[derive(Clone, Debug, PartialEq)]
 enum CurrentView {

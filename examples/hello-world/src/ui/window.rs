@@ -3,7 +3,7 @@
 // This file is automatically compiled and loads the corresponding app.dampen XML file.
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{dampen_ui, ui_handler, UiModel};
+use dampen_macros::{UiModel, dampen_ui, ui_handler};
 use serde::{Deserialize, Serialize};
 
 /// Auto-load the app.dampen XML file.

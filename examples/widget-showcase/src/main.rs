@@ -4,7 +4,7 @@
 
 mod ui;
 
-use dampen_core::{AppState, HandlerRegistry};
+use dampen_core::AppState;
 use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
 use iced::{Element, Task};
 

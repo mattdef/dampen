@@ -922,3 +922,68 @@ fn parse_style_attributes(
         Ok(None)
     }
 }
+
+/// Validates that there are no circular dependencies in UI file includes
+///
+/// **T125**: Currently, Dampen does not support file includes/imports in XML,
+/// so circular dependencies are not possible. This function is a placeholder
+/// for future validation when UI file composition is added.
+///
+/// # Future Implementation
+///
+/// When UI file includes are added (e.g., `<include src="header.dampen" />`),
+/// this function should:
+/// 1. Build a dependency graph of all included files
+/// 2. Detect cycles using depth-first search or topological sort
+/// 3. Return ParseError with the cycle path if detected
+///
+/// # Arguments
+///
+/// * `file_path` - The root UI file being parsed
+/// * `visited` - Set of already visited files (for cycle detection)
+///
+/// # Returns
+///
+/// `Ok(())` if no circular dependencies exist, or `Err(ParseError)` with
+/// the dependency cycle information.
+///
+/// # Example Error Message
+///
+/// ```text
+/// Circular UI file dependency detected:
+///   app.dampen -> header.dampen -> nav.dampen -> app.dampen
+/// ```
+#[allow(dead_code)]
+pub fn validate_no_circular_dependencies(
+    _file_path: &std::path::Path,
+    _visited: &mut std::collections::HashSet<std::path::PathBuf>,
+) -> Result<(), ParseError> {
+    // Placeholder: No includes supported yet, so no circular dependencies possible
+    Ok(())
+}
+
+#[cfg(test)]
+mod circular_dependency_tests {
+    use super::*;
+    use std::collections::HashSet;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_no_circular_dependencies_without_includes() {
+        // T125: Validate that single files have no circular dependencies
+        let file_path = PathBuf::from("test.dampen");
+        let mut visited = HashSet::new();
+
+        let result = validate_no_circular_dependencies(&file_path, &mut visited);
+        assert!(
+            result.is_ok(),
+            "Single file should have no circular dependencies"
+        );
+    }
+
+    // Future tests when includes are supported:
+    // - test_detect_simple_circular_dependency: A -> B -> A
+    // - test_detect_complex_circular_dependency: A -> B -> C -> D -> B
+    // - test_allow_diamond_dependencies: A->B, A->C, B->D, C->D (this is OK, not circular)
+    // - test_self_include_rejected: A -> A
+}

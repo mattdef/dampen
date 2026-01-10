@@ -1,7 +1,7 @@
 // Auto-loaded UI module for counter example.
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{dampen_ui, ui_handler, UiModel};
+use dampen_macros::{UiModel, dampen_ui, ui_handler};
 use serde::{Deserialize, Serialize};
 
 #[dampen_ui("window.dampen")]

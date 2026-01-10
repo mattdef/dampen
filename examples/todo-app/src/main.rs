@@ -28,9 +28,9 @@ fn dispatch_handler(app: &mut TodoApp, handler_name: &str, value: Option<String>
 
 fn update(app: &mut TodoApp, message: HandlerMessage) -> Task<HandlerMessage> {
     match message {
-        HandlerMessage::Handler(handler_name, value) => match handler_name.as_str() {
-            _ => dispatch_handler(app, &handler_name, value),
-        },
+        HandlerMessage::Handler(handler_name, value) => {
+            dispatch_handler(app, &handler_name, value);
+        }
     }
     Task::none()
 }

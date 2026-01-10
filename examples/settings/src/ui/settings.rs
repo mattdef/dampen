@@ -3,7 +3,7 @@
 // This file auto-loads the corresponding settings.dampen XML file.
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{dampen_ui, UiModel};
+use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
 
 #[dampen_ui("settings.dampen")]

@@ -255,29 +255,29 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 6.1 Performance Optimization
 
-- [ ] T117 Optimize hot-reload with async XML parsing in dampen-dev/src/reload.rs
-- [ ] T118 Add caching for parsed ASTs in dampen-dev/src/reload.rs
-- [ ] T119 Profile hot-reload latency and optimize bottlenecks
-- [ ] T120 Create comprehensive benchmark suite in tests/benchmarks/ for both modes
-- [ ] T121 Run benchmarks and verify all performance targets met (SC-001 through SC-010)
+- [X] T117 Optimize hot-reload with async XML parsing in dampen-dev/src/reload.rs
+- [X] T118 Add caching for parsed ASTs in dampen-dev/src/reload.rs
+- [X] T119 Profile hot-reload latency and optimize bottlenecks
+- [X] T120 Create comprehensive benchmark suite in tests/benchmarks/ for both modes
+- [X] T121 Run benchmarks and verify all performance targets met (SC-001 through SC-010)
 
 ### 6.2 Error Handling & Edge Cases
 
-- [ ] T122 Add handling for deleted files during watch in dampen-dev/src/watcher.rs
-- [ ] T123 Add handling for permission changes in dampen-dev/src/watcher.rs
-- [ ] T124 Add handling for simultaneous multi-file changes in dampen-dev/src/reload.rs
-- [ ] T125 Add validation for circular UI file dependencies in dampen-core/src/parser/
-- [ ] T126 Write edge case tests for all scenarios in spec.md Edge Cases section
+- [X] T122 Add handling for deleted files during watch in dampen-dev/src/watcher.rs
+- [X] T123 Add handling for permission changes in dampen-dev/src/watcher.rs
+- [X] T124 Add handling for simultaneous multi-file changes in dampen-dev/src/reload.rs
+- [X] T125 Add validation for circular UI file dependencies in dampen-core/src/parser/
+- [X] T126 Write edge case tests for all scenarios in spec.md Edge Cases section
 
 ### 6.3 Code Quality
 
-- [ ] T127 Run clippy on all crates and fix warnings: cargo clippy --workspace -- -D warnings
-- [ ] T128 Run rustfmt on all crates: cargo fmt --all
-- [ ] T129 Add targeted clippy suppressions only where unavoidable in generated code
-- [ ] T130 Verify all generated code is human-readable with comments
-- [ ] T131 Add rustdoc comments to all public APIs in dampen-dev
-- [ ] T132 Add rustdoc comments to new codegen functions in dampen-core
-- [ ] T133 Generate documentation: cargo doc --workspace --no-deps --open
+- [X] T127 Run clippy on all crates and fix warnings: cargo clippy --workspace -- -D warnings
+- [X] T128 Run rustfmt on all crates: cargo fmt --all
+- [X] T129 Add targeted clippy suppressions only where unavoidable in generated code
+- [X] T130 Verify all generated code is human-readable with comments
+- [X] T131 Add rustdoc comments to all public APIs in dampen-dev
+- [X] T132 Add rustdoc comments to new codegen functions in dampen-core
+- [X] T133 Generate documentation: cargo doc --workspace --no-deps --open
 
 ### 6.4 Documentation
 

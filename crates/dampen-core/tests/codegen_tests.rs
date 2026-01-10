@@ -1,6 +1,6 @@
 //! Code generation snapshot tests
 
-use dampen_core::{generate_application, parse, validate_handlers, HandlerSignature};
+use dampen_core::{HandlerSignature, generate_application, parse, validate_handlers};
 
 #[test]
 fn test_simple_button_codegen() {

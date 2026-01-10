@@ -1,7 +1,7 @@
 //! Tests for radio widget XML parsing
 
-use dampen_core::parse;
 use dampen_core::WidgetKind;
+use dampen_core::parse;
 
 #[test]
 fn test_parse_single_radio() {

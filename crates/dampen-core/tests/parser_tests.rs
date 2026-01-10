@@ -189,8 +189,8 @@ fn test_parse_simple_binding() {
 #[test]
 fn test_binding_eval_with_method() {
     use dampen_core::{
-        evaluate_binding_expr, parse, AttributeValue, BindingValue, InterpolatedPart, UiBindable,
-        WidgetKind,
+        AttributeValue, BindingValue, InterpolatedPart, UiBindable, WidgetKind,
+        evaluate_binding_expr, parse,
     };
 
     #[derive(Debug, Clone, Default)]
@@ -239,7 +239,7 @@ fn test_binding_eval_with_method() {
 
 #[test]
 fn test_conditional_binding() {
-    use dampen_core::{evaluate_binding_expr, BindingValue, UiBindable};
+    use dampen_core::{BindingValue, UiBindable, evaluate_binding_expr};
 
     #[derive(Debug, Clone, Default)]
     struct Model {

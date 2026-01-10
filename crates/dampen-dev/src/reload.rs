@@ -7,8 +7,19 @@ use dampen_core::binding::UiBindable;
 use dampen_core::parser::error::ParseError;
 use dampen_core::state::AppState;
 use serde::{de::DeserializeOwned, Serialize};
+use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::time::{Duration, Instant};
+
+/// Cache entry for parsed XML documents
+#[derive(Clone)]
+struct ParsedDocumentCache {
+    /// Cached parsed document
+    document: dampen_core::ir::DampenDocument,
+
+    /// Timestamp when cached
+    cached_at: Instant,
+}
 
 /// Tracks hot-reload state and history for debugging
 pub struct HotReloadContext<M> {
@@ -24,6 +35,13 @@ pub struct HotReloadContext<M> {
     /// Current error state (if any)
     error: Option<String>,
 
+    /// Cache of parsed XML documents (keyed by content hash)
+    /// This avoids re-parsing the same XML content repeatedly
+    parse_cache: HashMap<u64, ParsedDocumentCache>,
+
+    /// Maximum number of cached documents
+    max_cache_size: usize,
+
     _marker: PhantomData<M>,
 }
 
@@ -35,8 +53,94 @@ impl<M: UiBindable> HotReloadContext<M> {
             last_reload_timestamp: Instant::now(),
             reload_count: 0,
             error: None,
+            parse_cache: HashMap::new(),
+            max_cache_size: 10,
             _marker: PhantomData,
         }
+    }
+
+    /// Create a new hot-reload context with custom cache size
+    pub fn with_cache_size(cache_size: usize) -> Self {
+        Self {
+            last_model_snapshot: None,
+            last_reload_timestamp: Instant::now(),
+            reload_count: 0,
+            error: None,
+            parse_cache: HashMap::new(),
+            max_cache_size: cache_size,
+            _marker: PhantomData,
+        }
+    }
+
+    /// Try to get a parsed document from cache
+    fn get_cached_document(&self, xml_source: &str) -> Option<dampen_core::ir::DampenDocument> {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let mut hasher = DefaultHasher::new();
+        xml_source.hash(&mut hasher);
+        let content_hash = hasher.finish();
+
+        self.parse_cache
+            .get(&content_hash)
+            .map(|entry| entry.document.clone())
+    }
+
+    /// Cache a parsed document
+    fn cache_document(&mut self, xml_source: &str, document: dampen_core::ir::DampenDocument) {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        // Evict oldest entry if cache is full
+        if self.parse_cache.len() >= self.max_cache_size {
+            if let Some(oldest_key) = self
+                .parse_cache
+                .iter()
+                .min_by_key(|(_, entry)| entry.cached_at)
+                .map(|(key, _)| *key)
+            {
+                self.parse_cache.remove(&oldest_key);
+            }
+        }
+
+        let mut hasher = DefaultHasher::new();
+        xml_source.hash(&mut hasher);
+        let content_hash = hasher.finish();
+
+        self.parse_cache.insert(
+            content_hash,
+            ParsedDocumentCache {
+                document,
+                cached_at: Instant::now(),
+            },
+        );
+    }
+
+    /// Clear the parse cache
+    pub fn clear_cache(&mut self) {
+        self.parse_cache.clear();
+    }
+
+    /// Get cache statistics
+    pub fn cache_stats(&self) -> (usize, usize) {
+        (self.parse_cache.len(), self.max_cache_size)
+    }
+
+    /// Get detailed performance metrics from the last reload
+    pub fn performance_metrics(&self) -> ReloadPerformanceMetrics {
+        ReloadPerformanceMetrics {
+            reload_count: self.reload_count,
+            last_reload_latency: self.last_reload_latency(),
+            cache_hit_rate: self.calculate_cache_hit_rate(),
+            cache_size: self.parse_cache.len(),
+        }
+    }
+
+    /// Calculate cache hit rate (placeholder - would need to track hits/misses)
+    fn calculate_cache_hit_rate(&self) -> f64 {
+        // For now, return 0.0 as we'd need to add hit/miss tracking
+        // This is a placeholder for future enhancement
+        0.0
     }
 
     /// Snapshot the current model state to JSON
@@ -76,6 +180,25 @@ impl<M: UiBindable> HotReloadContext<M> {
         }
     }
 
+    /// Record a reload with timing information
+    pub fn record_reload_with_timing(&mut self, success: bool, elapsed: Duration) {
+        self.reload_count += 1;
+        self.last_reload_timestamp = Instant::now();
+        if !success {
+            self.error = Some("Reload failed".to_string());
+        } else {
+            self.error = None;
+        }
+
+        // Log performance if it exceeds target
+        if success && elapsed.as_millis() > 300 {
+            eprintln!(
+                "Warning: Hot-reload took {}ms (target: <300ms)",
+                elapsed.as_millis()
+            );
+        }
+    }
+
     /// Get the latency of the last reload
     pub fn last_reload_latency(&self) -> Duration {
         self.last_reload_timestamp.elapsed()
@@ -85,6 +208,34 @@ impl<M: UiBindable> HotReloadContext<M> {
 impl<M: UiBindable> Default for HotReloadContext<M> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Performance metrics for hot-reload operations
+#[derive(Debug, Clone, Copy)]
+pub struct ReloadPerformanceMetrics {
+    /// Total number of reloads performed
+    pub reload_count: usize,
+
+    /// Latency of the last reload operation
+    pub last_reload_latency: Duration,
+
+    /// Cache hit rate (0.0 to 1.0)
+    pub cache_hit_rate: f64,
+
+    /// Current cache size
+    pub cache_size: usize,
+}
+
+impl ReloadPerformanceMetrics {
+    /// Check if the last reload met the performance target (<300ms)
+    pub fn meets_target(&self) -> bool {
+        self.last_reload_latency.as_millis() < 300
+    }
+
+    /// Get latency in milliseconds
+    pub fn latency_ms(&self) -> u128 {
+        self.last_reload_latency.as_millis()
     }
 }
 
@@ -161,7 +312,7 @@ pub enum ReloadResult<M: UiBindable> {
 ///         context,
 ///         || create_handler_registry(),
 ///     );
-///     
+///
 ///     match result {
 ///         dampen_dev::reload::ReloadResult::Success(new_state) => {
 ///             // Apply the new state
@@ -190,18 +341,29 @@ where
     M: UiBindable + Serialize + DeserializeOwned + Default,
     F: FnOnce() -> dampen_core::handler::HandlerRegistry,
 {
+    let reload_start = Instant::now();
+
     // Step 1: Snapshot current model state
     if let Err(e) = context.snapshot_model(&current_state.model) {
         // If we can't snapshot, continue with reload but warn
         eprintln!("Warning: Failed to snapshot model: {}", e);
     }
 
-    // Step 2: Parse new XML
-    let new_document = match dampen_core::parser::parse(xml_source) {
-        Ok(doc) => doc,
-        Err(err) => {
-            context.record_reload(false);
-            return ReloadResult::ParseError(err);
+    // Step 2: Parse new XML (with caching)
+    let new_document = if let Some(cached_doc) = context.get_cached_document(xml_source) {
+        // Cache hit - reuse parsed document
+        cached_doc
+    } else {
+        // Cache miss - parse and cache
+        match dampen_core::parser::parse(xml_source) {
+            Ok(doc) => {
+                context.cache_document(xml_source, doc.clone());
+                doc
+            }
+            Err(err) => {
+                context.record_reload(false);
+                return ReloadResult::ParseError(err);
+            }
         }
     };
 
@@ -239,7 +401,169 @@ where
     // Step 6: Create new AppState with restored model and new UI
     let new_state = AppState::with_all(new_document, restored_model, new_handlers);
 
-    context.record_reload(true);
+    let elapsed = reload_start.elapsed();
+    context.record_reload_with_timing(true, elapsed);
+    ReloadResult::Success(new_state)
+}
+
+/// Async version of `attempt_hot_reload` that performs XML parsing asynchronously.
+///
+/// This function is optimized for non-blocking hot-reload by offloading the CPU-intensive
+/// XML parsing to a background thread using `tokio::task::spawn_blocking`.
+///
+/// # Performance Benefits
+///
+/// - XML parsing happens on a thread pool, avoiding UI blocking
+/// - Reduces hot-reload latency for large XML files
+/// - Maintains UI responsiveness during reload
+///
+/// # Arguments
+///
+/// * `xml_source` - New XML UI definition as a string
+/// * `current_state` - Current application state (for model snapshotting)
+/// * `context` - Hot-reload context for state preservation
+/// * `create_handlers` - Function to rebuild the handler registry
+///
+/// # Returns
+///
+/// A `ReloadResult` wrapped in a future, indicating success or failure
+///
+/// # Example
+///
+/// ```no_run
+/// use dampen_dev::reload::{attempt_hot_reload_async, HotReloadContext};
+/// use dampen_core::{AppState, handler::HandlerRegistry};
+/// # use dampen_core::binding::UiBindable;
+/// # #[derive(Default, serde::Serialize, serde::Deserialize)]
+/// # struct Model;
+/// # impl UiBindable for Model {
+/// #     fn get_field(&self, _path: &[&str]) -> Option<dampen_core::binding::BindingValue> { None }
+/// #     fn available_fields() -> Vec<String> { vec![] }
+/// # }
+///
+/// async fn handle_file_change_async(
+///     new_xml: String,
+///     app_state: AppState<Model>,
+///     mut context: HotReloadContext<Model>,
+/// ) {
+///     let result = attempt_hot_reload_async(
+///         new_xml,
+///         &app_state,
+///         &mut context,
+///         || create_handler_registry(),
+///     ).await;
+///
+///     match result {
+///         dampen_dev::reload::ReloadResult::Success(new_state) => {
+///             // Apply the new state
+///         }
+///         _ => {
+///             // Handle errors
+///         }
+///     }
+/// }
+///
+/// fn create_handler_registry() -> dampen_core::handler::HandlerRegistry {
+///     dampen_core::handler::HandlerRegistry::new()
+/// }
+/// ```
+pub async fn attempt_hot_reload_async<M, F>(
+    xml_source: String,
+    current_state: &AppState<M>,
+    context: &mut HotReloadContext<M>,
+    create_handlers: F,
+) -> ReloadResult<M>
+where
+    M: UiBindable + Serialize + DeserializeOwned + Default + Send + 'static,
+    F: FnOnce() -> dampen_core::handler::HandlerRegistry + Send + 'static,
+{
+    let reload_start = Instant::now();
+
+    // Step 1: Snapshot current model state (fast, can do synchronously)
+    if let Err(e) = context.snapshot_model(&current_state.model) {
+        eprintln!("Warning: Failed to snapshot model: {}", e);
+    }
+
+    // Clone snapshot for async context
+    let model_snapshot = context.last_model_snapshot.clone();
+
+    // Step 2: Parse new XML asynchronously (CPU-intensive work offloaded, with caching)
+    let new_document = if let Some(cached_doc) = context.get_cached_document(&xml_source) {
+        // Cache hit - reuse parsed document
+        cached_doc
+    } else {
+        // Cache miss - parse asynchronously and cache
+        let xml_for_parse = xml_source.clone();
+        let parse_result =
+            tokio::task::spawn_blocking(move || dampen_core::parser::parse(&xml_for_parse)).await;
+
+        match parse_result {
+            Ok(Ok(doc)) => {
+                context.cache_document(&xml_source, doc.clone());
+                doc
+            }
+            Ok(Err(err)) => {
+                context.record_reload(false);
+                return ReloadResult::ParseError(err);
+            }
+            Err(join_err) => {
+                context.record_reload(false);
+                let error = ParseError {
+                    kind: dampen_core::parser::error::ParseErrorKind::XmlSyntax,
+                    span: dampen_core::ir::span::Span::default(),
+                    message: format!("Async parsing failed: {}", join_err),
+                    suggestion: Some(
+                        "Check if the XML file is accessible and not corrupted".to_string(),
+                    ),
+                };
+                return ReloadResult::ParseError(error);
+            }
+        }
+    };
+
+    // Step 3: Rebuild handler registry (before validation)
+    let new_handlers = create_handlers();
+
+    // Step 4: Validate the parsed document against the handler registry
+    if let Err(missing_handlers) = validate_handlers(&new_document, &new_handlers) {
+        context.record_reload(false);
+        let error_messages: Vec<String> = missing_handlers
+            .iter()
+            .map(|h| format!("Handler '{}' is referenced but not registered", h))
+            .collect();
+        return ReloadResult::ValidationError(error_messages);
+    }
+
+    // Step 5: Restore model from snapshot
+    let restored_model = match model_snapshot {
+        Some(json) => match serde_json::from_str::<M>(&json) {
+            Ok(model) => model,
+            Err(e) => {
+                eprintln!("Warning: Failed to restore model ({}), using default", e);
+                let new_state = AppState::with_all(new_document, M::default(), new_handlers);
+                context.record_reload(true);
+                return ReloadResult::StateRestoreWarning(
+                    new_state,
+                    format!("Failed to deserialize model: {}", e),
+                );
+            }
+        },
+        None => {
+            eprintln!("Warning: No model snapshot available, using default");
+            let new_state = AppState::with_all(new_document, M::default(), new_handlers);
+            context.record_reload(true);
+            return ReloadResult::StateRestoreWarning(
+                new_state,
+                "No model snapshot available".to_string(),
+            );
+        }
+    };
+
+    // Step 6: Create new AppState with restored model and new UI
+    let new_state = AppState::with_all(new_document, restored_model, new_handlers);
+
+    let elapsed = reload_start.elapsed();
+    context.record_reload_with_timing(true, elapsed);
     ReloadResult::Success(new_state)
 }
 

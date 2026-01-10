@@ -3,8 +3,8 @@
 //! This module generates efficient handler dispatch code for production builds,
 //! converting handler registry lookups into direct function calls.
 
-use crate::handler::HandlerSignature;
 use crate::CodegenError;
+use crate::handler::HandlerSignature;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 

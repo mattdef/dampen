@@ -3,7 +3,7 @@
 //! These tests verify that code generation produces consistent output.
 //! They use insta for snapshot testing.
 
-use dampen_core::{generate_application, parse, HandlerSignature};
+use dampen_core::{HandlerSignature, generate_application, parse};
 
 #[test]
 fn test_codegen_simple_button() {

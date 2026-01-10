@@ -2,9 +2,9 @@
 //!
 //! This module generates static Rust code for widget trees with inlined bindings.
 
+use crate::DampenDocument;
 use crate::codegen::bindings::generate_expr;
 use crate::ir::node::{AttributeValue, InterpolatedPart, WidgetKind};
-use crate::DampenDocument;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
