@@ -218,25 +218,25 @@ This document provides an actionable task breakdown for implementing Dampen's du
 
 ### 5.2 CLI Commands
 
-- [ ] T101 [US3] Create dampen-cli/src/commands/run.rs with development mode launcher
-- [ ] T102 [US3] Implement run command to invoke cargo with --features interpreted in dampen-cli/src/commands/run.rs
-- [ ] T103 [US3] Create dampen-cli/src/commands/build.rs with production build wrapper
-- [ ] T104 [US3] Implement build command to invoke cargo with --features codegen in dampen-cli/src/commands/build.rs
-- [ ] T105 [US3] Add run and build subcommands to CLI parser in dampen-cli/src/main.rs
-- [ ] T106 [US3] Update dampen new template in dampen-cli/src/commands/new.rs with dual-mode Cargo.toml
-- [ ] T107 [US3] Update dampen new template with build.rs for codegen mode
-- [ ] T108 [US3] Update dampen new template with conditional compilation in main.rs
-- [ ] T109 [US3] Write CLI integration test for run command in dampen-cli/tests/cli_tests.rs
-- [ ] T110 [US3] Write CLI integration test for build command in dampen-cli/tests/cli_tests.rs
+- [X] T101 [US3] Create dampen-cli/src/commands/run.rs with development mode launcher
+- [X] T102 [US3] Implement run command to invoke cargo with --features interpreted in dampen-cli/src/commands/run.rs
+- [X] T103 [US3] Create dampen-cli/src/commands/build.rs with production build wrapper
+- [X] T104 [US3] Implement build command to invoke cargo with --features codegen in dampen-cli/src/commands/build.rs
+- [X] T105 [US3] Add run and build subcommands to CLI parser in dampen-cli/src/main.rs
+- [X] T106 [US3] Update dampen new template in dampen-cli/src/commands/new.rs with dual-mode Cargo.toml
+- [X] T107 [US3] Update dampen new template with build.rs for codegen mode
+- [X] T108 [US3] Update dampen new template with conditional compilation in main.rs
+- [X] T109 [US3] Write CLI integration test for run command in dampen-cli/tests/cli_tests.rs
+- [X] T110 [US3] Write CLI integration test for build command in dampen-cli/tests/cli_tests.rs
 
 ### 5.3 Example Migration
 
-- [ ] T111 [P] [US3] Migrate examples/todo-app to dual-mode (add build.rs, update Cargo.toml, update main.rs)
-- [ ] T112 [P] [US3] Migrate examples/hello-world to dual-mode
-- [ ] T113 [US3] Test all examples with cargo run (interpreted mode)
-- [ ] T114 [US3] Test all examples with cargo build --release (codegen mode)
-- [ ] T115 [US3] Verify examples work without manual feature flag changes (SC-006, SC-009)
-- [ ] T116 [US3] Create mode-parity integration test in tests/integration/mode_parity_tests.rs verifying both modes produce identical behavior
+- [x] T111 [P] [US3] Migrate examples/todo-app to dual-mode (add build.rs, update Cargo.toml, update main.rs)
+- [x] T112 [P] [US3] Migrate examples/hello-world to dual-mode
+- [x] T113 [US3] Test all examples with cargo run (interpreted mode)
+- [x] T114 [US3] Test all examples with cargo build --release (codegen mode)
+- [x] T115 [US3] Verify examples work without manual feature flag changes (SC-006, SC-009)
+- [x] T116 [US3] Create mode-parity integration test in tests/integration/mode_parity_tests.rs verifying both modes produce identical behavior
 
 **US3 Success Criteria**:
 - ✅ Development builds auto-select interpreted mode

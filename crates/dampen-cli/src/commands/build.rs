@@ -30,9 +30,43 @@ pub struct BuildArgs {
     /// Release build (use cargo build --release)
     #[arg(long)]
     release: bool,
+
+    /// Package to build (if workspace has multiple packages)
+    #[arg(short, long)]
+    package: Option<String>,
+
+    /// Additional features to enable (beyond codegen)
+    #[arg(long, value_delimiter = ',')]
+    features: Vec<String>,
 }
 
 /// Execute the build command
+///
+/// This command builds the application in production/codegen mode
+/// by invoking `cargo build` with the `codegen` feature flag.
+///
+/// # Mode Behavior
+///
+/// - **Codegen Mode**: Compile-time code generation with zero runtime overhead
+/// - Bindings are inlined at compile time
+/// - Optimal performance for production deployments
+/// - Requires build.rs for code generation
+///
+/// # Examples
+///
+/// ```bash
+/// # Basic production build
+/// dampen build
+///
+/// # Release build with optimizations
+/// dampen build --release
+///
+/// # Build specific package in workspace
+/// dampen build -p my-app --release
+///
+/// # Enable additional features
+/// dampen build --release --features tokio,logging
+/// ```
 pub fn execute(args: &BuildArgs) -> Result<(), String> {
     // By default, run production build (like cargo build)
     execute_production_build(args)
@@ -64,6 +98,11 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     let mut cmd = Command::new("cargo");
     cmd.arg("build");
 
+    // Add package specification if provided
+    if let Some(ref package) = args.package {
+        cmd.arg("-p").arg(package);
+    }
+
     if args.release {
         cmd.arg("--release");
     }
@@ -72,10 +111,19 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
         cmd.arg("--verbose");
     }
 
+    // Build features list: always include 'codegen', plus any user-specified features
+    let mut all_features = vec!["codegen".to_string()];
+    all_features.extend(args.features.clone());
+
+    // Add features flag
+    cmd.arg("--features").arg(all_features.join(","));
+
     // Execute cargo build
     if args.verbose {
+        let features_str = all_features.join(",");
         eprintln!(
-            "Executing: cargo build{}",
+            "Executing: cargo build --features {}{}",
+            features_str,
             if args.release { " --release" } else { "" }
         );
     }

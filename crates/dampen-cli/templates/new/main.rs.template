@@ -1,7 +1,22 @@
-//! {{PROJECT_NAME}} example using the auto-loading pattern.
+//! {{PROJECT_NAME}} - A Dampen UI application
 //!
-//! This example demonstrates how to create a Dampen application
-//! with minimal boilerplate using the new AppState pattern.
+//! This application demonstrates the dual-mode architecture:
+//!
+//! ## Development Mode (Interpreted)
+//! Run with: `cargo run` or `dampen run`
+//! - Fast compilation and iteration
+//! - Runtime XML parsing with hot-reload support
+//! - State preservation during UI changes
+//!
+//! ## Production Mode (Codegen)
+//! Build with: `cargo build --release` or `dampen build --release`
+//! - Compile-time code generation
+//! - Zero runtime overhead
+//! - Optimal performance for deployments
+//!
+//! The application code is identical in both modes - the mode is selected
+//! automatically based on the feature flags set in Cargo.toml.
+
 mod ui;
 
 use dampen_core::AppState;

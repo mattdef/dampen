@@ -2,7 +2,7 @@
 
 //! Inspect command - view IR and generated code
 
-use dampen_core::{generate_application, parse, HandlerSignature};
+use dampen_core::{HandlerSignature, generate_application, parse};
 use std::fs;
 
 #[derive(clap::Args)]

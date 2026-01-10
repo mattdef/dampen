@@ -1,0 +1,19 @@
+[package]
+name = "integration-tests"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[dependencies]
+dampen-core = { workspace = true }
+dampen-macros = { workspace = true }
+dampen-iced = { workspace = true }
+serde = { workspace = true }
+
+[lib]
+path = "lib.rs"
+
+[[test]]
+name = "mode_parity_tests"
+path = "mode_parity_tests.rs"
