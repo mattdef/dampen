@@ -34,5 +34,5 @@
 
     <text value="Width Variations" size="18" weight="bold" />
     <button label="Full Width Button" width="fill" on_click="handle_click" />
-    <button label="Fixed Width (200)" width="200" on_click="handle_click" />
+    <button label="Fixed Width (300)" width="300" on_click="handle_click" />
 </column>

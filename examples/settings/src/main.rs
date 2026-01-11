@@ -80,10 +80,15 @@ fn update(app: &mut SettingsApp, message: Message) -> Task<Message> {
                 FileEvent::Success { document, path } => {
                     println!("🔄 Hot-reloading {:?}...", path);
 
-                    // Simple hot-reload: just update the document
-                    // (Model state is already preserved in window_state)
-                    // Unbox the document since FileEvent now uses Box<DampenDocument>
-                    app.window_state.hot_reload(*document);
+                    // Determine which view to reload based on the file path
+                    if path.to_string_lossy().contains("window.dampen") {
+                        app.window_state.hot_reload(*document);
+                    } else if path.to_string_lossy().contains("settings.dampen") {
+                        app.settings_state.hot_reload(*document);
+                    } else {
+                        println!("⚠️  Unknown file: {:?}", path);
+                    }
+
                     app.error_overlay.hide();
                     println!("✅ Hot-reload successful!");
                 }
@@ -126,7 +131,7 @@ fn init() -> (SettingsApp, Task<Message>) {
 }
 
 pub fn main() -> iced::Result {
-    println!("🔥 Hot-reload enabled! Edit src/ui/window.dampen to see live updates.");
+    println!("🔥 Hot-reload enabled! Edit src/ui/*.dampen files to see live updates.");
 
     iced::application(init, update, view)
         .window_size(iced::Size::new(400.0, 250.0))
@@ -141,12 +146,15 @@ fn subscription(_app: &SettingsApp) -> Subscription<Message> {
         // Resolve UI file path relative to the manifest directory
         // This works whether running from workspace root or example directory
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
-        let ui_file = PathBuf::from(manifest_dir).join("src/ui/window.dampen");
+        let window_file = PathBuf::from(manifest_dir).join("src/ui/window.dampen");
+        let settings_file = PathBuf::from(manifest_dir).join("src/ui/settings.dampen");
 
-        println!("👀 Watching for changes: {}", ui_file.display());
+        println!("👀 Watching for changes:");
+        println!("   - {}", window_file.display());
+        println!("   - {}", settings_file.display());
 
-        // Watch the UI file for changes in development mode (100ms debounce)
-        watch_files(vec![ui_file], 100).map(Message::HotReload)
+        // Watch the UI files for changes in development mode (100ms debounce)
+        watch_files(vec![window_file, settings_file], 100).map(Message::HotReload)
     }
 
     #[cfg(not(debug_assertions))]
