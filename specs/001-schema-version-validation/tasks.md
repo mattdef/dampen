@@ -26,16 +26,16 @@
 
 ### TDD: parse_version_string Tests
 
-- [ ] T007 [P1] [US1] Write test: `parse_valid_version_1_0` expects `Ok(SchemaVersion { major: 1, minor: 0 })`
-- [ ] T008 [P1] [US1] Write test: `parse_valid_version_0_1` expects `Ok(SchemaVersion { major: 0, minor: 1 })`
-- [ ] T009 [P1] [US1] Write test: `parse_valid_version_with_whitespace` for `" 1.0 "` → trimmed to 1.0
-- [ ] T010 [P1] [US1] Write test: `parse_valid_version_leading_zeros` for `"01.00"` → 1.0
-- [ ] T011 [P1] [US3] Write test: `parse_invalid_empty_string` expects error with "cannot be empty"
-- [ ] T012 [P1] [US3] Write test: `parse_invalid_single_number` for `"1"` expects format error
-- [ ] T013 [P1] [US3] Write test: `parse_invalid_triple_version` for `"1.0.0"` expects format error
-- [ ] T014 [P1] [US3] Write test: `parse_invalid_prefix` for `"v1.0"` expects format error
-- [ ] T015 [P1] [US3] Write test: `parse_invalid_non_numeric` for `"1.x"` expects format error
-- [ ] T016 [P1] [US3] Write test: `parse_invalid_negative` for `"-1.0"` expects format error
+- [x] T007 [P1] [US1] Write test: `parse_valid_version_1_0` expects `Ok(SchemaVersion { major: 1, minor: 0 })`
+- [x] T008 [P1] [US1] Write test: `parse_valid_version_0_1` expects `Ok(SchemaVersion { major: 0, minor: 1 })`
+- [x] T009 [P1] [US1] Write test: `parse_valid_version_with_whitespace` for `" 1.0 "` → trimmed to 1.0
+- [x] T010 [P1] [US1] Write test: `parse_valid_version_leading_zeros` for `"01.00"` → 1.0
+- [x] T011 [P1] [US3] Write test: `parse_invalid_empty_string` expects error with "cannot be empty"
+- [x] T012 [P1] [US3] Write test: `parse_invalid_single_number` for `"1"` expects format error
+- [x] T013 [P1] [US3] Write test: `parse_invalid_triple_version` for `"1.0.0"` expects format error
+- [x] T014 [P1] [US3] Write test: `parse_invalid_prefix` for `"v1.0"` expects format error
+- [x] T015 [P1] [US3] Write test: `parse_invalid_non_numeric` for `"1.x"` expects format error
+- [x] T016 [P1] [US3] Write test: `parse_invalid_negative` for `"-1.0"` expects format error
 
 ### Implementation: parse_version_string
 
