@@ -50,11 +50,11 @@ jobs:
       - name: Wait for dampen-macros to be available
         run: sleep 30
 
-      - name: Publish dampen-runtime
-        run: cargo publish -p dampen-runtime --token ${{ secrets.CARGO_TOKEN }}
+      - name: Publish dampen-dev
+        run: cargo publish -p dampen-dev --token ${{ secrets.CARGO_TOKEN }}
         continue-on-error: false
 
-      - name: Wait for dampen-runtime to be available
+      - name: Wait for dampen-dev to be available
         run: sleep 30
 
       - name: Publish dampen-iced
@@ -74,6 +74,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ [dampen-core v${{ github.ref_name }}](https://crates.io/crates/dampen-core)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ [dampen-macros v${{ github.ref_name }}](https://crates.io/crates/dampen-macros)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ [dampen-runtime v${{ github.ref_name }}](https://crates.io/crates/dampen-runtime)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ [dampen-dev v${{ github.ref_name }}](https://crates.io/crates/dampen-dev)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ [dampen-iced v${{ github.ref_name }}](https://crates.io/crates/dampen-iced)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ [dampen-cli v${{ github.ref_name }}](https://crates.io/crates/dampen-cli)" >> $GITHUB_STEP_SUMMARY
