@@ -52,18 +52,18 @@
 
 ### Implementation: validate_version_supported
 
-- [ ] T024 [P1] [US2] Implement `validate_version_supported(version: &SchemaVersion, span: Span) -> Result<(), ParseError>` in `crates/dampen-core/src/parser/mod.rs`
-- [ ] T025 [P1] [US2] Verify all validate_version_supported tests pass
+- [x] T024 [P1] [US2] Implement `validate_version_supported(version: &SchemaVersion, span: Span) -> Result<(), ParseError>` in `crates/dampen-core/src/parser/mod.rs`
+- [x] T025 [P1] [US2] Verify all validate_version_supported tests pass
 
 ### Integration: Parser Updates
 
-- [ ] T026 [P1] [US1] Write test: `parse_document_with_version_1_0` expects version in DampenDocument
-- [ ] T027 [P1] [US1] Write test: `parse_document_without_version_defaults` expects version 1.0
-- [ ] T028 [P1] [US2] Write test: `parse_document_with_unsupported_version` expects error
-- [ ] T029 [P1] [US3] Write test: `parse_document_with_invalid_version_format` expects error
-- [ ] T030 [P1] [US1] Update `parse()` function in `crates/dampen-core/src/parser/mod.rs` to call `parse_version_string` and `validate_version_supported`
-- [ ] T031 [P1] [US1] Remove hardcoded version 1.0 defaults (lines ~75 and ~552 per research)
-- [ ] T032 [P1] [US1] Verify all parser integration tests pass
+- [x] T026 [P1] [US1] Write test: `parse_document_with_version_1_0` expects version in DampenDocument
+- [x] T027 [P1] [US1] Write test: `parse_document_without_version_defaults` expects version 1.0
+- [x] T028 [P1] [US2] Write test: `parse_document_with_unsupported_version` expects error
+- [x] T029 [P1] [US3] Write test: `parse_document_with_invalid_version_format` expects error
+- [x] T030 [P1] [US1] Update `parse()` function in `crates/dampen-core/src/parser/mod.rs` to call `parse_version_string` and `validate_version_supported`
+- [x] T031 [P1] [US1] Remove hardcoded version 1.0 defaults (lines ~75 and ~552 per research)
+- [x] T032 [P1] [US1] Verify all parser integration tests pass
 
 ## Phase 4: US3 - Invalid Format Handling (P2)
 

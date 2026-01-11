@@ -180,7 +180,48 @@ mod validate_version_supported_tests {
 mod parser_integration_tests {
     use super::*;
 
-    // Integration tests for full document parsing will be added here
+    // Parser integration tests (T026-T029)
+
+    #[test]
+    fn parse_document_with_version_1_0() {
+        let xml = r#"<dampen version="1.0"><column><text value="Hello" /></column></dampen>"#;
+        let result = parse(xml);
+        assert!(result.is_ok());
+        let doc = result.unwrap();
+        assert_eq!(doc.version.major, 1);
+        assert_eq!(doc.version.minor, 0);
+    }
+
+    #[test]
+    fn parse_document_without_version_defaults() {
+        let xml = r#"<dampen><column><text value="Hello" /></column></dampen>"#;
+        let result = parse(xml);
+        assert!(result.is_ok());
+        let doc = result.unwrap();
+        assert_eq!(doc.version.major, 1);
+        assert_eq!(doc.version.minor, 0);
+    }
+
+    #[test]
+    fn parse_document_with_unsupported_version() {
+        let xml = r#"<dampen version="2.0"><column><text value="Hello" /></column></dampen>"#;
+        let result = parse(xml);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind, ParseErrorKind::UnsupportedVersion);
+        assert!(err.message.contains("2.0"));
+        assert!(err.message.contains("not supported"));
+    }
+
+    #[test]
+    fn parse_document_with_invalid_version_format() {
+        let xml = r#"<dampen version="invalid"><column><text value="Hello" /></column></dampen>"#;
+        let result = parse(xml);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind, ParseErrorKind::InvalidValue);
+        assert!(err.message.contains("invalid"));
+    }
 }
 
 #[cfg(test)]
