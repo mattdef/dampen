@@ -12,15 +12,15 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 [P1] [Setup] Create test file `crates/dampen-core/tests/version_tests.rs` with module structure
-- [ ] T002 [P1] [Setup] Verify existing `SchemaVersion` struct in `crates/dampen-core/src/ir/mod.rs`
-- [ ] T003 [P1] [Setup] Verify existing `ParseErrorKind` enum in `crates/dampen-core/src/parser/error.rs`
+- [x] T001 [P1] [Setup] Create test file `crates/dampen-core/tests/version_tests.rs` with module structure
+- [x] T002 [P1] [Setup] Verify existing `SchemaVersion` struct in `crates/dampen-core/src/ir/mod.rs`
+- [x] T003 [P1] [Setup] Verify existing `ParseErrorKind` enum in `crates/dampen-core/src/parser/error.rs`
 
 ## Phase 2: Foundational
 
-- [ ] T004 [P1] [US2] Add `UnsupportedVersion` variant to `ParseErrorKind` in `crates/dampen-core/src/parser/error.rs`
-- [ ] T005 [P1] [US2] Add `MAX_SUPPORTED_VERSION` constant to `crates/dampen-core/src/parser/mod.rs`
-- [ ] T006 [P1] [US2] Export `MAX_SUPPORTED_VERSION` from `crates/dampen-core/src/lib.rs` if needed
+- [x] T004 [P1] [US2] Add `UnsupportedVersion` variant to `ParseErrorKind` in `crates/dampen-core/src/parser/error.rs`
+- [x] T005 [P1] [US2] Add `MAX_SUPPORTED_VERSION` constant to `crates/dampen-core/src/parser/mod.rs`
+- [x] T006 [P1] [US2] Export `MAX_SUPPORTED_VERSION` from `crates/dampen-core/src/lib.rs` if needed
 
 ## Phase 3: US1 + US2 Implementation (P1)
 
