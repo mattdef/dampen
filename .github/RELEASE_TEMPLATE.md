@@ -47,7 +47,7 @@ cargo run
 
 - [dampen-core v{{VERSION}}](https://crates.io/crates/dampen-core/{{VERSION}})
 - [dampen-macros v{{VERSION}}](https://crates.io/crates/dampen-macros/{{VERSION}})
-- [dampen-runtime v{{VERSION}}](https://crates.io/crates/dampen-runtime/{{VERSION}})
+- [dampen-dev v{{VERSION}}](https://crates.io/crates/dampen-dev/{{VERSION}})
 - [dampen-iced v{{VERSION}}](https://crates.io/crates/dampen-iced/{{VERSION}})
 - [dampen-cli v{{VERSION}}](https://crates.io/crates/dampen-cli/{{VERSION}})
 
