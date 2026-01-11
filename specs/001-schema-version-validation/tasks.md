@@ -67,10 +67,10 @@
 
 ## Phase 4: US3 - Invalid Format Handling (P2)
 
-- [ ] T033 [P2] [US3] Write test: `parse_version_suffix` for `"1.0-beta"` expects format error
-- [ ] T034 [P2] [US3] Write test: `parse_version_text` for `"one.zero"` expects format error
-- [ ] T035 [P2] [US3] Verify error messages include the invalid input value
-- [ ] T036 [P2] [US3] Verify error messages include expected format suggestion
+- [x] T033 [P2] [US3] Write test: `parse_version_suffix` for `"1.0-beta"` expects format error
+- [x] T034 [P2] [US3] Write test: `parse_version_text` for `"one.zero"` expects format error
+- [x] T035 [P2] [US3] Verify error messages include the invalid input value
+- [x] T036 [P2] [US3] Verify error messages include expected format suggestion
 
 ## Phase 5: US4 - File Updates (P2)
 

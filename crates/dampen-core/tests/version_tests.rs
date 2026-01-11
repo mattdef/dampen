@@ -110,6 +110,87 @@ mod parse_version_string_tests {
         assert_eq!(err.kind, ParseErrorKind::InvalidValue);
         assert!(err.message.contains("-1.0"));
     }
+
+    // Additional invalid format tests for Phase 4 (T033-T034)
+
+    #[test]
+    fn parse_version_suffix() {
+        let result = parse_version_string("1.0-beta", dummy_span());
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind, ParseErrorKind::InvalidValue);
+        assert!(err.message.contains("1.0-beta"));
+        assert!(err.message.contains("major.minor"));
+    }
+
+    #[test]
+    fn parse_version_text() {
+        let result = parse_version_string("one.zero", dummy_span());
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind, ParseErrorKind::InvalidValue);
+        assert!(err.message.contains("one.zero"));
+        assert!(err.message.contains("major.minor"));
+    }
+
+    // Comprehensive error message validation (T035-T036)
+
+    #[test]
+    fn error_messages_include_invalid_input() {
+        let test_cases = vec![
+            "",
+            "1",
+            "1.0.0",
+            "v1.0",
+            "1.x",
+            "-1.0",
+            "1.0-beta",
+            "one.zero",
+        ];
+
+        for input in test_cases {
+            let result = parse_version_string(input, dummy_span());
+            assert!(result.is_err(), "Expected error for input: {}", input);
+            let err = result.unwrap_err();
+
+            // For empty string, message should say "cannot be empty"
+            // For others, message should contain the invalid input
+            if input.is_empty() {
+                assert!(err.message.contains("cannot be empty"));
+            } else {
+                assert!(
+                    err.message.contains(input),
+                    "Error message should contain invalid input '{}'. Got: {}",
+                    input,
+                    err.message
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn error_messages_include_format_suggestion() {
+        let test_cases = vec!["1", "1.0.0", "v1.0", "1.x", "1.0-beta"];
+
+        for input in test_cases {
+            let result = parse_version_string(input, dummy_span());
+            assert!(result.is_err(), "Expected error for input: {}", input);
+            let err = result.unwrap_err();
+
+            // Check suggestion exists and contains format hint
+            assert!(
+                err.suggestion.is_some(),
+                "Should have suggestion for input: {}",
+                input
+            );
+            let suggestion = err.suggestion.unwrap();
+            assert!(
+                suggestion.contains("1.0") || suggestion.contains("version="),
+                "Suggestion should include correct format. Got: {}",
+                suggestion
+            );
+        }
+    }
 }
 
 #[cfg(test)]
