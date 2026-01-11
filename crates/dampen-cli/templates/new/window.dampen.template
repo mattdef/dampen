@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<dampen>
+<dampen version="1.0">
     <column padding="40" spacing="20">
         <text value="Hello, Dampen!" size="32" weight="bold" />
         <button label="Click me!" on_click="greet" />

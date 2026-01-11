@@ -20,6 +20,8 @@ pub enum ParseErrorKind {
     InvalidExpression,
     UnclosedBinding,
     MissingAttribute,
+    /// Schema version is newer than the framework supports
+    UnsupportedVersion,
 }
 
 impl std::fmt::Display for ParseError {

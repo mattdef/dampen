@@ -13,6 +13,117 @@ use crate::parser::error::{ParseError, ParseErrorKind};
 use roxmltree::{Document, Node, NodeType};
 use std::collections::HashMap;
 
+/// Maximum schema version supported by this framework release.
+///
+/// Files declaring a version higher than this will be rejected with an error.
+/// Update this constant when the framework adds support for new schema versions.
+pub const MAX_SUPPORTED_VERSION: SchemaVersion = SchemaVersion { major: 1, minor: 0 };
+
+/// Parse a version string in "major.minor" format into a SchemaVersion.
+///
+/// # Arguments
+///
+/// * `version_str` - Raw version string from XML attribute (e.g., "1.0")
+/// * `span` - Source location for error reporting
+///
+/// # Returns
+///
+/// `Ok(SchemaVersion)` on success, `Err(ParseError)` for invalid formats.
+///
+/// # Examples
+///
+/// ```ignore
+/// let v = parse_version_string("1.0", span)?;
+/// assert_eq!(v.major, 1);
+/// assert_eq!(v.minor, 0);
+/// ```
+pub fn parse_version_string(version_str: &str, span: Span) -> Result<SchemaVersion, ParseError> {
+    let trimmed = version_str.trim();
+
+    // Reject empty strings
+    if trimmed.is_empty() {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: "Version attribute cannot be empty".to_string(),
+            span,
+            suggestion: Some("Use format: version=\"1.0\"".to_string()),
+        });
+    }
+
+    // Split on "." and validate exactly 2 parts
+    let parts: Vec<&str> = trimmed.split('.').collect();
+    if parts.len() != 2 {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!(
+                "Invalid version format '{}'. Expected 'major.minor' (e.g., '1.0')",
+                trimmed
+            ),
+            span,
+            suggestion: Some("Use format: version=\"1.0\"".to_string()),
+        });
+    }
+
+    // Parse major version
+    let major = parts[0].parse::<u16>().map_err(|_| ParseError {
+        kind: ParseErrorKind::InvalidValue,
+        message: format!(
+            "Invalid version format '{}'. Expected 'major.minor' (e.g., '1.0')",
+            trimmed
+        ),
+        span,
+        suggestion: Some("Use format: version=\"1.0\"".to_string()),
+    })?;
+
+    // Parse minor version
+    let minor = parts[1].parse::<u16>().map_err(|_| ParseError {
+        kind: ParseErrorKind::InvalidValue,
+        message: format!(
+            "Invalid version format '{}'. Expected 'major.minor' (e.g., '1.0')",
+            trimmed
+        ),
+        span,
+        suggestion: Some("Use format: version=\"1.0\"".to_string()),
+    })?;
+
+    Ok(SchemaVersion { major, minor })
+}
+
+/// Validate that a parsed version is supported by this framework.
+///
+/// # Arguments
+///
+/// * `version` - Parsed version to validate
+/// * `span` - Source location for error reporting
+///
+/// # Returns
+///
+/// `Ok(())` if the version is supported, `Err(ParseError)` if the version
+/// is newer than `MAX_SUPPORTED_VERSION`.
+pub fn validate_version_supported(version: &SchemaVersion, span: Span) -> Result<(), ParseError> {
+    if (version.major, version.minor) > (MAX_SUPPORTED_VERSION.major, MAX_SUPPORTED_VERSION.minor) {
+        return Err(ParseError {
+            kind: ParseErrorKind::UnsupportedVersion,
+            message: format!(
+                "Schema version {}.{} is not supported. Maximum supported version: {}.{}",
+                version.major,
+                version.minor,
+                MAX_SUPPORTED_VERSION.major,
+                MAX_SUPPORTED_VERSION.minor
+            ),
+            span,
+            suggestion: Some(format!(
+                "Upgrade dampen-core to support v{}.{}, or use version=\"{}.{}\"",
+                version.major,
+                version.minor,
+                MAX_SUPPORTED_VERSION.major,
+                MAX_SUPPORTED_VERSION.minor
+            )),
+        });
+    }
+    Ok(())
+}
+
 /// Parse XML markup into a DampenDocument.
 ///
 /// This is the main entry point for the parser. It takes XML markup and
@@ -69,10 +180,11 @@ pub fn parse(xml: &str) -> Result<DampenDocument, ParseError> {
         parse_dampen_document(root, xml)
     } else {
         // Parse direct widget (backward compatibility)
+        // Default to version 1.0 for backward compatibility
         let root_widget = parse_node(root, xml)?;
 
         Ok(DampenDocument {
-            version: SchemaVersion { major: 1, minor: 0 },
+            version: SchemaVersion::default(),
             root: root_widget,
             themes: HashMap::new(),
             style_classes: HashMap::new(),
@@ -480,6 +592,17 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
     let mut root_widget = None;
     let mut global_theme = None;
 
+    // Parse version attribute from <dampen> root element
+    let span = get_span(root, source);
+    let version = if let Some(version_attr) = root.attribute("version") {
+        let parsed = parse_version_string(version_attr, span)?;
+        validate_version_supported(&parsed, span)?;
+        parsed
+    } else {
+        // Default to version 1.0 for backward compatibility
+        SchemaVersion::default()
+    };
+
     // Iterate through children of <dampen>
     for child in root.children() {
         if child.node_type() != NodeType::Element {
@@ -549,7 +672,7 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
     })?;
 
     Ok(DampenDocument {
-        version: SchemaVersion { major: 1, minor: 0 },
+        version,
         root: root_widget,
         themes,
         style_classes,

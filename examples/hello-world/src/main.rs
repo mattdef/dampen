@@ -32,17 +32,17 @@ enum CurrentView {
 
 /// Main application state wrapper
 #[derive(Clone, Debug)]
-struct HelloApp {
+struct DampenApp {
     current_view: CurrentView,
     window_state: AppState<ui::window::Model>,
     #[cfg(debug_assertions)]
     error_overlay: ErrorOverlay,
 }
 
-impl HelloApp {
+impl DampenApp {
     fn new() -> (Self, Task<Message>) {
         (
-            HelloApp {
+            DampenApp {
                 current_view: CurrentView::Window,
                 window_state: ui::window::create_app_state(),
                 #[cfg(debug_assertions)]
@@ -54,7 +54,7 @@ impl HelloApp {
 }
 
 /// Update function
-fn update(app: &mut HelloApp, message: Message) -> Task<Message> {
+fn update(app: &mut DampenApp, message: Message) -> Task<Message> {
     match message {
         Message::Handler(HandlerMessage::Handler(handler_name, value)) => {
             dispatch_handler(app, &handler_name, value);
@@ -92,7 +92,7 @@ fn update(app: &mut HelloApp, message: Message) -> Task<Message> {
 }
 
 /// View function using DampenWidgetBuilder
-fn view(app: &HelloApp) -> Element<'_, Message> {
+fn view(app: &DampenApp) -> Element<'_, Message> {
     #[cfg(debug_assertions)]
     if app.error_overlay.is_visible() {
         // Show error overlay on top of normal UI
@@ -106,20 +106,22 @@ fn view(app: &HelloApp) -> Element<'_, Message> {
 }
 
 /// Initialize the application
-fn init() -> (HelloApp, Task<Message>) {
-    HelloApp::new()
+fn init() -> (DampenApp, Task<Message>) {
+    DampenApp::new()
 }
 
 pub fn main() -> iced::Result {
     println!("🔥 Hot-reload enabled! Edit src/ui/window.dampen to see live updates.");
 
     iced::application(init, update, view)
+        .window_size(iced::Size::new(400.0, 250.0))
+        .centered()
         .subscription(subscription)
         .run()
 }
 
 /// Subscription function for hot-reload (development mode only)
-fn subscription(_app: &HelloApp) -> Subscription<Message> {
+fn subscription(_app: &DampenApp) -> Subscription<Message> {
     #[cfg(debug_assertions)]
     {
         // Resolve UI file path relative to the manifest directory
@@ -140,7 +142,7 @@ fn subscription(_app: &HelloApp) -> Subscription<Message> {
 }
 
 /// Dispatch a handler to the current view
-fn dispatch_handler(app: &mut HelloApp, handler_name: &str, value: Option<String>) {
+fn dispatch_handler(app: &mut DampenApp, handler_name: &str, value: Option<String>) {
     let (model, registry) = match app.current_view {
         CurrentView::Window => (
             &mut app.window_state.model as &mut dyn std::any::Any,

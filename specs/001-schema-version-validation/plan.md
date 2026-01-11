@@ -1,0 +1,121 @@
+# Implementation Plan: XML Schema Version Parsing and Validation
+
+**Branch**: `001-schema-version-validation` | **Date**: 2026-01-11 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/001-schema-version-validation/spec.md`
+
+## Summary
+
+Implement version attribute parsing and validation for Dampen XML files to ensure schema compatibility. The parser will read the `version` attribute from `<dampen>` root elements, validate that declared versions are supported (max v1.0), and reject future or malformed versions with clear error messages. All example files and CLI templates will be updated to explicitly declare `version="1.0"`.
+
+## Technical Context
+
+**Language/Version**: Rust Edition 2024, MSRV 1.85 (per constitution)  
+**Primary Dependencies**: roxmltree 0.19+ (XML parsing), thiserror (errors)  
+**Storage**: N/A (file-based XML parsing, no persistence)  
+**Testing**: cargo test, proptest (edge cases), insta (snapshots)  
+**Target Platform**: Cross-platform (Windows, Linux, macOS)  
+**Project Type**: Library crate (dampen-core) with CLI integration  
+**Performance Goals**: Version parsing adds <1ms overhead (negligible vs XML parse budget of <10ms/1000 widgets)  
+**Constraints**: Zero breaking changes to existing files (backward compatibility)  
+**Scale/Scope**: ~30 .dampen files to update, 2 new parser functions, 1 new error type
+
+## Constitution Check
+
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+| Principle | Status | Notes |
+|-----------|--------|-------|
+| I. Declarative-First | PASS | Version is an XML attribute on `<dampen>` root - purely declarative |
+| II. Type Safety | PASS | `SchemaVersion` struct exists with typed major/minor fields |
+| III. Dual-Mode | PASS | Version validation applies equally to interpreted and codegen modes |
+| IV. Backend Abstraction | PASS | Changes are in `dampen-core` only, no backend coupling |
+| V. Test-First | PASS | Plan includes TDD approach with contract tests before implementation |
+
+**Technical Constraints Check**:
+- Rust Edition 2024, MSRV 1.85: PASS
+- No nightly features: PASS
+- Cross-platform: PASS (pure Rust, no platform-specific code)
+- Clippy clean: Will verify
+- rustdoc comments: Will add for new functions
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+specs/001-schema-version-validation/
+├── spec.md              # Feature specification (complete)
+├── plan.md              # This file
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output
+│   └── version-api.md   # Version parsing contract
+└── checklists/
+    └── requirements.md  # Quality validation (complete)
+```
+
+### Source Code (repository root)
+
+```text
+crates/
+├── dampen-core/
+│   ├── src/
+│   │   ├── ir/
+│   │   │   └── mod.rs           # SchemaVersion struct (existing)
+│   │   ├── parser/
+│   │   │   ├── mod.rs           # parse_version_string(), validate_version_supported()
+│   │   │   └── error.rs         # ParseErrorKind::UnsupportedVersion (new)
+│   │   └── ir/
+│   │       └── node.rs          # WidgetKind::minimum_version() (new)
+│   └── tests/
+│       └── version_tests.rs     # Version parsing contract tests (new)
+│
+└── dampen-cli/
+    └── templates/
+        └── new/
+            └── src/ui/
+                └── window.dampen.template  # Add version="1.0"
+
+examples/
+├── hello-world/src/ui/window.dampen    # Add version="1.0"
+├── counter/src/ui/window.dampen        # Already has version="1.0"
+├── styling/src/ui/window.dampen        # Add version="1.0"
+├── settings/src/ui/*.dampen            # Add version="1.0"
+├── todo-app/src/ui/window.dampen       # Add version="1.0"
+└── widget-showcase/src/ui/*.dampen     # Add version="1.0" (27 files)
+
+tests/
+└── integration/
+    └── version_validation_tests.rs     # Integration tests (new)
+```
+
+**Structure Decision**: Single project structure - changes are localized to `dampen-core` parser module with updates to existing example files. No new crates or major structural changes required.
+
+## Complexity Tracking
+
+> No constitution violations detected. This feature aligns with all principles.
+
+| Aspect | Complexity | Justification |
+|--------|------------|---------------|
+| Parser changes | Low | 2 new functions, 1 new error type |
+| File updates | Medium | ~30 files need version attribute (automated) |
+| Testing | Low | Clear contract tests, no complex scenarios |
+| Documentation | Low | Update XML_SCHEMA.md sections |
+
+## Implementation Phases
+
+### Phase 0: Research (Complete in research.md)
+- Version string parsing strategies
+- Error message best practices
+- Backward compatibility patterns
+
+### Phase 1: Design (Complete in data-model.md, contracts/)
+- SchemaVersion parsing contract
+- Error type definitions
+- Widget version infrastructure
+
+### Phase 2: Tasks (Generated by /speckit.tasks)
+- TDD implementation sequence
+- File update automation
+- Documentation updates

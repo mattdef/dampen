@@ -8,12 +8,13 @@ build = "build.rs"
 [features]
 default = ["interpreted"]
 codegen = ["dampen-core/codegen"]
-interpreted = ["dampen-core/interpreted"]
+interpreted = ["dampen-dev", "dampen-core/interpreted"]
 
 [dependencies]
 dampen-core = "{{DAMPEN_VERSION}}"
 dampen-iced = "{{DAMPEN_VERSION}}"
 dampen-macros = "{{DAMPEN_VERSION}}"
+dampen-dev = { version = "{{DAMPEN_VERSION}}", optional = true }
 iced = "{{ICED_VERSION}}"
 serde = { version = "{{SERDE_VERSION}}", features = ["derive"] }
 serde_json = "{{SERDE_JSON_VERSION}}"
