@@ -1,6 +1,7 @@
 //! Tests for the check command
 
 use dampen_cli::commands::check::{CheckArgs, execute};
+use serial_test::serial;
 use std::fs;
 use tempfile::TempDir;
 
@@ -437,8 +438,8 @@ fn test_backward_compatibility_without_optional_flags() {
     let ui_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <column>
     <text value=\"Hello World\" />
-    <button label=\"Click\" on_click=\"unregistered_handler\" />
-    <text_input value=\"{unvalidated_binding}\" />
+    <button label=\"Click\" on_click=\"some_handler\" />
+    <text_input value=\"{some_binding}\" />
 </column>";
 
     fs::write(ui_dir.join("main.dampen"), ui_content).unwrap();
@@ -452,11 +453,12 @@ fn test_backward_compatibility_without_optional_flags() {
     assert!(args.custom_widgets.is_none());
     assert!(!args.strict);
 
-    // Should pass basic validation (only widget names and attributes)
+    // Should pass basic validation since no handlers.json or model.json exists
+    // (auto-discovery finds nothing, so handler/binding validation is skipped)
     let result = execute(&args);
     assert!(
         result.is_ok(),
-        "Basic validation should pass without optional validation flags"
+        "Basic validation should pass when no validation files are auto-discovered"
     );
 }
 
@@ -503,27 +505,28 @@ fn test_enhanced_validation_requires_opt_in() {
     let ui_dir = temp_dir.path().join("ui");
     fs::create_dir(&ui_dir).unwrap();
 
-    // UI file with handler that doesn't exist
+    // UI file with handler
     let ui_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <column>
-    <button label=\"Click\" on_click=\"nonexistent_handler\" />
+    <button label=\"Click\" on_click=\"some_handler\" />
 </column>";
 
     fs::write(ui_dir.join("main.dampen"), ui_content).unwrap();
 
-    // Without handler registry, should pass (handler validation is opt-in)
+    // Without handlers.json file, auto-discovery finds nothing, validation is skipped
     let args_without_registry =
         create_check_args(Some(ui_dir.to_string_lossy().to_string()), false);
     let result = execute(&args_without_registry);
     assert!(
         result.is_ok(),
-        "Handler validation should be opt-in via --handlers flag"
+        "Handler validation should be skipped when no handlers.json is found"
     );
 }
 
 // New tests for auto-detection functionality
 
 #[test]
+#[serial]
 fn test_auto_detect_src_ui_directory() {
     let temp_dir = TempDir::new().unwrap();
 
@@ -553,6 +556,7 @@ fn test_auto_detect_src_ui_directory() {
 }
 
 #[test]
+#[serial]
 fn test_auto_detect_ui_directory_fallback() {
     let temp_dir = TempDir::new().unwrap();
 
@@ -585,6 +589,7 @@ fn test_auto_detect_ui_directory_fallback() {
 }
 
 #[test]
+#[serial]
 fn test_prefer_src_ui_over_ui() {
     let temp_dir = TempDir::new().unwrap();
 
@@ -624,6 +629,7 @@ fn test_prefer_src_ui_over_ui() {
 }
 
 #[test]
+#[serial]
 fn test_explicit_input_overrides_auto_detection() {
     let temp_dir = TempDir::new().unwrap();
 
@@ -684,6 +690,7 @@ fn test_error_when_no_ui_directory_found() {
 }
 
 #[test]
+#[serial]
 fn test_auto_discover_handlers_json_in_root() {
     let temp_dir = TempDir::new().unwrap();
 
@@ -722,6 +729,7 @@ fn test_auto_discover_handlers_json_in_root() {
 }
 
 #[test]
+#[serial]
 fn test_auto_discover_handlers_json_in_src() {
     let temp_dir = TempDir::new().unwrap();
 
@@ -761,6 +769,7 @@ fn test_auto_discover_handlers_json_in_src() {
 }
 
 #[test]
+#[serial]
 fn test_explicit_handlers_overrides_auto_discovery() {
     let temp_dir = TempDir::new().unwrap();
 
