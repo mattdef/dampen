@@ -10,7 +10,7 @@ This directory contains comprehensive examples demonstrating all features of the
 The simplest possible Dampen application - displays text in a column layout.
 
 ```bash
-cargo run -p hello-world
+dampen run -p hello-world
 ```
 
 **What you'll learn:**
@@ -27,7 +27,7 @@ cargo run -p hello-world
 A click counter demonstrating event handling and state management.
 
 ```bash
-cargo run -p counter
+dampen run -p counter
 ```
 
 **What you'll learn:**
@@ -44,7 +44,7 @@ cargo run -p counter
 Full-featured todo application demonstrating ProgressBar, Canvas, Tooltip, PickList, and Image widgets with category management, priority levels, and completion tracking.
 
 ```bash
-cargo run -p todo-app
+dampen run -p todo-app
 ```
 
 **What you'll learn:**
@@ -79,7 +79,7 @@ See [todo-app/README.md](todo-app/README.md) for detailed feature documentation.
 Individual examples for each Dampen widget type with feature demonstrations.
 
 ```bash
-cargo run -p widget-showcase
+dampen run -p widget-showcase
 ```
 
 **What you'll learn:**
@@ -111,10 +111,10 @@ Complete demonstration of ALL layout, sizing, theming, and styling features.
 
 ```bash
 # Main comprehensive showcase
-cargo run --bin styling
+dampen run --bin styling
 
 # State transitions demo
-cargo run --bin state-demo
+dampen run --bin state-demo
 ```
 
 **What you'll learn:**
@@ -142,7 +142,7 @@ cargo run --bin state-demo
 Demonstrates responsive design with mobile/tablet/desktop breakpoints.
 
 ```bash
-cargo run -p responsive
+dampen run -p responsive
 ```
 
 **What you'll learn:**
@@ -191,14 +191,12 @@ cargo run -p responsive
 
 Build all examples:
 ```bash
-cargo build --examples
+dampen build
 ```
 
 Run a specific example:
 ```bash
-cargo run -p <example-name>
-# or
-cargo run --example <example-name>
+dampen run -p <example-name>
 ```
 
 List all examples:
@@ -293,7 +291,7 @@ examples/<example>/
 cd examples/styling
 cat ui/main.dampen         # See the comprehensive UI
 cat README.md               # Read detailed docs
-cargo run --bin styling     # Run the showcase
+dampen run --bin styling    # Run the showcase
 ```
 
 ### 2. Modify the UI
@@ -305,7 +303,7 @@ Edit `ui/main.dampen` and change:
 
 ### 3. Run Again
 ```bash
-cargo run --bin styling
+dampen run --bin styling
 ```
 
 See your changes immediately!

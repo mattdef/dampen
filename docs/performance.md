@@ -1,6 +1,10 @@
 # Dampen Performance Guide
 
-This document describes the performance characteristics of Dampen's dual-mode architecture and provides optimization guidelines.
+**For Advanced Users and Framework Contributors**
+
+This document describes the performance characteristics of Dampen's dual-mode architecture and provides optimization guidelines for framework contributors and advanced users.
+
+> **Note**: Application developers should use `dampen` CLI commands. This document uses `cargo` commands for detailed performance analysis and benchmarking. See [USAGE.md](USAGE.md) for application development.
 
 ## Table of Contents
 

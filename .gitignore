@@ -70,3 +70,10 @@ examples/*/Cargo.lock
 # Generated files
 crates/*/src/**/generated/
 **/ui_generated.rs
+
+# AI files
+.claude/
+.opencode/
+.specify/
+CLAUDE.md
+AGENTS.md

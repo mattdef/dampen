@@ -86,6 +86,44 @@ specs/
 
 ## Commands
 
+### For Application Developers (User Workflow)
+
+Application developers using Dampen should use the `dampen` CLI exclusively:
+
+```bash
+# Create a new project
+dampen new my-app
+
+# Run in development mode (with hot-reload)
+dampen run
+
+# Build for development (debug mode)
+dampen build
+
+# Build for production (optimized)
+dampen release
+
+# Run tests
+dampen test
+
+# Validate XML syntax
+dampen check
+
+# Inspect generated IR
+dampen inspect src/ui/window.dampen
+
+# Run examples
+dampen run -p hello-world
+dampen run -p counter
+dampen run -p todo-app
+```
+
+See [docs/USAGE.md](docs/USAGE.md) for complete user documentation.
+
+### For Framework Contributors (Developer Workflow)
+
+Contributors working on the Dampen framework itself use `cargo` directly:
+
 ```bash
 # Build all crates
 cargo build --workspace
@@ -106,17 +144,14 @@ cargo clippy --workspace -- -D warnings
 cargo fmt --all
 cargo fmt --all -- --check  # CI check
 
-# Run examples
-cargo run -p hello-world
-cargo run -p counter
-cargo run -p todo-app
-
 # Documentation
 cargo doc --workspace --no-deps --open
 
 # Benchmarks (when implemented)
 cargo bench -p dampen-core
 ```
+
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for contributor documentation.
 
 ## Code Style
 
@@ -356,7 +391,7 @@ dampen new my-app
 cd my-app
 
 # Run the application
-cargo run
+dampen run
 ```
 
 The `dampen new` command creates a complete project structure:

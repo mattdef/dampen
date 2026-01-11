@@ -17,8 +17,8 @@ If you're starting a new project, use the CLI:
 ```bash
 dampen new my-app
 cd my-app
-cargo run  # Automatically uses interpreted mode in dev
-cargo build --release  # Automatically uses codegen mode
+dampen run  # Automatically uses interpreted mode in dev
+dampen release  # Automatically uses codegen mode for production
 ```
 
 The generated project is already configured for dual-mode.
@@ -186,9 +186,9 @@ impl Default for App {
 ### Test Interpreted Mode (Development)
 
 ```bash
-cargo run
-# or explicitly:
-cargo run --features interpreted
+dampen run
+# or with verbose output:
+dampen run -v
 ```
 
 **Expected behavior:**
@@ -199,10 +199,10 @@ cargo run --features interpreted
 ### Test Codegen Mode (Production)
 
 ```bash
-cargo build --release
-cargo run --release
-# or explicitly:
-cargo build --features codegen
+dampen release
+./target/release/my-app
+# or with verbose output:
+dampen release -v
 ```
 
 **Expected behavior:**

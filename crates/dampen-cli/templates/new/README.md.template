@@ -4,10 +4,10 @@ A Dampen UI application - build declarative UIs with XML and Rust!
 
 ## Quick Start
 
-Run the application:
+Run the application in development mode (with hot-reload):
 
 ```bash
-cargo run
+dampen run
 ```
 
 This will open a window with your UI. Click the button to see bindings in action!
@@ -174,12 +174,34 @@ Create additional views by adding new modules in `src/ui/`:
 - `<button>` - Clickable button (attributes: `label`, events: `on_click`)
 - `<radio>` - Radio button (attributes: `label`, `value`, `selected`, `disabled`)
 
+## CLI Commands
+
+Dampen provides a comprehensive CLI for all development tasks:
+
+```bash
+# Development
+dampen run              # Run in dev mode with hot-reload
+dampen run -- --arg     # Pass arguments to your application
+
+# Building
+dampen build            # Debug build with codegen
+dampen release          # Production build (optimized)
+
+# Validation & Inspection
+dampen check            # Validate .dampen XML files
+dampen inspect <file>   # Inspect IR and generated code
+
+# Testing
+dampen test             # Run all tests
+dampen test <name>      # Run specific test
+```
+
 ## Building for Production
 
 Create an optimized release build:
 
 ```bash
-cargo build --release
+dampen release
 ```
 
 Your binary will be in `target/release/{{PROJECT_NAME}}`.
@@ -189,7 +211,7 @@ Your binary will be in `target/release/{{PROJECT_NAME}}`.
 Run the integration tests:
 
 ```bash
-cargo test
+dampen test
 ```
 
 ## Documentation
@@ -197,6 +219,12 @@ cargo test
 - [Dampen Documentation](https://docs.rs/dampen-core)
 - [Iced Documentation](https://docs.rs/iced)
 - [XML Schema Reference](../../specs/001-framework-technical-specs/contracts/xml-schema.md)
+
+**Note**: You only need `cargo` to install the Dampen CLI initially:
+```bash
+cargo install dampen-cli
+```
+After that, use `dampen` commands for all development tasks.
 
 ## Troubleshooting
 

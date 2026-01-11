@@ -21,13 +21,13 @@ This directory contains multiple examples:
 
 ```bash
 # Main comprehensive showcase (this file)
-cargo run --bin styling
+dampen run --bin styling
 
 # State transitions demo (hover, active, combined states)
-cargo run --bin state-demo
+dampen run --bin state-demo
 
 # Theme switching demo
-cargo run -p styling  # (loads ui/theme_demo.dampen)
+dampen run -p styling  # (loads ui/theme_demo.dampen)
 ```
 
 ## File Structure
@@ -260,7 +260,7 @@ fn update(state: &mut AppState, message: Message) -> Task<Message> {
 ### Main Showcase
 ```bash
 cd examples/styling
-cargo run --bin styling
+dampen run --bin styling
 ```
 
 **What it demonstrates:**
@@ -274,7 +274,7 @@ cargo run --bin styling
 ### State Transitions Demo
 ```bash
 cd examples/styling
-cargo run --bin state-demo
+dampen run --bin state-demo
 ```
 
 **What it demonstrates:**
@@ -288,7 +288,7 @@ cargo run --bin state-demo
 ### Theme Switching Demo
 ```bash
 cd examples/styling
-cargo run --bin theme-demo  # Not yet implemented
+dampen run --bin theme-demo  # Not yet implemented
 ```
 
 ## XML Schema Reference

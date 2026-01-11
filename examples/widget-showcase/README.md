@@ -87,7 +87,7 @@ To run the widget showcase:
 
 ```bash
 cd examples/widget-showcase
-cargo run
+dampen run
 ```
 
 The application will display examples of all implemented widgets.

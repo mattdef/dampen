@@ -27,10 +27,6 @@ pub struct BuildArgs {
     #[arg(short, long)]
     verbose: bool,
 
-    /// Release build (use cargo build --release)
-    #[arg(long)]
-    release: bool,
-
     /// Package to build (if workspace has multiple packages)
     #[arg(short, long)]
     package: Option<String>,
@@ -42,33 +38,29 @@ pub struct BuildArgs {
 
 /// Execute the build command
 ///
-/// This command builds the application in production/codegen mode
-/// by invoking `cargo build` with the `codegen` feature flag.
+/// Builds the application in debug mode with codegen.
 ///
 /// # Mode Behavior
 ///
-/// - **Codegen Mode**: Compile-time code generation with zero runtime overhead
-/// - Bindings are inlined at compile time
-/// - Optimal performance for production deployments
-/// - Requires build.rs for code generation
+/// - **Debug Mode with Codegen**: Compile-time code generation without optimizations
+/// - Faster compilation than release mode
+/// - Useful for debugging production codegen behavior
+/// - Use `dampen release` for optimized production builds
 ///
 /// # Examples
 ///
 /// ```bash
-/// # Basic production build
+/// # Basic debug build with codegen
 /// dampen build
 ///
-/// # Release build with optimizations
-/// dampen build --release
-///
 /// # Build specific package in workspace
-/// dampen build -p my-app --release
+/// dampen build -p my-app
 ///
 /// # Enable additional features
-/// dampen build --release --features tokio,logging
+/// dampen build --features tokio,logging
 /// ```
 pub fn execute(args: &BuildArgs) -> Result<(), String> {
-    // By default, run production build (like cargo build)
+    // Run debug build with codegen
     execute_production_build(args)
 }
 
@@ -77,14 +69,13 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     use std::process::Command;
 
     if args.verbose {
-        eprintln!("Running production build...");
-        eprintln!("Mode: {}", if args.release { "release" } else { "debug" });
+        eprintln!("Running debug build with codegen...");
     }
 
     // Check if build.rs exists
     if !Path::new("build.rs").exists() {
         return Err(
-            "build.rs not found. This project may not be configured for production builds."
+            "build.rs not found. This project may not be configured for codegen builds."
                 .to_string(),
         );
     }
@@ -103,10 +94,6 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
         cmd.arg("-p").arg(package);
     }
 
-    if args.release {
-        cmd.arg("--release");
-    }
-
     if args.verbose {
         cmd.arg("--verbose");
     }
@@ -121,11 +108,7 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     // Execute cargo build
     if args.verbose {
         let features_str = all_features.join(",");
-        eprintln!(
-            "Executing: cargo build --features {}{}",
-            features_str,
-            if args.release { " --release" } else { "" }
-        );
+        eprintln!("Executing: cargo build --features {}", features_str);
     }
 
     let status = cmd
@@ -137,14 +120,10 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     }
 
     if args.verbose {
-        let binary_path = if args.release {
-            "target/release"
-        } else {
-            "target/debug"
-        };
-        eprintln!("Build successful! Binary is in {}/", binary_path);
+        eprintln!("Build successful! Binary is in target/debug/");
     }
 
-    eprintln!("Production build completed successfully!");
+    eprintln!("Debug build completed successfully!");
+    eprintln!("Use 'dampen release' for optimized production builds.");
     Ok(())
 }

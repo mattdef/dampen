@@ -280,10 +280,10 @@ Dampen supports two compilation modes optimized for different use cases:
 
 ```bash
 # Development mode (automatic)
-cargo run
+dampen run
 
 # Explicit interpreted mode
-cargo run --features interpreted
+dampen run --features interpreted
 ```
 
 **Hot-reload example:**
@@ -307,11 +307,11 @@ fn subscription(app: &App) -> Subscription<Message> {
 - ✅ **Build-time validation**: Catch errors before deployment
 
 ```bash
-# Production mode (automatic)
-cargo build --release
+# Production build (automatic codegen)
+dampen release
 
-# Explicit codegen mode
-cargo build --features codegen
+# Debug build with codegen
+dampen build
 ```
 
 **How it works:**
@@ -324,21 +324,24 @@ cargo build --features codegen
 
 Mode selection is **automatic** based on build profile:
 
-| Build Command | Mode | Use Case |
-|---------------|------|----------|
-| `cargo run` | Interpreted | Development with hot-reload |
-| `cargo build` | Interpreted | Development builds |
-| `cargo build --release` | Codegen | Production deployments |
-| `cargo test` | Interpreted | Fast test iteration |
+| CLI Command | Mode | Use Case |
+|-------------|------|----------|
+| `dampen run` | Interpreted | Development with hot-reload |
+| `dampen build` | Codegen | Debug builds with codegen |
+| `dampen release` | Codegen | Production deployments (optimized) |
+| `dampen test` | Interpreted | Fast test iteration |
 
-**Manual override:**
+**Advanced usage:**
 
 ```bash
-# Force interpreted in release
-cargo build --release --no-default-features --features interpreted
+# Enable additional features
+dampen release --features tokio,logging
 
-# Force codegen in dev
-cargo build --features codegen
+# Run tests in release mode
+dampen test --release
+
+# Verbose output
+dampen build -v
 ```
 
 ### Migration Guide
@@ -429,7 +432,7 @@ cargo test --workspace
 cargo clippy --workspace -- -D warnings
 
 # Try the examples
-cargo run --example hello-world
+dampen run -p hello-world
 ```
 
 All contributions must:

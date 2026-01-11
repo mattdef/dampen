@@ -211,7 +211,7 @@ pub mod window;
 ### Step 5: Run Your App
 
 ```bash
-cargo run
+dampen run
 ```
 
 You should see a window with a counter that responds to button clicks!

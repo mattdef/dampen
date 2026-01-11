@@ -75,7 +75,7 @@ pub fn execute(args: &NewArgs) -> Result<(), String> {
             println!();
             println!("Next steps:");
             println!("  cd {}", project_name);
-            println!("  cargo run");
+            println!("  dampen run");
             Ok(())
         }
         Err(e) => {
@@ -137,7 +137,7 @@ fn create_project(project_name: &str, project_path: &Path) -> Result<(), String>
     generate_ui_mod_rs(project_path, project_name)?;
     generate_ui_window_rs(project_path, project_name)?;
     generate_window_dampen(project_path, project_name)?;
-    generate_integration_tests(project_path, project_name)?;
+    generate_integration_test(project_path, project_name)?;
     generate_readme(project_path, project_name)?;
 
     Ok(())
@@ -262,9 +262,13 @@ fn generate_window_dampen(project_path: &Path, project_name: &str) -> Result<(),
 }
 
 /// Generate tests/integration.rs from template
-fn generate_integration_tests(project_path: &Path, project_name: &str) -> Result<(), String> {
+fn generate_integration_test(project_path: &Path, project_name: &str) -> Result<(), String> {
     let template = include_str!("../../templates/new/tests/integration.rs.template");
-    let content = template.replace("{{PROJECT_NAME}}", project_name);
+
+    // Sanitize project name for use in Rust identifiers (replace hyphens with underscores)
+    let sanitized_name = project_name.replace('-', "_");
+
+    let content = template.replace("{{PROJECT_NAME}}", &sanitized_name);
 
     let file_path = project_path.join("tests/integration.rs");
     fs::write(&file_path, content)

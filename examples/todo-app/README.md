@@ -46,7 +46,7 @@ pub struct TodoItem {
 
 ```bash
 cd examples/todo-app
-cargo run
+dampen run
 ```
 
 The application will open in a window. You can:

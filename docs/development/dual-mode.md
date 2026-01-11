@@ -1,6 +1,10 @@
 # Dual-Mode Architecture Developer Guide
 
-This guide explains the internals of Dampen's dual-mode architecture for framework contributors and advanced users.
+**For Framework Contributors and Advanced Users**
+
+This guide explains the internals of Dampen's dual-mode architecture for framework contributors and advanced users. If you're building applications **with** Dampen, see [USAGE.md](../USAGE.md) instead.
+
+> **Note**: This document uses `cargo` commands for workspace development. Application developers should use `dampen` CLI commands (see [USAGE.md](../USAGE.md)).
 
 ## Table of Contents
 
