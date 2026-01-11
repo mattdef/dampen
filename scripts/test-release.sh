@@ -28,6 +28,7 @@ cat Cargo.toml | \
   sed "s/dampen-macros = { path = \"\.\/crates\/dampen-macros\", version = \".*\" }/dampen-macros = { path = \".\/crates\/dampen-macros\", version = \"$NEW_VERSION\" }/" | \
   sed "s/dampen-iced = { path = \"\.\/crates\/dampen-iced\", version = \".*\" }/dampen-iced = { path = \".\/crates\/dampen-iced\", version = \"$NEW_VERSION\" }/" | \
   sed "s/dampen-cli = { path = \"\.\/crates\/dampen-cli\", version = \".*\" }/dampen-cli = { path = \".\/crates\/dampen-cli\", version = \"$NEW_VERSION\" }/" | \
+  sed "s/dampen-dev = { path = \"\.\/crates\/dampen-dev\", version = \".*\" }/dampen-dev = { path = \".\/crates\/dampen-dev\", version = \"$NEW_VERSION\" }/" | \
   grep "dampen-.* = { path"
 
 echo ""

@@ -69,6 +69,7 @@ sed -i.bak "s/dampen-core = { path = \"\.\/crates\/dampen-core\", version = \".*
 sed -i.bak "s/dampen-macros = { path = \"\.\/crates\/dampen-macros\", version = \".*\" }/dampen-macros = { path = \".\/crates\/dampen-macros\", version = \"$NEW_VERSION\" }/" Cargo.toml
 sed -i.bak "s/dampen-iced = { path = \"\.\/crates\/dampen-iced\", version = \".*\" }/dampen-iced = { path = \".\/crates\/dampen-iced\", version = \"$NEW_VERSION\" }/" Cargo.toml
 sed -i.bak "s/dampen-cli = { path = \"\.\/crates\/dampen-cli\", version = \".*\" }/dampen-cli = { path = \".\/crates\/dampen-cli\", version = \"$NEW_VERSION\" }/" Cargo.toml
+sed -i.bak "s/dampen-dev = { path = \"\.\/crates\/dampen-dev\", version = \".*\" }/dampen-dev = { path = \".\/crates\/dampen-dev\", version = \"$NEW_VERSION\" }/" Cargo.toml
 
 rm -f Cargo.toml.bak
 echo "  ✓ Updated workspace package version to $NEW_VERSION"
@@ -76,6 +77,7 @@ echo "  ✓ Updated dampen-core version to $NEW_VERSION"
 echo "  ✓ Updated dampen-macros version to $NEW_VERSION"
 echo "  ✓ Updated dampen-iced version to $NEW_VERSION"
 echo "  ✓ Updated dampen-cli version to $NEW_VERSION"
+echo "  ✓ Updated dampen-dev version to $NEW_VERSION"
 echo ""
 
 echo -e "${GREEN}Step 5: Building documentation...${NC}"
