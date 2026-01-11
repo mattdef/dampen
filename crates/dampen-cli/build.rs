@@ -21,17 +21,23 @@ fn main() {
         .expect("Failed to find workspace root (expected two levels up)");
     let workspace_toml = workspace_root.join("Cargo.toml");
 
-    // Re-run if workspace Cargo.toml changes
-    println!("cargo:rerun-if-changed={}", workspace_toml.display());
+    // Re-run if workspace Cargo.toml changes (if it exists)
+    if workspace_toml.exists() {
+        println!("cargo:rerun-if-changed={}", workspace_toml.display());
+    }
 
     // Read and parse workspace Cargo.toml
-    let content = fs::read_to_string(&workspace_toml).unwrap_or_else(|e| {
-        panic!(
-            "Failed to read workspace Cargo.toml at {}: {}",
-            workspace_toml.display(),
-            e
-        )
-    });
+    // If it doesn't exist (e.g., during crates.io packaging), use default versions
+    let content = match fs::read_to_string(&workspace_toml) {
+        Ok(content) => content,
+        Err(_) => {
+            // Use default versions when workspace Cargo.toml is not available
+            println!("cargo:rustc-env=ICED_VERSION=0.14");
+            println!("cargo:rustc-env=SERDE_VERSION=1.0");
+            println!("cargo:rustc-env=SERDE_JSON_VERSION=1.0");
+            return;
+        }
+    };
 
     // Extract versions using simple string parsing
     // Note: This is a simple approach. For more complex scenarios, consider using toml crate.
