@@ -329,7 +329,6 @@ fn subscription(_app: &ShowcaseApp) -> Subscription<Message> {
         // Resolve UI file path relative to the manifest directory
         // This works whether running from workspace root or example directory
 
-        use iced::widget::ComboBox;
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
         let window_file = PathBuf::from(manifest_dir).join("src/ui/window.dampen");
         let button_file = PathBuf::from(manifest_dir).join("src/ui/button.dampen");
