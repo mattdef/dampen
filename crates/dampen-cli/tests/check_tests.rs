@@ -151,7 +151,7 @@ fn test_valid_theme_and_class_references() {
     fs::create_dir(&ui_dir).unwrap();
 
     let valid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<dampen>
+<dampen version="1.0">
     <themes>
         <theme name=\"custom\">
             <palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\"
@@ -406,7 +406,7 @@ fn test_circular_class_dependency() {
     fs::create_dir(&ui_dir).unwrap();
 
     let invalid_ui = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<dampen>
+<dampen version="1.0">
     <style_classes>
         <class name=\"class_a\" extends=\"class_b\" background=\"#fff\" />
         <class name=\"class_b\" extends=\"class_a\" color=\"#000\" />

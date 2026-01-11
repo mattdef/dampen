@@ -56,7 +56,7 @@ fn test_deleted_file_during_watch() {
     // Create initial file
     fs::write(
         &file_path,
-        r#"<dampen><column><text value="Initial" /></column></dampen>"#,
+        r#"<dampen version="1.0"><column><text value="Initial" /></column></dampen>"#,
     )
     .expect("Failed to write file");
 
@@ -85,9 +85,9 @@ fn test_deleted_file_during_watch() {
 /// Expected: Debouncing batches events, only the final state triggers reload
 #[test]
 fn test_rapid_successive_saves() {
-    let xml_v1 = r#"<dampen><column><text value="Version 1" /></column></dampen>"#;
-    let xml_v2 = r#"<dampen><column><text value="Version 2" /></column></dampen>"#;
-    let xml_v3 = r#"<dampen><column><text value="Version 3" /></column></dampen>"#;
+    let xml_v1 = r#"<dampen version="1.0"><column><text value="Version 1" /></column></dampen>"#;
+    let xml_v2 = r#"<dampen version="1.0"><column><text value="Version 2" /></column></dampen>"#;
+    let xml_v3 = r#"<dampen version="1.0"><column><text value="Version 3" /></column></dampen>"#;
 
     let doc = parser::parse(xml_v1).unwrap();
     let model = TestModel::default();
@@ -124,7 +124,7 @@ fn test_codegen_with_invalid_expressions() {
     // The code generator validates expressions and produces valid Rust code
 
     let xml_with_complex_expr = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="{value}" />
             </column>
@@ -148,8 +148,8 @@ fn test_simultaneous_multi_file_changes() {
     // All changes within the window are batched together
     // Each unique file triggers its own reload attempt
 
-    let xml1 = r#"<dampen><column><text value="File 1" /></column></dampen>"#;
-    let xml2 = r#"<dampen><column><text value="File 2" /></column></dampen>"#;
+    let xml1 = r#"<dampen version="1.0"><column><text value="File 1" /></column></dampen>"#;
+    let xml2 = r#"<dampen version="1.0"><column><text value="File 2" /></column></dampen>"#;
 
     // Parse both
     let doc1 = parser::parse(xml1);
@@ -174,7 +174,7 @@ fn test_permission_loss_during_watch() {
     let file_path = temp_dir.path().join("test.dampen");
 
     // Create file
-    fs::write(&file_path, "<dampen><column /></dampen>").expect("Failed to write file");
+    fs::write(&file_path, "<dampen version="1.0"><column /></dampen>").expect("Failed to write file");
 
     // Remove read permissions
     let mut perms = fs::metadata(&file_path)
@@ -202,7 +202,7 @@ fn test_permission_loss_during_watch() {
 #[test]
 fn test_deeply_nested_ui_structure() {
     // Generate deeply nested structure (100 levels)
-    let mut xml = String::from("<dampen>");
+    let mut xml = String::from("<dampen version="1.0">");
     for i in 0..100 {
         xml.push_str(&format!(r#"<column id="level{}">"#, i));
     }
@@ -236,7 +236,7 @@ fn test_mode_switching() {
     #[cfg(debug_assertions)]
     {
         // In debug mode (interpreted)
-        let xml = r#"<dampen><column><text value="Debug" /></column></dampen>"#;
+        let xml = r#"<dampen version="1.0"><column><text value="Debug" /></column></dampen>"#;
         let result = parser::parse(xml);
         assert!(result.is_ok(), "Debug mode should parse XML at runtime");
     }
@@ -274,7 +274,7 @@ fn test_circular_dependency_detection() {
 #[test]
 fn test_very_large_ui_file() {
     // Generate a large UI with 5000 widgets
-    let mut xml = String::from("<dampen><column spacing=\"10\">");
+    let mut xml = String::from("<dampen version="1.0"><column spacing=\"10\">");
     for i in 0..5000 {
         xml.push_str(&format!(r#"<text value="Widget {}" />"#, i));
     }
@@ -302,10 +302,10 @@ fn test_very_large_ui_file() {
 #[test]
 fn test_malformed_xml_recovery() {
     let invalid_xml_cases = vec![
-        ("<dampen><column>", "Unclosed tag"),
-        ("<dampen><unknown /></dampen>", "Unknown widget"),
+        ("<dampen version="1.0"><column>", "Unclosed tag"),
+        ("<dampen version="1.0"><unknown /></dampen>", "Unknown widget"),
         ("not xml at all", "Not XML"),
-        ("<dampen></dampen>", "Empty document"),
+        ("<dampen version="1.0"></dampen>", "Empty document"),
     ];
 
     for (xml, description) in invalid_xml_cases {
@@ -327,8 +327,8 @@ fn test_malformed_xml_recovery() {
 /// Expected: Model state preserved across reload even with XML errors
 #[test]
 fn test_hot_reload_state_persistence_on_error() {
-    let valid_xml = r#"<dampen><column><text value="{value}" /></column></dampen>"#;
-    let invalid_xml = "<dampen><column>"; // Unclosed tag
+    let valid_xml = r#"<dampen version="1.0"><column><text value="{value}" /></column></dampen>"#;
+    let invalid_xml = "<dampen version="1.0"><column>"; // Unclosed tag
 
     let doc = parser::parse(valid_xml).unwrap();
     let model = TestModel {

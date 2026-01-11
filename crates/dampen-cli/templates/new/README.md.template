@@ -35,7 +35,7 @@ This will open a window with your UI. Click the button to see bindings in action
 The UI is defined declaratively in XML:
 
 ```xml
-<dampen>
+<dampen version="1.0">
     <column padding="40" spacing="20">
         <text value="Hello, Dampen!" size="32" weight="bold" />
         <button label="Click me!" on_click="greet" />
@@ -44,7 +44,7 @@ The UI is defined declaratively in XML:
 </dampen>
 ```
 
-- **Root element**: `<dampen>` wraps the entire UI
+- **Root element**: `<dampen version="1.0">` wraps the entire UI
 - **Bindings**: `{message}` automatically displays the `message` field from your model
 - **Handlers**: `on_click="greet"` connects the button to the `greet` function
 - **Layout**: Use `<column>` and `<row>` to arrange widgets
@@ -167,7 +167,7 @@ Create additional views by adding new modules in `src/ui/`:
 
 ## Available Widgets
 
-- `<dampen>` - Root element wrapping the entire UI
+- `<dampen version="1.0">` - Root element wrapping the entire UI
 - `<column>` - Vertical layout (attributes: `padding`, `spacing`)
 - `<row>` - Horizontal layout (attributes: `spacing`)
 - `<text>` - Display text (attributes: `value`, `size`, `weight`)

@@ -10,7 +10,7 @@ mod mode_parity_tests {
     /// Test that the same XML produces identical parse results in both modes
     #[test]
     fn test_parse_parity() {
-        let xml = r#"<dampen>
+        let xml = r#"<dampen version="1.0">
             <column padding="20" spacing="10">
                 <text value="Hello World" size="24" />
                 <button label="Click me" on_click="handle_click" />
@@ -34,7 +34,7 @@ mod mode_parity_tests {
     /// Test that document attributes are preserved in both modes
     #[test]
     fn test_document_attributes_parity() {
-        let xml = r##"<dampen>
+        let xml = r##"<dampen version="1.0">
             <text value="Test" size="16" weight="bold" color="#FF0000" />
         </dampen>"##;
 
@@ -50,7 +50,7 @@ mod mode_parity_tests {
     /// Test that binding expressions are parsed identically
     #[test]
     fn test_binding_parity() {
-        let xml = r#"<dampen>
+        let xml = r#"<dampen version="1.0">
             <column>
                 <text value="{model.name}" />
                 <text value="{count + 1}" />
@@ -71,7 +71,7 @@ mod mode_parity_tests {
     /// Test that handler references are preserved
     #[test]
     fn test_handler_parity() {
-        let xml = r#"<dampen>
+        let xml = r#"<dampen version="1.0">
             <column>
                 <button label="Save" on_click="save_data" />
                 <button label="Load" on_click="load_data" />
@@ -89,7 +89,7 @@ mod mode_parity_tests {
     /// Test complex nested structures
     #[test]
     fn test_complex_structure_parity() {
-        let xml = r#"<dampen>
+        let xml = r#"<dampen version="1.0">
             <column spacing="10">
                 <row spacing="5">
                     <button label="A" />
@@ -143,7 +143,7 @@ mod mode_parity_tests {
     fn test_appstate_mode_independence() {
         use dampen_core::AppState;
 
-        let xml = r#"<dampen>
+        let xml = r#"<dampen version="1.0">
             <column>
                 <text value="Hello" />
                 <button label="Click" on_click="increment" />

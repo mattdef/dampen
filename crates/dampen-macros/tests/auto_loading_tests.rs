@@ -10,7 +10,7 @@ use std::sync::LazyLock;
 
 static DAMPEN_DOCUMENT: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
     let xml = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column padding="40" spacing="20">
                     <text value="Hello" size="24" />
                     <button label="Click me" />
@@ -42,12 +42,12 @@ fn test_lazy_lock_initialization() {
 #[test]
 fn test_multiple_views_pattern() {
     static VIEW1: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
-        let xml = r#"<dampen><column><text value="View 1" /></column></dampen>"#;
+        let xml = r#"<dampen version="1.0"><column><text value="View 1" /></column></dampen>"#;
         parse(xml).expect("Failed to parse View 1")
     });
 
     static VIEW2: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
-        let xml = r#"<dampen><column><text value="View 2" /></column></dampen>"#;
+        let xml = r#"<dampen version="1.0"><column><text value="View 2" /></column></dampen>"#;
         parse(xml).expect("Failed to parse View 2")
     });
 

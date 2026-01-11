@@ -17,7 +17,7 @@ pub struct TestModel {
 #[test]
 fn test_appstate_default_unit() {
     let xml = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Hello" />
             </column>
@@ -34,7 +34,7 @@ fn test_appstate_default_unit() {
 #[test]
 fn test_appstate_with_model() {
     let xml = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Hello" />
             </column>
@@ -56,7 +56,7 @@ fn test_appstate_with_model() {
 #[test]
 fn test_appstate_with_handlers() {
     let xml = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Hello" />
             </column>
@@ -89,7 +89,7 @@ fn test_appstate_model_implements_uibindable() {
 #[test]
 fn test_appstate_clonable() {
     let xml = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Clone test" />
             </column>
@@ -147,7 +147,7 @@ fn test_handler_registry_simple_handler() {
 fn test_hot_reload_preserves_model() {
     // Create initial state with a model
     let xml_v1 = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Old UI" />
             </column>
@@ -167,7 +167,7 @@ fn test_hot_reload_preserves_model() {
 
     // Parse new UI definition
     let xml_v2 = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="New UI" />
                 <button label="Click me" />
@@ -194,7 +194,7 @@ fn test_hot_reload_preserves_model() {
 #[test]
 fn test_hot_reload_updates_document() {
     let xml_v1 = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Version 1" />
             </column>
@@ -209,7 +209,7 @@ fn test_hot_reload_updates_document() {
 
     // Parse new UI with more widgets
     let xml_v2 = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Version 2" />
                 <button label="Button 1" />
@@ -232,7 +232,7 @@ fn test_hot_reload_updates_document() {
 #[test]
 fn test_hot_reload_preserves_handlers() {
     let xml = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Test" />
             </column>
@@ -268,7 +268,7 @@ fn test_hot_reload_preserves_handlers() {
 
     // Hot-reload with new document
     let xml_v2 = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Updated" />
             </column>
@@ -292,9 +292,9 @@ fn test_hot_reload_preserves_handlers() {
 
 #[test]
 fn test_hot_reload_multiple_times() {
-    let xml_v1 = r#"<dampen><column><text value="V1" /></column></dampen>"#;
-    let xml_v2 = r#"<dampen><column><text value="V2" /></column></dampen>"#;
-    let xml_v3 = r#"<dampen><column><text value="V3" /></column></dampen>"#;
+    let xml_v1 = r#"<dampen version="1.0"><column><text value="V1" /></column></dampen>"#;
+    let xml_v2 = r#"<dampen version="1.0"><column><text value="V2" /></column></dampen>"#;
+    let xml_v3 = r#"<dampen version="1.0"><column><text value="V3" /></column></dampen>"#;
 
     let document_v1 = dampen_core::parse(xml_v1).unwrap();
     let model = TestModel {

@@ -776,7 +776,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state with a model
-        let xml_v1 = r#"<dampen><column><text value="Version 1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.0"><column><text value="Version 1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 42,
@@ -789,7 +789,7 @@ mod tests {
         let mut context = HotReloadContext::<TestModel>::new();
 
         // New XML with changes
-        let xml_v2 = r#"<dampen><column><text value="Version 2" /></column></dampen>"#;
+        let xml_v2 = r#"<dampen version="1.0"><column><text value="Version 2" /></column></dampen>"#;
 
         // Attempt hot-reload
         let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || HandlerRegistry::new());
@@ -811,7 +811,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state
-        let xml_v1 = r#"<dampen><column><text value="Version 1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.0"><column><text value="Version 1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 10,
@@ -822,7 +822,7 @@ mod tests {
         let mut context = HotReloadContext::<TestModel>::new();
 
         // Invalid XML (unclosed tag)
-        let xml_invalid = r#"<dampen><column><text value="Broken"#;
+        let xml_invalid = r#"<dampen version="1.0"><column><text value="Broken"#;
 
         // Attempt hot-reload
         let result = attempt_hot_reload(xml_invalid, &state_v1, &mut context, || {
@@ -845,7 +845,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state
-        let xml_v1 = r#"<dampen><column><text value="Version 1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.0"><column><text value="Version 1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 99,
@@ -858,7 +858,7 @@ mod tests {
         context.last_model_snapshot = Some("{ invalid json }".to_string()); // Invalid JSON
 
         // New valid XML
-        let xml_v2 = r#"<dampen><column><text value="Version 2" /></column></dampen>"#;
+        let xml_v2 = r#"<dampen version="1.0"><column><text value="Version 2" /></column></dampen>"#;
 
         // Attempt hot-reload (will snapshot current model, then try to restore from corrupted snapshot)
         let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || HandlerRegistry::new());
@@ -886,7 +886,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state
-        let xml_v1 = r#"<dampen><column><text value="V1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.0"><column><text value="V1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 100,
@@ -897,7 +897,7 @@ mod tests {
         let mut context = HotReloadContext::<TestModel>::new();
 
         // First reload
-        let xml_v2 = r#"<dampen><column><text value="V2" /></column></dampen>"#;
+        let xml_v2 = r#"<dampen version="1.0"><column><text value="V2" /></column></dampen>"#;
         let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || HandlerRegistry::new());
 
         let state_v2 = match result {
@@ -909,7 +909,7 @@ mod tests {
         assert_eq!(state_v2.model.name, "Dave");
 
         // Second reload
-        let xml_v3 = r#"<dampen><column><text value="V3" /></column></dampen>"#;
+        let xml_v3 = r#"<dampen version="1.0"><column><text value="V3" /></column></dampen>"#;
         let result = attempt_hot_reload(xml_v3, &state_v2, &mut context, || HandlerRegistry::new());
 
         let state_v3 = match result {
@@ -930,7 +930,7 @@ mod tests {
 
         // Create initial state
         let xml_v1 =
-            r#"<dampen><column><button label="Click" on_click="test" /></column></dampen>"#;
+            r#"<dampen version="1.0"><column><button label="Click" on_click="test" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 5,
@@ -948,7 +948,7 @@ mod tests {
 
         // New XML with different handler
         let xml_v2 =
-            r#"<dampen><column><button label="Click Me" on_click="test2" /></column></dampen>"#;
+            r#"<dampen version="1.0"><column><button label="Click Me" on_click="test2" /></column></dampen>"#;
 
         // Create NEW handler registry (simulating code change)
         let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || {
@@ -979,7 +979,7 @@ mod tests {
 
         // XML with multiple handlers
         let xml = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="Click" on_click="handle_click" />
                     <text_input placeholder="Type" on_input="handle_input" />
@@ -1004,7 +1004,7 @@ mod tests {
 
         // XML with nested handlers
         let xml = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <row>
                         <button label="A" on_click="handler_a" />
@@ -1035,7 +1035,7 @@ mod tests {
 
         // XML with duplicate handler names
         let xml = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="1" on_click="same_handler" />
                     <button label="2" on_click="same_handler" />
@@ -1058,7 +1058,7 @@ mod tests {
         use dampen_core::parser;
 
         let xml = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="Click" on_click="test_handler" />
                 </column>
@@ -1079,7 +1079,7 @@ mod tests {
         use dampen_core::parser;
 
         let xml = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="Click" on_click="missing_handler" />
                 </column>
@@ -1104,7 +1104,7 @@ mod tests {
         use dampen_core::parser;
 
         let xml = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="A" on_click="handler_a" />
                     <button label="B" on_click="handler_b" />
@@ -1133,7 +1133,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state
-        let xml_v1 = r#"<dampen><column><text value="V1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.0"><column><text value="V1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 10,
@@ -1145,7 +1145,7 @@ mod tests {
 
         // New XML with a handler that won't be registered
         let xml_v2 = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="Click" on_click="unregistered_handler" />
                 </column>
@@ -1174,7 +1174,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state
-        let xml_v1 = r#"<dampen><column><text value="V1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.0"><column><text value="V1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 20,
@@ -1186,7 +1186,7 @@ mod tests {
 
         // New XML with a handler
         let xml_v2 = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="Click" on_click="registered_handler" />
                 </column>
@@ -1218,7 +1218,7 @@ mod tests {
 
         // Create initial state with handler "old_handler"
         let xml_v1 = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="Old" on_click="old_handler" />
                 </column>
@@ -1242,7 +1242,7 @@ mod tests {
 
         // New XML with completely different handler
         let xml_v2 = r#"
-            <dampen>
+            <dampen version="1.0">
                 <column>
                     <button label="New" on_click="new_handler" />
                     <button label="Another" on_click="another_handler" />
@@ -1286,7 +1286,7 @@ mod tests {
         // If registry is rebuilt before validation, it should succeed
 
         let xml_v1 =
-            r#"<dampen><column><button on_click="handler_a" label="A" /></column></dampen>"#;
+            r#"<dampen version="1.0"><column><button on_click="handler_a" label="A" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 100,
@@ -1302,7 +1302,7 @@ mod tests {
 
         // New XML references handler_b (different from handler_a)
         let xml_v2 =
-            r#"<dampen><column><button on_click="handler_b" label="B" /></column></dampen>"#;
+            r#"<dampen version="1.0"><column><button on_click="handler_b" label="B" /></column></dampen>"#;
 
         // Registry rebuild provides handler_b
         let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || {

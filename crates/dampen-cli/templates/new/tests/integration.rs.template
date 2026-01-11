@@ -31,7 +31,7 @@ fn test_{{PROJECT_NAME}}_app_state_creation() {
 #[test]
 fn test_{{PROJECT_NAME}}_macro_pattern() {
     let xml = r#"
-        <dampen>
+        <dampen version="1.0">
             <column>
                 <text value="Test" />
             </column>

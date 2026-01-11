@@ -254,12 +254,12 @@ fn test_breakpoint_empty_attributes() {
 
 #[test]
 fn test_breakpoint_multiple_widgets_independent() {
-    let xml = "<dampen>
-        <column mobile-spacing=\"5\" desktop-spacing=\"20\">
-            <text value=\"First\" />
-            <text value=\"Second\" mobile-color=\"#ff0000\" desktop-color=\"#00ff00\" />
+    let xml = r##"<dampen version="1.0">
+        <column mobile-spacing="5" desktop-spacing="20">
+            <text value="First" />
+            <text value="Second" mobile-color="#ff0000" desktop-color="#00ff00" />
         </column>
-    </dampen>";
+    </dampen>"##;
 
     let doc = parse(xml).unwrap();
 

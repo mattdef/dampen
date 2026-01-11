@@ -275,7 +275,7 @@ mod parser_integration_tests {
 
     #[test]
     fn parse_document_without_version_defaults() {
-        let xml = r#"<dampen><column><text value="Hello" /></column></dampen>"#;
+        let xml = r#"<dampen version="1.0"><column><text value="Hello" /></column></dampen>"#;
         let result = parse(xml);
         assert!(result.is_ok());
         let doc = result.unwrap();

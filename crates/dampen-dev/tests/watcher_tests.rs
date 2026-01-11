@@ -56,7 +56,7 @@ fn test_file_creation_detection() {
 
     // Create a new .dampen file
     let test_file = temp_dir.path().join("test.dampen");
-    fs::write(&test_file, "<dampen><text value=\"Hello\" /></dampen>")
+    fs::write(&test_file, "<dampen version="1.0"><text value=\"Hello\" /></dampen>")
         .expect("Failed to create file");
 
     // Wait for debouncer to process the event
@@ -97,7 +97,7 @@ fn test_file_modification_detection() {
     let test_file = create_dampen_file(
         &temp_dir,
         "existing.dampen",
-        "<dampen><text value=\"Original\" /></dampen>",
+        "<dampen version="1.0"><text value=\"Original\" /></dampen>",
     );
 
     // Give filesystem time to settle
@@ -124,7 +124,7 @@ fn test_file_modification_detection() {
     while receiver.try_recv().is_ok() {}
 
     // Modify the existing file
-    modify_dampen_file(&test_file, "<dampen><text value=\"Modified\" /></dampen>");
+    modify_dampen_file(&test_file, "<dampen version="1.0"><text value=\"Modified\" /></dampen>");
 
     // Wait for debouncer to process the event
     wait_for_debounce();
@@ -176,7 +176,7 @@ fn test_debouncing_behavior() {
 
     // Create the test file now
     let test_file = temp_dir.path().join("debounce_test.dampen");
-    fs::write(&test_file, "<dampen><text value=\"Original\" /></dampen>")
+    fs::write(&test_file, "<dampen version="1.0"><text value=\"Original\" /></dampen>")
         .expect("Failed to create file");
 
     // Wait for creation event to be processed
@@ -191,7 +191,7 @@ fn test_debouncing_behavior() {
     for i in 0..NUM_MODIFICATIONS {
         modify_dampen_file(
             &test_file,
-            &format!("<dampen><text value=\"Change {}\" /></dampen>", i),
+            &format!("<dampen version="1.0"><text value=\"Change {}\" /></dampen>", i),
         );
         // Very small delay to ensure changes are registered, but stay within debounce window
         thread::sleep(Duration::from_millis(5));
@@ -316,7 +316,7 @@ fn test_deleted_file_handling() {
     let test_file = create_dampen_file(
         &temp_dir,
         "to_delete.dampen",
-        "<dampen><text value=\"Will be deleted\" /></dampen>",
+        "<dampen version="1.0"><text value=\"Will be deleted\" /></dampen>",
     );
 
     // Give filesystem time to settle
@@ -391,7 +391,7 @@ fn test_file_change_detection_latency() {
 
     // Create test file
     let test_file = temp_dir.path().join("latency_test.dampen");
-    fs::write(&test_file, "<dampen><text value=\"Initial\" /></dampen>")
+    fs::write(&test_file, "<dampen version="1.0"><text value=\"Initial\" /></dampen>")
         .expect("Failed to create file");
 
     // Wait for creation event to be processed
@@ -412,7 +412,7 @@ fn test_file_change_detection_latency() {
         // Modify the file
         modify_dampen_file(
             &test_file,
-            &format!("<dampen><text value=\"Measurement {}\" /></dampen>", i),
+            &format!("<dampen version="1.0"><text value=\"Measurement {}\" /></dampen>", i),
         );
 
         // Wait for event with timeout

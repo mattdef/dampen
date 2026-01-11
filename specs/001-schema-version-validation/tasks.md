@@ -76,33 +76,33 @@
 
 ### Audit Existing Files
 
-- [ ] T037 [P2] [US4] List all `.dampen` files in `examples/` that need version attribute
-- [ ] T038 [P2] [US4] List all `.dampen` files in `crates/dampen-cli/templates/` that need version attribute
-- [ ] T039 [P2] [US4] List all `.dampen` files in `crates/dampen-core/tests/fixtures/` that need version attribute
+- [x] T037 [P2] [US4] List all `.dampen` files in `examples/` that need version attribute
+- [x] T038 [P2] [US4] List all `.dampen` files in `crates/dampen-cli/templates/` that need version attribute
+- [x] T039 [P2] [US4] List all `.dampen` files in `crates/dampen-core/tests/fixtures/` that need version attribute
 
 ### Update Example Files
 
-- [ ] T040 [P2] [US4] Add `version="1.0"` to `examples/hello-world/src/ui/window.dampen`
-- [ ] T041 [P2] [US4] Add `version="1.0"` to `examples/styling/src/ui/window.dampen`
-- [ ] T042 [P2] [US4] Add `version="1.0"` to `examples/settings/src/ui/*.dampen` files
-- [ ] T043 [P2] [US4] Add `version="1.0"` to `examples/todo-app/src/ui/window.dampen`
-- [ ] T044 [P2] [US4] Add `version="1.0"` to all `examples/widget-showcase/src/ui/*.dampen` files
-- [ ] T045 [P2] [US4] Verify `examples/counter/src/ui/window.dampen` already has version (per plan.md)
+- [x] T040 [P2] [US4] Add `version="1.0"` to `examples/hello-world/src/ui/window.dampen`
+- [x] T041 [P2] [US4] Add `version="1.0"` to `examples/styling/src/ui/window.dampen`
+- [x] T042 [P2] [US4] Add `version="1.0"` to `examples/settings/src/ui/*.dampen` files
+- [x] T043 [P2] [US4] Add `version="1.0"` to `examples/todo-app/src/ui/window.dampen`
+- [x] T044 [P2] [US4] Add `version="1.0"` to all `examples/widget-showcase/src/ui/*.dampen` files
+- [x] T045 [P2] [US4] Verify `examples/counter/src/ui/window.dampen` already has version (per plan.md)
 
 ### Update Template Files
 
-- [ ] T046 [P2] [US4] Add `version="1.0"` to `crates/dampen-cli/templates/new/src/ui/window.dampen.template`
-- [ ] T047 [P2] [US4] Verify `dampen new` generates files with version attribute
+- [x] T046 [P2] [US4] Add `version="1.0"` to `crates/dampen-cli/templates/new/src/ui/window.dampen.template`
+- [x] T047 [P2] [US4] Verify `dampen new` generates files with version attribute
 
 ### Update Test Fixtures
 
-- [ ] T048 [P2] [US4] Add `version="1.0"` to test fixture files in `crates/dampen-core/tests/fixtures/`
-- [ ] T049 [P2] [US4] Add `version="1.0"` to any inline test XML strings that should have explicit versions
+- [x] T048 [P2] [US4] Add `version="1.0"` to test fixture files in `crates/dampen-core/tests/fixtures/`
+- [x] T049 [P2] [US4] Add `version="1.0"` to any inline test XML strings that should have explicit versions
 
 ### Verification
 
-- [ ] T050 [P2] [US4] Run `grep -r '<dampen>' examples/ crates/` to find any remaining files without version
-- [ ] T051 [P2] [US4] Run full test suite to verify all files parse correctly
+- [x] T050 [P2] [US4] Run `grep -r '<dampen>' examples/ crates/` to find any remaining files without version
+- [x] T051 [P2] [US4] Run full test suite to verify all files parse correctly
 
 ## Phase 6: US5 - Widget Version Infrastructure (P3)
 
