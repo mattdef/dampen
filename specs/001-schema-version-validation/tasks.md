@@ -106,12 +106,12 @@
 
 ## Phase 6: US5 - Widget Version Infrastructure (P3)
 
-- [ ] T052 [P3] [US5] Write test: `widget_kind_column_minimum_version` expects v1.0
-- [ ] T053 [P3] [US5] Write test: `widget_kind_radio_minimum_version` expects v1.0
-- [ ] T054 [P3] [US5] Write test: `widget_kind_canvas_minimum_version` expects v1.0
-- [ ] T055 [P3] [US5] Implement `WidgetKind::minimum_version(&self) -> SchemaVersion` in `crates/dampen-core/src/ir/node.rs`
-- [ ] T056 [P3] [US5] Add rustdoc comment explaining future enforcement plan
-- [ ] T057 [P3] [US5] Verify all widget minimum_version tests pass
+- [x] T052 [P3] [US5] Write test: `widget_kind_column_minimum_version` expects v1.0
+- [x] T053 [P3] [US5] Write test: `widget_kind_radio_minimum_version` expects v1.0
+- [x] T054 [P3] [US5] Write test: `widget_kind_canvas_minimum_version` expects v1.0
+- [x] T055 [P3] [US5] Implement `WidgetKind::minimum_version(&self) -> SchemaVersion` in `crates/dampen-core/src/ir/node.rs`
+- [x] T056 [P3] [US5] Add rustdoc comment explaining future enforcement plan
+- [x] T057 [P3] [US5] Verify all widget minimum_version tests pass
 
 ## Phase 7: Polish
 

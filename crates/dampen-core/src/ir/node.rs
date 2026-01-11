@@ -186,3 +186,40 @@ pub enum EventKind {
     Toggle,
     Scroll,
 }
+
+impl WidgetKind {
+    /// Returns the minimum schema version required for this widget type.
+    ///
+    /// This method provides infrastructure for version-gating widgets in future releases.
+    /// Currently, all widgets return version 1.0 as they are part of the initial release.
+    ///
+    /// # Future Usage
+    ///
+    /// When new widgets are added in future schema versions (e.g., 1.1, 1.2), this method
+    /// will be updated to return the appropriate minimum version for those widgets.
+    /// The parser can then validate that documents declaring older schema versions
+    /// do not use widgets that were introduced in later versions.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dampen_core::{WidgetKind, SchemaVersion};
+    ///
+    /// let column = WidgetKind::Column;
+    /// assert_eq!(column.minimum_version(), SchemaVersion { major: 1, minor: 0 });
+    /// ```
+    ///
+    /// # Returns
+    ///
+    /// The minimum `SchemaVersion` required to use this widget type.
+    pub fn minimum_version(&self) -> crate::ir::SchemaVersion {
+        // All current widgets are part of v1.0
+        // TODO: Update this method when new widgets are added in future versions
+        // Example for v1.1:
+        // match self {
+        //     WidgetKind::NewWidget => SchemaVersion { major: 1, minor: 1 },
+        //     _ => SchemaVersion { major: 1, minor: 0 },
+        // }
+        crate::ir::SchemaVersion { major: 1, minor: 0 }
+    }
+}

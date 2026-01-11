@@ -138,14 +138,7 @@ mod parse_version_string_tests {
     #[test]
     fn error_messages_include_invalid_input() {
         let test_cases = vec![
-            "",
-            "1",
-            "1.0.0",
-            "v1.0",
-            "1.x",
-            "-1.0",
-            "1.0-beta",
-            "one.zero",
+            "", "1", "1.0.0", "v1.0", "1.x", "-1.0", "1.0-beta", "one.zero",
         ];
 
         for input in test_cases {
@@ -308,6 +301,73 @@ mod parser_integration_tests {
 #[cfg(test)]
 mod widget_minimum_version_tests {
     use super::*;
+    use dampen_core::WidgetKind;
 
-    // Widget minimum version tests will be added here
+    // Widget minimum version tests (T052-T054)
+
+    #[test]
+    fn widget_kind_column_minimum_version() {
+        let widget = WidgetKind::Column;
+        let min_version = widget.minimum_version();
+        assert_eq!(min_version.major, 1);
+        assert_eq!(min_version.minor, 0);
+    }
+
+    #[test]
+    fn widget_kind_radio_minimum_version() {
+        let widget = WidgetKind::Radio;
+        let min_version = widget.minimum_version();
+        assert_eq!(min_version.major, 1);
+        assert_eq!(min_version.minor, 0);
+    }
+
+    #[test]
+    fn widget_kind_canvas_minimum_version() {
+        let widget = WidgetKind::Canvas;
+        let min_version = widget.minimum_version();
+        assert_eq!(min_version.major, 1);
+        assert_eq!(min_version.minor, 0);
+    }
+
+    // Verify all current widgets return v1.0
+    #[test]
+    fn all_widgets_minimum_version_1_0() {
+        let widgets = vec![
+            WidgetKind::Column,
+            WidgetKind::Row,
+            WidgetKind::Text,
+            WidgetKind::Button,
+            WidgetKind::Checkbox,
+            WidgetKind::TextInput,
+            WidgetKind::Slider,
+            WidgetKind::ProgressBar,
+            WidgetKind::Image,
+            WidgetKind::Svg,
+            WidgetKind::Container,
+            WidgetKind::Scrollable,
+            WidgetKind::Space,
+            WidgetKind::Toggler,
+            WidgetKind::PickList,
+            WidgetKind::Radio,
+            WidgetKind::ComboBox,
+            WidgetKind::Stack,
+            WidgetKind::Grid,
+            WidgetKind::Tooltip,
+            WidgetKind::Canvas,
+        ];
+
+        for widget in widgets {
+            let min_version = widget.minimum_version();
+            assert_eq!(
+                min_version.major, 1,
+                "Widget {:?} should have major version 1",
+                widget
+            );
+            assert_eq!(
+                min_version.minor, 0,
+                "Widget {:?} should have minor version 0",
+                widget
+            );
+        }
+    }
 }
