@@ -116,7 +116,64 @@ mod parse_version_string_tests {
 mod validate_version_supported_tests {
     use super::*;
 
-    // Validation tests will be added here
+    // Supported version tests (T019-T020)
+
+    #[test]
+    fn validate_supported_version_1_0() {
+        let version = SchemaVersion { major: 1, minor: 0 };
+        let result = validate_version_supported(&version, dummy_span());
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn validate_supported_version_0_9() {
+        let version = SchemaVersion { major: 0, minor: 9 };
+        let result = validate_version_supported(&version, dummy_span());
+        assert!(result.is_ok());
+    }
+
+    // Unsupported version tests (T021-T023)
+
+    #[test]
+    fn validate_unsupported_version_1_1() {
+        let version = SchemaVersion { major: 1, minor: 1 };
+        let result = validate_version_supported(&version, dummy_span());
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind, ParseErrorKind::UnsupportedVersion);
+        assert!(err.message.contains("1.1"));
+        assert!(err.message.contains("not supported"));
+    }
+
+    #[test]
+    fn validate_unsupported_version_2_0() {
+        let version = SchemaVersion { major: 2, minor: 0 };
+        let result = validate_version_supported(&version, dummy_span());
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind, ParseErrorKind::UnsupportedVersion);
+        assert!(err.message.contains("2.0"));
+        assert!(err.message.contains("not supported"));
+    }
+
+    #[test]
+    fn validate_error_message_includes_versions() {
+        let version = SchemaVersion { major: 2, minor: 0 };
+        let result = validate_version_supported(&version, dummy_span());
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+
+        // Check that declared version is in message
+        assert!(err.message.contains("2.0"));
+
+        // Check that max supported version is in message
+        assert!(err.message.contains("1.0"));
+
+        // Check suggestion exists
+        assert!(err.suggestion.is_some());
+        let suggestion = err.suggestion.unwrap();
+        assert!(suggestion.contains("Upgrade") || suggestion.contains("use version"));
+    }
 }
 
 #[cfg(test)]

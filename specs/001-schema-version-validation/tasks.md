@@ -39,16 +39,16 @@
 
 ### Implementation: parse_version_string
 
-- [ ] T017 [P1] [US1] Implement `parse_version_string(version_str: &str, span: Span) -> Result<SchemaVersion, ParseError>` in `crates/dampen-core/src/parser/mod.rs`
-- [ ] T018 [P1] [US1] Verify all parse_version_string tests pass
+- [x] T017 [P1] [US1] Implement `parse_version_string(version_str: &str, span: Span) -> Result<SchemaVersion, ParseError>` in `crates/dampen-core/src/parser/mod.rs`
+- [x] T018 [P1] [US1] Verify all parse_version_string tests pass
 
 ### TDD: validate_version_supported Tests
 
-- [ ] T019 [P1] [US2] Write test: `validate_supported_version_1_0` expects `Ok(())`
-- [ ] T020 [P1] [US2] Write test: `validate_supported_version_0_9` expects `Ok(())`
-- [ ] T021 [P1] [US2] Write test: `validate_unsupported_version_1_1` expects `UnsupportedVersion` error
-- [ ] T022 [P1] [US2] Write test: `validate_unsupported_version_2_0` expects `UnsupportedVersion` error
-- [ ] T023 [P1] [US2] Write test: Error message includes declared version and max version
+- [x] T019 [P1] [US2] Write test: `validate_supported_version_1_0` expects `Ok(())`
+- [x] T020 [P1] [US2] Write test: `validate_supported_version_0_9` expects `Ok(())`
+- [x] T021 [P1] [US2] Write test: `validate_unsupported_version_1_1` expects `UnsupportedVersion` error
+- [x] T022 [P1] [US2] Write test: `validate_unsupported_version_2_0` expects `UnsupportedVersion` error
+- [x] T023 [P1] [US2] Write test: Error message includes declared version and max version
 
 ### Implementation: validate_version_supported
 
