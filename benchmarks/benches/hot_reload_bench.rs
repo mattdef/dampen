@@ -63,7 +63,7 @@ fn create_handlers() -> HandlerRegistry {
 
 /// Generate XML with N widgets
 fn generate_xml_with_widgets(widget_count: usize) -> String {
-    let mut xml = String::from("<dampen version="1.0"><column spacing=\"10\">");
+    let mut xml = String::from(r#"<dampen version="1.0"><column spacing="10">"#);
 
     for i in 0..widget_count {
         xml.push_str(&format!(r#"<text value="Item {}" size="16" />"#, i));

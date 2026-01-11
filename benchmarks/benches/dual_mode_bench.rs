@@ -177,7 +177,7 @@ fn bench_xml_size_scaling(c: &mut Criterion) {
 }
 
 fn generate_xml_with_widgets(count: usize) -> String {
-    let mut xml = String::from("<dampen version="1.0"><column>");
+    let mut xml = String::from(r#"<dampen version="1.0"><column>"#);
     for i in 0..count {
         xml.push_str(&format!("<text value=\"Widget {}\" />", i));
     }

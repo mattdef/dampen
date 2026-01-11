@@ -174,7 +174,8 @@ fn test_permission_loss_during_watch() {
     let file_path = temp_dir.path().join("test.dampen");
 
     // Create file
-    fs::write(&file_path, "<dampen version="1.0"><column /></dampen>").expect("Failed to write file");
+    fs::write(&file_path, r#"<dampen version="1.0"><column /></dampen>"#)
+        .expect("Failed to write file");
 
     // Remove read permissions
     let mut perms = fs::metadata(&file_path)
@@ -202,7 +203,7 @@ fn test_permission_loss_during_watch() {
 #[test]
 fn test_deeply_nested_ui_structure() {
     // Generate deeply nested structure (100 levels)
-    let mut xml = String::from("<dampen version="1.0">");
+    let mut xml = String::from(r#"<dampen version="1.0">"#);
     for i in 0..100 {
         xml.push_str(&format!(r#"<column id="level{}">"#, i));
     }
@@ -274,7 +275,7 @@ fn test_circular_dependency_detection() {
 #[test]
 fn test_very_large_ui_file() {
     // Generate a large UI with 5000 widgets
-    let mut xml = String::from("<dampen version="1.0"><column spacing=\"10\">");
+    let mut xml = String::from(r#"<dampen version="1.0"><column spacing="10">"#);
     for i in 0..5000 {
         xml.push_str(&format!(r#"<text value="Widget {}" />"#, i));
     }
@@ -302,10 +303,13 @@ fn test_very_large_ui_file() {
 #[test]
 fn test_malformed_xml_recovery() {
     let invalid_xml_cases = vec![
-        ("<dampen version="1.0"><column>", "Unclosed tag"),
-        ("<dampen version="1.0"><unknown /></dampen>", "Unknown widget"),
+        (r#"<dampen version="1.0"><column>"#, "Unclosed tag"),
+        (
+            r#"<dampen version="1.0"><unknown /></dampen>"#,
+            "Unknown widget",
+        ),
         ("not xml at all", "Not XML"),
-        ("<dampen version="1.0"></dampen>", "Empty document"),
+        (r#"<dampen version="1.0"></dampen>"#, "Empty document"),
     ];
 
     for (xml, description) in invalid_xml_cases {
@@ -328,7 +332,7 @@ fn test_malformed_xml_recovery() {
 #[test]
 fn test_hot_reload_state_persistence_on_error() {
     let valid_xml = r#"<dampen version="1.0"><column><text value="{value}" /></column></dampen>"#;
-    let invalid_xml = "<dampen version="1.0"><column>"; // Unclosed tag
+    let invalid_xml = r#"<dampen version="1.0"><column>"#; // Unclosed tag
 
     let doc = parser::parse(valid_xml).unwrap();
     let model = TestModel {

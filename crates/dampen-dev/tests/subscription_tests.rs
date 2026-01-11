@@ -85,8 +85,11 @@ fn test_filewatcher_file_modification_detection() {
 
     // Create initial file before starting watcher
     let test_file = temp_dir.path().join("modify_test.dampen");
-    fs::write(&test_file, "<dampen version="1.0"><text value=\"Initial\" /></dampen>")
-        .expect("Failed to create initial file");
+    fs::write(
+        &test_file,
+        r#"<dampen version="1.0"><text value="Initial" /></dampen>"#,
+    )
+    .expect("Failed to create initial file");
 
     thread::sleep(Duration::from_millis(100));
 
@@ -110,8 +113,11 @@ fn test_filewatcher_file_modification_detection() {
     while receiver.try_recv().is_ok() {}
 
     // Modify the file
-    fs::write(&test_file, "<dampen version="1.0"><text value=\"Modified\" /></dampen>")
-        .expect("Failed to modify file");
+    fs::write(
+        &test_file,
+        r#"<dampen version="1.0"><text value="Modified" /></dampen>"#,
+    )
+    .expect("Failed to modify file");
 
     thread::sleep(Duration::from_millis(150));
 
@@ -203,13 +209,17 @@ fn test_multiple_file_events() {
     let file1 = temp_dir.path().join("file1.dampen");
     let file2 = temp_dir.path().join("file2.dampen");
 
-    fs::write(&file1, "<dampen version="1.0"><text value=\"File 1\" /></dampen>")
-        .expect("Failed to create file1");
+    fs::write(
+        &file1,
+        r#"<dampen version="1.0"><text value="File 1" /></dampen>"#,
+    )
+    .expect("Failed to create file1");
 
-    thread::sleep(Duration::from_millis(30));
-
-    fs::write(&file2, "<dampen version="1.0"><text value=\"File 2\" /></dampen>")
-        .expect("Failed to create file2");
+    fs::write(
+        &file2,
+        r#"<dampen version="1.0"><text value="File 2" /></dampen>"#,
+    )
+    .expect("Failed to create file2");
 
     thread::sleep(Duration::from_millis(150));
 
@@ -340,14 +350,18 @@ fn test_error_recovery_simulation() {
 
     // Create invalid file
     let invalid_file = temp_dir.path().join("invalid.dampen");
-    fs::write(&invalid_file, "<dampen version="1.0"><broken").expect("Failed to create invalid file");
+    fs::write(&invalid_file, r#"<dampen version="1.0"><broken"#)
+        .expect("Failed to create invalid file");
 
     thread::sleep(Duration::from_millis(80));
 
     // Create valid file
     let valid_file = temp_dir.path().join("valid.dampen");
-    fs::write(&valid_file, "<dampen version="1.0"><text value=\"Valid\" /></dampen>")
-        .expect("Failed to create valid file");
+    fs::write(
+        &valid_file,
+        r#"<dampen version="1.0"><text value="Valid" /></dampen>"#,
+    )
+    .expect("Failed to create valid file");
 
     thread::sleep(Duration::from_millis(80));
 
@@ -400,8 +414,11 @@ fn test_watcher_shutdown_detection() {
 
     // Create a test file
     let test_file = temp_dir.path().join("test.dampen");
-    fs::write(&test_file, "<dampen version="1.0"><text value=\"Test\" /></dampen>")
-        .expect("Failed to create file");
+    fs::write(
+        &test_file,
+        r#"<dampen version="1.0"><text value="Test" /></dampen>"#,
+    )
+    .expect("Failed to create file");
 
     thread::sleep(Duration::from_millis(150));
 
@@ -427,8 +444,11 @@ fn test_watcher_shutdown_detection() {
     );
 
     // The watcher is still alive and can receive more events
-    fs::write(&test_file, "<dampen version="1.0"><text value=\"Modified\" /></dampen>")
-        .expect("Failed to modify file");
+    fs::write(
+        &test_file,
+        r#"<dampen version="1.0"><text value="Modified" /></dampen>"#,
+    )
+    .expect("Failed to modify file");
 
     thread::sleep(Duration::from_millis(150));
 

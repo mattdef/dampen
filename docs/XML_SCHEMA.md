@@ -21,15 +21,39 @@ Every Dampen file must have a single root element:
 ```
 
 **Attributes:**
-- `version` (required): Schema version (e.g., "1.0")
-- `xmlns` (optional): Namespace URI for validation tools
 
-**Alternative (simple files):**
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `version` | string | **Yes** | Schema version in `major.minor` format (e.g., "1.0"). Specifies which Dampen schema version the file uses. See [Schema Versioning](#schema-versioning) for details. |
+| `xmlns` | URI | No | Namespace URI for XML validation tools (e.g., "https://dampen-ui.dev/schema/1.0") |
+
+**Version Attribute Details:**
+- **Format**: `major.minor` (e.g., "1.0", "1.1", "2.0")
+- **Current Supported**: 1.0 (all core widgets)
+- **Validation**: Parser rejects files with unsupported future versions
+- **Default Behavior**: Files without `version` attribute default to 1.0 for backward compatibility
+
+**Valid Examples:**
 ```xml
+<!-- Explicit version (recommended) -->
+<dampen version="1.0">
+    <column><text value="Hello!" /></column>
+</dampen>
+
+<!-- With namespace -->
+<dampen version="1.0" xmlns="https://dampen-ui.dev/schema/1.0">
+    <column><text value="Hello!" /></column>
+</dampen>
+```
+
+**Alternative (simple files without `<dampen>` wrapper):**
+```xml
+<!-- Implicit version 1.0 -->
 <column>
     <text value="Hello, World!" />
 </column>
 ```
+Note: Files starting directly with widgets (without `<dampen>` root) implicitly use version 1.0.
 
 ---
 
@@ -699,7 +723,17 @@ Breakpoint-prefixed attributes override base values:
 
 ## Schema Versioning
 
-**Version 1.0**: Initial release with core widgets
+Dampen uses semantic versioning for its XML schema to ensure compatibility and enable evolution of the UI framework.
+
+### Version Format
+
+Version numbers follow the `major.minor` format:
+- **Major version**: Breaking changes or removal of features (e.g., 2.0)
+- **Minor version**: Backward-compatible additions (e.g., 1.1)
+
+### Supported Versions
+
+**Version 1.0** (Current): Initial release with core widgets
 - Layout: column, row, container, scrollable, stack
 - Content: text, image, svg
 - Interactive: button, text_input, checkbox, slider, pick_list, toggler, radio, progress_bar
@@ -708,10 +742,190 @@ Breakpoint-prefixed attributes override base values:
 - Bindings: field access, method calls, conditionals, formatting
 - Events: click, input, change, toggle, submit, select
 
-**Version 1.1**: Additional features
+**Version 1.1** (Planned): Additional features
 - Grid layout widget
 - Canvas widget for custom drawing
 - Tooltip widget
 - ComboBox widget
 
-Files without a version attribute are treated as version 1.0.
+### Version Validation
+
+The parser validates schema versions at parse time:
+
+1. **Declared Version Check**: Parser reads the `version` attribute from `<dampen>` root
+2. **Support Validation**: Compares against maximum supported version (currently 1.0)
+3. **Error Handling**: Rejects files declaring unsupported future versions with clear error messages
+
+### Backward Compatibility
+
+- Files without a `version` attribute default to version 1.0
+- All version 1.0 files will continue to work when version 1.1 is released
+- Future versions will maintain backward compatibility within the same major version
+
+### Best Practices
+
+1. **Always declare version explicitly**: `<dampen version="1.0">` makes intent clear
+2. **Use the latest supported version**: Currently 1.0
+3. **Validate before commits**: Run `dampen check` to catch version errors early
+4. **Don't mix versions**: All `.dampen` files in a project should use the same version
+
+---
+
+## Troubleshooting
+
+### Version-Related Errors
+
+#### Error: "Schema version X.Y is not supported"
+
+**Cause**: Your file declares a version newer than your installed Dampen framework supports.
+
+**Example**:
+```
+Error: Schema version 2.0 is not supported. Maximum supported version: 1.0
+  --> src/ui/window.dampen:1:9
+   |
+ 1 | <dampen version="2.0">
+   |         ^^^^^^^^^^^^^^ unsupported version
+   |
+Suggestion: Upgrade dampen-core to support v2.0, or use version="1.0"
+```
+
+**Solutions**:
+1. **Upgrade Dampen**: Update to the latest version that supports the schema version:
+   ```bash
+   cargo update dampen-core dampen-iced
+   ```
+2. **Downgrade Schema Version**: Change the version attribute to a supported version:
+   ```xml
+   <dampen version="1.0">
+   ```
+
+#### Error: "Invalid version format"
+
+**Cause**: Version attribute is not in the correct `major.minor` format.
+
+**Example**:
+```
+Error: Invalid version format '1'. Expected 'major.minor' (e.g., '1.0')
+  --> src/ui/window.dampen:1:9
+   |
+ 1 | <dampen version="1">
+   |         ^^^^^^^^^^^ invalid format
+   |
+Suggestion: Use format: version="1.0"
+```
+
+**Common Invalid Formats**:
+```xml
+<!-- ❌ Missing minor version -->
+<dampen version="1">
+
+<!-- ❌ Version prefix -->
+<dampen version="v1.0">
+
+<!-- ❌ Patch version not supported -->
+<dampen version="1.0.5">
+
+<!-- ❌ Prerelease suffix -->
+<dampen version="1.0-beta">
+
+<!-- ❌ Non-numeric -->
+<dampen version="one.zero">
+
+<!-- ✅ Correct format -->
+<dampen version="1.0">
+```
+
+**Solutions**:
+- Use the format `major.minor`: `version="1.0"`
+- Don't include prefixes (v), suffixes (-beta), or patch numbers (.5)
+- Both parts must be numeric
+
+#### Warning: File has no version attribute
+
+**Note**: This is currently allowed (defaults to v1.0), but explicit versioning is recommended.
+
+**Example**:
+```xml
+<!-- Implicit version 1.0 (works but not recommended) -->
+<dampen>
+    <column><text value="Hello" /></column>
+</dampen>
+```
+
+**Recommendation**:
+```xml
+<!-- Explicit version (recommended) -->
+<dampen version="1.0">
+    <column><text value="Hello" /></column>
+</dampen>
+```
+
+**Why explicit is better**:
+- Makes schema version intent clear
+- Easier migration when new versions are released
+- Consistent with best practices
+- Future versions may warn about missing version
+
+### Validation Commands
+
+**Check all `.dampen` files in your project**:
+```bash
+dampen check
+```
+
+**Check a specific file**:
+```bash
+dampen check src/ui/window.dampen
+```
+
+**Check with verbose output**:
+```bash
+dampen check --verbose
+```
+
+### Common Issues
+
+#### Issue: "File works in development but fails in CI"
+
+**Possible Causes**:
+1. Different Dampen versions between local and CI
+2. Missing version attribute causing version mismatch
+
+**Solutions**:
+- Pin Dampen version in `Cargo.toml`:
+  ```toml
+  [dependencies]
+  dampen-core = "=0.2.0"
+  dampen-iced = "=0.2.0"
+  ```
+- Always declare `version` explicitly in all `.dampen` files
+- Run `dampen check` as part of CI pipeline
+
+#### Issue: "Mixed version errors across files"
+
+**Cause**: Different `.dampen` files using different schema versions.
+
+**Solution**: Standardize all files to the same version:
+```bash
+# Find all .dampen files without version 1.0
+grep -r '<dampen' src/ examples/ | grep -v 'version="1.0"'
+
+# Update all to use version 1.0
+# (Manual edit or search-replace in your editor)
+```
+
+### Getting Help
+
+If you encounter version-related issues not covered here:
+
+1. **Check the version**: Verify your Dampen installation version:
+   ```bash
+   cargo tree | grep dampen-core
+   ```
+
+2. **Read the quickstart**: See `docs/QUICKSTART.md` for version usage examples
+
+3. **Report bugs**: If you believe the version validation is incorrect:
+   - GitHub Issues: https://github.com/dampen-ui/dampen/issues
+   - Include: Error message, `.dampen` file content, Dampen version

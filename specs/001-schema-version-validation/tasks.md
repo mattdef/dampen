@@ -117,15 +117,15 @@
 
 ### Documentation
 
-- [ ] T058 [P2] [Docs] Update `docs/XML_SCHEMA.md` with version attribute documentation
-- [ ] T059 [P2] [Docs] Add version error examples to troubleshooting section
-- [ ] T060 [P3] [Docs] Update `CHANGELOG.md` with version validation feature
+- [x] T058 [P2] [Docs] Update `docs/XML_SCHEMA.md` with version attribute documentation
+- [x] T059 [P2] [Docs] Add version error examples to troubleshooting section
+- [x] T060 [P3] [Docs] Update `CHANGELOG.md` with version validation feature
 
 ### Final Verification
 
-- [ ] T061 [P1] [QA] Run `cargo test --workspace` - all tests pass
-- [ ] T062 [P1] [QA] Run `cargo clippy --workspace -- -D warnings` - no warnings
-- [ ] T063 [P1] [QA] Run `cargo fmt --all -- --check` - properly formatted
+- [x] T061 [P1] [QA] Run `cargo test --workspace` - all tests pass
+- [x] T062 [P1] [QA] Run `cargo clippy --workspace -- -D warnings` - no warnings
+- [x] T063 [P1] [QA] Run `cargo fmt --all -- --check` - properly formatted
 - [ ] T064 [P1] [QA] Verify all success criteria from spec.md (SC-001 through SC-008)
 
 ---

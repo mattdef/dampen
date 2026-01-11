@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Schema Version Validation (Feature 001-schema-version-validation)
+- **Version Attribute Parsing**: Parser now reads and validates `version` attribute on `<dampen>` root element
+  - Support for `major.minor` format (e.g., "1.0")
+  - Maximum supported version: 1.0 (defined in `MAX_SUPPORTED_VERSION` constant)
+  - Backward compatible: Files without version default to 1.0
+- **Version Validation**: Parser rejects unsupported future versions with clear error messages
+  - New `UnsupportedVersion` error variant in `ParseErrorKind`
+  - Error messages include declared version, max supported version, and upgrade suggestions
+  - Span information for precise error location in source files
+- **Format Validation**: Strict validation of version string format
+  - Rejects invalid formats (e.g., "1", "v1.0", "1.0.5", "1.0-beta")
+  - Clear error messages with expected format guidance
+  - Handles edge cases: whitespace, leading zeros, empty strings
+- **Widget Version Infrastructure**: Foundation for future version-gated widgets
+  - `WidgetKind::minimum_version()` method (all return 1.0 currently)
+  - Ready for v1.1 when new widgets require version gating
+- **File Updates**: All example files and templates now explicitly declare `version="1.0"`
+  - 26+ `.dampen` files updated across examples/ and templates/
+  - CLI `dampen new` generates files with version attribute
+  - Test fixtures and inline test XML updated with proper escaping
+- **Documentation**:
+  - Updated XML_SCHEMA.md with comprehensive version attribute documentation
+  - Added troubleshooting section with version error examples and solutions
+  - Quickstart guide (`specs/001-schema-version-validation/quickstart.md`)
+  - Version validation contract tests (30+ tests in `version_tests.rs`)
+
 #### Dual-Mode Architecture (Feature 001)
 - **Interpreted Mode**: Runtime XML parsing with hot-reload support for rapid development
   - `dampen-dev` crate with file watching, hot-reload coordination, and error overlays
