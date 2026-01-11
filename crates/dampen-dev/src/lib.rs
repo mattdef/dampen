@@ -14,5 +14,5 @@ pub mod watcher;
 // Re-export key types for convenience
 pub use overlay::ErrorOverlay;
 pub use reload::{HotReloadContext, ReloadResult};
-pub use subscription::{watch_files, FileEvent, FileWatcherRecipe};
+pub use subscription::{FileEvent, FileWatcherRecipe, watch_files};
 pub use watcher::{FileWatcher, FileWatcherConfig, FileWatcherError, FileWatcherState};

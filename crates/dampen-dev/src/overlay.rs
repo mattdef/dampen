@@ -5,8 +5,8 @@
 
 use dampen_core::parser::error::ParseError;
 use iced::{
-    widget::{button, column, container, text},
     Alignment, Color, Element, Length,
+    widget::{button, column, container, text},
 };
 use std::time::Instant;
 

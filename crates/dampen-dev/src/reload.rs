@@ -6,7 +6,7 @@
 use dampen_core::binding::UiBindable;
 use dampen_core::parser::error::ParseError;
 use dampen_core::state::AppState;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::time::{Duration, Instant};

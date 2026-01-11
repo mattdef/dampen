@@ -5,7 +5,7 @@
 
 use crossbeam_channel::{Receiver, Sender};
 use notify::{RecursiveMode, Watcher};
-use notify_debouncer_full::{new_debouncer, DebounceEventResult, Debouncer, FileIdMap};
+use notify_debouncer_full::{DebounceEventResult, Debouncer, FileIdMap, new_debouncer};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 

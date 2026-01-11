@@ -8,8 +8,8 @@ use dampen_core::ir::DampenDocument;
 use dampen_core::parser;
 use dampen_core::parser::error::ParseError;
 
-use iced::advanced::subscription::{EventStream, Hasher, Recipe};
 use iced::Subscription;
+use iced::advanced::subscription::{EventStream, Hasher, Recipe};
 use std::hash::Hash;
 use std::path::PathBuf;
 use tokio::sync::mpsc;

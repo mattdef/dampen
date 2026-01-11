@@ -4,7 +4,7 @@
 //! by testing the underlying components and integration.
 
 use dampen_core::parser;
-use dampen_dev::subscription::{watch_files, FileWatcherRecipe};
+use dampen_dev::subscription::{FileWatcherRecipe, watch_files};
 use dampen_dev::watcher::{FileWatcher, FileWatcherConfig};
 use std::fs;
 use std::hash::Hasher;
