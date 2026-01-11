@@ -428,6 +428,7 @@ fn test_circular_class_dependency() {
 
 // T058: Backward compatibility tests for enhanced validation features
 #[test]
+#[serial]
 fn test_backward_compatibility_without_optional_flags() {
     let temp_dir = TempDir::new().unwrap();
     let ui_dir = temp_dir.path().join("ui");
@@ -500,6 +501,7 @@ fn test_backward_compatibility_helper_function() {
 }
 
 #[test]
+#[serial]
 fn test_enhanced_validation_requires_opt_in() {
     let temp_dir = TempDir::new().unwrap();
     let ui_dir = temp_dir.path().join("ui");
