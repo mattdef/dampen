@@ -213,13 +213,11 @@ impl WidgetKind {
     ///
     /// The minimum `SchemaVersion` required to use this widget type.
     pub fn minimum_version(&self) -> crate::ir::SchemaVersion {
-        // All current widgets are part of v1.0
-        // TODO: Update this method when new widgets are added in future versions
-        // Example for v1.1:
-        // match self {
-        //     WidgetKind::NewWidget => SchemaVersion { major: 1, minor: 1 },
-        //     _ => SchemaVersion { major: 1, minor: 0 },
-        // }
-        crate::ir::SchemaVersion { major: 1, minor: 0 }
+        // Canvas is a v1.1 widget (experimental, not fully functional)
+        // All other widgets are part of v1.0
+        match self {
+            WidgetKind::Canvas => crate::ir::SchemaVersion { major: 1, minor: 1 },
+            _ => crate::ir::SchemaVersion { major: 1, minor: 0 },
+        }
     }
 }

@@ -14,6 +14,7 @@ fn create_check_args(input: Option<String>, verbose: bool) -> CheckArgs {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     }
 }
 
@@ -814,6 +815,7 @@ fn test_explicit_handlers_overrides_auto_discovery() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     // Change to temp directory
@@ -853,6 +855,7 @@ fn test_backward_compatibility_with_explicit_paths() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);

@@ -32,6 +32,7 @@ fn test_unknown_attribute_detection_integration() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -114,6 +115,7 @@ fn test_handler_validation_with_registry() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -156,6 +158,7 @@ fn test_handler_validation_with_unknown_handler() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -187,6 +190,7 @@ fn test_handler_validation_without_registry() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -240,6 +244,7 @@ fn test_binding_validation_with_model() {
         model: Some(model_path.to_string_lossy().to_string()),
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -283,6 +288,7 @@ fn test_binding_validation_with_invalid_field() {
         model: Some(model_path.to_string_lossy().to_string()),
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -314,6 +320,7 @@ fn test_binding_validation_without_model() {
         model: None, // No model provided
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -347,6 +354,7 @@ fn test_valid_radio_group_integration() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -381,6 +389,7 @@ fn test_valid_theme_integration() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -414,6 +423,7 @@ fn test_strict_mode_with_errors() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result_normal = execute(&args_normal);
@@ -428,6 +438,7 @@ fn test_strict_mode_with_errors() {
         model: None,
         custom_widgets: None,
         strict: true,
+        show_widget_versions: false,
     };
 
     let result_strict = execute(&args_strict);
@@ -461,6 +472,7 @@ fn test_strict_mode_with_no_warnings() {
         model: None,
         custom_widgets: None,
         strict: true,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -492,6 +504,7 @@ fn test_required_attribute_validation_text_missing_value() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -527,6 +540,7 @@ fn test_required_attribute_validation_image_missing_src() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -562,6 +576,7 @@ fn test_required_attribute_validation_radio_missing_label() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -599,6 +614,7 @@ fn test_required_attribute_validation_all_present() {
         model: None,
         custom_widgets: None,
         strict: false,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -686,6 +702,7 @@ fn test_complete_validation_pipeline_all_flags() {
         model: Some(model_path.to_string_lossy().to_string()),
         custom_widgets: None,
         strict: true,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);
@@ -745,6 +762,7 @@ fn test_complete_validation_pipeline_with_errors() {
         model: Some(model_path.to_string_lossy().to_string()),
         custom_widgets: None,
         strict: true,
+        show_widget_versions: false,
     };
 
     let result = execute(&args);

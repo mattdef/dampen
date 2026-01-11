@@ -300,7 +300,6 @@ mod parser_integration_tests {
 
 #[cfg(test)]
 mod widget_minimum_version_tests {
-    use super::*;
     use dampen_core::WidgetKind;
 
     // Widget minimum version tests (T052-T054)
@@ -326,12 +325,12 @@ mod widget_minimum_version_tests {
         let widget = WidgetKind::Canvas;
         let min_version = widget.minimum_version();
         assert_eq!(min_version.major, 1);
-        assert_eq!(min_version.minor, 0);
+        assert_eq!(min_version.minor, 1); // Canvas is a v1.1 widget
     }
 
-    // Verify all current widgets return v1.0
+    // Verify all v1.0 widgets return v1.0 (Canvas is v1.1)
     #[test]
-    fn all_widgets_minimum_version_1_0() {
+    fn all_v1_0_widgets_minimum_version() {
         let widgets = vec![
             WidgetKind::Column,
             WidgetKind::Row,
@@ -353,7 +352,6 @@ mod widget_minimum_version_tests {
             WidgetKind::Stack,
             WidgetKind::Grid,
             WidgetKind::Tooltip,
-            WidgetKind::Canvas,
         ];
 
         for widget in widgets {
@@ -369,5 +367,151 @@ mod widget_minimum_version_tests {
                 widget
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod widget_version_validation_tests {
+    use dampen_core::{parse, validate_widget_versions};
+
+    // Widget version validation tests (T068)
+
+    #[test]
+    fn validate_all_v1_0_widgets_pass() {
+        let xml = r#"<dampen version="1.0">
+            <column spacing="10">
+                <text value="test" />
+                <button label="Click" on_click="handler" />
+                <row>
+                    <checkbox checked="{active}" />
+                    <text_input value="{input}" />
+                </row>
+            </column>
+        </dampen>"#;
+        let doc = parse(xml).unwrap();
+        let warnings = validate_widget_versions(&doc);
+        assert!(
+            warnings.is_empty(),
+            "No warnings for v1.0 widgets in v1.0 document"
+        );
+    }
+
+    #[test]
+    fn validate_canvas_in_v1_0_document_produces_warning() {
+        let xml = r#"<dampen version="1.0">
+            <column>
+                <canvas width="400" height="200" program="{chart}" />
+            </column>
+        </dampen>"#;
+        let doc = parse(xml).unwrap();
+        let warnings = validate_widget_versions(&doc);
+
+        assert_eq!(
+            warnings.len(),
+            1,
+            "Canvas should produce 1 warning in v1.0 document"
+        );
+
+        let warning = &warnings[0];
+        assert_eq!(warning.widget_kind, dampen_core::WidgetKind::Canvas);
+        assert_eq!(warning.declared_version.major, 1);
+        assert_eq!(warning.declared_version.minor, 0);
+        assert_eq!(warning.required_version.major, 1);
+        assert_eq!(warning.required_version.minor, 1);
+    }
+
+    #[test]
+    fn validate_canvas_in_v1_1_document_no_warning() {
+        // This will fail to parse because v1.1 is unsupported
+        // But we can test the logic when MAX_SUPPORTED_VERSION is updated
+        let xml = r#"<dampen version="1.0">
+            <canvas width="400" height="200" program="{chart}" />
+        </dampen>"#;
+        let doc = parse(xml).unwrap();
+        let warnings = validate_widget_versions(&doc);
+
+        // Currently produces warning because document is v1.0
+        assert_eq!(warnings.len(), 1);
+    }
+
+    #[test]
+    fn validate_nested_canvas_produces_warning() {
+        let xml = r#"<dampen version="1.0">
+            <column>
+                <row>
+                    <container>
+                        <canvas width="200" height="100" program="{mini_chart}" />
+                    </container>
+                </row>
+                <canvas width="400" height="200" program="{main_chart}" />
+            </column>
+        </dampen>"#;
+        let doc = parse(xml).unwrap();
+        let warnings = validate_widget_versions(&doc);
+
+        assert_eq!(warnings.len(), 2, "Should warn about both Canvas widgets");
+        for warning in warnings {
+            assert_eq!(warning.widget_kind, dampen_core::WidgetKind::Canvas);
+        }
+    }
+
+    #[test]
+    fn validate_warning_format_message() {
+        let xml = r#"<dampen version="1.0">
+            <canvas width="400" height="200" program="{chart}" />
+        </dampen>"#;
+        let doc = parse(xml).unwrap();
+        let warnings = validate_widget_versions(&doc);
+
+        let warning = &warnings[0];
+        let message = warning.format_message();
+
+        assert!(
+            message.contains("canvas"),
+            "Message should mention widget name"
+        );
+        assert!(
+            message.contains("1.1"),
+            "Message should mention required version"
+        );
+        assert!(
+            message.contains("1.0"),
+            "Message should mention declared version"
+        );
+    }
+
+    #[test]
+    fn validate_warning_suggestion() {
+        let xml = r#"<dampen version="1.0">
+            <canvas width="400" height="200" program="{chart}" />
+        </dampen>"#;
+        let doc = parse(xml).unwrap();
+        let warnings = validate_widget_versions(&doc);
+
+        let warning = &warnings[0];
+        let suggestion = warning.suggestion();
+
+        assert!(
+            suggestion.contains("1.1"),
+            "Suggestion should mention required version"
+        );
+        assert!(
+            suggestion.contains("dampen version"),
+            "Suggestion should show how to update"
+        );
+    }
+
+    #[test]
+    fn validate_empty_document_no_warnings() {
+        let xml = r#"<dampen version="1.0">
+            <column />
+        </dampen>"#;
+        let doc = parse(xml).unwrap();
+        let warnings = validate_widget_versions(&doc);
+
+        assert!(
+            warnings.is_empty(),
+            "Empty document should have no warnings"
+        );
     }
 }

@@ -124,6 +124,128 @@ pub fn validate_version_supported(version: &SchemaVersion, span: Span) -> Result
     Ok(())
 }
 
+/// Warning about a widget requiring a higher schema version than declared.
+///
+/// This is non-blocking validation - widgets may work but compatibility is not guaranteed.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ValidationWarning {
+    /// The widget that requires a higher version
+    pub widget_kind: WidgetKind,
+    /// The schema version declared in the document
+    pub declared_version: SchemaVersion,
+    /// The minimum version required by the widget
+    pub required_version: SchemaVersion,
+    /// Source location of the widget
+    pub span: Span,
+}
+
+impl ValidationWarning {
+    /// Format the warning as a human-readable message
+    pub fn format_message(&self) -> String {
+        format!(
+            "Widget '{}' requires schema v{}.{} but document declares v{}.{}",
+            widget_kind_name(&self.widget_kind),
+            self.required_version.major,
+            self.required_version.minor,
+            self.declared_version.major,
+            self.declared_version.minor
+        )
+    }
+
+    /// Get a suggestion for resolving the warning
+    pub fn suggestion(&self) -> String {
+        format!(
+            "Update to <dampen version=\"{}.{}\"> or remove this widget",
+            self.required_version.major, self.required_version.minor
+        )
+    }
+}
+
+/// Helper function to get widget kind name as string
+fn widget_kind_name(kind: &WidgetKind) -> String {
+    match kind {
+        WidgetKind::Column => "column".to_string(),
+        WidgetKind::Row => "row".to_string(),
+        WidgetKind::Container => "container".to_string(),
+        WidgetKind::Scrollable => "scrollable".to_string(),
+        WidgetKind::Stack => "stack".to_string(),
+        WidgetKind::Text => "text".to_string(),
+        WidgetKind::Image => "image".to_string(),
+        WidgetKind::Svg => "svg".to_string(),
+        WidgetKind::Button => "button".to_string(),
+        WidgetKind::TextInput => "text_input".to_string(),
+        WidgetKind::Checkbox => "checkbox".to_string(),
+        WidgetKind::Slider => "slider".to_string(),
+        WidgetKind::PickList => "pick_list".to_string(),
+        WidgetKind::Toggler => "toggler".to_string(),
+        WidgetKind::Space => "space".to_string(),
+        WidgetKind::Rule => "rule".to_string(),
+        WidgetKind::Radio => "radio".to_string(),
+        WidgetKind::ComboBox => "combobox".to_string(),
+        WidgetKind::ProgressBar => "progress_bar".to_string(),
+        WidgetKind::Tooltip => "tooltip".to_string(),
+        WidgetKind::Grid => "grid".to_string(),
+        WidgetKind::Canvas => "canvas".to_string(),
+        WidgetKind::Float => "float".to_string(),
+        WidgetKind::For => "for".to_string(),
+        WidgetKind::Custom(name) => name.clone(),
+    }
+}
+
+/// Validate that all widgets in the document are compatible with the declared schema version.
+///
+/// Returns warnings (not errors) for widgets that require a higher version than declared.
+/// This is non-blocking validation to help developers identify potential compatibility issues.
+///
+/// # Arguments
+///
+/// * `document` - The parsed document to validate
+///
+/// # Returns
+///
+/// A vector of `ValidationWarning` for widgets requiring higher versions.
+/// Empty vector means all widgets are compatible with the declared version.
+///
+/// # Examples
+///
+/// ```rust
+/// use dampen_core::{parse, validate_widget_versions};
+///
+/// let xml = r#"<dampen version="1.0"><canvas width="400" height="200" program="{chart}" /></dampen>"#;
+/// let doc = parse(xml).unwrap();
+/// let warnings = validate_widget_versions(&doc);
+/// assert_eq!(warnings.len(), 1); // Canvas requires v1.1
+/// ```
+pub fn validate_widget_versions(document: &DampenDocument) -> Vec<ValidationWarning> {
+    let mut warnings = Vec::new();
+    validate_widget_tree(&document.root, &document.version, &mut warnings);
+    warnings
+}
+
+/// Recursively validate widget tree for version compatibility
+fn validate_widget_tree(
+    node: &WidgetNode,
+    doc_version: &SchemaVersion,
+    warnings: &mut Vec<ValidationWarning>,
+) {
+    let min_version = node.kind.minimum_version();
+
+    // Check if widget requires a higher version than declared
+    if (min_version.major, min_version.minor) > (doc_version.major, doc_version.minor) {
+        warnings.push(ValidationWarning {
+            widget_kind: node.kind.clone(),
+            declared_version: *doc_version,
+            required_version: min_version,
+            span: node.span,
+        });
+    }
+
+    // Recursively check children
+    for child in &node.children {
+        validate_widget_tree(child, doc_version, warnings);
+    }
+}
+
 /// Parse XML markup into a DampenDocument.
 ///
 /// This is the main entry point for the parser. It takes XML markup and

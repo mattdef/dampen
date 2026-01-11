@@ -742,11 +742,13 @@ Version numbers follow the `major.minor` format:
 - Bindings: field access, method calls, conditionals, formatting
 - Events: click, input, change, toggle, submit, select
 
-**Version 1.1** (Planned): Additional features
-- Grid layout widget
-- Canvas widget for custom drawing
-- Tooltip widget
-- ComboBox widget
+**Version 1.1** (Experimental): Additional features
+- Canvas widget for custom drawing (⚠️ experimental, not fully functional)
+- Grid layout widget (planned)
+- Tooltip widget (planned)
+- ComboBox widget (planned)
+
+**Note**: Canvas widget is currently marked as v1.1 to indicate it's experimental. While parseable in v1.0 documents, it will produce a validation warning and may not render correctly.
 
 ### Version Validation
 
@@ -755,6 +757,7 @@ The parser validates schema versions at parse time:
 1. **Declared Version Check**: Parser reads the `version` attribute from `<dampen>` root
 2. **Support Validation**: Compares against maximum supported version (currently 1.0)
 3. **Error Handling**: Rejects files declaring unsupported future versions with clear error messages
+4. **Widget Version Warnings**: `dampen check` warns about widgets requiring higher versions than declared (e.g., Canvas in v1.0 documents)
 
 ### Backward Compatibility
 
@@ -867,6 +870,66 @@ Suggestion: Use format: version="1.0"
 - Consistent with best practices
 - Future versions may warn about missing version
 
+#### Warning: "Widget requires higher schema version"
+
+**Cause**: You're using a widget that was introduced in a newer schema version than your document declares.
+
+**Example**:
+```
+Warning: Widget 'canvas' requires schema v1.1 but document declares v1.0 in src/ui/window.dampen:153:21
+  Suggestion: Update to <dampen version="1.1"> or remove this widget
+```
+
+**What this means**:
+- The widget you're using requires a schema version newer than what your document declares
+- Currently affects: **Canvas** widget (requires v1.1, experimental/non-functional)
+- All other widgets are v1.0 and fully functional
+
+**Example file with warning**:
+```xml
+<dampen version="1.0">
+    <column>
+        <!-- Canvas requires v1.1 but document declares v1.0 -->
+        <canvas width="400" height="200" program="{chart}" />
+    </column>
+</dampen>
+```
+
+**Solutions**:
+
+1. **Upgrade schema version** (when v1.1 is officially supported):
+   ```xml
+   <dampen version="1.1">
+       <canvas width="400" height="200" program="{chart}" />
+   </dampen>
+   ```
+
+2. **Replace with compatible widget**:
+   Use v1.0 alternatives (image, custom drawing with image bindings)
+
+3. **Ignore warning** (if you know what you're doing):
+   The warning is informational. Canvas will be parsed but may not render correctly since it's experimental.
+
+**Why warnings instead of errors**:
+- Allows gradual migration to new schema versions
+- Developers can test experimental widgets before official v1.1 release
+- Non-blocking for development workflows
+
+**Check widget versions**:
+```bash
+dampen check --show-widget-versions
+```
+
+This displays a table of all widgets with their minimum required versions:
+```
+Widget               Min Version Status
+-------------------- ---------- ------------------------------
+canvas               1.1        Experimental (not fully functional)
+column               1.0        Stable
+button               1.0        Stable
+...
+```
+
 ### Validation Commands
 
 **Check all `.dampen` files in your project**:
@@ -882,6 +945,11 @@ dampen check src/ui/window.dampen
 **Check with verbose output**:
 ```bash
 dampen check --verbose
+```
+
+**Show widget version requirements**:
+```bash
+dampen check --show-widget-versions
 ```
 
 ### Common Issues

@@ -22,9 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Rejects invalid formats (e.g., "1", "v1.0", "1.0.5", "1.0-beta")
   - Clear error messages with expected format guidance
   - Handles edge cases: whitespace, leading zeros, empty strings
-- **Widget Version Infrastructure**: Foundation for future version-gated widgets
-  - `WidgetKind::minimum_version()` method (all return 1.0 currently)
-  - Ready for v1.1 when new widgets require version gating
+- **Widget Version Infrastructure**: Foundation for version-gated widgets
+  - `WidgetKind::minimum_version()` method returns required schema version for each widget
+  - Canvas widget marked as v1.1 (experimental, non-functional)
+  - All other widgets return v1.0
+- **Widget Version Validation**: `dampen check` warns about widget-version compatibility
+  - New `validate_widget_versions()` function with recursive tree traversal
+  - `ValidationWarning` struct with detailed error messages and suggestions
+  - Warnings displayed by default (non-blocking for development workflows)
+  - Example: "Widget 'canvas' requires schema v1.1 but document declares v1.0"
+- **CLI Enhancements**:
+  - `dampen check --show-widget-versions` displays widget version requirements table
+  - Shows minimum version and status (Stable/Experimental) for all widgets
 - **File Updates**: All example files and templates now explicitly declare `version="1.0"`
   - 26+ `.dampen` files updated across examples/ and templates/
   - CLI `dampen new` generates files with version attribute
@@ -32,8 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**:
   - Updated XML_SCHEMA.md with comprehensive version attribute documentation
   - Added troubleshooting section with version error examples and solutions
+  - Widget version warning documentation with clear examples
   - Quickstart guide (`specs/001-schema-version-validation/quickstart.md`)
-  - Version validation contract tests (30+ tests in `version_tests.rs`)
+  - Version validation contract tests (34+ tests in `version_tests.rs`)
 
 #### Dual-Mode Architecture (Feature 001)
 - **Interpreted Mode**: Runtime XML parsing with hot-reload support for rapid development

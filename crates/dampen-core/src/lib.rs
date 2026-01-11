@@ -112,7 +112,10 @@ pub use ir::{
 ///
 /// This module provides the parser that converts XML markup into the IR.
 pub use parser::error::{ParseError, ParseErrorKind};
-pub use parser::{MAX_SUPPORTED_VERSION, parse, parse_version_string, validate_version_supported};
+pub use parser::{
+    MAX_SUPPORTED_VERSION, ValidationWarning, parse, parse_version_string,
+    validate_version_supported, validate_widget_versions,
+};
 
 /// Backend abstraction traits.
 ///

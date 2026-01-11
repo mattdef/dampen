@@ -178,6 +178,10 @@ pub struct CheckArgs {
     /// Treat warnings as errors (strict mode for CI/CD)
     #[arg(long)]
     pub strict: bool,
+
+    /// Show minimum required schema version for each widget type
+    #[arg(long)]
+    pub show_widget_versions: bool,
 }
 
 /// Resolves the UI directory path using smart detection
@@ -241,8 +245,62 @@ fn resolve_optional_file(explicit_path: Option<&str>, filename: &str) -> Option<
     None
 }
 
+/// Display a table of all widget types with their minimum schema version requirements
+fn display_widget_version_table() {
+    println!("Widget Version Requirements");
+    println!("===========================\n");
+    println!("{:<20} {:<10} Status", "Widget", "Min Version");
+    println!("{:-<20} {:-<10} {:-<30}", "", "", "");
+
+    let widgets = vec![
+        ("column", WidgetKind::Column),
+        ("row", WidgetKind::Row),
+        ("container", WidgetKind::Container),
+        ("scrollable", WidgetKind::Scrollable),
+        ("stack", WidgetKind::Stack),
+        ("text", WidgetKind::Text),
+        ("image", WidgetKind::Image),
+        ("svg", WidgetKind::Svg),
+        ("button", WidgetKind::Button),
+        ("text_input", WidgetKind::TextInput),
+        ("checkbox", WidgetKind::Checkbox),
+        ("slider", WidgetKind::Slider),
+        ("pick_list", WidgetKind::PickList),
+        ("toggler", WidgetKind::Toggler),
+        ("radio", WidgetKind::Radio),
+        ("space", WidgetKind::Space),
+        ("rule", WidgetKind::Rule),
+        ("progress_bar", WidgetKind::ProgressBar),
+        ("combobox", WidgetKind::ComboBox),
+        ("tooltip", WidgetKind::Tooltip),
+        ("grid", WidgetKind::Grid),
+        ("canvas", WidgetKind::Canvas),
+        ("float", WidgetKind::Float),
+    ];
+
+    for (name, widget) in widgets {
+        let min_version = widget.minimum_version();
+        let version_str = format!("{}.{}", min_version.major, min_version.minor);
+        let status = if min_version.minor > 0 {
+            "Experimental (not fully functional)"
+        } else {
+            "Stable"
+        };
+        println!("{:<20} {:<10} {}", name, version_str, status);
+    }
+
+    println!("\nNote: Widgets requiring v1.1+ are experimental and may not be fully functional.");
+    println!("Use 'dampen check' to validate your .dampen files for version compatibility.");
+}
+
 pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
     use crate::commands::check::handlers::HandlerRegistry;
+
+    // If --show-widget-versions flag is set, display widget version table and exit
+    if args.show_widget_versions {
+        display_widget_version_table();
+        return Ok(());
+    }
 
     // Resolve UI directory
     let input_path = resolve_ui_directory(args.input.as_deref())
@@ -343,6 +401,23 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
 
                 // Validate widgets with styles, layout, breakpoints, and states
                 validate_widget_with_styles(&document.root, file_path, &document, &mut errors);
+
+                // Validate widget versions (Phase 8: Widget Version Validation)
+                // This produces warnings for widgets requiring higher schema versions
+                let version_warnings = dampen_core::validate_widget_versions(&document);
+                if !version_warnings.is_empty() {
+                    for warning in version_warnings {
+                        eprintln!(
+                            "Warning: {} in {}:{}:{}",
+                            warning.format_message(),
+                            file_path.display(),
+                            warning.span.line,
+                            warning.span.column
+                        );
+                        eprintln!("  Suggestion: {}", warning.suggestion());
+                        eprintln!();
+                    }
+                }
             }
             Err(parse_error) => {
                 errors.push(CheckError::ParseError {
