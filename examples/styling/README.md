@@ -354,13 +354,13 @@ cargo run --bin theme-demo  # Not yet implemented
 
 ### Hot-Reload (Future)
 ```bash
-dampen dev --ui ui --file main.dampen
+dampen run
 ```
 Changes to `.dampen` files will automatically reload the UI without recompiling Rust code.
 
 ### Production Build (Future)
 ```bash
-dampen build --ui ui --file main.dampen --output src/ui_generated.rs
+dampen build --release
 ```
 Generates static Rust code for zero-runtime overhead.
 

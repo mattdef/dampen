@@ -4,6 +4,7 @@ use std::collections::HashSet;
 /// Helper macro to create a HashSet from string literals.
 macro_rules! hashset {
     [$($item:expr),* $(,)?] => {{
+        #[allow(unused_mut)]
         let mut set = HashSet::new();
         $(set.insert($item);)*
         set

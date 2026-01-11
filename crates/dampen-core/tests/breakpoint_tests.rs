@@ -140,17 +140,19 @@ fn test_nested_widget_breakpoint_attributes() {
 
     // Check root widget
     let root = &doc.root;
-    assert!(root
-        .breakpoint_attributes
-        .get(&Breakpoint::Mobile)
-        .is_some());
+    assert!(
+        root.breakpoint_attributes
+            .get(&Breakpoint::Mobile)
+            .is_some()
+    );
 
     // Check nested widget
     let row = &root.children[0];
-    assert!(row
-        .breakpoint_attributes
-        .get(&Breakpoint::Desktop)
-        .is_some());
+    assert!(
+        row.breakpoint_attributes
+            .get(&Breakpoint::Desktop)
+            .is_some()
+    );
     assert_eq!(
         row.breakpoint_attributes
             .get(&Breakpoint::Desktop)
@@ -263,25 +265,31 @@ fn test_breakpoint_multiple_widgets_independent() {
 
     // Root column
     let column = &doc.root;
-    assert!(column
-        .breakpoint_attributes
-        .get(&Breakpoint::Mobile)
-        .is_some());
-    assert!(column
-        .breakpoint_attributes
-        .get(&Breakpoint::Desktop)
-        .is_some());
+    assert!(
+        column
+            .breakpoint_attributes
+            .get(&Breakpoint::Mobile)
+            .is_some()
+    );
+    assert!(
+        column
+            .breakpoint_attributes
+            .get(&Breakpoint::Desktop)
+            .is_some()
+    );
 
     // Second text child
     let text = &column.children[1];
-    assert!(text
-        .breakpoint_attributes
-        .get(&Breakpoint::Mobile)
-        .is_some());
-    assert!(text
-        .breakpoint_attributes
-        .get(&Breakpoint::Desktop)
-        .is_some());
+    assert!(
+        text.breakpoint_attributes
+            .get(&Breakpoint::Mobile)
+            .is_some()
+    );
+    assert!(
+        text.breakpoint_attributes
+            .get(&Breakpoint::Desktop)
+            .is_some()
+    );
 
     // First text child should have no breakpoint attributes
     let first_text = &column.children[0];

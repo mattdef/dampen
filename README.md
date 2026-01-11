@@ -5,7 +5,7 @@
 [![Crates.io](https://img.shields.io/crates/v/dampen-core.svg)](https://crates.io/crates/dampen-core)
 [![Documentation](https://docs.rs/dampen-core/badge.svg)](https://docs.rs/dampen-core)
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
-[![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://rust-lang.org)
+[![Rust Version](https://img.shields.io/badge/rustc-1.85+-lightgray.svg)](https://rust-lang.org)
 
 **Declarative UI framework for Rust with Iced backend, advanced styling, and code generation.**
 
@@ -47,52 +47,13 @@ Dampen allows you to define your user interface in XML and render it via Iced.
 - ✅ **Radio button groups** with single-selection behavior
 - ✅ **Data binding** with `#[derive(UiModel)]`
 - ✅ **CLI validation** tools for syntax checking
+- ✅ **Dual-mode architecture**: Hot-reload for development, codegen for production
+- ✅ **Hot-reload support**: See UI changes instantly without recompiling
 
 ## Installation
 
-### Prerequisites
-
-- Rust 1.75 or higher (stable)
-- Edition 2021 or 2024
-
-### Project Configuration
-
-```toml
-[workspace]
-members = [
-    "crates/dampen-core",
-    "crates/dampen-macros", 
-    "crates/dampen-iced",
-    "crates/dampen-runtime",
-    "crates/dampen-cli",
-]
-
-[package]
-name = "my-app"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-dampen-core = { path = "crates/dampen-core" }
-dampen-macros = { path = "crates/dampen-macros" }
-dampen-iced = { path = "crates/dampen-iced" }
-iced = "0.14"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-```
-
-## Project Structure
-
-```
-my-app/
-├── Cargo.toml
-├── src/
-│   ├── main.rs             # Application entry point
-│   └── ui/
-│       ├── mod.rs          # UI module with AppState
-│       ├── window.rs       # Window code
-│       └── window.dampen   # XML interface definition
-└── target/
+```bash
+cargo install dampen-cli
 ```
 
 ## Quick Start
@@ -109,8 +70,10 @@ dampen new my-app
 cd my-app
 
 # Run the application
-cargo run
+dampen run
 ```
+
+## Project Structure
 
 The `dampen new` command creates a complete project structure:
 
@@ -163,22 +126,6 @@ dampen build
 dampen inspect src/ui/window.dampen
 ```
 
-### Manual Project Structure
-
-If you prefer to create the project manually:
-
-```
-my-app/
-├── Cargo.toml
-├── src/
-│   ├── main.rs             # Application entry point
-│   └── ui/
-│       ├── mod.rs          # UI module with AppState
-│       ├── window.rs       # Window code
-│       └── window.dampen   # XML interface definition
-└── target/
-```
-
 ## Advanced Features
 
 ### Data Binding
@@ -202,10 +149,12 @@ struct TodoItem {
 ### Type-Safe Event Handlers
 
 ```rust
+#[ui_handler]
 fn increment(model: &mut Model) {
     model.count += 1;
 }
 
+#[ui_handler]
 fn add_item(model: &mut Model, text: String) {
     model.items.push(TodoItem {
         id: model.next_id,
@@ -215,6 +164,7 @@ fn add_item(model: &mut Model, text: String) {
     model.next_id += 1;
 }
 
+#[ui_handler]
 fn toggle_item(model: &mut Model, id: usize) {
     if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
         item.completed = !item.completed;
@@ -315,6 +265,86 @@ fn toggle_item(model: &mut Model, id: usize) {
 | `svg` | SVG image | path, width, height |
 | `tooltip` | Tooltip | message, position |
 
+## Dual-Mode Architecture
+
+Dampen supports two compilation modes optimized for different use cases:
+
+### Interpreted Mode (Development)
+
+**Enabled by default in development builds**
+
+- ✅ **Fast iteration**: Hot-reload UI changes without recompiling
+- ✅ **Runtime parsing**: XML loaded and parsed at application startup
+- ✅ **Instant feedback**: See changes in <300ms
+- ✅ **Debugging friendly**: Error overlays with detailed messages
+
+```bash
+# Development mode (automatic)
+cargo run
+
+# Explicit interpreted mode
+cargo run --features interpreted
+```
+
+**Hot-reload example:**
+
+```rust
+use dampen_dev::watch_files;
+
+fn subscription(app: &App) -> Subscription<Message> {
+    watch_files(vec![PathBuf::from("src/ui/window.dampen")], "xml")
+        .map(|_| Message::ReloadUI)
+}
+```
+
+### Codegen Mode (Production)
+
+**Enabled by default in release builds**
+
+- ✅ **Zero runtime overhead**: All XML parsed at compile time
+- ✅ **Optimal performance**: Direct widget construction
+- ✅ **Smaller binaries**: No runtime parser included
+- ✅ **Build-time validation**: Catch errors before deployment
+
+```bash
+# Production mode (automatic)
+cargo build --release
+
+# Explicit codegen mode
+cargo build --features codegen
+```
+
+**How it works:**
+
+1. `build.rs` processes `.dampen` files at compile time
+2. Generated Rust code embedded via macros
+3. No runtime XML parsing required
+
+### Mode Selection
+
+Mode selection is **automatic** based on build profile:
+
+| Build Command | Mode | Use Case |
+|---------------|------|----------|
+| `cargo run` | Interpreted | Development with hot-reload |
+| `cargo build` | Interpreted | Development builds |
+| `cargo build --release` | Codegen | Production deployments |
+| `cargo test` | Interpreted | Fast test iteration |
+
+**Manual override:**
+
+```bash
+# Force interpreted in release
+cargo build --release --no-default-features --features interpreted
+
+# Force codegen in dev
+cargo build --features codegen
+```
+
+### Migration Guide
+
+Migrating existing projects to dual-mode architecture? See our [Migration Guide](docs/migration/dual-mode.md) for step-by-step instructions.
+
 ## Architecture
 
 ### Crate Structure
@@ -323,19 +353,9 @@ fn toggle_item(model: &mut Model, id: usize) {
 crates/
 ├── dampen-core/           # XML parser, IR, traits (no Iced dependency)
 ├── dampen-macros/         # Macros #[derive(UiModel)], #[dampen_ui]
-├── dampen-runtime/        # Interpretation, state management, errors
 ├── dampen-iced/           # Iced backend implementation
+├── dampen-dev/            # Development mode tooling for Dampen
 └── dampen-cli/            # Developer CLI (build, check, inspect)
-
-examples/
-├── hello-world/           # Minimal application
-├── counter/               # Interactive event handlers
-├── todo-app/              # Complete data binding
-├── styling/               # Themes and style classes
-├── responsive/            # Responsive design
-├── settings/              # Multiple views
-├── widget-showcase/       # Widget demonstration
-└── builder-demo/          # Custom widget patterns
 
 ```
 
@@ -347,23 +367,6 @@ examples/
 4. **Backend-Agnostic**: Core crate has no Iced dependency
 5. **Test-First**: TDD for all features
 
-### Data Flow
-
-```
-XML (main.dampen)
-        |
-        v
-    XML Parser
-        |
-        v
-   DampenDocument
-        |
-        v
-  DampenWidgetBuilder
-        |
-        v
-     Element<Iced>
-```
 
 ## Examples
 
@@ -392,14 +395,6 @@ dampen check --ui ui
 dampen inspect --file ui/main.dampen
 dampen inspect --file ui/main.dampen --codegen --handlers increment,decrement
 ```
-
-## Performance
-
-| Metric | Target |
-|--------|--------|
-| XML parsing | <10ms for 1000 widgets |
-| Code generation | <5s for typical application |
-| Runtime memory | <50MB baseline |
 
 ## Documentation
 

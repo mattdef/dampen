@@ -125,7 +125,6 @@ La GitHub Action `.github/workflows/release.yml` va automatiquement :
 3. Publier les crates dans l'ordre :
    - `dampen-core`
    - `dampen-macros` (dépend de core)
-   - `dampen-runtime` (dépend de core)
    - `dampen-iced` (dépend de core)
    - `dampen-cli` (dépend de tout)
 
@@ -140,8 +139,6 @@ dampen-core
     ↓
 dampen-macros
     ↓
-dampen-runtime
-    ↓
 dampen-iced
     ↓
 dampen-cli
@@ -155,7 +152,6 @@ Après la publication, vérifiez que les crates sont disponibles :
 
 - https://crates.io/crates/dampen-core
 - https://crates.io/crates/dampen-macros
-- https://crates.io/crates/dampen-runtime
 - https://crates.io/crates/dampen-iced
 - https://crates.io/crates/dampen-cli
 
@@ -193,7 +189,6 @@ Si vous découvrez un problème critique après publication :
 ```bash
 cargo yank --vers 0.2.0 dampen-core
 cargo yank --vers 0.2.0 dampen-macros
-cargo yank --vers 0.2.0 dampen-runtime
 cargo yank --vers 0.2.0 dampen-iced
 cargo yank --vers 0.2.0 dampen-cli
 ```

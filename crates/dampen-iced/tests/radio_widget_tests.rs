@@ -1,7 +1,7 @@
 //! Tests for radio widget rendering
 
-use dampen_core::{parse, WidgetKind};
-use dampen_iced::{render, IcedBackend};
+use dampen_core::{WidgetKind, parse};
+use dampen_iced::{IcedBackend, render};
 
 #[test]
 fn test_render_single_radio() {

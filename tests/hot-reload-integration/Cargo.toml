@@ -1,0 +1,24 @@
+[package]
+name = "hot-reload-integration"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+dampen-core = { workspace = true }
+dampen-dev = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+# These are available for tests
+
+[lib]
+path = "lib.rs"
+
+[[test]]
+name = "hot_reload_tests"
+path = "hot_reload_tests.rs"
+
+[[test]]
+name = "performance_tests"
+path = "performance_tests.rs"

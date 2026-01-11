@@ -1,0 +1,37 @@
+[package]
+name = "dampen-dev"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Dampen Contributors"]
+description = "Development mode tooling for Dampen - hot-reload, file watching, and error overlays"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourusername/dampen"
+keywords = ["gui", "ui", "hot-reload", "development"]
+categories = ["gui", "development-tools"]
+
+[dependencies]
+# Core dependencies
+dampen-core = { path = "../dampen-core" }
+iced = { workspace = true }
+
+# File watching
+notify = "6.1"
+notify-debouncer-full = "0.3"
+
+# Async/concurrency
+crossbeam-channel = "0.5"
+futures = "0.3"
+tokio = { version = "1.0", features = ["rt", "sync"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+async-stream = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+
+[dev-dependencies]
+tempfile = "3.0"

@@ -21,9 +21,5 @@ criterion = "0.5"
 dampen-macros = { workspace = true }
 serde = { workspace = true }
 
-[[bench]]
-name = "builder_bench"
-harness = false
-
 [lints]
 workspace = true

@@ -1,43 +1,57 @@
 //! Update function generation
 
-use crate::{DampenDocument, HandlerSignature};
+use crate::HandlerSignature;
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote};
 
-/// Generate the update function
-pub fn generate_update(
-    _document: &DampenDocument,
+/// Convert snake_case to UpperCamelCase
+fn to_upper_camel_case(s: &str) -> String {
+    let mut result = String::new();
+    let mut capitalize_next = true;
+    for c in s.chars() {
+        if c == '_' {
+            capitalize_next = true;
+        } else if capitalize_next {
+            result.push(c.to_ascii_uppercase());
+            capitalize_next = false;
+        } else {
+            result.push(c);
+        }
+    }
+    result
+}
+
+/// Generate the update match arms for use in a standalone function
+pub fn generate_update_match_arms(
     handlers: &[HandlerSignature],
-    _model_name: &str,
     message_name: &str,
 ) -> Result<TokenStream, super::CodegenError> {
-    let message_ident = syn::Ident::new(message_name, proc_macro2::Span::call_site());
+    let message_ident = format_ident!("{}", message_name);
 
     let match_arms: Vec<TokenStream> = handlers
         .iter()
         .map(|handler| {
-            let handler_name = syn::Ident::new(&handler.name, proc_macro2::Span::call_site());
+            let handler_name = format_ident!("{}", handler.name);
+            let variant_name = to_upper_camel_case(&handler.name);
+            let variant_ident = syn::Ident::new(&variant_name, proc_macro2::Span::call_site());
 
             if let Some(_param_type) = &handler.param_type {
-                // Handler with value parameter
                 quote! {
-                    #message_ident::#handler_name(value) => {
-                        #handler_name(self, value);
+                    #message_ident::#variant_ident(value) => {
+                        ui::window::#handler_name(model, value);
                         iced::Task::none()
                     }
                 }
             } else if handler.returns_command {
-                // Handler returning command
                 quote! {
-                    #message_ident::#handler_name => {
-                        #handler_name(self)
+                    #message_ident::#variant_ident => {
+                        ui::window::#handler_name(model)
                     }
                 }
             } else {
-                // Simple handler
                 quote! {
-                    #message_ident::#handler_name => {
-                        #handler_name(self);
+                    #message_ident::#variant_ident => {
+                        ui::window::#handler_name(model);
                         iced::Task::none()
                     }
                 }
@@ -46,37 +60,8 @@ pub fn generate_update(
         .collect();
 
     Ok(quote! {
-        fn update(&mut self, message: Self::Message) -> iced::Task<Self::Message> {
-            match message {
-                #(#match_arms)*
-            }
+        match message {
+            #(#match_arms)*
         }
     })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::HandlerSignature;
-
-    #[test]
-    fn test_update_generation() {
-        let handlers = vec![HandlerSignature {
-            name: "increment".to_string(),
-            param_type: None,
-            returns_command: false,
-        }];
-
-        let result = generate_update(
-            &crate::DampenDocument::default(),
-            &handlers,
-            "Model",
-            "Message",
-        )
-        .unwrap();
-
-        let code = result.to_string();
-        assert!(code.contains("fn") && code.contains("update"));
-        assert!(code.contains("increment"));
-    }
 }

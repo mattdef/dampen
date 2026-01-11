@@ -1,5 +1,6 @@
 ---
 source: crates/dampen-core/tests/codegen_snapshot_tests.rs
+assertion_line: 71
 expression: output.code
 ---
-# [derive (Clone , Debug)] pub enum Message { submit } impl iced :: Application for Model { type Executor = iced :: executor :: Default ; type Flags = () ; type Message = Message ; fn new (_flags : ()) -> (Self , iced :: Task < Self :: Message >) { (Self :: default () , iced :: Task :: none ()) } fn title (& self) -> String { "Dampen Application" . to_string () } } fn view (& self) -> iced :: Element < '_ , Self :: Message > { iced :: widget :: button ("Submit" . to_string ()) . on_press (Message :: submit) } fn update (& mut self , message : Self :: Message) -> iced :: Task < Self :: Message > { match message { Message :: submit => { submit (self) ; iced :: Task :: none () } } }
+use crate :: ui :: window :: { self , Model } ; use iced :: { Element , Task , executor } ; # [derive (Clone , Debug)] pub enum Message { Submit } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { Message :: Submit => { ui :: window :: submit (model) ; iced :: Task :: none () } } } pub fn view_model (model : & Model) -> Element < '_ , Message > { let count = & model . count ; iced :: widget :: button ("Submit" . to_string ()) . on_press (Message :: submit (None)) }

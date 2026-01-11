@@ -51,15 +51,25 @@
 //!
 //! See the [README](../README.md) for complete documentation.
 
+// Allow eprintln! for development debugging (gated by verbose flag)
+// Allow type complexity for backend abstraction (message_factory closures)
+// Allow collapsible if/match for better code clarity
+#![allow(
+    clippy::print_stderr,
+    clippy::type_complexity,
+    clippy::collapsible_match,
+    clippy::collapsible_else_if
+)]
+
+use crate::HandlerMessage;
 use crate::convert::{map_layout_constraints, map_style_properties};
 use crate::state::WidgetStateManager;
-use crate::HandlerMessage;
 use dampen_core::binding::{BindingValue, UiBindable};
 use dampen_core::expr::evaluate_binding_expr;
 use dampen_core::handler::HandlerRegistry;
+use dampen_core::ir::WidgetKind;
 use dampen_core::ir::node::{AttributeValue, InterpolatedPart, WidgetNode};
 use dampen_core::ir::theme::StyleClass;
-use dampen_core::ir::WidgetKind;
 use dampen_core::state::AppState;
 #[allow(unused_imports)]
 use iced::widget::{checkbox, image, pick_list, radio, slider, text_input, toggler};
@@ -966,7 +976,7 @@ impl<'a> DampenWidgetBuilder<'a> {
 
                 // Apply background color
                 if let Some(ref bg) = style_props.background {
-                    if let dampen_core::ir::style::Background::Color(ref color) = bg {
+                    if let dampen_core::ir::style::Background::Color(color) = bg {
                         style.background = Some(Background::Color(Color {
                             r: color.r,
                             g: color.g,
@@ -1072,8 +1082,10 @@ impl<'a> DampenWidgetBuilder<'a> {
                 };
 
                 if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] Button: Attaching on_press with handler '{}', param: {:?}",
-                             handler_name, param_value);
+                    eprintln!(
+                        "[DampenWidgetBuilder] Button: Attaching on_press with handler '{}', param: {:?}",
+                        handler_name, param_value
+                    );
                 }
 
                 // Clone param_value explicitly before creating HandlerMessage
@@ -1270,7 +1282,9 @@ impl<'a> DampenWidgetBuilder<'a> {
                 });
             } else {
                 if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] TextInput: No handler_registry, cannot attach on_input");
+                    eprintln!(
+                        "[DampenWidgetBuilder] TextInput: No handler_registry, cannot attach on_input"
+                    );
                 }
             }
         }
@@ -1347,8 +1361,11 @@ impl<'a> DampenWidgetBuilder<'a> {
                         match evaluate_binding_expr(param_expr, self.model) {
                             Ok(value) => {
                                 if self.verbose {
-                                    eprintln!("[DampenWidgetBuilder] Checkbox param from model: {:?} -> {}",
-                                             param_expr, value.to_display_string());
+                                    eprintln!(
+                                        "[DampenWidgetBuilder] Checkbox param from model: {:?} -> {}",
+                                        param_expr,
+                                        value.to_display_string()
+                                    );
                                 }
                                 Some(value.to_display_string())
                             }
@@ -1368,8 +1385,10 @@ impl<'a> DampenWidgetBuilder<'a> {
                 };
 
                 if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] Checkbox: Attaching on_toggle with handler '{}', param: {:?}",
-                             handler_name, param_value);
+                    eprintln!(
+                        "[DampenWidgetBuilder] Checkbox: Attaching on_toggle with handler '{}', param: {:?}",
+                        handler_name, param_value
+                    );
                 }
 
                 checkbox = checkbox.on_toggle(move |new_checked| {
@@ -1386,7 +1405,9 @@ impl<'a> DampenWidgetBuilder<'a> {
                 });
             } else {
                 if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] Checkbox: No handler_registry, cannot attach on_toggle");
+                    eprintln!(
+                        "[DampenWidgetBuilder] Checkbox: No handler_registry, cannot attach on_toggle"
+                    );
                 }
             }
         }
@@ -1550,7 +1571,9 @@ impl<'a> DampenWidgetBuilder<'a> {
                 })
             } else {
                 if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] PickList: No handler_registry, cannot attach on_select");
+                    eprintln!(
+                        "[DampenWidgetBuilder] PickList: No handler_registry, cannot attach on_select"
+                    );
                 }
                 iced::widget::pick_list(options, selected, |_| {
                     HandlerMessage::Handler("dummy".to_string(), None)
@@ -1640,7 +1663,9 @@ impl<'a> DampenWidgetBuilder<'a> {
                 })
             } else {
                 if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] ComboBox: No handler_registry, cannot attach on_select");
+                    eprintln!(
+                        "[DampenWidgetBuilder] ComboBox: No handler_registry, cannot attach on_select"
+                    );
                 }
                 iced::widget::pick_list(options, selected, |_| {
                     HandlerMessage::Handler("dummy".to_string(), None)
@@ -1746,7 +1771,9 @@ impl<'a> DampenWidgetBuilder<'a> {
                 });
             } else {
                 if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] Toggler: No handler_registry, cannot attach on_toggle");
+                    eprintln!(
+                        "[DampenWidgetBuilder] Toggler: No handler_registry, cannot attach on_toggle"
+                    );
                 }
             }
         }
@@ -2285,9 +2312,9 @@ fn merge_styles(
 
     StyleProperties {
         background: override_style.background.clone().or(base.background),
-        color: override_style.color.clone().or(base.color),
+        color: override_style.color.or(base.color),
         border: override_style.border.clone().or(base.border),
-        shadow: override_style.shadow.clone().or(base.shadow),
+        shadow: override_style.shadow.or(base.shadow),
         opacity: override_style.opacity.or(base.opacity),
         transform: override_style.transform.clone().or(base.transform),
     }
@@ -2423,7 +2450,9 @@ impl<'a> DampenWidgetBuilder<'a> {
                             "[DampenWidgetBuilder] Radio: Disabled, creating non-interactive radio"
                         );
                     } else {
-                        eprintln!("[DampenWidgetBuilder] Radio: No handler_registry, creating read-only radio");
+                        eprintln!(
+                            "[DampenWidgetBuilder] Radio: No handler_registry, creating read-only radio"
+                        );
                     }
                 }
                 // Disabled or no handler registry - create read-only radio

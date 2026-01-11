@@ -1,7 +1,7 @@
 //! Tests for radio widget XML parsing
 
-use dampen_core::parse;
 use dampen_core::WidgetKind;
+use dampen_core::parse;
 
 #[test]
 fn test_parse_single_radio() {
@@ -50,7 +50,7 @@ fn test_parse_radio_group() {
     assert_eq!(doc.root.kind, WidgetKind::Column);
     assert_eq!(doc.root.children.len(), 3);
 
-    for (i, child) in doc.root.children.iter().enumerate() {
+    for (_i, child) in doc.root.children.iter().enumerate() {
         assert_eq!(child.kind, WidgetKind::Radio);
     }
 }

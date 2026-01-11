@@ -48,7 +48,9 @@ pub enum CheckError {
     },
 
     // Phase 4: Radio Group Validation
-    #[error("Duplicate radio value '{value}' in group '{group}' at {file}:{line}:{col}. First occurrence: {first_file}:{first_line}:{first_col}")]
+    #[error(
+        "Duplicate radio value '{value}' in group '{group}' at {file}:{line}:{col}. First occurrence: {first_file}:{first_line}:{first_col}"
+    )]
     DuplicateRadioValue {
         value: String,
         group: String,
@@ -60,7 +62,9 @@ pub enum CheckError {
         first_col: u32,
     },
 
-    #[error("Radio group '{group}' has inconsistent on_select handlers in {file}:{line}:{col}. Found handlers: {handlers}")]
+    #[error(
+        "Radio group '{group}' has inconsistent on_select handlers in {file}:{line}:{col}. Found handlers: {handlers}"
+    )]
     InconsistentRadioHandlers {
         group: String,
         file: PathBuf,
@@ -70,7 +74,9 @@ pub enum CheckError {
     },
 
     // Phase 5: Theme Property Validation
-    #[error("Invalid theme property '{property}' in theme '{theme}' at {file}:{line}:{col}: {message}. Valid properties: {valid_properties}")]
+    #[error(
+        "Invalid theme property '{property}' in theme '{theme}' at {file}:{line}:{col}: {message}. Valid properties: {valid_properties}"
+    )]
     InvalidThemeProperty {
         property: String,
         theme: String,

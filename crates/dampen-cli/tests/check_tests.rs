@@ -1,6 +1,6 @@
 //! Tests for the check command
 
-use dampen_cli::commands::check::{execute, CheckArgs};
+use dampen_cli::commands::check::{CheckArgs, execute};
 use std::fs;
 use tempfile::TempDir;
 

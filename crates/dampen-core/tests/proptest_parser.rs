@@ -3,7 +3,7 @@
 //! These tests use proptest to generate random inputs and verify that
 //! the parser handles edge cases correctly.
 
-use dampen_core::{parse, AttributeValue, WidgetKind};
+use dampen_core::{AttributeValue, WidgetKind, parse};
 use proptest::prelude::*;
 
 /// Generate valid XML with random nesting depth

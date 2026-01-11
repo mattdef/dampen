@@ -3,17 +3,14 @@
 // This file auto-loads the corresponding settings.dampen XML file.
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{dampen_ui, UiModel};
+use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
-
-#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
-pub struct Model {
-    pub dark_mode: bool,
-    pub notifications: bool,
-}
 
 #[dampen_ui("settings.dampen")]
 mod _settings {}
+
+#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
+pub struct Model;
 
 pub fn create_app_state() -> AppState<Model> {
     let document = _settings::document();

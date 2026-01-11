@@ -12,6 +12,11 @@ readme = { workspace = true }
 keywords = { workspace = true }
 categories = { workspace = true }
 
+[features]
+default = []
+codegen = []
+interpreted = []
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -22,16 +27,13 @@ syn = { workspace = true }
 thiserror = { workspace = true }
 nom = { workspace = true }
 csscolorparser = { workspace = true }
+prettyplease = "0.2"
 
 [dev-dependencies]
 proptest = { workspace = true }
 insta = { workspace = true }
 criterion = "0.5"
 dampen-macros = { path = "../dampen-macros" }
-
-[[bench]]
-name = "parser_bench"
-harness = false
 
 [lints]
 workspace = true

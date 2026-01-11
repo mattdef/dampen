@@ -272,10 +272,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         let registry = HandlerRegistry::load_from_json(&path).map_err(|e| {
             CheckError::HandlerRegistryLoadError {
                 path: path.clone(),
-                source: serde_json::Error::io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    e.to_string(),
-                )),
+                source: serde_json::Error::io(std::io::Error::other(e.to_string())),
             }
         })?;
         Some(registry)
@@ -289,10 +286,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
             crate::commands::check::model::ModelInfo::load_from_json(&path).map_err(|e| {
                 CheckError::ModelInfoLoadError {
                     path: path.clone(),
-                    source: serde_json::Error::io(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        e.to_string(),
-                    )),
+                    source: serde_json::Error::io(std::io::Error::other(e.to_string())),
                 }
             })?;
         Some(model)
@@ -370,12 +364,12 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         // T048: Strict mode logic - in strict mode, all validation issues are errors
         // (Currently all validation issues are already treated as errors, so this is
         // primarily for future extensibility when we might add warnings)
-        let error_label = if args.strict { "error(s)" } else { "error(s)" };
+        let error_label = "error(s)"; // TODO: differentiate warnings in non-strict mode
         eprintln!("Found {} {}:", errors.len(), error_label);
 
         for error in &errors {
             // T049: Error formatting - distinguish warnings from errors in strict mode
-            let prefix = if args.strict { "ERROR" } else { "ERROR" };
+            let prefix = "ERROR"; // TODO: use "WARNING" for warnings in non-strict mode
             eprintln!("  [{}] {}", prefix, error);
         }
 

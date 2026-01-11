@@ -3,6 +3,18 @@
 //! This module provides the #[ui_handler] attribute macro that marks functions
 //! as UI event handlers and emits metadata for build-time code generation.
 //!
+//! # Dual-Mode Architecture Support
+//!
+//! This macro works in both compilation modes:
+//!
+//! - **Interpreted Mode**: Metadata is emitted but not consumed. Handlers are registered
+//!   manually at runtime using `HandlerRegistry::register_*()` methods.
+//! - **Codegen Mode**: Metadata is collected by build.rs to generate handler registration
+//!   code at compile time, eliminating runtime registration overhead.
+//!
+//! The macro always emits both the original function and metadata constants, ensuring
+//! compatibility with both modes without conditional compilation.
+//!
 //! # Example
 //!
 //! ```rust,ignore
@@ -16,9 +28,36 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, FnArg, ItemFn, ReturnType};
+use syn::{FnArg, ItemFn, ReturnType, parse_macro_input};
 
-/// Process the #[ui_handler] attribute macro
+/// Process the #[ui_handler] attribute macro.
+///
+/// This macro transforms a handler function to emit metadata for optional build-time
+/// code generation while preserving the original function for runtime use.
+///
+/// # Dual-Mode Behavior
+///
+/// The macro emits code that works in both modes:
+///
+/// ## Interpreted Mode
+/// - Original function is preserved for runtime use
+/// - Metadata constants are emitted but typically unused
+/// - Handlers registered manually via `HandlerRegistry::register_*()`
+///
+/// ## Codegen Mode  
+/// - Original function is preserved and callable
+/// - Metadata constants are collected by build.rs
+/// - build.rs generates registration code automatically
+/// - Zero runtime registration overhead
+///
+/// # Generated Code
+///
+/// For a handler function `on_click`, the macro generates:
+/// - The original `on_click` function unchanged
+/// - A `_HANDLER_METADATA_ON_CLICK` constant with type information
+///
+/// The metadata constant is marked `#[doc(hidden)]` and does not affect
+/// the public API surface.
 pub fn process_ui_handler(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);
 
@@ -109,8 +148,6 @@ fn analyze_signature(func: &ItemFn) -> (String, Vec<String>) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_signature_analysis() {
         // This is a unit test for the signature analysis logic

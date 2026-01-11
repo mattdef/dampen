@@ -3,22 +3,24 @@ resolver = "2"
 members = [
     "crates/dampen-core",
     "crates/dampen-macros",
-    "crates/dampen-runtime",
     "crates/dampen-iced",
+    "crates/dampen-dev",
     "crates/dampen-cli",
     "examples/hello-world",
     "examples/counter",
     "examples/todo-app",
     "examples/styling",
     "examples/widget-showcase",
-    "examples/responsive",
     "examples/settings",
+    "benchmarks",
+    "tests/hot-reload-integration",
+    "tests/integration",
 ]
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
-rust-version = "1.75"
+edition = "2024"
+rust-version = "1.85"
 authors = ["Mattdef <mattdef@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/mattdef/dampen"
@@ -32,8 +34,8 @@ publish = true
 # Dampen crates
 dampen-core = { path = "./crates/dampen-core", version = "0.1.0" }
 dampen-macros = { path = "./crates/dampen-macros", version = "0.1.0" }
-dampen-runtime = { path = "./crates/dampen-runtime", version = "0.1.0" }
 dampen-iced = { path = "./crates/dampen-iced", version = "0.1.0" }
+dampen-dev = { path = "./crates/dampen-dev", version = "0.1.0" }
 dampen-cli = { path = "./crates/dampen-cli", version = "0.1.0" }
 
 # Core dependencies
@@ -54,7 +56,7 @@ proc-macro2 = "1.0"
 clap = { version = "4.0", features = ["derive"] }
 
 # UI Backend
-iced = { version = "0.14", features = ["tokio", "canvas", "image", "svg"] }
+iced = { version = "0.14", features = ["tokio", "canvas", "image", "svg", "advanced"] }
 
 # Error handling
 thiserror = "1.0"
@@ -63,6 +65,9 @@ thiserror = "1.0"
 proptest = "1.0"
 insta = "1.0"
 tempfile = "3.0"
+
+# Benchmarking
+criterion = { version = "0.5", features = ["html_reports"] }
 
 [workspace.lints.rust]
 unused = "warn"
@@ -79,3 +84,32 @@ todo = "warn"
 dbg_macro = "warn"
 print_stdout = "warn"
 print_stderr = "warn"
+
+# Profile configurations for dual-mode architecture
+# Note: Cargo does not support 'features = [...]' syntax in profile sections.
+# Applications should set 'default = ["interpreted"]' in their [features] section
+# and use '--features codegen --no-default-features' for production builds.
+# See examples/counter/Cargo.toml for reference implementation.
+
+[profile.dev]
+# Development profile: Optimized for fast compilation and hot-reload
+# Recommended: Use with --features interpreted (or set as package default)
+opt-level = 0
+debug = true
+split-debuginfo = "unpacked"
+debug-assertions = true
+overflow-checks = true
+incremental = true
+codegen-units = 256
+
+[profile.release]
+# Release profile: Optimized for runtime performance with codegen
+# Recommended: Use with --features codegen --no-default-features
+opt-level = 3
+debug = false
+debug-assertions = false
+overflow-checks = false
+lto = "thin"
+incremental = false
+codegen-units = 16
+strip = "debuginfo"

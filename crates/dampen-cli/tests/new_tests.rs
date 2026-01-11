@@ -289,7 +289,9 @@ fn test_new_creates_valid_rust_code() {
 
     // Check for key elements
     assert!(window_rs.contains("pub struct Model"));
-    assert!(window_rs.contains("#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]"));
+    assert!(
+        window_rs.contains("#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]")
+    );
     assert!(window_rs.contains("#[dampen_ui(\"window.dampen\")]"));
     assert!(window_rs.contains("register_simple"));
     assert!(window_rs.contains("create_handler_registry"));

@@ -1,7 +1,7 @@
 //! Widget-specific tests for DampenWidgetBuilder
 
 use dampen_core::binding::{BindingValue, UiBindable};
-use dampen_core::{parse, HandlerRegistry};
+use dampen_core::{HandlerRegistry, parse};
 use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
 use iced::{Element, Renderer, Theme};
 

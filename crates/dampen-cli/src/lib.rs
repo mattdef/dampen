@@ -20,7 +20,7 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Build production code from .dampen files
+    /// Build production code with codegen mode
     Build(commands::BuildArgs),
 
     /// Validate .dampen files without building
@@ -31,6 +31,9 @@ pub enum Commands {
 
     /// Create a new Dampen project
     New(commands::NewArgs),
+
+    /// Run application in development mode with interpreted execution
+    Run(commands::RunArgs),
 }
 
 /// CLI entry point
@@ -42,6 +45,7 @@ pub fn run() {
         Commands::Check(args) => commands::check_execute(&args).map_err(|e| e.to_string()),
         Commands::Inspect(args) => commands::inspect_execute(&args),
         Commands::New(args) => commands::new_execute(&args),
+        Commands::Run(args) => commands::run_execute(&args).map_err(|e| e.to_string()),
     };
 
     if let Err(e) = result {

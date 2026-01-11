@@ -1,0 +1,5 @@
+---
+source: crates/dampen-core/tests/codegen_snapshot_tests.rs
+expression: output.code
+---
+use crate :: ui :: window :: { self , Model } ; use iced :: { Element , Task , executor } ; # [derive (Clone , Debug)] pub enum Message { ToggleFeature (bool) } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { Message :: ToggleFeature (value) => { ui :: window :: toggle_feature (model , value) ; iced :: Task :: none () } } } pub fn view_model (model : & Model) -> Element < '_ , Message > { let count = & model . count ; iced :: widget :: toggler ("Enable Feature" . to_string () , false , None) . on_toggle (| _ | Message :: toggle_feature) }

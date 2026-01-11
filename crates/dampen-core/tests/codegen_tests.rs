@@ -1,8 +1,6 @@
 //! Code generation snapshot tests
 
-use dampen_core::{
-    generate_application, parse, validate_handlers, EventKind, HandlerSignature, WidgetKind,
-};
+use dampen_core::{HandlerSignature, generate_application, parse, validate_handlers};
 
 #[test]
 fn test_simple_button_codegen() {
@@ -201,7 +199,9 @@ fn test_application_trait_generation() {
     let output = generate_application(&doc, "TestModel", "TestMessage", &handlers).unwrap();
 
     let code = &output.code;
-    assert!(code.contains("impl") && code.contains("Application") && code.contains("TestModel"));
+    assert!(code.contains("fn new_model") && code.contains("TestModel"));
+    assert!(code.contains("fn update_model") && code.contains("TestModel"));
+    assert!(code.contains("fn view_model") && code.contains("TestModel"));
     assert!(code.contains("Message") && code.contains("TestMessage"));
 }
 
@@ -340,4 +340,256 @@ fn test_complex_example() {
 
     // Verify no warnings
     assert!(output.warnings.is_empty());
+}
+
+#[cfg(test)]
+mod expression_codegen_tests {
+    use dampen_core::codegen::bindings::{generate_expr, generate_interpolated};
+    use dampen_core::expr::ast::{
+        BinaryOp, BinaryOpExpr, ConditionalExpr, Expr, FieldAccessExpr, LiteralExpr,
+        MethodCallExpr, UnaryOp, UnaryOpExpr,
+    };
+
+    #[test]
+    fn test_field_access_codegen_single_field() {
+        let expr = Expr::FieldAccess(FieldAccessExpr {
+            path: vec!["count".to_string()],
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("count"));
+        assert!(code.contains("to_string"));
+    }
+
+    #[test]
+    fn test_field_access_codegen_nested_field() {
+        let expr = Expr::FieldAccess(FieldAccessExpr {
+            path: vec!["user".to_string(), "name".to_string()],
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("user"));
+        assert!(code.contains("name"));
+        assert!(code.contains("to_string"));
+    }
+
+    #[test]
+    fn test_binary_op_codegen_add() {
+        let expr = Expr::BinaryOp(BinaryOpExpr {
+            left: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["count".to_string()],
+            })),
+            op: BinaryOp::Add,
+            right: Box::new(Expr::Literal(LiteralExpr::Integer(1))),
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("count"));
+        assert!(code.contains("+"));
+        assert!(code.contains("1"));
+        assert!(code.contains("to_string"));
+    }
+
+    #[test]
+    fn test_binary_op_codegen_comparison() {
+        let expr = Expr::BinaryOp(BinaryOpExpr {
+            left: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["value".to_string()],
+            })),
+            op: BinaryOp::Gt,
+            right: Box::new(Expr::Literal(LiteralExpr::Integer(0))),
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains(">"));
+        assert!(code.contains("0"));
+    }
+
+    #[test]
+    fn test_binary_op_codegen_logical() {
+        let expr = Expr::BinaryOp(BinaryOpExpr {
+            left: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["active".to_string()],
+            })),
+            op: BinaryOp::And,
+            right: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["enabled".to_string()],
+            })),
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("&&"));
+    }
+
+    #[test]
+    fn test_method_call_codegen_no_args() {
+        let expr = Expr::MethodCall(MethodCallExpr {
+            receiver: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["items".to_string()],
+            })),
+            method: "len".to_string(),
+            args: vec![],
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("items"));
+        assert!(code.contains("len"));
+        assert!(code.contains("to_string"));
+    }
+
+    #[test]
+    fn test_method_call_codegen_with_args() {
+        let expr = Expr::MethodCall(MethodCallExpr {
+            receiver: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["text".to_string()],
+            })),
+            method: "replace".to_string(),
+            args: vec![
+                Expr::Literal(LiteralExpr::String("old".to_string())),
+                Expr::Literal(LiteralExpr::String("new".to_string())),
+            ],
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("text"));
+        assert!(code.contains("replace"));
+        assert!(code.contains("old"));
+        assert!(code.contains("new"));
+    }
+
+    #[test]
+    fn test_conditional_codegen() {
+        let expr = Expr::Conditional(ConditionalExpr {
+            condition: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["count".to_string()],
+            })),
+            then_branch: Box::new(Expr::Literal(LiteralExpr::String("Yes".to_string()))),
+            else_branch: Box::new(Expr::Literal(LiteralExpr::String("No".to_string()))),
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("if"));
+        assert!(code.contains("count"));
+        assert!(code.contains("Yes"));
+        assert!(code.contains("No"));
+    }
+
+    #[test]
+    fn test_literal_string_codegen() {
+        let expr = Expr::Literal(LiteralExpr::String("hello".to_string()));
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("hello"));
+        assert!(code.contains("to_string"));
+    }
+
+    #[test]
+    fn test_literal_integer_codegen() {
+        let expr = Expr::Literal(LiteralExpr::Integer(42));
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("42"));
+        assert!(code.contains("to_string"));
+    }
+
+    #[test]
+    fn test_literal_float_codegen() {
+        let expr = Expr::Literal(LiteralExpr::Float(3.14));
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("3.14"));
+        assert!(code.contains("to_string"));
+    }
+
+    #[test]
+    fn test_literal_bool_codegen() {
+        let expr = Expr::Literal(LiteralExpr::Bool(true));
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("true"));
+        assert!(code.contains("to_string"));
+    }
+
+    #[test]
+    fn test_interpolated_string_single_binding() {
+        let parts = vec!["Count: ".to_string(), "{count}".to_string()];
+        let tokens = generate_interpolated(&parts);
+        let code = tokens.to_string();
+        assert!(code.contains("format"));
+        assert!(code.contains("count"));
+    }
+
+    #[test]
+    fn test_interpolated_string_multiple_bindings() {
+        let parts = vec![
+            "Hello, ".to_string(),
+            "{name}".to_string(),
+            "! You have ".to_string(),
+            "{count}".to_string(),
+            " items.".to_string(),
+        ];
+        let tokens = generate_interpolated(&parts);
+        let code = tokens.to_string();
+        assert!(code.contains("format"));
+        assert!(code.contains("name"));
+        assert!(code.contains("count"));
+    }
+
+    #[test]
+    fn test_interpolated_string_no_bindings() {
+        let parts = vec!["Hello, World!".to_string()];
+        let tokens = generate_interpolated(&parts);
+        let code = tokens.to_string();
+        assert!(code.contains("format"));
+        assert!(code.contains("Hello"));
+    }
+
+    #[test]
+    fn test_unary_op_not_codegen() {
+        let expr = Expr::UnaryOp(UnaryOpExpr {
+            op: UnaryOp::Not,
+            operand: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["active".to_string()],
+            })),
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("!"));
+        assert!(code.contains("active"));
+    }
+
+    #[test]
+    fn test_unary_op_neg_codegen() {
+        let expr = Expr::UnaryOp(UnaryOpExpr {
+            op: UnaryOp::Neg,
+            operand: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                path: vec!["value".to_string()],
+            })),
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("-"));
+        assert!(code.contains("value"));
+    }
+
+    #[test]
+    fn test_complex_expression_codegen() {
+        let expr = Expr::BinaryOp(BinaryOpExpr {
+            left: Box::new(Expr::MethodCall(MethodCallExpr {
+                receiver: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                    path: vec!["items".to_string()],
+                })),
+                method: "len".to_string(),
+                args: vec![],
+            })),
+            op: BinaryOp::Gt,
+            right: Box::new(Expr::Literal(LiteralExpr::Integer(0))),
+        });
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+        assert!(code.contains("items"));
+        assert!(code.contains("len"));
+        assert!(code.contains(">"));
+        assert!(code.contains("0"));
+    }
 }

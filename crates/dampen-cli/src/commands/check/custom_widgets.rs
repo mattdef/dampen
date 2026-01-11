@@ -48,8 +48,9 @@ impl CustomWidgetRegistry {
     ///   }
     /// }
     /// ```
+    #[allow(clippy::result_large_err)]
     pub fn load_from_json(path: &Path) -> Result<Self, CheckError> {
-        let content = fs::read_to_string(path).map_err(|e| CheckError::Io(e))?;
+        let content = fs::read_to_string(path).map_err(CheckError::Io)?;
         let widgets: HashMap<String, CustomWidgetConfig> =
             serde_json::from_str(&content).map_err(|e| {
                 CheckError::CustomWidgetConfigLoadError {

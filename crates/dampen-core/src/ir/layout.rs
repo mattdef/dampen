@@ -325,7 +325,10 @@ impl Justification {
             "space_between" => Ok(Justification::SpaceBetween),
             "space_around" => Ok(Justification::SpaceAround),
             "space_evenly" => Ok(Justification::SpaceEvenly),
-            _ => Err(format!("Invalid justification: '{}'. Expected start, center, end, space_between, space_around, or space_evenly", s)),
+            _ => Err(format!(
+                "Invalid justification: '{}'. Expected start, center, end, space_between, space_around, or space_evenly",
+                s
+            )),
         }
     }
 }
@@ -347,7 +350,10 @@ impl Direction {
             "horizontal_reverse" => Ok(Direction::HorizontalReverse),
             "vertical" => Ok(Direction::Vertical),
             "vertical_reverse" => Ok(Direction::VerticalReverse),
-            _ => Err(format!("Invalid direction: '{}'. Expected horizontal, horizontal_reverse, vertical, or vertical_reverse", s)),
+            _ => Err(format!(
+                "Invalid direction: '{}'. Expected horizontal, horizontal_reverse, vertical, or vertical_reverse",
+                s
+            )),
         }
     }
 }

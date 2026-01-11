@@ -11,7 +11,7 @@ fn create_test_file(dir: &TempDir, filename: &str, content: &str) -> PathBuf {
 
 #[test]
 fn test_unknown_attribute_detection_integration() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -82,7 +82,7 @@ fn test_strict_mode_placeholder() {
 // T021: Integration test for handler validation
 #[test]
 fn test_handler_validation_with_registry() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -124,7 +124,7 @@ fn test_handler_validation_with_registry() {
 
 #[test]
 fn test_handler_validation_with_unknown_handler() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -166,7 +166,7 @@ fn test_handler_validation_with_unknown_handler() {
 
 #[test]
 fn test_handler_validation_without_registry() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -198,7 +198,7 @@ fn test_handler_validation_without_registry() {
 // T029: Integration tests for binding validation
 #[test]
 fn test_binding_validation_with_model() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -250,7 +250,7 @@ fn test_binding_validation_with_model() {
 
 #[test]
 fn test_binding_validation_with_invalid_field() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -293,7 +293,7 @@ fn test_binding_validation_with_invalid_field() {
 
 #[test]
 fn test_binding_validation_without_model() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -324,7 +324,7 @@ fn test_binding_validation_without_model() {
 // T036: Integration test for valid radio group
 #[test]
 fn test_valid_radio_group_integration() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -358,7 +358,7 @@ fn test_valid_radio_group_integration() {
 // T042: Integration test for valid theme
 #[test]
 fn test_valid_theme_integration() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -392,7 +392,7 @@ fn test_valid_theme_integration() {
 // T046: Integration test for strict mode exit code
 #[test]
 fn test_strict_mode_with_errors() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -438,7 +438,7 @@ fn test_strict_mode_with_errors() {
 // T047: Integration test for strict mode with no warnings
 #[test]
 fn test_strict_mode_with_no_warnings() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -471,7 +471,7 @@ fn test_strict_mode_with_no_warnings() {
 // T053: Integration test for required attribute validation
 #[test]
 fn test_required_attribute_validation_text_missing_value() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -506,7 +506,7 @@ fn test_required_attribute_validation_text_missing_value() {
 
 #[test]
 fn test_required_attribute_validation_image_missing_src() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -541,7 +541,7 @@ fn test_required_attribute_validation_image_missing_src() {
 
 #[test]
 fn test_required_attribute_validation_radio_missing_label() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -576,7 +576,7 @@ fn test_required_attribute_validation_radio_missing_label() {
 
 #[test]
 fn test_required_attribute_validation_all_present() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -610,7 +610,7 @@ fn test_required_attribute_validation_all_present() {
 // T057: Integration test for complete validation pipeline with all flags
 #[test]
 fn test_complete_validation_pipeline_all_flags() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");
@@ -696,7 +696,7 @@ fn test_complete_validation_pipeline_all_flags() {
 
 #[test]
 fn test_complete_validation_pipeline_with_errors() {
-    use dampen_cli::commands::check::{execute, CheckArgs};
+    use dampen_cli::commands::check::{CheckArgs, execute};
 
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let ui_dir = temp_dir.path().join("ui");

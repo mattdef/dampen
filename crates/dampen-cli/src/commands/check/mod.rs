@@ -15,7 +15,7 @@ pub use cross_widget::{RadioButton, RadioGroup, RadioGroupValidator};
 pub use custom_widgets::{CustomWidgetConfig, CustomWidgetRegistry};
 pub use errors::CheckError as EnhancedCheckError;
 pub use handlers::{HandlerDefinition, HandlerRegistry};
-pub use main_command::{execute, CheckArgs, CheckError};
+pub use main_command::{CheckArgs, CheckError, execute};
 pub use model::{ModelField, ModelInfo};
 pub use suggestions::{find_closest_match, levenshtein_distance, suggest};
 pub use themes::ThemeValidator;

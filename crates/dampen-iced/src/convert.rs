@@ -4,9 +4,9 @@
 //! for use in the DampenWidgetBuilder.
 
 pub use crate::style_mapping::{
-    get_z_index, has_positioning, map_alignment, map_background, map_border_radius, map_color,
-    map_gradient, map_justification, map_layout_constraints, map_length, map_padding,
-    map_style_properties, IcedLayout,
+    IcedLayout, get_z_index, has_positioning, map_alignment, map_background, map_border_radius,
+    map_color, map_gradient, map_justification, map_layout_constraints, map_length, map_padding,
+    map_style_properties,
 };
 
 // Re-export IR types for convenience
