@@ -1,18 +1,18 @@
 [package]
 name = "dampen-dev"
-version = "0.1.0"
-edition = "2021"
-rust-version = "1.75"
-authors = ["Dampen Contributors"]
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
 description = "Development mode tooling for Dampen - hot-reload, file watching, and error overlays"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/yourusername/dampen"
-keywords = ["gui", "ui", "hot-reload", "development"]
-categories = ["gui", "development-tools"]
+license = { workspace = true }
+repository = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
 
 [dependencies]
 # Core dependencies
-dampen-core = { path = "../dampen-core" }
+dampen-core = { workspace = true }
 iced = { workspace = true }
 
 # File watching
