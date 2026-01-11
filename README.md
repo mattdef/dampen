@@ -13,7 +13,7 @@
 
 Dampen allows you to define your user interface in XML and render it via Iced.
 
-<img src="assets/hot-reload-demo.gif" width="400" alt="Exemple" />  
+<img src="assets/hot-reload-demo.gif" width="850" alt="Exemple" />  
 
 </div>
 
