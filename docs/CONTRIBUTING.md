@@ -31,9 +31,9 @@ This project adheres to a code of conduct that all contributors are expected to 
 
 ### Prerequisites
 
-- Rust 1.75 or higher (stable channel)
+- Rust 1.85 or higher (stable channel)
 - Git
-- A code editor with Rust support (VS Code with rust-analyzer recommended)
+- A code editor with Rust support
 
 ### Setting Up Your Development Environment
 
@@ -41,13 +41,13 @@ This project adheres to a code of conduct that all contributors are expected to 
 
 2. **Clone your fork:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/dampen.git
+   git clone https://github.com/mattdef/dampen.git
    cd dampen
    ```
 
 3. **Add the upstream remote:**
    ```bash
-   git remote add upstream https://github.com/ORIGINAL_OWNER/dampen.git
+   git remote add upstream https://github.com/mattdef/dampen.git
    ```
 
 4. **Build the project:**
@@ -62,9 +62,9 @@ This project adheres to a code of conduct that all contributors are expected to 
 
 6. **Try the examples:**
    ```bash
-   cargo run --example hello-world
-   cargo run --example counter
-   cargo run --example todo-app
+   cargo run -p hello-world
+   cargo run -p counter
+   cargo run -p todo-app
    ```
 
 ## Development Workflow
@@ -119,8 +119,8 @@ dampen/
 
 ### Rust Conventions
 
-- **Edition:** Rust 2024 (or 2021)
-- **MSRV:** 1.75 stable (no nightly features in public API)
+- **Edition:** Rust 2024
+- **MSRV:** 1.85 stable (no nightly features in public API)
 - **Formatting:** Use `rustfmt` with default settings
 - **Linting:** Code must pass `clippy` with `-D warnings`
 
@@ -372,7 +372,7 @@ A clear description of what you expected to happen.
 
 **Environment:**
 - Dampen version: [e.g., 0.1.0]
-- Rust version: [e.g., 1.75.0]
+- Rust version: [e.g., 1.85.0]
 - OS: [e.g., Ubuntu 22.04]
 
 **Additional context**
