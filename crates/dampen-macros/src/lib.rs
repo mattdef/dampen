@@ -4,6 +4,8 @@
 
 use proc_macro::TokenStream;
 
+mod dampen_app;
+mod discovery;
 mod ui_handler;
 mod ui_loader;
 mod ui_model;
@@ -57,4 +59,45 @@ pub fn dampen_ui(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn ui_handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     ui_handler::process_ui_handler(attr, item)
+}
+
+/// Attribute macro for auto-discovering and wiring multi-view applications.
+///
+/// This macro automatically:
+/// - Discovers all `.dampen` UI files in the specified directory
+/// - Generates a `CurrentView` enum with variants for each view
+/// - Generates view switching logic and handler dispatch
+/// - Optionally integrates hot-reload subscriptions
+///
+/// # Required Attributes
+///
+/// - `ui_dir`: Directory to scan for `.dampen` files (e.g., `"src/ui"`)
+/// - `message_type`: Name of your Message enum (e.g., `"Message"`)
+/// - `handler_variant`: Message variant for handler dispatch (e.g., `"Handler"`)
+///
+/// # Optional Attributes
+///
+/// - `hot_reload_variant`: Message variant for file change events (e.g., `"HotReload"`)
+/// - `dismiss_error_variant`: Message variant for error overlay dismissal (e.g., `"DismissError"`)
+/// - `exclude`: Array of glob patterns to exclude views (e.g., `["debug_*", "test/*"]`)
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use dampen_macros::dampen_app;
+///
+/// #[dampen_app(
+///     ui_dir = "src/ui",
+///     message_type = "Message",
+///     handler_variant = "Handler",
+///     hot_reload_variant = "HotReload",
+///     exclude = ["debug_view"]
+/// )]
+/// mod app {}
+/// ```
+#[proc_macro_attribute]
+pub fn dampen_app(_attr: TokenStream, _item: TokenStream) -> TokenStream {
+    // TODO: Implementation in Phase 3 (US1)
+    // For now, return empty TokenStream to satisfy tests
+    TokenStream::new()
 }
