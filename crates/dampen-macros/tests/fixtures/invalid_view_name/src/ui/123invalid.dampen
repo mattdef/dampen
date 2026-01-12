@@ -1,0 +1,5 @@
+<dampen schema="1.0.0">
+    <column padding="20" spacing="10">
+        <text value="Invalid view name (starts with number)" size="24" />
+    </column>
+</dampen>

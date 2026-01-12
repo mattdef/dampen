@@ -1,0 +1,11 @@
+error: missing required attribute 'message_type'
+       help: Add message_type = "Message" to the macro attributes
+ --> tests/ui/missing_message_type.rs:6:1
+  |
+6 | / #[dampen_app(
+7 | |     ui_dir = "tests/fixtures/multi_view/src/ui",
+8 | |     handler_variant = "Handler"
+9 | | )]
+  | |__^
+  |
+  = note: this error originates in the attribute macro `dampen_app` (in Nightly builds, run with -Z macro-backtrace for more info)

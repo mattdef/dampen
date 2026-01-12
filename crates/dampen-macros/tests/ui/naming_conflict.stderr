@@ -1,0 +1,12 @@
+error: UI directory not found: 'tests/fixtures/naming_conflict/src/ui'
+       help: Ensure the directory exists relative to Cargo.toml
+  --> tests/ui/naming_conflict.rs:6:1
+   |
+ 6 | / #[dampen_app(
+ 7 | |     ui_dir = "tests/fixtures/naming_conflict/src/ui",
+ 8 | |     message_type = "Message",
+ 9 | |     handler_variant = "Handler"
+10 | | )]
+   | |__^
+   |
+   = note: this error originates in the attribute macro `dampen_app` (in Nightly builds, run with -Z macro-backtrace for more info)

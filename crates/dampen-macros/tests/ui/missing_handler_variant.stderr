@@ -1,0 +1,8 @@
+error: missing required attribute 'handler_variant'
+       help: Add handler_variant = "Handler" to the macro attributes
+ --> tests/ui/missing_handler_variant.rs:6:1
+  |
+6 | #[dampen_app(ui_dir = "tests/fixtures/multi_view/src/ui", message_type = "Message")]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `dampen_app` (in Nightly builds, run with -Z macro-backtrace for more info)

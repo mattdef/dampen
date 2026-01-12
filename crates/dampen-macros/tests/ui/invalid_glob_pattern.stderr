@@ -1,0 +1,13 @@
+error: Invalid exclude pattern '[invalid': error parsing glob '[invalid': unclosed character class; missing ']'
+       help: Use glob patterns like 'debug' or 'experimental/*'
+  --> tests/ui/invalid_glob_pattern.rs:6:1
+   |
+ 6 | / #[dampen_app(
+ 7 | |     ui_dir = "tests/fixtures/multi_view/src/ui",
+ 8 | |     message_type = "Message",
+ 9 | |     handler_variant = "Handler",
+10 | |     exclude = ["[invalid"]  // Unclosed bracket is invalid glob syntax
+11 | | )]
+   | |__^
+   |
+   = note: this error originates in the attribute macro `dampen_app` (in Nightly builds, run with -Z macro-backtrace for more info)

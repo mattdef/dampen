@@ -1,0 +1,8 @@
+error: missing required attribute 'ui_dir'
+       help: Add ui_dir = "src/ui" to the macro attributes
+ --> tests/ui/missing_ui_dir.rs:6:1
+  |
+6 | #[dampen_app(message_type = "Message", handler_variant = "Handler")]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `dampen_app` (in Nightly builds, run with -Z macro-backtrace for more info)
