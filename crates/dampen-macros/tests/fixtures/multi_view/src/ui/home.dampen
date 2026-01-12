@@ -1,0 +1,6 @@
+<dampen>
+    <column padding="20" spacing="10">
+        <text value="Home View" size="24" weight="bold" />
+        <text value="Welcome to the home page" />
+    </column>
+</dampen>

@@ -96,8 +96,9 @@ pub fn ui_handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// mod app {}
 /// ```
 #[proc_macro_attribute]
-pub fn dampen_app(_attr: TokenStream, _item: TokenStream) -> TokenStream {
-    // TODO: Implementation in Phase 3 (US1)
-    // For now, return empty TokenStream to satisfy tests
-    TokenStream::new()
+pub fn dampen_app(attr: TokenStream, item: TokenStream) -> TokenStream {
+    match dampen_app::dampen_app_impl(attr.into(), item.into()) {
+        Ok(tokens) => tokens.into(),
+        Err(e) => e.to_compile_error().into(),
+    }
 }

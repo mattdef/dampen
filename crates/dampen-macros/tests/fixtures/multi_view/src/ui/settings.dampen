@@ -1,0 +1,6 @@
+<dampen>
+    <column padding="20" spacing="10">
+        <text value="Settings View" size="24" weight="bold" />
+        <text value="Configure your preferences" />
+    </column>
+</dampen>

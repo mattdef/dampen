@@ -1,0 +1,6 @@
+<dampen>
+    <column padding="20" spacing="10">
+        <text value="About View" size="24" weight="bold" />
+        <text value="Version 1.0.0" />
+    </column>
+</dampen>
