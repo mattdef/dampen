@@ -18,7 +18,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Mattdef <mattdef@gmail.com>"]
@@ -32,11 +32,11 @@ publish = true
 
 [workspace.dependencies]
 # Dampen crates
-dampen-core = { path = "./crates/dampen-core", version = "0.2.1" }
-dampen-macros = { path = "./crates/dampen-macros", version = "0.2.1" }
-dampen-iced = { path = "./crates/dampen-iced", version = "0.2.1" }
-dampen-dev = { path = "./crates/dampen-dev", version = "0.2.1" }
-dampen-cli = { path = "./crates/dampen-cli", version = "0.2.1" }
+dampen-core = { path = "./crates/dampen-core", version = "0.2.2" }
+dampen-macros = { path = "./crates/dampen-macros", version = "0.2.2" }
+dampen-iced = { path = "./crates/dampen-iced", version = "0.2.2" }
+dampen-dev = { path = "./crates/dampen-dev", version = "0.2.2" }
+dampen-cli = { path = "./crates/dampen-cli", version = "0.2.2" }
 
 # Core dependencies
 serde = { version = "1.0", features = ["derive"] }
