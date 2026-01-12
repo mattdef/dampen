@@ -159,6 +159,7 @@ pub fn generate_app_struct(
     views: &[ViewInfo],
     _message_type: &Ident,
     attrs: &MacroAttributes,
+    struct_name: &Ident,
 ) -> TokenStream {
     let fields: Vec<_> = views
         .iter()
@@ -189,7 +190,7 @@ pub fn generate_app_struct(
     };
 
     quote! {
-        pub struct App {
+        pub struct #struct_name {
             #(#fields,)*
             current_view: CurrentView,
             #error_overlay_field
@@ -221,26 +222,8 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
                 .map(|part| Ident::new(part, proc_macro2::Span::call_site()))
                 .collect();
 
-            // Generate the module name with underscore prefix (e.g., _window)
-            let dampen_ui_module =
-                Ident::new(&format!("_{}", v.view_name), proc_macro2::Span::call_site());
-
             quote! {
-                #field_name: {
-                    // Load document from #[dampen_ui] generated module
-                    let document = #(#module_parts)::*::#dampen_ui_module::document();
-
-                    // Try to load handler registry if create_handler_registry() exists
-                    // Otherwise use empty registry
-                    #[allow(unused_mut)]
-                    let mut handlers = dampen_core::HandlerRegistry::new();
-
-                    // Note: User can manually call create_handler_registry() if it exists
-                    // For now, we use an empty registry and let users wire handlers manually
-                    // TODO: Optionally generate code to call create_handler_registry() if detected
-
-                    dampen_core::AppState::with_handlers(document, handlers)
-                }
+                #field_name: #(#module_parts)::*::create_app_state()
             }
         })
         .collect();
@@ -321,7 +304,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             views
                 .iter()
                 .map(|v| {
-                    let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+                    let _field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
                     let dampen_file_name = v
                         .dampen_file
                         .file_name()
@@ -345,7 +328,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             views
                 .iter()
                 .map(|v| {
-                    let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+                    let _field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
                     let dampen_file_name = v
                         .dampen_file
                         .file_name()
@@ -450,9 +433,9 @@ pub fn generate_view_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
 
             quote! {
                 CurrentView::#variant => {
-                    // TODO: Implement view rendering when dampen_iced::build_ui is ready
-                    // For now, return a placeholder text widget
-                    iced::widget::text("View rendering not yet implemented").into()
+                    dampen_iced::DampenWidgetBuilder::from_app_state(&self.#_field_name)
+                        .build()
+                        .map(#message_type::#_handler_variant)
                 }
             }
         })
@@ -513,9 +496,13 @@ pub fn generate_subscription_method(
 
 /// Main macro implementation
 #[doc(hidden)] // Not part of public API, but accessible to tests via #[path]
-pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStream, syn::Error> {
+pub fn dampen_app_impl(attr: TokenStream, item: TokenStream) -> Result<TokenStream, syn::Error> {
     // Parse attributes
     let attrs: MacroAttributes = syn::parse2(attr)?;
+
+    // Parse the input struct to extract its name
+    let input_struct: syn::ItemStruct = syn::parse2(item)?;
+    let struct_name = &input_struct.ident;
 
     // Resolve UI directory (relative to CARGO_MANIFEST_DIR)
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").map_err(|_| {
@@ -550,7 +537,7 @@ pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStr
 
     // Generate code
     let current_view_enum = generate_current_view_enum(&views);
-    let app_struct = generate_app_struct(&views, &attrs.message_type, &attrs);
+    let app_struct = generate_app_struct(&views, &attrs.message_type, &attrs, struct_name);
     let init_method = generate_init_method(&views, &attrs);
     let switch_to_methods = generate_switch_to_methods(&views);
     let update_method = generate_update_method(&views, &attrs);
@@ -560,7 +547,7 @@ pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStr
     // Build impl block with optional subscription method
     let impl_methods = if let Some(subscription) = subscription_method {
         quote! {
-            impl App {
+            impl #struct_name {
                 #init_method
                 #switch_to_methods
                 #update_method
@@ -570,7 +557,7 @@ pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStr
         }
     } else {
         quote! {
-            impl App {
+            impl #struct_name {
                 #init_method
                 #switch_to_methods
                 #update_method
@@ -590,6 +577,7 @@ pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStr
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]
