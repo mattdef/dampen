@@ -137,25 +137,27 @@ Multi-crate workspace structure (from plan.md):
 
 ### Tests for User Story 2 (TDD - WRITE FIRST, ENSURE THEY FAIL)
 
-- [ ] T040 [P] [US2] Snapshot test for generated update() method with handler dispatch in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T041 [P] [US2] Snapshot test for generated view() method with view rendering in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T042 [P] [US2] Snapshot test for generated switch_to_*() helper methods in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T043 [P] [US2] Integration test for view switching logic with 2 views in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T040 [P] [US2] Snapshot test for generated update() method with handler dispatch in crates/dampen-macros/tests/dampen_app_tests.rs ✓ DONE
+- [x] T041 [P] [US2] Snapshot test for generated view() method with view rendering in crates/dampen-macros/tests/dampen_app_tests.rs ✓ DONE
+- [x] T042 [P] [US2] Snapshot test for generated switch_to_*() helper methods in crates/dampen-macros/tests/dampen_app_tests.rs ✓ DONE
+- [x] T043 [P] [US2] Integration test for view switching logic with 2 views in crates/dampen-macros/tests/dampen_app_tests.rs ✓ DONE
 
 ### Implementation for User Story 2 (Code Generation)
 
-- [ ] T044 [US2] Implement generate_update_method() in crates/dampen-macros/src/dampen_app.rs with handler dispatch (FR-006)
-- [ ] T045 [US2] Implement generate_view_method() in crates/dampen-macros/src/dampen_app.rs to render current view (FR-007)
-- [ ] T046 [US2] Implement generate_switch_methods() in crates/dampen-macros/src/dampen_app.rs to create switch_to_*() helpers
-- [ ] T047 [US2] Add match arms for current_view in update() method generation
-- [ ] T048 [US2] Add match arms for current_view in view() method generation
+- [x] T044 [US2] Implement generate_update_method() in crates/dampen-macros/src/dampen_app.rs with handler dispatch (FR-006) ✓ DONE
+- [x] T045 [US2] Implement generate_view_method() in crates/dampen-macros/src/dampen_app.rs to render current view (FR-007) ✓ DONE
+- [x] T046 [US2] Implement generate_switch_methods() in crates/dampen-macros/src/dampen_app.rs to create switch_to_*() helpers ✓ DONE
+- [x] T047 [US2] Add match arms for current_view in update() method generation ✓ DONE
+- [x] T048 [US2] Add match arms for current_view in view() method generation ✓ DONE
 
 ### Implementation for User Story 2 (Integration)
 
-- [ ] T049 [US2] Add integration test with view switching between 2 views in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T050 [US2] Verify all snapshot tests pass for User Story 2
+- [x] T049 [US2] Add integration test with view switching between 2 views in crates/dampen-macros/tests/dampen_app_tests.rs ✓ DONE
+- [x] T050 [US2] Verify all snapshot tests pass for User Story 2 ✓ DONE
 
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work - views discovered AND view switching works without manual routing
+**Checkpoint**: ✅ At this point, User Stories 1 AND 2 both work - views discovered AND view switching works without manual routing
+
+**Phase 4 Complete - Commit a42024c**: All 11 tasks (T040-T050) implemented and tested
 
 ---
 
