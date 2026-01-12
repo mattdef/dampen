@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo_full_light.jpg" height="150" alt="Dampen Logo" />  
+<img src="assets/logo_dampen.webp" height="100" alt="Dampen Logo" />  
 
 # Dampen
 
