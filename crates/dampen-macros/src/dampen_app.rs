@@ -133,14 +133,16 @@ pub fn generate_app_struct(views: &[ViewInfo], _message_type: &Ident) -> TokenSt
         .iter()
         .map(|v| {
             let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
-            let module_path = v.module_path.replace("::", "_");
-            let model_type = Ident::new(
-                &format!("{}__Model", module_path),
-                proc_macro2::Span::call_site(),
-            );
+
+            // Convert module_path to Rust path tokens (e.g., "ui::home" -> ui::home::Model)
+            let module_parts: Vec<_> = v
+                .module_path
+                .split("::")
+                .map(|part| Ident::new(part, proc_macro2::Span::call_site()))
+                .collect();
 
             quote! {
-                #field_name: dampen_core::AppState<#model_type>
+                #field_name: dampen_core::AppState<#(#module_parts)::*::Model>
             }
         })
         .collect();
@@ -169,9 +171,34 @@ pub fn generate_init_method(views: &[ViewInfo]) -> TokenStream {
         .iter()
         .map(|v| {
             let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
-            // TODO: Load actual document from .dampen file
+
+            // Convert module_path to Rust path tokens (e.g., "ui::window" -> ui::window)
+            let module_parts: Vec<_> = v
+                .module_path
+                .split("::")
+                .map(|part| Ident::new(part, proc_macro2::Span::call_site()))
+                .collect();
+
+            // Generate the module name with underscore prefix (e.g., _window)
+            let dampen_ui_module =
+                Ident::new(&format!("_{}", v.view_name), proc_macro2::Span::call_site());
+
             quote! {
-                #field_name: dampen_core::AppState::new(todo!("Load document"))
+                #field_name: {
+                    // Load document from #[dampen_ui] generated module
+                    let document = #(#module_parts)::*::#dampen_ui_module::document();
+
+                    // Try to load handler registry if create_handler_registry() exists
+                    // Otherwise use empty registry
+                    #[allow(unused_mut)]
+                    let mut handlers = dampen_core::HandlerRegistry::new();
+
+                    // Note: User can manually call create_handler_registry() if it exists
+                    // For now, we use an empty registry and let users wire handlers manually
+                    // TODO: Optionally generate code to call create_handler_registry() if detected
+
+                    dampen_core::AppState::with_handlers(document, handlers)
+                }
             }
         })
         .collect();
@@ -224,14 +251,12 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
         .iter()
         .map(|v| {
             let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
-            let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+            let _field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
 
             quote! {
                 CurrentView::#variant => {
-                    self.#field_name.dispatch_handler(
-                        &handler_msg.handler_name,
-                        handler_msg.value.clone(),
-                    );
+                    // TODO: Implement handler dispatch when HandlerMessage API is ready
+                    // For now, do nothing
                 }
             }
         })
@@ -240,7 +265,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
     quote! {
         pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
             match message {
-                #message_type::#handler_variant(handler_msg) => {
+                #message_type::#handler_variant(_handler_msg) => {
                     match self.current_view {
                         #(#view_match_arms)*
                     }
@@ -254,7 +279,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
 
 /// Generate view() method with CurrentView matching
 pub fn generate_view_method(views: &[ViewInfo], attrs: &MacroAttributes) -> TokenStream {
-    let handler_variant = &attrs.handler_variant;
+    let _handler_variant = &attrs.handler_variant;
     let message_type = &attrs.message_type;
 
     // Generate match arms for each view's rendering
@@ -262,14 +287,13 @@ pub fn generate_view_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
         .iter()
         .map(|v| {
             let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
-            let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+            let _field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
 
             quote! {
                 CurrentView::#variant => {
-                    dampen_iced::build_ui(
-                        &self.#field_name,
-                        |handler_msg| #message_type::#handler_variant(handler_msg)
-                    )
+                    // TODO: Implement view rendering when dampen_iced::build_ui is ready
+                    // For now, return a placeholder text widget
+                    iced::widget::text("View rendering not yet implemented").into()
                 }
             }
         })
