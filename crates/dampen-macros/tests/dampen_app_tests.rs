@@ -537,3 +537,205 @@ mod us3_hot_reload_tests {
         );
     }
 }
+
+// ============================================================================
+// Phase 6: User Story 4 - Selective View Exclusion (T063-T066)
+// ============================================================================
+
+#[cfg(test)]
+mod us4_exclusion_tests {
+    use super::*;
+
+    // T063: Test single file exclusion
+    #[test]
+    fn test_exclude_single_file() {
+        // Given: A UI directory with main.dampen, debug.dampen, and experimental/feature.dampen
+        let item = quote::quote! { struct App; };
+
+        // When: We exclude "debug" file
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/excluded_views/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            exclude = ["debug"]
+        };
+
+        // Then: Macro expansion should succeed
+        let output =
+            dampen_app::dampen_app_impl(attr, item).expect("Macro expansion should succeed");
+        let output_str = output.to_string();
+
+        // And: Output should contain Main view
+        assert!(
+            output_str.contains("Main"),
+            "Should include Main variant in CurrentView enum"
+        );
+
+        // And: Output should NOT contain Debug view (check for Debug as an enum variant, not #[derive(Debug)])
+        // Extract the CurrentView enum to check variants
+        let has_debug_variant = output_str.contains("enum CurrentView")
+            && output_str
+                .split("enum CurrentView")
+                .nth(1)
+                .map(|s| s.split('}').next().unwrap_or(""))
+                .map(|enum_body| enum_body.contains("Debug ,") || enum_body.contains("Debug }"))
+                .unwrap_or(false);
+
+        assert!(
+            !has_debug_variant,
+            "Should NOT include Debug variant in CurrentView enum"
+        );
+
+        // And: Output should contain experimental/feature view
+        assert!(
+            output_str.contains("Feature"),
+            "Should include Feature variant (not excluded)"
+        );
+    }
+
+    // T064: Test directory wildcard exclusion
+    #[test]
+    fn test_exclude_directory_wildcard() {
+        // Given: A UI directory with nested experimental/ directory
+        let item = quote::quote! { struct App; };
+
+        // When: We exclude "experimental/*" pattern
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/excluded_views/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            exclude = ["experimental/*"]
+        };
+
+        // Then: Macro expansion should succeed
+        let output =
+            dampen_app::dampen_app_impl(attr, item).expect("Macro expansion should succeed");
+        let output_str = output.to_string();
+
+        // And: Output should contain Main and Debug views
+        assert!(output_str.contains("Main"), "Should include Main variant");
+        assert!(output_str.contains("Debug"), "Should include Debug variant");
+
+        // And: Output should NOT contain Feature view from experimental/
+        assert!(
+            !output_str.contains("Feature"),
+            "Should NOT include Feature variant from experimental/ directory"
+        );
+    }
+
+    // T065: Test multiple exclusion patterns
+    #[test]
+    fn test_exclude_multiple_patterns() {
+        // Given: A UI directory with multiple views
+        let item = quote::quote! { struct App; };
+
+        // When: We exclude multiple patterns
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/excluded_views/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            exclude = ["debug", "experimental/*"]
+        };
+
+        // Then: Macro expansion should succeed
+        let output =
+            dampen_app::dampen_app_impl(attr, item).expect("Macro expansion should succeed");
+        let output_str = output.to_string();
+
+        // And: Output should ONLY contain Main view
+        assert!(output_str.contains("Main"), "Should include Main variant");
+
+        // And: Output should NOT contain excluded views (check enum variants, not #[derive(Debug)])
+        let enum_body = output_str
+            .split("enum CurrentView")
+            .nth(1)
+            .and_then(|s| s.split('}').next())
+            .unwrap_or("");
+
+        assert!(
+            !(enum_body.contains("Debug ,") || enum_body.contains("Debug }")),
+            "Should NOT include Debug variant (excluded)"
+        );
+        assert!(
+            !(enum_body.contains("Feature ,") || enum_body.contains("Feature }")),
+            "Should NOT include Feature variant (excluded by wildcard)"
+        );
+    }
+
+    // T066: Test exclusion affects generated enum and struct fields
+    #[test]
+    fn test_exclusion_affects_generated_code() {
+        // Given: A UI directory with views to exclude
+        let item = quote::quote! { struct App; };
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/excluded_views/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            exclude = ["debug"]
+        };
+
+        // When: We expand the macro
+        let output =
+            dampen_app::dampen_app_impl(attr, item).expect("Macro expansion should succeed");
+        let output_str = output.to_string();
+
+        // Then: CurrentView enum should not have Debug variant
+        // Extract enum definition (look for "pub enum CurrentView")
+        assert!(
+            output_str.contains("enum CurrentView"),
+            "Should generate CurrentView enum"
+        );
+
+        // Verify Main is in enum but Debug is not
+        let enum_section = output_str
+            .split("enum CurrentView")
+            .nth(1)
+            .and_then(|s| s.split('}').next())
+            .expect("Should have CurrentView enum body");
+
+        assert!(
+            enum_section.contains("Main"),
+            "CurrentView enum should contain Main variant"
+        );
+        assert!(
+            !(enum_section.contains("Debug ,") || enum_section.contains("Debug }")),
+            "CurrentView enum should NOT contain Debug variant (found in: {})",
+            enum_section
+        );
+
+        // Verify App struct doesn't have debug_document or debug_state fields
+        assert!(
+            !output_str.contains("debug_document"),
+            "App struct should NOT have debug_document field"
+        );
+        assert!(
+            !output_str.contains("debug_state"),
+            "App struct should NOT have debug_state field"
+        );
+    }
+
+    // T067: Test invalid glob pattern produces error
+    #[test]
+    fn test_invalid_glob_pattern_error() {
+        // Given: An invalid glob pattern
+        let item = quote::quote! { struct App; };
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/excluded_views/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            exclude = ["[invalid"]  // Invalid: unclosed bracket
+        };
+
+        // When/Then: Macro expansion should fail with helpful error
+        let result = dampen_app::dampen_app_impl(attr, item);
+
+        assert!(result.is_err(), "Should fail with invalid glob pattern");
+
+        let err_msg = result.unwrap_err().to_string();
+        assert!(
+            err_msg.contains("Invalid exclude pattern") || err_msg.contains("glob"),
+            "Error message should mention invalid pattern: {}",
+            err_msg
+        );
+    }
+}

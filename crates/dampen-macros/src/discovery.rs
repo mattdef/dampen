@@ -6,9 +6,53 @@
 //! - Validating view names and file structure
 //! - Applying exclusion patterns
 
+use globset::{Glob, GlobSetBuilder};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
+
+/// Check if a file path matches any exclusion pattern
+///
+/// # Arguments
+/// * `relative_path` - Path relative to ui_dir (e.g., "debug.dampen", "experimental/feature.dampen")
+/// * `exclude_patterns` - List of glob patterns (e.g., ["debug", "experimental/*"])
+///
+/// # Returns
+/// * `Ok(true)` if path matches any exclusion pattern
+/// * `Ok(false)` if path does not match any exclusion pattern
+/// * `Err` if glob pattern compilation fails
+///
+/// # Notes
+/// Patterns are matched both with and without .dampen extension:
+/// - Pattern "debug" matches both "debug.dampen" and "debug"
+/// - Pattern "experimental/*" matches "experimental/feature.dampen"
+fn is_excluded(relative_path: &str, exclude_patterns: &[String]) -> Result<bool, String> {
+    if exclude_patterns.is_empty() {
+        return Ok(false);
+    }
+
+    let mut builder = GlobSetBuilder::new();
+    for pattern in exclude_patterns {
+        // Add the pattern as-is
+        let glob =
+            Glob::new(pattern).map_err(|e| format!("Invalid glob pattern '{}': {}", pattern, e))?;
+        builder.add(glob);
+
+        // Also add pattern with .dampen extension if not already present
+        if !pattern.ends_with(".dampen") && !pattern.ends_with("/*") {
+            let pattern_with_ext = format!("{}.dampen", pattern);
+            let glob_with_ext = Glob::new(&pattern_with_ext)
+                .map_err(|e| format!("Invalid glob pattern '{}': {}", pattern_with_ext, e))?;
+            builder.add(glob_with_ext);
+        }
+    }
+
+    let glob_set = builder
+        .build()
+        .map_err(|e| format!("Failed to build glob set: {}", e))?;
+
+    Ok(glob_set.is_match(relative_path))
+}
 
 /// Represents a discovered `.dampen` view file with all metadata needed for code generation
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -115,13 +159,13 @@ impl ViewInfo {
 ///
 /// # Arguments
 /// * `ui_dir` - Directory to scan for .dampen files
-/// * `exclude_patterns` - Glob patterns to exclude (not yet implemented)
+/// * `exclude_patterns` - Glob patterns to exclude (e.g., ["debug", "experimental/*"])
 ///
 /// # Returns
-/// Sorted vector of ViewInfo structures
+/// Sorted vector of ViewInfo structures, with excluded files filtered out
 pub fn discover_dampen_files(
     ui_dir: &Path,
-    _exclude_patterns: &[String],
+    exclude_patterns: &[String],
 ) -> Result<Vec<ViewInfo>, String> {
     if !ui_dir.exists() {
         return Err(format!("UI directory not found: {:?}", ui_dir));
@@ -139,6 +183,24 @@ pub fn discover_dampen_files(
 
         // Filter .dampen files
         if path.extension().and_then(|s| s.to_str()) == Some("dampen") {
+            // Check if this path should be excluded
+            let relative_path = path.strip_prefix(ui_dir).unwrap_or(path);
+            let relative_str = relative_path.to_string_lossy();
+
+            match is_excluded(&relative_str, exclude_patterns) {
+                Ok(true) => {
+                    // Path is excluded, skip it
+                    continue;
+                }
+                Ok(false) => {
+                    // Not excluded, process it
+                }
+                Err(_e) => {
+                    // Invalid pattern - this should have been caught in MacroAttributes::parse()
+                    // Continue processing to avoid silent failures
+                }
+            }
+
             let view_info = ViewInfo::from_path(path, ui_dir)?;
 
             // Validate .rs file exists (VR-003)
@@ -169,12 +231,14 @@ fn validate_rust_identifier(name: &str) -> Result<(), String> {
         return Err("Invalid view name: empty string".to_string());
     }
 
-    let first_char = name.chars().next().unwrap();
-    if !first_char.is_alphabetic() && first_char != '_' {
-        return Err(format!(
-            "Invalid view name '{}'\nhelp: View names must start with a letter or underscore",
-            name
-        ));
+    // Safe: we checked above that name is not empty
+    if let Some(first_char) = name.chars().next() {
+        if !first_char.is_alphabetic() && first_char != '_' {
+            return Err(format!(
+                "Invalid view name '{}'\nhelp: View names must start with a letter or underscore",
+                name
+            ));
+        }
     }
 
     if !name.chars().all(|c| c.is_alphanumeric() || c == '_') {

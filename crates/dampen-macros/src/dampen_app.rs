@@ -41,7 +41,7 @@ impl Parse for MacroAttributes {
         let mut handler_variant = None;
         let mut hot_reload_variant = None;
         let mut dismiss_error_variant = None;
-        let exclude = Vec::new(); // TODO: Parse exclude patterns
+        let mut exclude = Vec::new();
 
         // Parse key-value pairs
         while !input.is_empty() {
@@ -63,6 +63,20 @@ impl Parse for MacroAttributes {
             } else if key == "dismiss_error_variant" {
                 let value: LitStr = input.parse()?;
                 dismiss_error_variant = Some(Ident::new(&value.value(), value.span()));
+            } else if key == "exclude" {
+                // Parse array of string literals: ["debug", "experimental/*"]
+                let content;
+                syn::bracketed!(content in input);
+
+                while !content.is_empty() {
+                    let pattern: LitStr = content.parse()?;
+                    exclude.push(pattern.value());
+
+                    // Parse optional comma
+                    if content.peek(Token![,]) {
+                        content.parse::<Token![,]>()?;
+                    }
+                }
             } else {
                 return Err(syn::Error::new(
                     key.span(),
@@ -97,6 +111,19 @@ impl Parse for MacroAttributes {
                 "missing required attribute 'handler_variant'\nhelp: Add handler_variant = \"Handler\" to the macro attributes"
             )
         })?;
+
+        // Validate exclude patterns
+        for pattern in &exclude {
+            if let Err(e) = globset::Glob::new(pattern) {
+                return Err(syn::Error::new(
+                    input.span(),
+                    format!(
+                        "Invalid exclude pattern '{}': {}\nhelp: Use glob patterns like 'debug' or 'experimental/*'",
+                        pattern, e
+                    ),
+                ));
+            }
+        }
 
         Ok(MacroAttributes {
             ui_dir,
