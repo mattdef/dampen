@@ -27,6 +27,7 @@ use crate::discovery::{ViewInfo, discover_dampen_files};
 ///
 /// - `hot_reload_variant`: Message variant for hot-reload events (enables file watching in debug builds)
 /// - `dismiss_error_variant`: Message variant for error overlay dismissal (enables error overlay in debug builds)
+/// - `switch_view_variant`: Message variant for programmatic view switching (e.g., `SwitchToView`)
 /// - `exclude`: Glob patterns to exclude from discovery (e.g., `["debug", "experimental/*"]`)
 /// - `default_view`: View to display on startup (without `.dampen` extension, defaults to first alphabetically)
 ///
@@ -52,6 +53,7 @@ use crate::discovery::{ViewInfo, discover_dampen_files};
 ///     handler_variant = "Handler",
 ///     hot_reload_variant = "HotReload",
 ///     dismiss_error_variant = "DismissError",
+///     switch_view_variant = "SwitchToView",
 ///     exclude = ["debug", "experimental/*"],
 ///     default_view = "window"
 /// )]
@@ -82,6 +84,10 @@ pub struct MacroAttributes {
     /// Optional: Message variant for error overlay dismissal
     pub dismiss_error_variant: Option<Ident>,
 
+    /// Optional: Message variant for switching between views
+    /// If specified, the macro will generate a match arm for Message::SwitchToView(CurrentView)
+    pub switch_view_variant: Option<Ident>,
+
     /// Optional: Glob patterns to exclude from discovery
     pub exclude: Vec<String>,
 
@@ -97,6 +103,7 @@ impl Parse for MacroAttributes {
         let mut handler_variant = None;
         let mut hot_reload_variant = None;
         let mut dismiss_error_variant = None;
+        let mut switch_view_variant = None;
         let mut exclude = Vec::new();
         let mut default_view = None;
 
@@ -120,6 +127,9 @@ impl Parse for MacroAttributes {
             } else if key == "dismiss_error_variant" {
                 let value: LitStr = input.parse()?;
                 dismiss_error_variant = Some(Ident::new(&value.value(), value.span()));
+            } else if key == "switch_view_variant" {
+                let value: LitStr = input.parse()?;
+                switch_view_variant = Some(Ident::new(&value.value(), value.span()));
             } else if key == "default_view" {
                 let value: LitStr = input.parse()?;
                 let view_name = value.value();
@@ -197,6 +207,7 @@ impl Parse for MacroAttributes {
             handler_variant,
             hot_reload_variant,
             dismiss_error_variant,
+            switch_view_variant,
             exclude,
             default_view,
         })
@@ -526,12 +537,15 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
         .iter()
         .map(|v| {
             let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
-            let _field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+            let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
 
             quote! {
                 CurrentView::#variant => {
-                    // TODO: Implement handler dispatch when HandlerMessage API is ready
-                    // For now, do nothing
+                    dispatch_handler_with_task(
+                        &mut self.#field_name.model,
+                        &self.#field_name.handler_registry,
+                        handler_msg
+                    )
                 }
             }
         })
@@ -543,7 +557,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             views
                 .iter()
                 .map(|v| {
-                    let _field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+                    let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
                     let dampen_file_name = v
                         .dampen_file
                         .file_name()
@@ -552,6 +566,9 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
 
                     quote! {
                         if path_str.ends_with(#dampen_file_name) {
+                            // Update the AppState with the new document
+                            self.#field_name.hot_reload(*document.clone());
+
                             // Reload succeeded, clear any error overlay
                             #[cfg(debug_assertions)]
                             {
@@ -567,7 +584,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             views
                 .iter()
                 .map(|v| {
-                    let _field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+                    let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
                     let dampen_file_name = v
                         .dampen_file
                         .file_name()
@@ -576,6 +593,8 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
 
                     quote! {
                         if path_str.ends_with(#dampen_file_name) {
+                            // Update the AppState with the new document
+                            self.#field_name.hot_reload(*document.clone());
                             return iced::Task::none();
                         }
                     }
@@ -642,17 +661,68 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             }
         });
 
-    quote! {
-        pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
-            match message {
-                #message_type::#handler_variant(_handler_msg) => {
-                    match self.current_view {
-                        #(#view_match_arms)*
+    // Generate SwitchToView match arm if switch_view_variant is specified
+    let switch_view_arm = attrs
+        .switch_view_variant
+        .as_ref()
+        .map(|switch_view_variant| {
+            // Generate match arms for each view switch
+            let switch_match_arms: Vec<_> = views
+                .iter()
+                .map(|v| {
+                    let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
+                    let switch_method = Ident::new(
+                        &format!("switch_to_{}", v.view_name),
+                        proc_macro2::Span::call_site(),
+                    );
+
+                    quote! {
+                        CurrentView::#variant => self.#switch_method(),
+                    }
+                })
+                .collect();
+
+            quote! {
+                #message_type::#switch_view_variant(view) => {
+                    match view {
+                        #(#switch_match_arms)*
                     }
                     iced::Task::none()
                 }
+            }
+        });
+
+    quote! {
+        pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
+            // Helper function to dispatch handlers and return tasks
+            fn dispatch_handler_with_task<M: dampen_core::UiBindable + 'static>(
+                model: &mut M,
+                registry: &dampen_core::HandlerRegistry,
+                handler_msg: dampen_iced::HandlerMessage,
+            ) -> iced::Task<#message_type> {
+                match handler_msg {
+                    dampen_iced::HandlerMessage::Handler(handler_name, value) => {
+                        let model_any: &mut dyn std::any::Any = model;
+                        if let Some(boxed_task) = registry.dispatch_with_command(&handler_name, model_any, value) {
+                            // Try to downcast to Task<Message>
+                            if let Ok(task) = boxed_task.downcast::<iced::Task<#message_type>>() {
+                                return *task;
+                            }
+                        }
+                        iced::Task::none()
+                    }
+                }
+            }
+
+            match message {
+                #message_type::#handler_variant(handler_msg) => {
+                    match self.current_view {
+                        #(#view_match_arms)*
+                    }
+                }
                 #hot_reload_arm
                 #dismiss_error_arm
+                #switch_view_arm
                 _ => iced::Task::none(),
             }
         }

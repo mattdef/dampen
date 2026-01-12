@@ -119,6 +119,66 @@ impl HandlerRegistry {
         }
     }
 
+    /// Dispatches a handler by name and returns any command/task it produces.
+    ///
+    /// This method is similar to `dispatch()` but returns the command/task from
+    /// `WithCommand` handlers instead of discarding it. This is essential for
+    /// integrating with the Elm/MVU pattern where handlers can return tasks.
+    ///
+    /// # Arguments
+    ///
+    /// * `handler_name` - Name of the handler to dispatch
+    /// * `model` - Mutable reference to the model (as `&mut dyn Any`)
+    /// * `value` - Optional string value passed to WithValue handlers
+    ///
+    /// # Returns
+    ///
+    /// * `Some(Box<dyn Any>)` - The command/task from a `WithCommand` handler
+    /// * `None` - For `Simple` and `WithValue` handlers, or if handler not found
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::HandlerRegistry;
+    /// use iced::Task;
+    ///
+    /// let registry = HandlerRegistry::new();
+    /// registry.register_with_command("navigate", |model| {
+    ///     let model = model.downcast_mut::<MyModel>().unwrap();
+    ///     Box::new(Task::done(Message::SwitchView))
+    /// });
+    ///
+    /// let model = &mut MyModel::default() as &mut dyn std::any::Any;
+    /// if let Some(boxed_task) = registry.dispatch_with_command("navigate", model, None) {
+    ///     if let Ok(task) = boxed_task.downcast::<Task<Message>>() {
+    ///         return *task;
+    ///     }
+    /// }
+    /// ```
+    pub fn dispatch_with_command(
+        &self,
+        handler_name: &str,
+        model: &mut dyn Any,
+        value: Option<String>,
+    ) -> Option<Box<dyn Any>> {
+        if let Some(entry) = self.get(handler_name) {
+            match entry {
+                HandlerEntry::Simple(h) => {
+                    h(model);
+                    None
+                }
+                HandlerEntry::WithValue(h) => {
+                    let val = value.unwrap_or_default();
+                    h(model, Box::new(val));
+                    None
+                }
+                HandlerEntry::WithCommand(h) => Some(h(model)),
+            }
+        } else {
+            None
+        }
+    }
+
     /// Check if a handler exists
     pub fn contains(&self, name: &str) -> bool {
         if let Ok(handlers) = self.handlers.read() {

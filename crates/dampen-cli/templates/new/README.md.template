@@ -81,34 +81,43 @@ pub fn create_handler_registry() -> HandlerRegistry {
 
 ### Application Logic (`src/main.rs`)
 
-The main entry point orchestrates views and handlers:
+The main entry point uses the `#[dampen_app]` macro for automatic setup:
 
 ```rust
-struct DampenApp {
-    current_view: CurrentView,
-    window_state: AppState<ui::window::Model>,
-}
+#[dampen_app(
+    ui_dir = "src/ui",
+    message_type = "Message",
+    handler_variant = "Handler",
+    hot_reload_variant = "HotReload",
+    dismiss_error_variant = "DismissError"
+)]
+struct DampenApp;
 
-fn update(app: &mut DampenApp, message: HandlerMessage) -> Task<HandlerMessage> {
-    match message {
-        HandlerMessage::Handler(handler_name, value) => {
-            dispatch_handler(app, &handler_name, value);
-        }
-    }
-    Task::none()
-}
-
-fn view(app: &DampenApp) -> Element<'_, HandlerMessage> {
-    DampenWidgetBuilder::from_app_state(&app.window_state).build()
+pub fn main() -> iced::Result {
+    iced::application(DampenApp::init, DampenApp::update, DampenApp::view)
+        .window_size(iced::Size::new(400.0, 300.0))
+        .centered()
+        .title("{{PROJECT_NAME}}")
+        .subscription(DampenApp::subscription)
+        .run()
 }
 ```
+
+The macro automatically generates:
+- View discovery and loading from `src/ui/` directory
+- Handler dispatch routing
+- Hot-reload support with error overlay
+- Type-safe view management
 
 ## Features Demonstrated
 
 - ✅ **Auto-Loading UI**: XML files loaded automatically via `#[dampen_ui]` macro
+- ✅ **Auto-Generated Views**: The `#[dampen_app]` macro discovers and manages all views
 - ✅ **Data Binding**: UI automatically updates when model changes
 - ✅ **Event Handlers**: Connect UI events to Rust functions
+- ✅ **Hot-Reload**: Changes to `.dampen` files update instantly in development
 - ✅ **Type Safety**: Full Rust type checking on your state
+- ✅ **Multi-View Ready**: Easy to add more views - just create new files
 - ✅ **Declarative**: Separate UI structure from logic
 
 ## Next Steps
@@ -158,12 +167,74 @@ Then connect them in the UI:
 
 ### Add New Views
 
-Create additional views by adding new modules in `src/ui/`:
+The `#[dampen_app]` macro makes multi-view apps easy! Just create new files:
 
-1. Create `src/ui/settings.rs` with its own `Model` and `#[dampen_ui("settings.dampen")]`
-2. Create `src/ui/settings.dampen` XML file
-3. Update `src/ui/mod.rs` to export the new module
-4. Update `CurrentView` enum in `src/main.rs`
+1. **Create `src/ui/settings.rs`:**
+```rust
+use dampen_core::{AppState, HandlerRegistry};
+use dampen_macros::{UiModel, dampen_ui};
+use serde::{Deserialize, Serialize};
+
+#[dampen_ui("settings.dampen")]
+mod _app {}
+
+#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
+pub struct Model {
+    pub theme: String,
+}
+
+pub fn create_app_state() -> AppState<Model> {
+    let document = _app::document();
+    let handler_registry = HandlerRegistry::new();
+    AppState::with_handlers(document, handler_registry)
+}
+```
+
+2. **Create `src/ui/settings.dampen`:**
+```xml
+<dampen version="1.0">
+    <column padding="20">
+        <text value="Settings" size="24" />
+        <button label="Back" on_click="back_to_main" />
+    </column>
+</dampen>
+```
+
+3. **Export in `src/ui/mod.rs`:**
+```rust
+pub mod window;
+pub mod settings;  // Add this line
+```
+
+4. **Enable view switching in `src/main.rs`:**
+```rust
+// Uncomment these lines in main.rs:
+enum Message {
+    SwitchToView(CurrentView),  // Uncomment
+    Handler(HandlerMessage),
+    // ...
+}
+
+#[dampen_app(
+    ui_dir = "src/ui",
+    message_type = "Message",
+    handler_variant = "Handler",
+    switch_view_variant = "SwitchToView",  // Uncomment
+    default_view = "window",  // Uncomment
+    // ...
+)]
+```
+
+5. **Add navigation handlers in `src/ui/window.rs`:**
+```rust
+use crate::{CurrentView, Message};
+
+registry.register_with_command("switch_to_settings", |_model: &mut dyn std::any::Any| {
+    Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Settings)))
+});
+```
+
+That's it! The macro automatically discovers the new view and generates all the plumbing.
 
 ## Available Widgets
 

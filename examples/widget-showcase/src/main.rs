@@ -15,6 +15,8 @@ use dampen_dev::FileEvent;
 enum Message {
     /// Handler invocation from UI widgets
     Handler(HandlerMessage),
+    /// Switch to a different view
+    SwitchToView(CurrentView),
     /// Hot-reload event (development mode only)
     #[cfg(debug_assertions)]
     HotReload(FileEvent),
@@ -28,6 +30,7 @@ enum Message {
     ui_dir = "src/ui",
     message_type = "Message",
     handler_variant = "Handler",
+    switch_view_variant = "SwitchToView",
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
     default_view = "window"

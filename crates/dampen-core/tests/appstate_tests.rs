@@ -317,3 +317,136 @@ fn test_hot_reload_multiple_times() {
 
     // Model remains unchanged through multiple reloads
 }
+
+// ===== dispatch_with_command Tests =====
+
+#[test]
+fn test_dispatch_with_command_simple_handler() {
+    let registry = HandlerRegistry::new();
+    let called = std::sync::Arc::new(std::sync::Mutex::new(false));
+    let called_clone = called.clone();
+
+    registry.register_simple("test", move |_model: &mut dyn std::any::Any| {
+        *called_clone.lock().unwrap() = true;
+    });
+
+    let mut any_model: Box<dyn std::any::Any> = Box::new(());
+    let result = registry.dispatch_with_command("test", &mut *any_model, None);
+
+    assert!(*called.lock().unwrap(), "Handler should have been called");
+    assert!(result.is_none(), "Simple handler should return None");
+}
+
+#[test]
+fn test_dispatch_with_command_value_handler() {
+    let registry = HandlerRegistry::new();
+    let received = std::sync::Arc::new(std::sync::Mutex::new(String::new()));
+    let received_clone = received.clone();
+
+    registry.register_with_value(
+        "test",
+        move |_model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            if let Some(s) = value.downcast_ref::<String>() {
+                *received_clone.lock().unwrap() = s.clone();
+            }
+        },
+    );
+
+    let mut any_model: Box<dyn std::any::Any> = Box::new(());
+    let result = registry.dispatch_with_command("test", &mut *any_model, Some("hello".to_string()));
+
+    assert_eq!(
+        *received.lock().unwrap(),
+        "hello",
+        "Handler should receive the value"
+    );
+    assert!(result.is_none(), "WithValue handler should return None");
+}
+
+#[test]
+fn test_dispatch_with_command_returns_command() {
+    let registry = HandlerRegistry::new();
+
+    registry.register_with_command("test", |_model: &mut dyn std::any::Any| {
+        Box::new(42i32) // Return a boxed value representing a command
+    });
+
+    let mut any_model: Box<dyn std::any::Any> = Box::new(());
+    let result = registry.dispatch_with_command("test", &mut *any_model, None);
+
+    assert!(result.is_some(), "WithCommand handler should return Some");
+
+    if let Some(boxed_value) = result {
+        if let Ok(value) = boxed_value.downcast::<i32>() {
+            assert_eq!(*value, 42, "Should return the command value");
+        } else {
+            panic!("Failed to downcast command value");
+        }
+    }
+}
+
+#[test]
+fn test_dispatch_with_command_nonexistent_handler() {
+    let registry = HandlerRegistry::new();
+    let mut any_model: Box<dyn std::any::Any> = Box::new(());
+
+    let result = registry.dispatch_with_command("nonexistent", &mut *any_model, None);
+
+    assert!(result.is_none(), "Nonexistent handler should return None");
+}
+
+#[test]
+fn test_dispatch_with_command_modifies_model() {
+    #[derive(Default)]
+    struct Counter {
+        count: i32,
+    }
+
+    let registry = HandlerRegistry::new();
+    registry.register_with_command("increment", |model: &mut dyn std::any::Any| {
+        if let Some(counter) = model.downcast_mut::<Counter>() {
+            counter.count += 1;
+        }
+        Box::new("task".to_string()) // Return a task
+    });
+
+    let mut counter = Counter { count: 0 };
+    let any_model: &mut dyn std::any::Any = &mut counter;
+
+    let result = registry.dispatch_with_command("increment", any_model, None);
+
+    assert_eq!(counter.count, 1, "Model should be modified");
+    assert!(result.is_some(), "Should return the task");
+
+    if let Some(boxed_task) = result {
+        if let Ok(task) = boxed_task.downcast::<String>() {
+            assert_eq!(*task, "task");
+        }
+    }
+}
+
+#[test]
+fn test_dispatch_vs_dispatch_with_command() {
+    let registry = HandlerRegistry::new();
+    let call_count = std::sync::Arc::new(std::sync::Mutex::new(0));
+    let call_count_clone = call_count.clone();
+
+    registry.register_with_command("test", move |_model: &mut dyn std::any::Any| {
+        *call_count_clone.lock().unwrap() += 1;
+        Box::new("command".to_string())
+    });
+
+    let mut any_model: Box<dyn std::any::Any> = Box::new(());
+
+    // Test dispatch() - should call handler but ignore return value
+    registry.dispatch("test", &mut *any_model, None);
+    assert_eq!(*call_count.lock().unwrap(), 1);
+
+    // Test dispatch_with_command() - should call handler and return value
+    let result = registry.dispatch_with_command("test", &mut *any_model, None);
+    assert_eq!(*call_count.lock().unwrap(), 2);
+    assert!(
+        result.is_some(),
+        "dispatch_with_command should return the command"
+    );
+}

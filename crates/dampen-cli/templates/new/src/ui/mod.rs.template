@@ -1,6 +1,6 @@
-// UI module for {{PROJECT_NAME}} example.
+// UI module for {{PROJECT_NAME}}.
 //
-// This module demonstrates the auto-loading pattern where
-// the window module automatically loads window.dampen.
+// This module exports all view modules.
+// The #[dampen_app] macro auto-discovers .dampen files in this directory.
 
 pub mod window;

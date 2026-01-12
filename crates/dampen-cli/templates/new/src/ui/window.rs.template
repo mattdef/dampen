@@ -1,10 +1,18 @@
-// Auto-loaded UI module for {{PROJECT_NAME}} example.
+// Auto-loaded UI module for {{PROJECT_NAME}}.
 //
 // This file is automatically compiled and loads the corresponding window.dampen XML file.
 
+// Uncomment this to enable view switching (after uncommenting SwitchToView in main.rs)
+// use crate::{CurrentView, Message};
+
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{dampen_ui, UiModel};
+use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
+
+/// Auto-load the window.dampen XML file.
+/// Path is relative to this file (src/ui/).
+#[dampen_ui("window.dampen")]
+mod _app {}
 
 /// The application model.
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
@@ -12,12 +20,7 @@ pub struct Model {
     pub message: String,
 }
 
-/// Auto-load the window.dampen XML file.
-/// Path is relative to this file (src/ui/).
-#[dampen_ui("window.dampen")]
-mod _app {}
-
-/// Create the AppState for the {{PROJECT_NAME}} example.
+/// Create the AppState for the window view.
 pub fn create_app_state() -> AppState<Model> {
     let document = _app::document();
     let handler_registry = create_handler_registry();
@@ -31,9 +34,14 @@ pub fn create_handler_registry() -> HandlerRegistry {
     // Register the greet handler
     registry.register_simple("greet", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
-            m.message = "Hello World!".to_string();
+            m.message = "Hello, World!".to_string();
         }
     });
+
+    // Example: Switch to another view (uncomment after adding a second view)
+    // registry.register_with_command("switch_to_settings", |_model: &mut dyn std::any::Any| {
+    //     Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Settings)))
+    // });
 
     registry
 }

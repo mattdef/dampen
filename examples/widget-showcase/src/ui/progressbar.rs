@@ -2,6 +2,7 @@
 //
 // This file auto-loads the corresponding progressbar.dampen XML file.
 
+use crate::{CurrentView, Message};
 use dampen_core::{AppState, HandlerRegistry};
 use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
@@ -48,24 +49,8 @@ pub fn create_handler_registry() -> HandlerRegistry {
         model.custom_progress = 0.0;
     });
 
-    registry.register_simple("switch_to_window", |_model: &mut dyn std::any::Any| {
-        println!("Switching to main view");
-    });
-
-    registry.register_simple("switch_to_combobox", |_model: &mut dyn std::any::Any| {
-        println!("Switching to combobox view");
-    });
-
-    registry.register_simple("switch_to_picklist", |_model: &mut dyn std::any::Any| {
-        println!("Switching to picklist view");
-    });
-
-    registry.register_simple("switch_to_tooltip", |_model: &mut dyn std::any::Any| {
-        println!("Switching to tooltip view");
-    });
-
-    registry.register_simple("switch_to_grid", |_model: &mut dyn std::any::Any| {
-        println!("Switching to grid view");
+    registry.register_with_command("switch_to_window", |_model: &mut dyn std::any::Any| {
+        Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Window)))
     });
 
     registry

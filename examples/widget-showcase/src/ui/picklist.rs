@@ -2,6 +2,7 @@
 //
 // This file auto-loads the corresponding picklist.dampen XML file.
 
+use crate::{CurrentView, Message};
 use dampen_core::{AppState, HandlerRegistry};
 use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
@@ -23,24 +24,8 @@ pub fn create_app_state() -> AppState<Model> {
 pub fn create_handler_registry() -> HandlerRegistry {
     let registry = HandlerRegistry::new();
 
-    registry.register_simple("switch_to_window", |_model: &mut dyn std::any::Any| {
-        println!("Switching to main view");
-    });
-
-    registry.register_simple("switch_to_combobox", |_model: &mut dyn std::any::Any| {
-        println!("Switching to combobox view");
-    });
-
-    registry.register_simple("switch_to_progressbar", |_model: &mut dyn std::any::Any| {
-        println!("Switching to progressbar view");
-    });
-
-    registry.register_simple("switch_to_tooltip", |_model: &mut dyn std::any::Any| {
-        println!("Switching to tooltip view");
-    });
-
-    registry.register_simple("switch_to_grid", |_model: &mut dyn std::any::Any| {
-        println!("Switching to grid view");
+    registry.register_with_command("switch_to_window", |_model: &mut dyn std::any::Any| {
+        Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Window)))
     });
 
     registry.register_with_value("update_filter", |model: &mut dyn std::any::Any, value| {

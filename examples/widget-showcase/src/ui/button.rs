@@ -2,6 +2,7 @@
 //
 // This file auto-loads the corresponding button.dampen XML file.
 
+use crate::{CurrentView, Message};
 use dampen_core::{AppState, HandlerRegistry};
 use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
@@ -33,8 +34,8 @@ pub fn create_handler_registry() -> HandlerRegistry {
         println!("Count: {}", model.click_count);
     });
 
-    registry.register_simple("switch_to_window", |_model: &mut dyn std::any::Any| {
-        println!("Switching to main view");
+    registry.register_with_command("switch_to_window", |_model: &mut dyn std::any::Any| {
+        Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Window)))
     });
 
     registry
