@@ -13,6 +13,12 @@ This guide covers everything you need to know to build applications **with** Dam
 3. [Development Workflow](#development-workflow)
 4. [CLI Commands Reference](#cli-commands-reference)
 5. [Common Tasks](#common-tasks)
+   - [Adding a New Widget](#adding-a-new-widget)
+   - [Adding a New Field to Your Model](#adding-a-new-field-to-your-model)
+   - [Creating a New View](#creating-a-new-view)
+   - [Building Multi-View Applications](#building-multi-view-applications-with-dampen_app)
+   - [Debugging Build Issues](#debugging-build-issues)
+   - [Testing Your Application](#testing-your-application)
 6. [Working with Workspaces](#working-with-workspaces)
 7. [Troubleshooting](#troubleshooting)
 
@@ -440,6 +446,208 @@ pub fn create_app_state() -> AppState<SettingsModel> {
 pub mod window;
 pub mod settings;  // Add this
 ```
+
+---
+
+### Building Multi-View Applications with `#[dampen_app]`
+
+For applications with multiple views (e.g., window, settings, about), use the `#[dampen_app]` macro to automatically generate view management boilerplate.
+
+#### What the Macro Does
+
+The `#[dampen_app]` macro:
+- **Discovers** all `.dampen` files in your UI directory
+- **Generates** a `CurrentView` enum with one variant per view
+- **Creates** AppState fields for each view
+- **Implements** `init()`, `update()`, `view()`, and `subscription()` methods
+- **Provides** `switch_to_*()` convenience methods for navigation
+- **Enables** hot-reload for all views (debug builds only)
+
+#### Quick Start Example
+
+1. **Create your view files** in `src/ui/`:
+
+```
+src/ui/
+├── mod.rs
+├── window.rs          → Main view
+├── window.dampen
+├── settings.rs        → Settings view
+├── settings.dampen
+├── about.rs           → About view
+└── about.dampen
+```
+
+2. **Annotate your app struct** in `src/main.rs`:
+
+```rust
+use dampen_macros::dampen_app;
+
+// Define your message enum
+#[derive(Debug, Clone)]
+pub enum Message {
+    Handler(dampen_core::HandlerMessage),
+    #[cfg(debug_assertions)]
+    HotReload(std::path::PathBuf),
+}
+
+// Apply the macro
+#[dampen_app(
+    ui_dir = "src/ui",
+    message_type = "Message",
+    handler_variant = "Handler",
+    hot_reload_variant = "HotReload",
+    default_view = "window"
+)]
+struct MyApp;
+
+fn main() -> iced::Result {
+    iced::application(
+        MyApp::init,
+        MyApp::update,
+        MyApp::view,
+    )
+    .subscription(MyApp::subscription)
+    .run()
+}
+```
+
+3. **The macro generates** all this code for you:
+
+```rust
+// CurrentView enum
+pub enum CurrentView {
+    Window,
+    Settings,
+    About,
+}
+
+// App struct with fields
+pub struct MyApp {
+    window_state: AppState<window::Model>,
+    settings_state: AppState<settings::Model>,
+    about_state: AppState<about::Model>,
+    current_view: CurrentView,
+}
+
+// View switching helpers
+impl MyApp {
+    pub fn switch_to_window(&mut self) { /* ... */ }
+    pub fn switch_to_settings(&mut self) { /* ... */ }
+    pub fn switch_to_about(&mut self) { /* ... */ }
+}
+
+// Full init(), update(), view(), subscription() implementations
+```
+
+#### Configuration Options
+
+**Required attributes:**
+
+- `ui_dir` - Directory containing `.dampen` files (e.g., `"src/ui"`)
+- `message_type` - Your Message enum name (e.g., `"Message"`)
+- `handler_variant` - Variant for handler messages (e.g., `"Handler"`)
+
+**Optional attributes:**
+
+- `hot_reload_variant` - Variant for hot-reload events (enables file watching)
+- `dismiss_error_variant` - Variant for error overlay dismissal
+- `exclude` - Glob patterns to exclude (e.g., `["debug", "experimental/*"]`)
+- `default_view` - View to show on startup (defaults to first alphabetically)
+
+#### View Switching
+
+Call the generated `switch_to_*()` methods in your handlers:
+
+```rust
+// In your view's handler
+pub fn create_handlers() -> HandlerRegistry {
+    let mut registry = HandlerRegistry::new();
+    
+    registry.register_command("go_to_settings", |model, app| {
+        app.switch_to_settings();
+        iced::Task::none()
+    });
+    
+    registry
+}
+```
+
+#### Excluding Views from Discovery
+
+Exclude debug or experimental views:
+
+```rust
+#[dampen_app(
+    ui_dir = "src/ui",
+    message_type = "Message",
+    handler_variant = "Handler",
+    exclude = ["debug", "experimental/*", "*.backup"]
+)]
+struct MyApp;
+```
+
+Patterns support:
+- Exact match: `"debug"` excludes `src/ui/debug.dampen`
+- Wildcards: `"experimental/*"` excludes all files in `src/ui/experimental/`
+- Extensions: `.dampen` is automatically added if not present
+
+#### File Organization
+
+**Flat structure** (recommended for small apps):
+
+```
+src/ui/
+├── mod.rs
+├── window.rs
+├── window.dampen
+├── settings.rs
+└── settings.dampen
+```
+
+**Nested structure** (for larger apps):
+
+```
+src/ui/
+├── mod.rs
+├── window/
+│   ├── mod.rs
+│   └── window.dampen
+└── settings/
+    ├── mod.rs
+    └── settings.dampen
+```
+
+The macro handles both automatically!
+
+#### Best Practices
+
+1. **Name your main view "window"** and use `default_view = "window"` for clarity
+2. **Keep view files focused** - one responsibility per view
+3. **Use exclude patterns** to hide debug/experimental views in production
+4. **Leverage hot-reload** during development for instant feedback
+5. **Test view switching** to ensure proper state isolation
+
+#### Troubleshooting
+
+**Error: "No views found"**
+- Check `ui_dir` path is correct relative to crate root
+- Ensure `.dampen` files exist in the directory
+- Check exclude patterns aren't filtering everything
+
+**Error: "View name must be a valid Rust identifier"**
+- Rename files to use `snake_case` (e.g., `my_view.dampen`)
+- Avoid special characters and spaces
+
+**Error: "Corresponding .rs file not found"**
+- Create `view_name.rs` next to `view_name.dampen`
+- Export the module in `mod.rs`
+
+**Error: "Default view 'xyz' not found"**
+- Check spelling matches the filename (without `.dampen`)
+- View must exist and not be excluded
+
+See [docs/migration/multi-view-macro.md](migration/multi-view-macro.md) for migrating existing multi-view applications.
 
 ---
 
