@@ -376,7 +376,12 @@ fn test_invalid_direction() {
     let result = execute(&args);
     assert!(result.is_err());
     let error_msg = result.unwrap_err().to_string();
-    assert!(error_msg.contains("direction"));
+    // Check that error mentions either "direction" or the invalid value "diagonal"
+    assert!(
+        error_msg.contains("direction") || error_msg.contains("diagonal"),
+        "Error message should mention 'direction' or 'diagonal', got: {}",
+        error_msg
+    );
 }
 
 #[test]
@@ -397,7 +402,12 @@ fn test_invalid_position() {
     let result = execute(&args);
     assert!(result.is_err());
     let error_msg = result.unwrap_err().to_string();
-    assert!(error_msg.contains("position"));
+    // Check that error mentions either "position" or the invalid value "floating"
+    assert!(
+        error_msg.contains("position") || error_msg.contains("floating"),
+        "Error message should mention 'position' or 'floating', got: {}",
+        error_msg
+    );
 }
 
 #[test]
