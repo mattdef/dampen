@@ -19,10 +19,13 @@ pub fn create_app_state() -> AppState<Model> {
 }
 
 pub fn create_handler_registry() -> HandlerRegistry {
+    use crate::{CurrentView, Message};
+
     let registry = HandlerRegistry::new();
 
-    registry.register_simple("switch_to_main", |_model: &mut dyn std::any::Any| {
+    registry.register_with_command("switch_to_main", |_model: &mut dyn std::any::Any| {
         println!("Switching to main view");
+        Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Window)))
     });
 
     registry

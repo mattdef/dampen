@@ -1,14 +1,12 @@
-//! Todo App example using the auto-loading pattern.
+//! Todo App example using the #[dampen_app] macro for automatic view management.
 
 mod ui;
 
-use dampen_core::AppState;
-use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
-use iced::{Element, Subscription, Task};
-use std::path::PathBuf;
+use dampen_iced::HandlerMessage;
+use dampen_macros::dampen_app;
 
 #[cfg(debug_assertions)]
-use dampen_dev::{ErrorOverlay, FileEvent, watch_files};
+use dampen_dev::FileEvent;
 
 /// Application messages
 #[derive(Clone, Debug)]
@@ -23,122 +21,23 @@ enum Message {
     DismissError,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-enum CurrentView {
-    Window,
-}
-
-#[derive(Clone, Debug)]
-struct TodoApp {
-    current_view: CurrentView,
-    window_state: AppState<ui::window::Model>,
-    #[cfg(debug_assertions)]
-    error_overlay: ErrorOverlay,
-}
-
-impl TodoApp {
-    fn new() -> (Self, Task<Message>) {
-        (
-            TodoApp {
-                current_view: CurrentView::Window,
-                window_state: ui::window::create_app_state(),
-                #[cfg(debug_assertions)]
-                error_overlay: ErrorOverlay::new(),
-            },
-            Task::none(),
-        )
-    }
-}
-
-fn update(app: &mut TodoApp, message: Message) -> Task<Message> {
-    match message {
-        Message::Handler(HandlerMessage::Handler(handler_name, value)) => {
-            dispatch_handler(app, &handler_name, value);
-            Task::none()
-        }
-        #[cfg(debug_assertions)]
-        Message::HotReload(event) => {
-            match event {
-                FileEvent::Success { document, path } => {
-                    println!("🔄 Hot-reloading {:?}...", path);
-
-                    // Simple hot-reload: just update the document
-                    // (Model state is already preserved in window_state)
-                    // Unbox the document since FileEvent now uses Box<DampenDocument>
-                    app.window_state.hot_reload(*document);
-                    app.error_overlay.hide();
-                    println!("✅ Hot-reload successful!");
-                }
-                FileEvent::ParseError { error, path, .. } => {
-                    println!("❌ Parse error in {:?}: {}", path, error);
-                    app.error_overlay.show(error);
-                }
-                FileEvent::WatcherError { path, error } => {
-                    println!("⚠️  File watcher error for {:?}: {}", path, error);
-                }
-            }
-            Task::none()
-        }
-        #[cfg(debug_assertions)]
-        Message::DismissError => {
-            app.error_overlay.hide();
-            Task::none()
-        }
-    }
-}
-
-fn view(app: &TodoApp) -> Element<'_, Message> {
-    #[cfg(debug_assertions)]
-    if app.error_overlay.is_visible() {
-        // Show error overlay on top of normal UI
-        return app.error_overlay.render(Message::DismissError);
-    }
-
-    DampenWidgetBuilder::from_app_state(&app.window_state)
-        .build()
-        .map(Message::Handler)
-}
-
-fn init() -> (TodoApp, Task<Message>) {
-    TodoApp::new()
-}
+/// Main application structure with auto-generated view management
+#[dampen_app(
+    ui_dir = "src/ui",
+    message_type = "Message",
+    handler_variant = "Handler",
+    hot_reload_variant = "HotReload",
+    dismiss_error_variant = "DismissError"
+)]
+struct TodoApp;
 
 pub fn main() -> iced::Result {
+    #[cfg(debug_assertions)]
     println!("🔥 Hot-reload enabled! Edit src/ui/window.dampen to see live updates.");
 
-    iced::application(init, update, view)
+    iced::application(TodoApp::init, TodoApp::update, TodoApp::view)
         .window_size(iced::Size::new(1280.0, 1024.0))
         .centered()
-        .subscription(subscription)
+        .subscription(TodoApp::subscription)
         .run()
-}
-
-fn subscription(_app: &TodoApp) -> Subscription<Message> {
-    #[cfg(debug_assertions)]
-    {
-        // Resolve UI file path relative to the manifest directory
-        // This works whether running from workspace root or example directory
-        let manifest_dir = env!("CARGO_MANIFEST_DIR");
-        let ui_file = PathBuf::from(manifest_dir).join("src/ui/window.dampen");
-
-        println!("👀 Watching for changes: {}", ui_file.display());
-
-        // Watch the UI file for changes in development mode (100ms debounce)
-        watch_files(vec![ui_file], 100).map(Message::HotReload)
-    }
-
-    #[cfg(not(debug_assertions))]
-    {
-        Subscription::none()
-    }
-}
-
-fn dispatch_handler(app: &mut TodoApp, handler_name: &str, value: Option<String>) {
-    let (model, registry) = match app.current_view {
-        CurrentView::Window => (
-            &mut app.window_state.model as &mut dyn std::any::Any,
-            &app.window_state.handler_registry,
-        ),
-    };
-    registry.dispatch(handler_name, model, value);
 }
