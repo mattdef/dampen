@@ -26,6 +26,8 @@ roxmltree = { workspace = true }
 
 [dev-dependencies]
 dampen-core = { path = "../dampen-core" }
+glob = "0.3.3"
+globset = "0.4.18"
 
 [lints]
 workspace = true
