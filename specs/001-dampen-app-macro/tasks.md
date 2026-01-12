@@ -197,7 +197,7 @@ Multi-crate workspace structure (from plan.md):
 
 ---
 
-## Phase 6: User Story 4 - Selective View Exclusion (Priority: P3)
+## Phase 6: User Story 4 - Selective View Exclusion (Priority: P3) ✅ COMPLETE
 
 **Goal**: Exclude certain `.dampen` files from auto-discovery (e.g., experimental or debug views) for fine-grained control
 
@@ -210,27 +210,29 @@ Multi-crate workspace structure (from plan.md):
 
 ### Tests for User Story 4 (TDD - WRITE FIRST, ENSURE THEY FAIL)
 
-- [ ] T063 [P] [US4] Unit test for glob pattern matching with single file exclusion in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T064 [P] [US4] Unit test for glob pattern matching with directory wildcard in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T065 [P] [US4] Unit test for invalid glob pattern error in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T066 [P] [US4] Integration test for exclusion filtering in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T063 [P] [US4] Unit test for glob pattern matching with single file exclusion in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T064 [P] [US4] Unit test for glob pattern matching with directory wildcard in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T065 [P] [US4] Unit test for invalid glob pattern error in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T066 [P] [US4] Integration test for exclusion filtering in crates/dampen-macros/tests/dampen_app_tests.rs
 
 ### Implementation for User Story 4 (Exclusion Logic)
 
-- [ ] T067 [US4] Implement is_excluded() function in crates/dampen-macros/src/discovery.rs using glob::Pattern (R4 research - FR-011)
-- [ ] T068 [US4] Add exclusion filtering in discover_dampen_files() before ViewInfo creation
-- [ ] T069 [US4] Add glob pattern validation in MacroAttributes::parse() (VAR-003)
-- [ ] T070 [US4] Add error reporting for invalid glob patterns with suggestions
+- [x] T067 [US4] Implement is_excluded() function in crates/dampen-macros/src/discovery.rs using globset crate (R4 research - FR-011)
+- [x] T068 [US4] Add exclusion filtering in discover_dampen_files() before ViewInfo creation
+- [x] T069 [US4] Add glob pattern validation in MacroAttributes::parse() (VAR-003)
+- [x] T070 [US4] Add error reporting for invalid glob patterns with suggestions
 
 ### Implementation for User Story 4 (Integration)
 
-- [ ] T071 [US4] Verify all tests pass for User Story 4
+- [x] T071 [US4] Verify all tests pass for User Story 4
 
-**Checkpoint**: All user stories (P1, P2, P3) should now be independently functional
+**Checkpoint**: All user stories (P1, P2, P3) should now be independently functional ✅
+
+**Commit**: eb96c35 - feat(macros): Phase 6 - Implement selective view exclusion (US4)
 
 ---
 
-## Phase 7: User Story 5 - Clear Compile-Time Error Messages (Priority: P2)
+## Phase 7: User Story 5 - Clear Compile-Time Error Messages (Priority: P2) ✅ COMPLETE
 
 **Goal**: Macro provides clear, actionable error messages when conventions are violated, preventing developer frustration
 
@@ -243,30 +245,34 @@ Multi-crate workspace structure (from plan.md):
 
 ### Tests for User Story 5 (TDD - trybuild compile-fail tests)
 
-- [ ] T072 [P] [US5] Compile-fail test for missing required attribute (E1) in crates/dampen-macros/tests/ui/missing_required_attr.rs
-- [ ] T073 [P] [US5] Compile-fail test for invalid ui_dir (E2) in crates/dampen-macros/tests/ui/invalid_ui_dir.rs
-- [ ] T074 [P] [US5] Compile-fail test for missing .rs file (E3) in crates/dampen-macros/tests/ui/missing_rs_file.rs
-- [ ] T075 [P] [US5] Compile-fail test for view naming conflict (E4) in crates/dampen-macros/tests/ui/naming_conflict.rs
-- [ ] T076 [P] [US5] Compile-fail test for invalid view name (E5) in crates/dampen-macros/tests/ui/invalid_view_name.rs
-- [ ] T077 [P] [US5] Compile-fail test for invalid glob pattern (E6) in crates/dampen-macros/tests/ui/invalid_glob_pattern.rs
-- [ ] T078 [P] [US5] Compile-warning test for no views discovered (E7) in crates/dampen-macros/tests/ui/no_views_warning.rs
-- [ ] T079 [US5] Create trybuild test harness in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T072 [P] [US5] Compile-fail test for missing required attributes (ui_dir, message_type, handler_variant) in crates/dampen-macros/tests/ui/
+- [x] T073 [P] [US5] Compile-fail test for invalid ui_dir (E2) in crates/dampen-macros/tests/ui/invalid_ui_dir.rs
+- [x] T074 [P] [US5] Compile-fail test for missing .rs file (E3) in crates/dampen-macros/tests/ui/missing_rs_file.rs
+- [x] T075 [P] [US5] Compile-fail test for view naming conflict (E4) in crates/dampen-macros/tests/ui/naming_conflict.rs
+- [x] T076 [P] [US5] Compile-fail test for invalid view name (E5) in crates/dampen-macros/tests/ui/invalid_view_name.rs
+- [x] T077 [P] [US5] Compile-fail test for invalid glob pattern (E6) in crates/dampen-macros/tests/ui/invalid_glob_pattern.rs
+- [x] T078 [P] [US5] Compile-fail test for no views discovered (E7) in crates/dampen-macros/tests/ui/no_views_found.rs
+- [x] T079 [US5] Create trybuild test harness in crates/dampen-macros/tests/compile_fail_tests.rs
 
 ### Implementation for User Story 5 (Error Reporting)
 
-- [ ] T080 [US5] Implement error reporting for missing .rs file (E3) in crates/dampen-macros/src/discovery.rs with file paths and suggestions (FR-012)
-- [ ] T081 [US5] Implement error reporting for invalid ui_dir (E2) in resolve_ui_dir() with suggestions (FR-013)
-- [ ] T082 [US5] Implement error reporting for naming conflicts (E4) in crates/dampen-macros/src/discovery.rs with file paths (FR-014)
-- [ ] T083 [US5] Implement warning for no views discovered (E7) in crates/dampen-macros/src/discovery.rs (FR-015)
-- [ ] T084 [US5] Implement error reporting for invalid view name (E5) in ViewInfo validation
-- [ ] T085 [US5] Implement error reporting for invalid glob pattern (E6) in MacroAttributes::parse()
+- [x] T080 [US5] Implement error reporting for missing .rs file (E3) in crates/dampen-macros/src/discovery.rs with file paths and suggestions (FR-012)
+- [x] T081 [US5] Implement error reporting for invalid ui_dir (E2) in dampen_app_impl() with suggestions (FR-013)
+- [x] T082 [US5] Implement error reporting for naming conflicts (E4) in crates/dampen-macros/src/discovery.rs with file paths (FR-014)
+- [x] T083 [US5] Implement error reporting for no views discovered (E7) in dampen_app_impl() (FR-015)
+- [x] T084 [US5] Implement error reporting for invalid view name (E5) in ViewInfo validation
+- [x] T085 [US5] Implement error reporting for invalid glob pattern (E6) in MacroAttributes::parse()
 
 ### Implementation for User Story 5 (Integration)
 
-- [ ] T086 [US5] Verify all trybuild compile-fail tests pass with expected error messages
-- [ ] T087 [US5] Verify error message format matches contracts/macro-api.md specification
+- [x] T086 [US5] Verify all trybuild compile-fail tests pass with expected error messages (9/9 tests passing)
+- [x] T087 [US5] Verify error message format matches contracts/macro-api.md specification (all include file paths + help suggestions)
 
-**Checkpoint**: All user stories should now be complete with comprehensive error handling
+**Checkpoint**: All user stories should now be complete with comprehensive error handling ✅
+
+**Success Criterion SC-006 Achieved**: "100% of errors include file paths and actionable suggestions"
+
+**Commit**: d7eb4fb - feat(macros): Phase 7 - Implement clear error messages with trybuild (US5)
 
 ---
 
