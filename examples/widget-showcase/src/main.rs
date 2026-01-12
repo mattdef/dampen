@@ -37,13 +37,9 @@ struct ShowcaseApp;
 pub fn main() -> iced::Result {
     println!("🔥 Hot-reload enabled! Edit src/ui/*.dampen files to see live updates.");
 
-    iced::application(
-        || ShowcaseApp::init(),
-        ShowcaseApp::update,
-        ShowcaseApp::view,
-    )
-    .window_size(iced::Size::new(1024.0, 800.0))
-    .centered()
-    .subscription(ShowcaseApp::subscription)
-    .run()
+    iced::application(ShowcaseApp::init, ShowcaseApp::update, ShowcaseApp::view)
+        .window_size(iced::Size::new(1024.0, 800.0))
+        .centered()
+        .subscription(ShowcaseApp::subscription)
+        .run()
 }

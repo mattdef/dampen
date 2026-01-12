@@ -155,10 +155,7 @@ impl Parse for MacroAttributes {
 pub fn generate_current_view_enum(views: &[ViewInfo]) -> TokenStream {
     let variants: Vec<_> = views
         .iter()
-        .map(|v| {
-            let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
-            variant
-        })
+        .map(|v| Ident::new(&v.variant_name, proc_macro2::Span::call_site()))
         .collect();
 
     quote! {
@@ -217,12 +214,15 @@ pub fn generate_app_struct(
 pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> TokenStream {
     // Determine the default view variant
     let first_variant = if let Some(ref default_view_name) = attrs.default_view {
-        // User specified a default view - find it
-        let default_view = views
-            .iter()
-            .find(|v| v.view_name == *default_view_name)
-            .expect("default_view validated in dampen_app_impl");
-        Ident::new(&default_view.variant_name, proc_macro2::Span::call_site())
+        // User specified a default view - find it (validated in dampen_app_impl)
+        if let Some(default_view) = views.iter().find(|v| v.view_name == *default_view_name) {
+            Ident::new(&default_view.variant_name, proc_macro2::Span::call_site())
+        } else {
+            // This should never happen due to validation, but handle gracefully
+            return quote! {
+                compile_error!(concat!("Default view '", #default_view_name, "' not found"));
+            };
+        }
     } else if let Some(first) = views.first() {
         // No default specified - use first alphabetically
         Ident::new(&first.variant_name, proc_macro2::Span::call_site())
@@ -414,17 +414,18 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
     };
 
     // Generate DismissError match arm if dismiss_error_variant is specified
-    let dismiss_error_arm = if let Some(dismiss_error_variant) = &attrs.dismiss_error_variant {
-        Some(quote! {
-            #[cfg(debug_assertions)]
-            #message_type::#dismiss_error_variant => {
-                self.error_overlay.hide();
-                iced::Task::none()
+    let dismiss_error_arm = attrs
+        .dismiss_error_variant
+        .as_ref()
+        .map(|dismiss_error_variant| {
+            quote! {
+                #[cfg(debug_assertions)]
+                #message_type::#dismiss_error_variant => {
+                    self.error_overlay.hide();
+                    iced::Task::none()
+                }
             }
-        })
-    } else {
-        None
-    };
+        });
 
     quote! {
         pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
@@ -466,17 +467,18 @@ pub fn generate_view_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
         .collect();
 
     // Generate error overlay rendering if dismiss_error_variant is specified
-    let error_overlay_check = if let Some(dismiss_error_variant) = &attrs.dismiss_error_variant {
-        Some(quote! {
-            // Show error overlay if visible (debug builds only)
-            #[cfg(debug_assertions)]
-            if self.error_overlay.is_visible() {
-                return self.error_overlay.render(#message_type::#dismiss_error_variant);
+    let error_overlay_check = attrs
+        .dismiss_error_variant
+        .as_ref()
+        .map(|dismiss_error_variant| {
+            quote! {
+                // Show error overlay if visible (debug builds only)
+                #[cfg(debug_assertions)]
+                if self.error_overlay.is_visible() {
+                    return self.error_overlay.render(#message_type::#dismiss_error_variant);
+                }
             }
-        })
-    } else {
-        None
-    };
+        });
 
     quote! {
         pub fn view(&self) -> iced::Element<'_, #message_type> {
