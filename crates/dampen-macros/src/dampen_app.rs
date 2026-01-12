@@ -32,6 +32,10 @@ pub struct MacroAttributes {
 
     /// Optional: Glob patterns to exclude from discovery
     pub exclude: Vec<String>,
+
+    /// Optional: Default view to display on startup (without .dampen extension)
+    /// If not specified, defaults to first view alphabetically
+    pub default_view: Option<String>,
 }
 
 impl Parse for MacroAttributes {
@@ -42,6 +46,7 @@ impl Parse for MacroAttributes {
         let mut hot_reload_variant = None;
         let mut dismiss_error_variant = None;
         let mut exclude = Vec::new();
+        let mut default_view = None;
 
         // Parse key-value pairs
         while !input.is_empty() {
@@ -63,6 +68,15 @@ impl Parse for MacroAttributes {
             } else if key == "dismiss_error_variant" {
                 let value: LitStr = input.parse()?;
                 dismiss_error_variant = Some(Ident::new(&value.value(), value.span()));
+            } else if key == "default_view" {
+                let value: LitStr = input.parse()?;
+                let view_name = value.value();
+                // Strip .dampen extension if provided
+                let view_name = view_name
+                    .strip_suffix(".dampen")
+                    .unwrap_or(&view_name)
+                    .to_string();
+                default_view = Some(view_name);
             } else if key == "exclude" {
                 // Parse array of string literals: ["debug", "experimental/*"]
                 let content;
@@ -132,6 +146,7 @@ impl Parse for MacroAttributes {
             hot_reload_variant,
             dismiss_error_variant,
             exclude,
+            default_view,
         })
     }
 }
@@ -200,7 +215,16 @@ pub fn generate_app_struct(
 
 /// Generate init() method to initialize all AppState fields
 pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> TokenStream {
-    let first_variant = if let Some(first) = views.first() {
+    // Determine the default view variant
+    let first_variant = if let Some(ref default_view_name) = attrs.default_view {
+        // User specified a default view - find it
+        let default_view = views
+            .iter()
+            .find(|v| v.view_name == *default_view_name)
+            .expect("default_view validated in dampen_app_impl");
+        Ident::new(&default_view.variant_name, proc_macro2::Span::call_site())
+    } else if let Some(first) = views.first() {
+        // No default specified - use first alphabetically
         Ident::new(&first.variant_name, proc_macro2::Span::call_site())
     } else {
         return quote! {
@@ -533,6 +557,23 @@ pub fn dampen_app_impl(attr: TokenStream, item: TokenStream) -> Result<TokenStre
                 attrs.ui_dir
             ),
         ));
+    }
+
+    // Validate default_view if specified
+    if let Some(ref default_view_name) = attrs.default_view {
+        let view_exists = views.iter().any(|v| v.view_name == *default_view_name);
+        if !view_exists {
+            let available_views: Vec<_> = views.iter().map(|v| v.view_name.as_str()).collect();
+            return Err(syn::Error::new(
+                proc_macro2::Span::call_site(),
+                format!(
+                    "default_view '{}' not found in discovered views\nhelp: Available views: {}\nhelp: Use default_view = \"{}\" (without .dampen extension)",
+                    default_view_name,
+                    available_views.join(", "),
+                    available_views.first().unwrap_or(&"window")
+                ),
+            ));
+        }
     }
 
     // Generate code

@@ -29,7 +29,8 @@ enum Message {
     message_type = "Message",
     handler_variant = "Handler",
     hot_reload_variant = "HotReload",
-    dismiss_error_variant = "DismissError"
+    dismiss_error_variant = "DismissError",
+    default_view = "window"
 )]
 struct ShowcaseApp;
 

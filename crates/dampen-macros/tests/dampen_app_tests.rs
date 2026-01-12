@@ -739,3 +739,128 @@ mod us4_exclusion_tests {
         );
     }
 }
+
+#[cfg(test)]
+mod default_view_tests {
+    use super::*;
+
+    // Test default_view parameter sets correct initial view
+    #[test]
+    fn test_default_view_specified() {
+        // Given: Multiple views with default_view = "settings"
+        let item = quote::quote! { struct App; };
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            default_view = "settings"
+        };
+
+        // When: We generate the macro code
+        let result = dampen_app::dampen_app_impl(attr, item);
+        assert!(
+            result.is_ok(),
+            "Macro should succeed with valid default_view"
+        );
+
+        let output = result.unwrap();
+        let output_str = output.to_string();
+
+        // Then: init() should set current_view to Settings (not alphabetical first)
+        assert!(
+            output_str.contains("current_view : CurrentView :: Settings"),
+            "init() should use Settings as default view (found in: {})",
+            output_str
+        );
+        assert!(
+            !output_str.contains("current_view : CurrentView :: About"),
+            "init() should NOT use About (alphabetical first)"
+        );
+    }
+
+    // Test default_view with .dampen extension is stripped
+    #[test]
+    fn test_default_view_strips_extension() {
+        // Given: default_view = "settings.dampen" (with extension)
+        let item = quote::quote! { struct App; };
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            default_view = "settings.dampen"
+        };
+
+        // When: We generate the macro code
+        let result = dampen_app::dampen_app_impl(attr, item);
+        assert!(
+            result.is_ok(),
+            "Macro should succeed and strip .dampen extension"
+        );
+
+        let output = result.unwrap();
+        let output_str = output.to_string();
+
+        // Then: Should still use Settings as default view
+        assert!(
+            output_str.contains("current_view : CurrentView :: Settings"),
+            "init() should use Settings even when .dampen extension provided"
+        );
+    }
+
+    // Test default_view validation fails for non-existent view
+    #[test]
+    fn test_default_view_not_found_error() {
+        // Given: default_view that doesn't exist
+        let item = quote::quote! { struct App; };
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            default_view = "nonexistent"
+        };
+
+        // When/Then: Macro should fail with helpful error
+        let result = dampen_app::dampen_app_impl(attr, item);
+        assert!(
+            result.is_err(),
+            "Should fail with non-existent default_view"
+        );
+
+        let err_msg = result.unwrap_err().to_string();
+        assert!(
+            err_msg.contains("default_view") && err_msg.contains("not found"),
+            "Error should mention default_view not found: {}",
+            err_msg
+        );
+        assert!(
+            err_msg.contains("Available views:"),
+            "Error should list available views: {}",
+            err_msg
+        );
+    }
+
+    // Test without default_view uses alphabetical first
+    #[test]
+    fn test_without_default_view_uses_alphabetical() {
+        // Given: No default_view specified
+        let item = quote::quote! { struct App; };
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler"
+        };
+
+        // When: We generate the macro code
+        let result = dampen_app::dampen_app_impl(attr, item);
+        assert!(result.is_ok(), "Macro should succeed without default_view");
+
+        let output = result.unwrap();
+        let output_str = output.to_string();
+
+        // Then: Should use About (first alphabetically: about, home, settings)
+        assert!(
+            output_str.contains("current_view : CurrentView :: About"),
+            "init() should default to About (first alphabetically)"
+        );
+    }
+}

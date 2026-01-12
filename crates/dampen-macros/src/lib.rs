@@ -77,6 +77,9 @@ pub fn ui_handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// # Optional Attributes
 ///
+/// - `default_view`: View to display on startup (e.g., `"window"` or `"window.dampen"`)
+///   - If not specified, uses first view alphabetically
+///   - Extension `.dampen` is automatically stripped if provided
 /// - `hot_reload_variant`: Message variant for file change events (e.g., `"HotReload"`)
 /// - `dismiss_error_variant`: Message variant for error overlay dismissal (e.g., `"DismissError"`)
 /// - `exclude`: Array of glob patterns to exclude views (e.g., `["debug_*", "test/*"]`)
@@ -90,10 +93,11 @@ pub fn ui_handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     ui_dir = "src/ui",
 ///     message_type = "Message",
 ///     handler_variant = "Handler",
+///     default_view = "window",
 ///     hot_reload_variant = "HotReload",
 ///     exclude = ["debug_view"]
 /// )]
-/// mod app {}
+/// struct App;
 /// ```
 #[proc_macro_attribute]
 pub fn dampen_app(attr: TokenStream, item: TokenStream) -> TokenStream {
