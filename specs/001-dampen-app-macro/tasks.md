@@ -174,26 +174,26 @@ Multi-crate workspace structure (from plan.md):
 
 ### Tests for User Story 3 (TDD - WRITE FIRST, ENSURE THEY FAIL)
 
-- [ ] T051 [P] [US3] Snapshot test for generated subscription() method in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T052 [P] [US3] Snapshot test for hot-reload handling in update() method in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T053 [P] [US3] Snapshot test for error overlay handling in view() method in crates/dampen-macros/tests/dampen_app_tests.rs
-- [ ] T054 [P] [US3] Snapshot test for DismissError handling in update() method in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T051 [P] [US3] Snapshot test for generated subscription() method in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T052 [P] [US3] Snapshot test for hot-reload handling in update() method in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T053 [P] [US3] Snapshot test for error overlay handling in view() method in crates/dampen-macros/tests/dampen_app_tests.rs
+- [x] T054 [P] [US3] Snapshot test for DismissError handling in update() method in crates/dampen-macros/tests/dampen_app_tests.rs
 
 ### Implementation for User Story 3 (Code Generation)
 
-- [ ] T055 [US3] Implement generate_subscription_method() in crates/dampen-macros/src/dampen_app.rs (FR-008)
-- [ ] T056 [US3] Add hot_reload_variant conditional generation in generate_subscription_method()
-- [ ] T057 [US3] Add #[cfg(debug_assertions)] gating for hot-reload code
-- [ ] T058 [US3] Add HotReload message handling in generate_update_method() (FR-019, FR-020)
-- [ ] T059 [US3] Add error_overlay field to generated app struct when dismiss_error_variant specified
-- [ ] T060 [US3] Add error overlay rendering in generate_view_method()
-- [ ] T061 [US3] Add DismissError message handling in generate_update_method()
+- [x] T055 [US3] Implement generate_subscription_method() in crates/dampen-macros/src/dampen_app.rs (FR-008)
+- [x] T056 [US3] Add hot_reload_variant conditional generation in generate_subscription_method()
+- [x] T057 [US3] Add #[cfg(debug_assertions)] gating for hot-reload code
+- [x] T058 [US3] Add HotReload message handling in generate_update_method() (FR-019, FR-020)
+- [x] T059 [US3] Add error_overlay field to generated app struct when dismiss_error_variant specified
+- [x] T060 [US3] Add error overlay rendering in generate_view_method()
+- [x] T061 [US3] Add DismissError message handling in generate_update_method()
 
 ### Implementation for User Story 3 (Integration)
 
-- [ ] T062 [US3] Verify all snapshot tests pass for User Story 3
+- [x] T062 [US3] Verify all snapshot tests pass for User Story 3
 
-**Checkpoint**: All P1 and P2 user stories should now be independently functional - discovery, routing, and hot-reload all work
+**Checkpoint**: All P1 and P2 user stories should now be independently functional - discovery, routing, and hot-reload all work ✅
 
 ---
 
