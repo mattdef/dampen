@@ -78,17 +78,53 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 | Version Migration | ✓ | Provide migration tools |
 | Version Documentation | ✓ | Document version changes |
 
-### v0.2.2 - Enhanced multi-windows application (in progress)
+### v0.2.2 - Enhanced multi-windows application
 
 **Objective**: Improve user experience and functionality
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| Code refactoring | 🔲 | Auto-Discovery Multi-View Application |
+| Code refactoring | ✓ | Auto-Discovery Multi-View Application |
+
+### v0.2.3 - Enhanced multi-windows application (planned)
+
+**Objective**: Improve user experience and functionality
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
+| CLI - Create window UI  | 🔲 | Create a new window with the command `dampen add --ui <window_name>` |
+
+### v0.2.4 - Enhanced multi-windows application (planned)
+
+**Objective**: Improve user experience and functionality
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
 | Window Communication | 🔲 | Inter-window messaging |
-| Window Persistence | 🔲 | Save and restore window states |
+
+### v0.2.5 - Enhanced multi-windows application (planned)
+
+**Objective**: Improve user experience and functionality
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
 | Window Theming | 🔲 | Customizable window appearance |
+
+### v0.2.6 - Enhanced multi-windows application (planned)
+
+**Objective**: Improve user experience and functionality
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
 | Window Layouts | 🔲 | Predefined window arrangements |
+
+### v0.2.7 - Enhanced multi-windows application (planned)
+
+**Objective**: Improve user experience and functionality
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
+| Window Persistence | 🔲 | Save and restore window states |
 
 ### v0.3.0 - Advanced Widgets (planned)
 
