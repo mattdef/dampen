@@ -280,9 +280,9 @@ fn test_new_creates_valid_rust_code() {
 
     // Check for key elements
     assert!(main_rs.contains("mod ui;"));
-    assert!(main_rs.contains("DampenWidgetBuilder"));
-    assert!(main_rs.contains("AppState"));
-    assert!(main_rs.contains("fn main() -> iced::Result"));
+    assert!(main_rs.contains("#[dampen_app("));
+    assert!(main_rs.contains("DampenApp"));
+    assert!(main_rs.contains("pub fn main() -> iced::Result"));
 
     // Read window.rs and verify it's valid Rust syntax
     let window_rs = fs::read_to_string(project_path.join("src/ui/window.rs")).unwrap();
@@ -293,8 +293,7 @@ fn test_new_creates_valid_rust_code() {
         window_rs.contains("#[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]")
     );
     assert!(window_rs.contains("#[dampen_ui(\"window.dampen\")]"));
-    assert!(window_rs.contains("register_simple"));
-    assert!(window_rs.contains("create_handler_registry"));
+    assert!(window_rs.contains("HandlerRegistry::new"));
 }
 
 #[test]

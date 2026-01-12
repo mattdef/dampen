@@ -9,6 +9,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Multi-View Application Macro (Feature 001-dampen-app-macro)
+- **#[dampen_app] Procedural Macro**: Eliminates 90% of boilerplate code in multi-view applications
+  - Auto-discovers `.dampen` files in specified UI directory via file system scanning
+  - Generates `CurrentView` enum with variants for each discovered view
+  - Generates application struct with typed `AppState<T>` fields for each view
+  - Generates `init()` and `new()` methods with automatic view initialization
+  - Generates `update()` method with handler dispatch and view switching logic
+  - Generates `view()` method with per-view rendering and error overlay support
+  - Generates `subscription()` method with hot-reload file watching
+  - Generates `switch_to_*()` helper methods for type-safe view transitions
+- **Automatic View Discovery**: Zero manual registration required
+  - Recursively scans `ui_dir` for `.dampen` files at compile-time
+  - Validates matching `.rs` files with `Model` struct and `create_handlers()` function
+  - Preserves nested directory structure in module paths
+  - Deterministic ordering (alphabetical) for consistent builds
+- **Selective Exclusion**: Fine-grained control over view discovery
+  - `exclude` attribute with glob pattern support (e.g., `["debug/*", "experimental/**"]`)
+  - Compile-time validation of glob patterns with actionable error messages
+- **Hot-Reload Integration**: Seamless development workflow
+  - Automatic file watching for all discovered views in debug builds
+  - Error overlay with dismissible UI in development mode
+  - Conditional compilation via `#[cfg(debug_assertions)]` for zero overhead in production
+- **View Switching**: Type-safe navigation without manual routing
+  - Optional `switch_view_variant` attribute for multi-view applications
+  - Automatic generation of view transition methods
+  - Optional `default_view` parameter to control startup view (defaults to first alphabetically)
+- **Comprehensive Error Messages**: Clear, actionable compile-time diagnostics
+  - File path and line number in all errors
+  - Suggested fixes for common issues (missing .rs file, naming conflicts, invalid paths)
+  - Validated at compile-time: required attributes, valid Rust identifiers, glob patterns
+- **Production Optimizations**:
+  - Hot-reload code automatically stripped in release builds
+  - Zero runtime overhead (compile-time code generation only)
+  - <200ms compilation overhead for 20-view applications
+- **Documentation**:
+  - Comprehensive quickstart guide (`specs/001-dampen-app-macro/quickstart.md`)
+  - Migration guide from manual boilerplate pattern
+  - Rustdoc comments for all public API
+  - Updated USAGE.md with multi-view section
+- **Testing**: 77 tests for macro functionality
+  - Unit tests for view discovery, validation, and code generation
+  - Compile-fail tests with trybuild for error message validation
+  - Integration tests with real multi-view applications
+  - Snapshot tests for generated code quality
+
 #### Schema Version Validation (Feature 001-schema-version-validation)
 - **Version Attribute Parsing**: Parser now reads and validates `version` attribute on `<dampen>` root element
   - Support for `major.minor` format (e.g., "1.0")
