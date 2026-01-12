@@ -190,6 +190,100 @@ pub fn generate_init_method(views: &[ViewInfo]) -> TokenStream {
     }
 }
 
+/// Generate switch_to_* helper methods for each view
+pub fn generate_switch_to_methods(views: &[ViewInfo]) -> TokenStream {
+    let methods: Vec<_> = views
+        .iter()
+        .map(|v| {
+            let method_name = Ident::new(
+                &format!("switch_to_{}", v.view_name),
+                proc_macro2::Span::call_site(),
+            );
+            let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
+
+            quote! {
+                pub fn #method_name(&mut self) {
+                    self.current_view = CurrentView::#variant;
+                }
+            }
+        })
+        .collect();
+
+    quote! {
+        #(#methods)*
+    }
+}
+
+/// Generate update() method with handler routing and view switching
+pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> TokenStream {
+    let handler_variant = &attrs.handler_variant;
+    let message_type = &attrs.message_type;
+
+    // Generate match arms for each view's handler dispatch
+    let view_match_arms: Vec<_> = views
+        .iter()
+        .map(|v| {
+            let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
+            let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+
+            quote! {
+                CurrentView::#variant => {
+                    self.#field_name.dispatch_handler(
+                        &handler_msg.handler_name,
+                        handler_msg.value.clone(),
+                    );
+                }
+            }
+        })
+        .collect();
+
+    quote! {
+        pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
+            match message {
+                #message_type::#handler_variant(handler_msg) => {
+                    match self.current_view {
+                        #(#view_match_arms)*
+                    }
+                    iced::Task::none()
+                }
+                _ => iced::Task::none(),
+            }
+        }
+    }
+}
+
+/// Generate view() method with CurrentView matching
+pub fn generate_view_method(views: &[ViewInfo], attrs: &MacroAttributes) -> TokenStream {
+    let handler_variant = &attrs.handler_variant;
+    let message_type = &attrs.message_type;
+
+    // Generate match arms for each view's rendering
+    let view_match_arms: Vec<_> = views
+        .iter()
+        .map(|v| {
+            let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
+            let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+
+            quote! {
+                CurrentView::#variant => {
+                    dampen_iced::build_ui(
+                        &self.#field_name,
+                        |handler_msg| #message_type::#handler_variant(handler_msg)
+                    )
+                }
+            }
+        })
+        .collect();
+
+    quote! {
+        pub fn view(&self) -> iced::Element<'_, #message_type> {
+            match self.current_view {
+                #(#view_match_arms)*
+            }
+        }
+    }
+}
+
 /// Main macro implementation
 pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStream, syn::Error> {
     // Parse attributes
@@ -230,6 +324,9 @@ pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStr
     let current_view_enum = generate_current_view_enum(&views);
     let app_struct = generate_app_struct(&views, &attrs.message_type);
     let init_method = generate_init_method(&views);
+    let switch_to_methods = generate_switch_to_methods(&views);
+    let update_method = generate_update_method(&views, &attrs);
+    let view_method = generate_view_method(&views, &attrs);
 
     Ok(quote! {
         #current_view_enum
@@ -238,6 +335,9 @@ pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStr
 
         impl App {
             #init_method
+            #switch_to_methods
+            #update_method
+            #view_method
         }
     })
 }

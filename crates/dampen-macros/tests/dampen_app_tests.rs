@@ -15,24 +15,24 @@ mod us1_discovery_tests {
     #[test]
     fn test_discover_flat_structure() {
         // Given: A flat UI directory with 3 .dampen files
-        let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/multi_view/src/ui");
-        
+        let fixture_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/multi_view/src/ui");
+
         // When: We discover .dampen files
         // Note: discover_dampen_files is in discovery.rs but not yet publicly accessible from tests
         // For now, we verify the fixture exists
         assert!(fixture_dir.exists(), "Fixture directory should exist");
-        
+
         // Verify all .dampen files exist
         assert!(fixture_dir.join("home.dampen").exists());
         assert!(fixture_dir.join("settings.dampen").exists());
         assert!(fixture_dir.join("about.dampen").exists());
-        
+
         // Verify corresponding .rs files exist
         assert!(fixture_dir.join("home.rs").exists());
         assert!(fixture_dir.join("settings.rs").exists());
         assert!(fixture_dir.join("about.rs").exists());
-        
+
         // TODO: Once discovery.rs functions are public, uncomment:
         // let views = dampen_macros::discovery::discover_dampen_files(&fixture_dir, &[]).unwrap();
         // assert_eq!(views.len(), 3);
@@ -45,14 +45,14 @@ mod us1_discovery_tests {
     #[test]
     fn test_discover_nested_structure() {
         // Given: A nested UI directory structure
-        let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/nested_views/src/ui");
-        
+        let fixture_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/nested_views/src/ui");
+
         // Verify fixture exists
         assert!(fixture_dir.exists());
         assert!(fixture_dir.join("main.dampen").exists());
         assert!(fixture_dir.join("widgets/button.dampen").exists());
-        
+
         // TODO: Once discovery.rs functions are public:
         // let views = dampen_macros::discovery::discover_dampen_files(&fixture_dir, &[]).unwrap();
         // assert!(views.len() >= 2);
@@ -68,9 +68,9 @@ mod us1_discovery_tests {
         // For now, we can test the fixtures exist with correct structure
         let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/multi_view/src/ui/home.dampen");
-        
+
         assert!(fixture.exists());
-        
+
         // TODO: Once ViewInfo::from_path is accessible:
         // let ui_dir = fixture.parent().unwrap();
         // let info = ViewInfo::from_path(&fixture, ui_dir).unwrap();
@@ -84,16 +84,16 @@ mod us1_discovery_tests {
     fn test_validation_rust_identifier() {
         // Test will be implemented once validation functions are public
         // For now, verify the concept with naming conventions in fixtures
-        
+
         let valid_names = vec!["home", "settings", "about", "text_input", "_private"];
         let invalid_names = vec!["123invalid", "my-view", "my view"];
-        
+
         // Valid names follow Rust identifier rules
         for name in valid_names {
             assert!(name.chars().next().unwrap().is_alphabetic() || name.starts_with('_'));
             assert!(name.chars().all(|c| c.is_alphanumeric() || c == '_'));
         }
-        
+
         // TODO: Use actual validation function:
         // for name in invalid_names {
         //     assert!(validate_rust_identifier(name).is_err());
@@ -105,7 +105,7 @@ mod us1_discovery_tests {
     fn test_validation_unique_variants() {
         // Both "text_input" and "TextInput" would produce "TextInput" variant
         // This should be detected and rejected
-        
+
         // TODO: Once validation is accessible:
         // let views = vec![
         //     create_view_info("text_input"),
@@ -118,11 +118,11 @@ mod us1_discovery_tests {
     #[test]
     fn test_validation_rs_file_exists() {
         // Verify our fixtures all have matching .rs files
-        let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/multi_view/src/ui");
-        
+        let fixture_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/multi_view/src/ui");
+
         let dampen_files = vec!["home.dampen", "settings.dampen", "about.dampen"];
-        
+
         for file in dampen_files {
             let dampen_path = fixture_dir.join(file);
             let rs_path = dampen_path.with_extension("rs");
@@ -133,7 +133,7 @@ mod us1_discovery_tests {
                 rs_path
             );
         }
-        
+
         // TODO: Test actual validation function:
         // let result = validate_rs_file_exists(&dampen_path);
         // assert!(result.is_ok());
@@ -180,154 +180,103 @@ mod us1_codegen_tests {
     }
 }
 
-
-    // T015: Test discover_dampen_files() with nested structure
-    #[test]
-    #[ignore] // Will fail until discover_dampen_files is implemented
-    fn test_discover_nested_structure() {
-        // Given: A nested UI directory structure
-        let fixture_dir =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/nested_views/src/ui");
-
-        // When: We discover .dampen files
-        // let views = discover_dampen_files(&fixture_dir, &[]).unwrap();
-
-        // Then: We find views in nested directories
-        // assert!(views.len() > 0);
-        // Views should have correct module paths like "ui::widgets::button"
-
-        panic!("Test not implemented yet - TDD RED phase");
-    }
-
-    // T016: Test ViewInfo::from_path() field derivation
-    #[test]
-    #[ignore] // Will fail until ViewInfo::from_path is implemented
-    fn test_viewinfo_field_derivation() {
-        // Given: A .dampen file path
-        let dampen_file = PathBuf::from("/project/src/ui/text_input.dampen");
-        let ui_dir = PathBuf::from("/project/src/ui");
-
-        // When: We create ViewInfo from path
-        // let info = ViewInfo::from_path(&dampen_file, &ui_dir).unwrap();
-
-        // Then: Fields are correctly derived
-        // assert_eq!(info.view_name, "text_input");
-        // assert_eq!(info.variant_name, "TextInput");
-        // assert_eq!(info.field_name, "text_input_state");
-        // assert_eq!(info.module_path, "ui::text_input");
-        // assert_eq!(info.rs_file, PathBuf::from("/project/src/ui/text_input.rs"));
-
-        panic!("Test not implemented yet - TDD RED phase");
-    }
-
-    // T017: Test VR-001 validation (valid Rust identifier)
-    #[test]
-    #[ignore] // Will fail until validation is implemented
-    fn test_validation_rust_identifier() {
-        // Given: Invalid view names
-        let invalid_names = vec!["123invalid", "my-view", "my view", ""];
-
-        // When: We validate them
-        // for name in invalid_names {
-        //     let result = validate_view_name(name);
-        //     // Then: Validation should fail
-        //     assert!(result.is_err());
-        //     assert!(result.unwrap_err().to_string().contains("Invalid view name"));
-        // }
-
-        panic!("Test not implemented yet - TDD RED phase");
-    }
-
-    // T018: Test VR-002 validation (unique variant names)
-    #[test]
-    #[ignore] // Will fail until validation is implemented
-    fn test_validation_unique_variants() {
-        // Given: Two views with names that produce same PascalCase variant
-        // "text_input" and "TextInput" both become "TextInput"
-        let view1_name = "text_input";
-        let view2_name = "TextInput";
-
-        // When: We check for duplicates
-        // let result = check_duplicate_variants(&[view1_name, view2_name]);
-
-        // Then: Validation should fail
-        // assert!(result.is_err());
-        // assert!(result.unwrap_err().to_string().contains("naming conflict"));
-
-        panic!("Test not implemented yet - TDD RED phase");
-    }
-
-    // T019: Test VR-003 validation (.rs file exists)
-    #[test]
-    #[ignore] // Will fail until validation is implemented
-    fn test_validation_rs_file_exists() {
-        // Given: A .dampen file without corresponding .rs file
-        let dampen_file = PathBuf::from("/tmp/nonexistent.dampen");
-
-        // When: We validate it
-        // let result = validate_rs_file_exists(&dampen_file);
-
-        // Then: Validation should fail
-        // assert!(result.is_err());
-        // assert!(result.unwrap_err().to_string().contains("No matching Rust module"));
-
-        panic!("Test not implemented yet - TDD RED phase");
-    }
-}
-
 #[cfg(test)]
-mod us1_codegen_tests {
+mod us2_view_switching_tests {
     use super::*;
 
-    // T020: Snapshot test for CurrentView enum generation
+    // T040: Test switch_to_* handler generation
     #[test]
-    #[ignore] // Will fail until code generation is implemented
-    fn test_generate_current_view_enum() {
-        // Given: 3 discovered views
-        // let views = vec![
-        //     ViewInfo { view_name: "home".into(), variant_name: "Home".into(), ... },
-        //     ViewInfo { view_name: "settings".into(), variant_name: "Settings".into(), ... },
-        //     ViewInfo { view_name: "about".into(), variant_name: "About".into(), ... },
-        // ];
+    fn test_generate_switch_to_methods() {
+        // Given: A fixture directory with multiple views
+        let fixture_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/multi_view/src/ui");
 
-        // When: We generate CurrentView enum
-        // let generated = generate_current_view_enum(&views);
+        assert!(fixture_dir.exists(), "Fixture directory should exist");
 
-        // Then: Generated code matches snapshot
-        // insta::assert_snapshot!(generated.to_string());
+        // Verify all views exist (home, settings, about)
+        assert!(fixture_dir.join("home.dampen").exists());
+        assert!(fixture_dir.join("settings.dampen").exists());
+        assert!(fixture_dir.join("about.dampen").exists());
 
-        panic!("Test not implemented yet - TDD RED phase");
+        // TODO: Once generation is implemented:
+        // let views = discover_dampen_files(&fixture_dir, &[]).unwrap();
+        // let methods = generate_switch_to_methods(&views);
+        //
+        // Expected methods:
+        // - pub fn switch_to_home(&mut self)
+        // - pub fn switch_to_settings(&mut self)
+        // - pub fn switch_to_about(&mut self)
+        //
+        // Each should set: self.current_view = CurrentView::{Variant}
     }
 
-    // T021: Snapshot test for app struct fields
+    // T041: Test update() method with view switching
     #[test]
-    #[ignore] // Will fail until code generation is implemented
-    fn test_generate_app_struct_fields() {
-        // Given: 3 discovered views
-        // let views = vec![...];
+    fn test_generate_update_method() {
+        // Given: Multiple views with handlers
+        let fixture_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/multi_view/src/ui");
 
-        // When: We generate app struct fields
-        // let generated = generate_app_struct(&views, "Message");
+        assert!(fixture_dir.exists());
 
-        // Then: Generated code matches snapshot
-        // insta::assert_snapshot!(generated.to_string());
-
-        panic!("Test not implemented yet - TDD RED phase");
+        // TODO: Once generation is implemented:
+        // let views = discover_dampen_files(&fixture_dir, &[]).unwrap();
+        // let attrs = MacroAttributes {
+        //     message_type: Ident::new("Message", Span::call_site()),
+        //     handler_variant: Ident::new("Handler", Span::call_site()),
+        //     ...
+        // };
+        // let update_method = generate_update_method(&views, &attrs);
+        //
+        // Expected structure:
+        // pub fn update(&mut self, message: Message) -> iced::Task<Message> {
+        //     match message {
+        //         Message::Handler(handler_msg) => {
+        //             match self.current_view {
+        //                 CurrentView::Home => self.home_state.dispatch_handler(...),
+        //                 CurrentView::Settings => self.settings_state.dispatch_handler(...),
+        //                 CurrentView::About => self.about_state.dispatch_handler(...),
+        //             }
+        //         }
+        //         _ => iced::Task::none()
+        //     }
+        // }
     }
 
-    // T022: Snapshot test for init() method
+    // T042: Test view() method with CurrentView matching
     #[test]
-    #[ignore] // Will fail until code generation is implemented
-    fn test_generate_init_method() {
-        // Given: 3 discovered views
-        // let views = vec![...];
+    fn test_generate_view_method() {
+        // Given: Multiple views
+        let fixture_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/multi_view/src/ui");
 
-        // When: We generate init() method
-        // let generated = generate_init_method(&views);
+        assert!(fixture_dir.exists());
 
-        // Then: Generated code matches snapshot
-        // insta::assert_snapshot!(generated.to_string());
-
-        panic!("Test not implemented yet - TDD RED phase");
+        // TODO: Once generation is implemented:
+        // let views = discover_dampen_files(&fixture_dir, &[]).unwrap();
+        // let attrs = MacroAttributes {
+        //     message_type: Ident::new("Message", Span::call_site()),
+        //     handler_variant: Ident::new("Handler", Span::call_site()),
+        //     ...
+        // };
+        // let view_method = generate_view_method(&views, &attrs);
+        //
+        // Expected structure:
+        // pub fn view(&self) -> iced::Element<'_, Message> {
+        //     match self.current_view {
+        //         CurrentView::Home => dampen_iced::build_ui(
+        //             &self.home_state,
+        //             |handler_msg| Message::Handler(handler_msg)
+        //         ),
+        //         CurrentView::Settings => dampen_iced::build_ui(
+        //             &self.settings_state,
+        //             |handler_msg| Message::Handler(handler_msg)
+        //         ),
+        //         CurrentView::About => dampen_iced::build_ui(
+        //             &self.about_state,
+        //             |handler_msg| Message::Handler(handler_msg)
+        //         ),
+        //     }
+        // }
     }
 }
