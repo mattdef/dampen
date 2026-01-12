@@ -19,6 +19,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-30
 - File-based (`.dampen` XML UI definitions, optional `.dampen-state.json` for state persistence) (001-dual-mode-architecture)
 - Rust Edition 2024, MSRV 1.85 (per constitution) + roxmltree 0.19+ (XML parsing), thiserror (errors) (001-schema-version-validation)
 - N/A (file-based XML parsing, no persistence) (001-schema-version-validation)
+- Rust Edition 2024, MSRV 1.85 (aligned with Dampen constitution) (001-dampen-app-macro)
+- N/A (compile-time code generation, no runtime persistence) (001-dampen-app-macro)
 
 - **Language**: Rust Edition 2024, MSRV 1.85 (minimum for Edition 2024, enables LazyLock from std)
 - **UI Framework**: `iced` 0.14+
@@ -287,9 +289,9 @@ src/
 | Runtime memory | < 50MB baseline |
 
 ## Recent Changes
+- 001-dampen-app-macro: Added Rust Edition 2024, MSRV 1.85 (aligned with Dampen constitution)
 - 001-schema-version-validation: Added Rust Edition 2024, MSRV 1.85 (per constitution) + roxmltree 0.19+ (XML parsing), thiserror (errors)
 - 001-dual-mode-architecture: Added Rust Edition 2024, MSRV stable (no nightly features in public API)
-- 001-check-validation-enhancements: Added Rust Edition 2024, MSRV stable (per constitution) + dampen-core (parser, IR), serde_json (JSON handling), clap (CLI)
 
 **Phase 7 Complete (006-auto-ui-loading):**
 
