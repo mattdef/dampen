@@ -128,7 +128,11 @@ pub fn generate_current_view_enum(views: &[ViewInfo]) -> TokenStream {
 }
 
 /// Generate app struct with AppState fields for each view
-pub fn generate_app_struct(views: &[ViewInfo], _message_type: &Ident) -> TokenStream {
+pub fn generate_app_struct(
+    views: &[ViewInfo],
+    _message_type: &Ident,
+    attrs: &MacroAttributes,
+) -> TokenStream {
     let fields: Vec<_> = views
         .iter()
         .map(|v| {
@@ -147,16 +151,27 @@ pub fn generate_app_struct(views: &[ViewInfo], _message_type: &Ident) -> TokenSt
         })
         .collect();
 
+    // Add error_overlay field if dismiss_error_variant is specified
+    let error_overlay_field = if attrs.dismiss_error_variant.is_some() {
+        Some(quote! {
+            #[cfg(debug_assertions)]
+            error_overlay: dampen_dev::ErrorOverlay
+        })
+    } else {
+        None
+    };
+
     quote! {
         pub struct App {
             #(#fields,)*
             current_view: CurrentView,
+            #error_overlay_field
         }
     }
 }
 
 /// Generate init() method to initialize all AppState fields
-pub fn generate_init_method(views: &[ViewInfo]) -> TokenStream {
+pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> TokenStream {
     let first_variant = if let Some(first) = views.first() {
         Ident::new(&first.variant_name, proc_macro2::Span::call_site())
     } else {
@@ -203,11 +218,22 @@ pub fn generate_init_method(views: &[ViewInfo]) -> TokenStream {
         })
         .collect();
 
+    // Add error_overlay initialization if dismiss_error_variant is specified
+    let error_overlay_init = if attrs.dismiss_error_variant.is_some() {
+        Some(quote! {
+            #[cfg(debug_assertions)]
+            error_overlay: dampen_dev::ErrorOverlay::new(),
+        })
+    } else {
+        None
+    };
+
     quote! {
         pub fn init() -> Self {
             Self {
                 #(#field_inits,)*
                 current_view: CurrentView::#first_variant,
+                #error_overlay_init
             }
         }
 
@@ -262,6 +288,110 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
         })
         .collect();
 
+    // Generate hot-reload file matching arms if hot_reload_variant is specified
+    let hot_reload_match_arms: Vec<_> =
+        if attrs.hot_reload_variant.is_some() && attrs.dismiss_error_variant.is_some() {
+            views
+                .iter()
+                .map(|v| {
+                    let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+                    let dampen_file_name = v
+                        .dampen_file
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or(&v.view_name);
+
+                    quote! {
+                        if path_str.ends_with(#dampen_file_name) {
+                            // Reload succeeded, clear any error overlay
+                            #[cfg(debug_assertions)]
+                            {
+                                self.error_overlay.hide();
+                            }
+                            return iced::Task::none();
+                        }
+                    }
+                })
+                .collect()
+        } else if attrs.hot_reload_variant.is_some() {
+            // No error overlay, just match files without clearing overlay
+            views
+                .iter()
+                .map(|v| {
+                    let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+                    let dampen_file_name = v
+                        .dampen_file
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or(&v.view_name);
+
+                    quote! {
+                        if path_str.ends_with(#dampen_file_name) {
+                            return iced::Task::none();
+                        }
+                    }
+                })
+                .collect()
+        } else {
+            vec![]
+        };
+
+    // Generate HotReload match arm if hot_reload_variant is specified
+    let hot_reload_arm = if let Some(hot_reload_variant) = &attrs.hot_reload_variant {
+        let parse_error_handling = if attrs.dismiss_error_variant.is_some() {
+            quote! {
+                // Show error overlay
+                #[cfg(debug_assertions)]
+                {
+                    self.error_overlay.show(error);
+                }
+                iced::Task::none()
+            }
+        } else {
+            quote! {
+                // No error overlay configured, just log and ignore
+                iced::Task::none()
+            }
+        };
+
+        Some(quote! {
+            #[cfg(debug_assertions)]
+            #message_type::#hot_reload_variant(event) => {
+                match event {
+                    dampen_dev::subscription::FileEvent::Success { path, document } => {
+                        // Match path to corresponding view and update its AppState
+                        if let Some(path_str) = path.to_str() {
+                            #(#hot_reload_match_arms)*
+                        }
+                        iced::Task::none()
+                    }
+                    dampen_dev::subscription::FileEvent::ParseError { path, error, content: _ } => {
+                        #parse_error_handling
+                    }
+                    dampen_dev::subscription::FileEvent::WatcherError { path: _, error: _ } => {
+                        // Ignore watcher errors for now (permissions, etc.)
+                        iced::Task::none()
+                    }
+                }
+            }
+        })
+    } else {
+        None
+    };
+
+    // Generate DismissError match arm if dismiss_error_variant is specified
+    let dismiss_error_arm = if let Some(dismiss_error_variant) = &attrs.dismiss_error_variant {
+        Some(quote! {
+            #[cfg(debug_assertions)]
+            #message_type::#dismiss_error_variant => {
+                self.error_overlay.hide();
+                iced::Task::none()
+            }
+        })
+    } else {
+        None
+    };
+
     quote! {
         pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
             match message {
@@ -271,6 +401,8 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
                     }
                     iced::Task::none()
                 }
+                #hot_reload_arm
+                #dismiss_error_arm
                 _ => iced::Task::none(),
             }
         }
@@ -299,8 +431,23 @@ pub fn generate_view_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
         })
         .collect();
 
+    // Generate error overlay rendering if dismiss_error_variant is specified
+    let error_overlay_check = if let Some(dismiss_error_variant) = &attrs.dismiss_error_variant {
+        Some(quote! {
+            // Show error overlay if visible (debug builds only)
+            #[cfg(debug_assertions)]
+            if self.error_overlay.is_visible() {
+                return self.error_overlay.render(#message_type::#dismiss_error_variant);
+            }
+        })
+    } else {
+        None
+    };
+
     quote! {
         pub fn view(&self) -> iced::Element<'_, #message_type> {
+            #error_overlay_check
+
             match self.current_view {
                 #(#view_match_arms)*
             }
@@ -308,7 +455,37 @@ pub fn generate_view_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
     }
 }
 
+/// Generate subscription() method for hot-reload file watching (debug builds only)
+/// Only generated if hot_reload_variant is specified in attributes
+pub fn generate_subscription_method(
+    views: &[ViewInfo],
+    attrs: &MacroAttributes,
+) -> Option<TokenStream> {
+    let hot_reload_variant = attrs.hot_reload_variant.as_ref()?;
+    let message_type = &attrs.message_type;
+
+    // Collect all .dampen file paths from views
+    let watch_paths: Vec<_> = views
+        .iter()
+        .map(|v| {
+            let path = v.dampen_file.to_string_lossy().to_string();
+            quote! { std::path::PathBuf::from(#path) }
+        })
+        .collect();
+
+    Some(quote! {
+        #[cfg(debug_assertions)]
+        pub fn subscription(&self) -> iced::Subscription<#message_type> {
+            dampen_dev::subscription::watch_files(
+                vec![#(#watch_paths),*],
+                100  // 100ms debounce
+            ).map(#message_type::#hot_reload_variant)
+        }
+    })
+}
+
 /// Main macro implementation
+#[doc(hidden)] // Not part of public API, but accessible to tests via #[path]
 pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStream, syn::Error> {
     // Parse attributes
     let attrs: MacroAttributes = syn::parse2(attr)?;
@@ -346,23 +523,41 @@ pub fn dampen_app_impl(attr: TokenStream, _item: TokenStream) -> Result<TokenStr
 
     // Generate code
     let current_view_enum = generate_current_view_enum(&views);
-    let app_struct = generate_app_struct(&views, &attrs.message_type);
-    let init_method = generate_init_method(&views);
+    let app_struct = generate_app_struct(&views, &attrs.message_type, &attrs);
+    let init_method = generate_init_method(&views, &attrs);
     let switch_to_methods = generate_switch_to_methods(&views);
     let update_method = generate_update_method(&views, &attrs);
     let view_method = generate_view_method(&views, &attrs);
+    let subscription_method = generate_subscription_method(&views, &attrs);
+
+    // Build impl block with optional subscription method
+    let impl_methods = if let Some(subscription) = subscription_method {
+        quote! {
+            impl App {
+                #init_method
+                #switch_to_methods
+                #update_method
+                #view_method
+                #subscription
+            }
+        }
+    } else {
+        quote! {
+            impl App {
+                #init_method
+                #switch_to_methods
+                #update_method
+                #view_method
+            }
+        }
+    };
 
     Ok(quote! {
         #current_view_enum
 
         #app_struct
 
-        impl App {
-            #init_method
-            #switch_to_methods
-            #update_method
-            #view_method
-        }
+        #impl_methods
     })
 }
 
