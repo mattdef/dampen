@@ -55,6 +55,41 @@ fn is_excluded(relative_path: &str, exclude_patterns: &[String]) -> Result<bool,
 }
 
 /// Represents a discovered `.dampen` view file with all metadata needed for code generation
+/// Metadata about a discovered view file.
+///
+/// Contains all information needed to generate code for a single view in a multi-view application.
+/// Each `.dampen` file in the UI directory becomes one ViewInfo instance.
+///
+/// # Fields
+///
+/// * `view_name` - Snake_case identifier derived from filename (e.g., "text_input", "main_window")
+/// * `variant_name` - PascalCase enum variant name for `CurrentView` (e.g., "TextInput", "MainWindow")
+/// * `field_name` - Struct field name for the AppState instance (e.g., "text_input_state")
+/// * `module_path` - Rust module path from ui_dir root (e.g., "ui::widgets::text_input")
+/// * `dampen_file` - Absolute path to the `.dampen` XML file
+/// * `rs_file` - Absolute path to the corresponding `.rs` module file (must exist)
+///
+/// # Examples
+///
+/// For a file at `src/ui/widgets/text_input.dampen`:
+///
+/// ```ignore
+/// ViewInfo {
+///     view_name: "text_input".to_string(),
+///     variant_name: "TextInput".to_string(),
+///     field_name: "text_input_state".to_string(),
+///     module_path: "ui::widgets::text_input".to_string(),
+///     dampen_file: PathBuf::from("/absolute/path/to/src/ui/widgets/text_input.dampen"),
+///     rs_file: PathBuf::from("/absolute/path/to/src/ui/widgets/text_input.rs"),
+/// }
+/// ```
+///
+/// # Validation
+///
+/// ViewInfo instances are validated to ensure:
+/// - `view_name` is a valid Rust identifier (VR-001)
+/// - All variant names are unique within a set of views (VR-002)
+/// - The corresponding `.rs` file exists (VR-003)
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ViewInfo {
     /// Snake_case identifier derived from filename (e.g., "text_input")
@@ -155,14 +190,41 @@ impl ViewInfo {
     }
 }
 
-/// Discover all .dampen files in a directory
+/// Discovers all `.dampen` files in a directory tree and creates ViewInfo for each.
+///
+/// Recursively walks the specified directory, finding all `.dampen` files and converting
+/// them to ViewInfo metadata. Files matching exclusion patterns are filtered out.
 ///
 /// # Arguments
-/// * `ui_dir` - Directory to scan for .dampen files
-/// * `exclude_patterns` - Glob patterns to exclude (e.g., ["debug", "experimental/*"])
+///
+/// * `ui_dir` - Root directory to scan for `.dampen` files (absolute path)
+/// * `exclude_patterns` - Glob patterns to exclude (e.g., `["debug", "experimental/*"]`)
 ///
 /// # Returns
-/// Sorted vector of ViewInfo structures, with excluded files filtered out
+///
+/// * `Ok(Vec<ViewInfo>)` - Sorted vector of discovered views (alphabetically by view_name)
+/// * `Err(String)` - Error message if:
+///   - Directory traversal fails
+///   - ViewInfo creation fails (invalid filename, missing .rs file, etc.)
+///   - Glob pattern compilation fails
+///   - Duplicate view names are found
+///
+/// # Examples
+///
+/// ```ignore
+/// let views = discover_dampen_files(
+///     Path::new("/path/to/src/ui"),
+///     &["debug".to_string(), "experimental/*".to_string()]
+/// )?;
+/// // Returns ViewInfo for all .dampen files except those matching patterns
+/// ```
+///
+/// # Notes
+///
+/// - Files are sorted alphabetically by `view_name` for deterministic code generation
+/// - Exclusion patterns match both with and without `.dampen` extension
+/// - Empty directories are silently skipped
+/// - Validation is performed on all discovered ViewInfo instances
 pub fn discover_dampen_files(
     ui_dir: &Path,
     exclude_patterns: &[String],
