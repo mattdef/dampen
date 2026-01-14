@@ -253,7 +253,11 @@ impl Parse for MacroAttributes {
 
         // Validate shared_model file exists if specified
         if let Some(ref shared_model_name) = shared_model {
-            let shared_path = PathBuf::from("src/shared.rs");
+            // Use CARGO_MANIFEST_DIR to get the crate directory (not workspace root)
+            let manifest_dir =
+                std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
+            let shared_path = PathBuf::from(manifest_dir).join("src/shared.rs");
+
             if !shared_path.exists() {
                 return Err(syn::Error::new(
                     input.span(),

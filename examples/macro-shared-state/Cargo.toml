@@ -1,0 +1,20 @@
+[package]
+name = "macro-shared-state"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dampen-core = { path = "../../crates/dampen-core" }
+dampen-macros = { path = "../../crates/dampen-macros" }
+dampen-iced = { path = "../../crates/dampen-iced" }
+iced = "0.14"
+serde = { version = "1.0", features = ["derive"] }
+
+[dependencies.dampen-dev]
+path = "../../crates/dampen-dev"
+optional = true
+
+[features]
+default = ["dev"]
+dev = ["dampen-dev"]

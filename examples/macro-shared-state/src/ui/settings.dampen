@@ -1,0 +1,34 @@
+<dampen>
+    <column padding="40" spacing="20">
+        <text value="⚙️ Settings" size="28" weight="bold" />
+        
+        <text value="Current Shared State:" size="18" />
+        <column spacing="8">
+            <text value="User: {shared.username}" size="14" />
+            <text value="Theme: {shared.theme}" size="14" />
+            <text value="Notifications: {shared.notification_count}" size="14" />
+        </column>
+        
+        <column spacing="10">
+            <text value="Change Theme:" size="16" weight="bold" />
+            <row spacing="10">
+                <button label="🌞 Light" on_click="change_theme" value="light" />
+                <button label="🌙 Dark" on_click="change_theme" value="dark" />
+            </row>
+            
+            <text value="Change Username:" size="16" weight="bold" />
+            <row spacing="10">
+                <button label="Alice" on_click="change_username" value="Alice" />
+                <button label="Bob" on_click="change_username" value="Bob" />
+                <button label="Charlie" on_click="change_username" value="Charlie" />
+            </row>
+            
+            <button label="🔔 Add Notification" on_click="increment_notifications" />
+        </column>
+        
+        <button label="🏠 Back to Main" on_click="goto_main" />
+        
+        <text value="💡 Tip: Changes persist across views and hot-reload!" 
+              size="12" />
+    </column>
+</dampen>

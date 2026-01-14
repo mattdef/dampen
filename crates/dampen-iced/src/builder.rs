@@ -276,12 +276,21 @@ impl<'a> DampenWidgetBuilder<'a> {
     ///
     /// let builder = DampenWidgetBuilder::from_app_state(&app_state);
     /// ```
-    pub fn from_app_state<M: UiBindable>(app_state: &'a AppState<M>) -> Self {
-        Self::new(
+    pub fn from_app_state<M: UiBindable, S: UiBindable + Send + Sync + 'static>(
+        app_state: &'a AppState<M, S>,
+    ) -> Self {
+        let mut builder = Self::new(
             &app_state.document,
             &app_state.model,
             Some(&app_state.handler_registry),
-        )
+        );
+
+        // Include shared context if present
+        if let Some(ref shared_ctx) = app_state.shared_context {
+            builder = builder.with_shared(shared_ctx as &dyn UiBindable);
+        }
+
+        builder
     }
 }
 

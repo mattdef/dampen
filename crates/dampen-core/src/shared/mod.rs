@@ -61,7 +61,7 @@
 
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use crate::binding::UiBindable;
+use crate::binding::{BindingValue, UiBindable};
 
 /// Thread-safe shared state container.
 ///
@@ -319,6 +319,49 @@ where
         Self {
             state: Arc::clone(&self.state),
         }
+    }
+}
+
+/// Implement UiBindable for SharedContext by delegating to the inner state.
+///
+/// This allows SharedContext to be used directly in widget builders and bindings
+/// without needing to extract the inner state first.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use dampen_core::{SharedContext, UiBindable, BindingValue};
+///
+/// #[derive(Default)]
+/// struct MyState { value: i32 }
+///
+/// impl UiBindable for MyState {
+///     fn get_field(&self, path: &[&str]) -> Option<BindingValue> {
+///         match path {
+///             ["value"] => Some(BindingValue::Integer(self.value as i64)),
+///             _ => None,
+///         }
+///     }
+///     fn available_fields() -> Vec<String> { vec!["value".to_string()] }
+/// }
+///
+/// let ctx = SharedContext::new(MyState { value: 42 });
+/// // Can use ctx directly as &dyn UiBindable
+/// assert_eq!(ctx.get_field(&["value"]), Some(BindingValue::Integer(42)));
+/// ```
+impl<S> UiBindable for SharedContext<S>
+where
+    S: UiBindable + Send + Sync + 'static,
+{
+    fn get_field(&self, path: &[&str]) -> Option<BindingValue> {
+        // Acquire read lock and delegate to inner state
+        let guard = self.read();
+        guard.get_field(path)
+    }
+
+    fn available_fields() -> Vec<String> {
+        // Delegate to the inner type's available fields
+        S::available_fields()
     }
 }
 

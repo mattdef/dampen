@@ -1,0 +1,23 @@
+<dampen>
+    <column padding="40" spacing="20">
+        <text value="🏠 Main Window" size="28" weight="bold" />
+        
+        <text value="Shared State:" size="20" weight="bold" />
+        <column spacing="8">
+            <text value="👤 User: {shared.username}" size="16" />
+            <text value="🎨 Theme: {shared.theme}" size="16" />
+            <text value="🌐 Language: {shared.language}" size="16" />
+            <text value="🔔 Notifications: {shared.notification_count}" size="16" />
+        </column>
+        
+        <text value="Local State:" size="20" weight="bold" />
+        <text value="{local_message}" size="16" />
+        
+        <row spacing="10">
+            <button label="Read Theme" on_click="read_theme" />
+            <button label="Update Local" on_click="update_local" />
+        </row>
+        
+        <button label="⚙️ Go to Settings" on_click="goto_settings" />
+    </column>
+</dampen>
