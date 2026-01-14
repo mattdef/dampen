@@ -147,6 +147,10 @@ pub struct Model {
     pub items_len: i64,
     #[ui_skip]
     pub statistics_chart: StatisticsChart,
+
+    // Theme-related fields (for US1 & US2)
+    pub current_theme: String,          // "light" or "dark"
+    pub theme_transition_progress: f32, // 0.0 to 1.0 for animations
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -158,10 +162,13 @@ pub struct StatisticsChart {
 mod _app {}
 
 fn add_item(model: &mut Model) {
-    if !model.new_item_text.trim().is_empty() {
+    let trimmed = model.new_item_text.trim();
+
+    // Validate: non-empty after trim and max 500 characters
+    if !trimmed.is_empty() && trimmed.len() <= 500 {
         model.items.push(TodoItem {
             id: model.next_id,
-            text: model.new_item_text.clone(),
+            text: trimmed.to_string(),
             completed: false,
             category: model.new_item_category.clone(),
             priority: model.new_item_priority,
@@ -172,8 +179,23 @@ fn add_item(model: &mut Model) {
     }
 }
 
+// T076: Version with SharedContext support
+fn add_item_with_shared(
+    model: &mut Model,
+    shared: &dampen_core::SharedContext<crate::shared::SharedState>,
+) {
+    add_item(model);
+    update_shared_statistics(&model.items, shared);
+}
+
 fn toggle_dark_mode(model: &mut Model) {
     model.dark_mode = !model.dark_mode;
+    model.current_theme = if model.dark_mode {
+        "dark".to_string()
+    } else {
+        "light".to_string()
+    };
+    model.theme_transition_progress = 0.0; // Reset animation
 }
 
 fn toggle_item(model: &mut Model, id: usize) {
@@ -183,9 +205,29 @@ fn toggle_item(model: &mut Model, id: usize) {
     update_computed_fields(model);
 }
 
+// T077: Version with SharedContext support
+fn toggle_item_with_shared(
+    model: &mut Model,
+    id: usize,
+    shared: &dampen_core::SharedContext<crate::shared::SharedState>,
+) {
+    toggle_item(model, id);
+    update_shared_statistics(&model.items, shared);
+}
+
 fn delete_item(model: &mut Model, id: usize) {
     model.items.retain(|i| i.id != id);
     update_computed_fields(model);
+}
+
+// T078: Version with SharedContext support
+fn delete_item_with_shared(
+    model: &mut Model,
+    id: usize,
+    shared: &dampen_core::SharedContext<crate::shared::SharedState>,
+) {
+    delete_item(model, id);
+    update_shared_statistics(&model.items, shared);
 }
 
 fn update_new_item(model: &mut Model, value: String) {
@@ -254,9 +296,70 @@ fn clear_all(model: &mut Model) {
     update_computed_fields(model);
 }
 
+// T079: Version with SharedContext support
+fn clear_all_with_shared(
+    model: &mut Model,
+    shared: &dampen_core::SharedContext<crate::shared::SharedState>,
+) {
+    clear_all(model);
+    update_shared_statistics(&model.items, shared);
+}
+
 fn clear_completed(model: &mut Model) {
     model.items.retain(|i| !i.completed);
     update_computed_fields(model);
+}
+
+// T080: Version with SharedContext support
+fn clear_completed_with_shared(
+    model: &mut Model,
+    shared: &dampen_core::SharedContext<crate::shared::SharedState>,
+) {
+    clear_completed(model);
+    update_shared_statistics(&model.items, shared);
+}
+
+#[allow(dead_code)]
+fn open_statistics(_model: &mut Model) {
+    // Switch to statistics view - handled by register_with_command below
+    println!("📊 Switching to statistics view...");
+}
+
+/// Update SharedContext with current task statistics
+///
+/// Call this after any operation that changes task counts (add, delete, toggle)
+/// to sync statistics to shared state for multi-window views (e.g., statistics window)
+pub fn update_shared_statistics(
+    items: &[TodoItem],
+    shared: &dampen_core::SharedContext<crate::shared::SharedState>,
+) {
+    let total = items.len() as i64;
+    let completed = items.iter().filter(|i| i.completed).count() as i64;
+    let pending = total - completed;
+    let completion_percentage = if total > 0 {
+        (completed * 100) / total
+    } else {
+        0
+    };
+
+    // Build category breakdown
+    let mut categories = std::collections::HashMap::new();
+    for item in items {
+        *categories.entry(item.category.clone()).or_insert(0) += 1;
+    }
+    let breakdown: Vec<String> = categories
+        .iter()
+        .map(|(cat, count)| format!("{}: {}", cat, count))
+        .collect();
+    let category_breakdown = breakdown.join(", ");
+
+    // Update shared state
+    let mut guard = shared.write();
+    guard.total_tasks = total;
+    guard.completed_tasks = completed;
+    guard.pending_tasks = pending;
+    guard.completion_percentage = completion_percentage;
+    guard.category_breakdown = category_breakdown;
 }
 
 fn update_computed_fields(model: &mut Model) {
@@ -293,8 +396,18 @@ fn update_computed_fields(model: &mut Model) {
 
     model.selected_priority_display = model.selected_priority.to_string();
     model.current_filter_display = model.current_filter.to_string();
+
+    // Initialize theme fields if not set
+    if model.current_theme.is_empty() {
+        model.current_theme = if model.dark_mode {
+            "dark".to_string()
+        } else {
+            "light".to_string()
+        };
+    }
 }
 
+#[allow(dead_code)]
 pub fn create_app_state() -> dampen_core::AppState<Model> {
     let document = _app::document();
     let handler_registry = create_handler_registry();
@@ -312,32 +425,67 @@ pub fn create_app_state_with_model(model: Model) -> dampen_core::AppState<Model>
     state
 }
 
+/// Create AppState WITH shared context (called by macro)
+#[allow(dead_code)]
+pub fn create_app_state_with_shared(
+    shared: dampen_core::SharedContext<crate::shared::SharedState>,
+) -> dampen_core::AppState<Model, crate::shared::SharedState> {
+    let document = _app::document();
+    let handler_registry = create_handler_registry();
+    let mut model = Model::default();
+    update_computed_fields(&mut model);
+    dampen_core::AppState::with_shared(document, model, handler_registry, shared)
+}
+
 pub fn create_handler_registry() -> HandlerRegistry {
+    use std::any::Any;
     let registry = HandlerRegistry::new();
 
-    // Simple handlers (no parameters)
-    registry.register_simple("add_item", |model: &mut dyn std::any::Any| {
-        if let Some(m) = model.downcast_mut::<Model>() {
-            add_item(m);
+    // T076: Simple handlers with SharedContext support
+    registry.register_with_shared("add_item", |model: &mut dyn Any, shared: &dyn Any| {
+        if let (Some(m), Some(s)) = (
+            model.downcast_mut::<Model>(),
+            shared.downcast_ref::<dampen_core::SharedContext<crate::shared::SharedState>>(),
+        ) {
+            add_item_with_shared(m, s);
         }
     });
 
-    registry.register_simple("clear_all", |model: &mut dyn std::any::Any| {
-        if let Some(m) = model.downcast_mut::<Model>() {
-            clear_all(m);
+    // T079: clear_all with SharedContext
+    registry.register_with_shared("clear_all", |model: &mut dyn Any, shared: &dyn Any| {
+        if let (Some(m), Some(s)) = (
+            model.downcast_mut::<Model>(),
+            shared.downcast_ref::<dampen_core::SharedContext<crate::shared::SharedState>>(),
+        ) {
+            clear_all_with_shared(m, s);
         }
     });
 
-    registry.register_simple("clear_completed", |model: &mut dyn std::any::Any| {
-        if let Some(m) = model.downcast_mut::<Model>() {
-            clear_completed(m);
-        }
-    });
+    // T080: clear_completed with SharedContext
+    registry.register_with_shared(
+        "clear_completed",
+        |model: &mut dyn Any, shared: &dyn Any| {
+            if let (Some(m), Some(s)) = (
+                model.downcast_mut::<Model>(),
+                shared.downcast_ref::<dampen_core::SharedContext<crate::shared::SharedState>>(),
+            ) {
+                clear_completed_with_shared(m, s);
+            }
+        },
+    );
 
     registry.register_simple("toggle_dark_mode", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
             toggle_dark_mode(m);
         }
+    });
+
+    // T071-T072: Command handler to switch to statistics view
+    registry.register_with_command("open_statistics", |_model: &mut dyn std::any::Any| {
+        use crate::{CurrentView, Message};
+        Box::new(iced::Task::done(Message::SwitchToView(
+            CurrentView::Statistics,
+        )))
     });
 
     registry.register_simple("save_edit", |model: &mut dyn std::any::Any| {
@@ -419,35 +567,42 @@ pub fn create_handler_registry() -> HandlerRegistry {
         },
     );
 
-    // Handlers with numeric ID (from "handler_name:id" pattern)
-    registry.register_with_value(
+    // T077: Handlers with numeric ID and SharedContext (from "handler_name:id" pattern)
+    registry.register_with_value_and_shared(
         "toggle_item",
-        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
+        |model: &mut dyn Any, value: Box<dyn Any>, shared: &dyn Any| {
+            if let (Some(m), Some(s)) = (
+                model.downcast_mut::<Model>(),
+                shared.downcast_ref::<dampen_core::SharedContext<crate::shared::SharedState>>(),
+            ) {
                 if value.is::<usize>() {
                     if let Ok(id) = value.downcast::<usize>() {
-                        toggle_item(m, *id);
+                        toggle_item_with_shared(m, *id, s);
                     }
-                } else if let Ok(s) = value.downcast::<String>() {
-                    if let Ok(id) = s.parse() {
-                        toggle_item(m, id);
+                } else if let Ok(str_val) = value.downcast::<String>() {
+                    if let Ok(id) = str_val.parse() {
+                        toggle_item_with_shared(m, id, s);
                     }
                 }
             }
         },
     );
 
-    registry.register_with_value(
+    // T078: delete_item with SharedContext
+    registry.register_with_value_and_shared(
         "delete_item",
-        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
+        |model: &mut dyn Any, value: Box<dyn Any>, shared: &dyn Any| {
+            if let (Some(m), Some(s)) = (
+                model.downcast_mut::<Model>(),
+                shared.downcast_ref::<dampen_core::SharedContext<crate::shared::SharedState>>(),
+            ) {
                 if value.is::<usize>() {
                     if let Ok(id) = value.downcast::<usize>() {
-                        delete_item(m, *id);
+                        delete_item_with_shared(m, *id, s);
                     }
-                } else if let Ok(s) = value.downcast::<String>() {
-                    if let Ok(id) = s.parse() {
-                        delete_item(m, id);
+                } else if let Ok(str_val) = value.downcast::<String>() {
+                    if let Ok(id) = str_val.parse() {
+                        delete_item_with_shared(m, id, s);
                     }
                 }
             }
@@ -466,6 +621,141 @@ pub fn create_handler_registry() -> HandlerRegistry {
                     if let Ok(id) = s.parse() {
                         start_edit(m, id);
                     }
+                }
+            }
+        },
+    );
+
+    // New handlers for simplified UI
+    registry.register_with_shared(
+        "go_home",
+        |model: &mut dyn std::any::Any, shared: &dyn Any| {
+            if let (Some(m), Some(shared_ctx)) = (
+                model.downcast_mut::<Model>(),
+                shared.downcast_ref::<dampen_core::SharedContext<crate::shared::SharedState>>(),
+            ) {
+                println!("🏠 Go home clicked");
+
+                // Process any pending tasks from add_task window
+                let mut guard = shared_ctx.write();
+                let pending_tasks = guard.take_pending_tasks();
+                let task_count = pending_tasks.len();
+                drop(guard); // Release lock early
+
+                for task in pending_tasks {
+                    let priority = match task.priority.as_str() {
+                        "High" => Priority::High,
+                        "Low" => Priority::Low,
+                        _ => Priority::Medium,
+                    };
+
+                    m.items.push(TodoItem {
+                        id: m.next_id,
+                        text: task.text.clone(),
+                        completed: false,
+                        priority,
+                        category: task.category.clone(),
+                    });
+                    m.next_id += 1;
+
+                    println!("✅ Added task from add_task window: {}", task.text);
+                }
+
+                if task_count > 0 {
+                    update_computed_fields(m);
+                    update_shared_statistics(&m.items, shared_ctx);
+                }
+            }
+        },
+    );
+
+    registry.register_with_command("open_add_task", |_model: &mut dyn std::any::Any| {
+        use crate::{CurrentView, Message};
+        Box::new(iced::Task::done(Message::SwitchToView(
+            CurrentView::AddTask,
+        )))
+    });
+
+    // Process pending tasks from add_task window via SharedContext
+    registry.register_with_shared(
+        "process_pending_tasks",
+        |model: &mut dyn Any, shared: &dyn Any| {
+            if let (Some(m), Some(shared_ctx)) = (
+                model.downcast_mut::<Model>(),
+                shared.downcast_ref::<dampen_core::SharedContext<crate::shared::SharedState>>(),
+            ) {
+                let mut guard = shared_ctx.write();
+                let pending_tasks = guard.take_pending_tasks();
+                let task_count = pending_tasks.len();
+                drop(guard); // Release lock early
+
+                for task in pending_tasks {
+                    let priority = match task.priority.as_str() {
+                        "High" => Priority::High,
+                        "Low" => Priority::Low,
+                        _ => Priority::Medium,
+                    };
+
+                    m.items.push(TodoItem {
+                        id: m.next_id,
+                        text: task.text.clone(),
+                        completed: false,
+                        priority,
+                        category: task.category.clone(),
+                    });
+                    m.next_id += 1;
+
+                    println!("✅ Added task from add_task window: {}", task.text);
+                }
+
+                if task_count > 0 {
+                    update_computed_fields(m);
+                    update_shared_statistics(&m.items, shared_ctx);
+                }
+            }
+        },
+    );
+
+    registry.register_simple("toggle_sort", |model: &mut dyn std::any::Any| {
+        if let Some(_m) = model.downcast_mut::<Model>() {
+            println!("↕️ Toggle sort - Not implemented yet");
+        }
+    });
+
+    registry.register_simple("toggle_menu", |model: &mut dyn std::any::Any| {
+        if let Some(_m) = model.downcast_mut::<Model>() {
+            println!("☰ Toggle menu - Not implemented yet");
+        }
+    });
+
+    registry.register_with_value(
+        "filter",
+        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            if let Some(m) = model.downcast_mut::<Model>() {
+                if let Ok(filter) = value.downcast::<String>() {
+                    m.current_filter = match filter.as_str() {
+                        "all" => TodoFilter::All,
+                        "today" => TodoFilter::Active,
+                        "upcoming" => TodoFilter::Active,
+                        _ => TodoFilter::All,
+                    };
+                    m.current_filter_display = filter.to_string();
+                    update_computed_fields(m);
+                    println!("🔍 Filter changed to: {}", filter);
+                }
+            }
+        },
+    );
+
+    registry.register_with_value(
+        "filter_by_category",
+        |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
+            if let Some(m) = model.downcast_mut::<Model>() {
+                if let Ok(category) = value.downcast::<String>() {
+                    m.selected_category = (*category).clone();
+                    // Filter to show only tasks from this category
+                    update_computed_fields(m);
+                    println!("📁 Filtering by category: {}", category);
                 }
             }
         },

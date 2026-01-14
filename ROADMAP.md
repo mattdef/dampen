@@ -94,15 +94,15 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 |-----------|--------|-------------|
 | CLI - Create window UI  | ✅ | Create a new window with the command `dampen add --ui <window_name>` |
 
-### v0.2.4 - Enhanced multi-windows application (In progress 🚧)
+### v0.2.4 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| Window Communication | 🔲 | Inter-window messaging |
+| Window Communication | ✅ | Inter-window messaging |
 
-### v0.2.5 - Enhanced multi-windows application (planned)
+### v0.2.5 - Enhanced multi-windows application (in progress)
 
 **Objective**: Improve user experience and functionality
 
