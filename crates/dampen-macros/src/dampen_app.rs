@@ -868,6 +868,11 @@ pub fn generate_subscription_method(
                 100  // 100ms debounce
             ).map(#message_type::#hot_reload_variant)
         }
+
+        #[cfg(not(debug_assertions))]
+        pub fn subscription(&self) -> iced::Subscription<#message_type> {
+            iced::Subscription::none()
+        }
     })
 }
 

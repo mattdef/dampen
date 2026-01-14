@@ -20,6 +20,9 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Add UI windows or other components
+    Add(commands::AddArgs),
+
     /// Build production code with codegen mode
     Build(commands::BuildArgs),
 
@@ -47,6 +50,7 @@ pub fn run() {
     let cli = Cli::parse();
 
     let result = match cli.command {
+        Commands::Add(args) => commands::add_execute(&args),
         Commands::Build(args) => commands::build_execute(&args).map_err(|e| e.to_string()),
         Commands::Check(args) => commands::check_execute(&args).map_err(|e| e.to_string()),
         Commands::Inspect(args) => commands::inspect_execute(&args),

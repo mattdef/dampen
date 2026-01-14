@@ -316,7 +316,14 @@ mod us3_hot_reload_tests {
             output_str.contains("subscription"),
             "Should generate subscription() method"
         );
-        assert!(output_str.contains("cfg"), "Should be debug-only");
+        assert!(
+            output_str.contains("cfg (debug_assertions)"),
+            "Should have debug cfg branch"
+        );
+        assert!(
+            output_str.contains("cfg (not (debug_assertions))"),
+            "Should have release cfg branch"
+        );
         assert!(
             output_str.contains("debug_assertions"),
             "Should use debug_assertions cfg"
@@ -332,6 +339,46 @@ mod us3_hot_reload_tests {
 
         // Snapshot test for formatted output
         insta::assert_snapshot!("subscription_method", output_str);
+    }
+
+    // T051b: Test subscription() exists in both debug and release modes
+    #[test]
+    fn test_subscription_method_both_modes() {
+        // Given: MacroAttributes with hot_reload_variant
+        let attr = quote::quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            hot_reload_variant = "HotReload",
+            dismiss_error_variant = "DismissError"
+        };
+        let item = quote::quote! { struct App; };
+
+        // When: We expand the macro
+        let output =
+            dampen_app::dampen_app_impl(attr, item).expect("Macro expansion should succeed");
+        let output_str = output.to_string();
+
+        // Then: Output should have BOTH cfg branches
+        assert!(
+            output_str.contains("cfg (debug_assertions)"),
+            "Should have debug_assertions branch"
+        );
+        assert!(
+            output_str.contains("cfg (not (debug_assertions))"),
+            "Should have NOT debug_assertions branch for release mode"
+        );
+        assert!(
+            output_str.contains("Subscription :: none"),
+            "Release mode should return Subscription::none()"
+        );
+
+        // Verify both branches have subscription signature
+        let subscription_count = output_str.matches("pub fn subscription").count();
+        assert_eq!(
+            subscription_count, 2,
+            "Should have 2 subscription methods (one for debug, one for release)"
+        );
     }
 
     // T052: Snapshot test for hot-reload handling in update() method

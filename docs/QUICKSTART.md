@@ -349,7 +349,196 @@ my-app/
 
 ---
 
+## Multi-Window Projects
+
+**NEW!** Use `dampen add` to quickly scaffold additional UI windows.
+
+### Creating Additional Windows
+
+```bash
+# Add a settings window
+dampen add --ui settings
+
+# Add an about window
+dampen add --ui about
+
+# Add in custom directory
+dampen add --ui admin_panel --path "src/ui/admin"
+```
+
+### Example: Multi-Window Application
+
+Let's extend our counter app with a settings window.
+
+**Step 1: Generate the settings window**
+
+```bash
+dampen add --ui settings
+```
+
+This creates:
+- `src/ui/settings.rs` - Model and handlers
+- `src/ui/settings.dampen` - UI layout
+
+**Step 2: Add to mod.rs**
+
+Edit `src/ui/mod.rs`:
+
+```rust
+pub mod window;
+pub mod settings;  // Add this line
+```
+
+**Step 3: Update main.rs for multiple views**
+
+```rust
+mod ui;
+
+use dampen_core::AppState;
+use dampen_iced::{DampenWidgetBuilder, HandlerMessage};
+use iced::{Element, Task};
+
+// Define views
+#[derive(Debug, Clone)]
+enum CurrentView {
+    Counter,
+    Settings,
+}
+
+// App struct with multiple states
+struct App {
+    current_view: CurrentView,
+    counter_state: AppState<ui::window::Model>,
+    settings_state: AppState<ui::settings::Model>,
+}
+
+#[derive(Debug, Clone)]
+enum Message {
+    Handler(String, Option<String>),
+    SwitchView(CurrentView),
+}
+
+fn update(app: &mut App, message: Message) -> Task<Message> {
+    match message {
+        Message::Handler(handler, value) => {
+            match app.current_view {
+                CurrentView::Counter => {
+                    app.counter_state.handler_registry.dispatch(
+                        &handler,
+                        &mut app.counter_state.model as &mut dyn std::any::Any,
+                        value,
+                    );
+                }
+                CurrentView::Settings => {
+                    app.settings_state.handler_registry.dispatch(
+                        &handler,
+                        &mut app.settings_state.model as &mut dyn std::any::Any,
+                        value,
+                    );
+                }
+            }
+        }
+        Message::SwitchView(view) => {
+            app.current_view = view;
+        }
+    }
+    Task::none()
+}
+
+fn view(app: &App) -> Element<'_, Message> {
+    match app.current_view {
+        CurrentView::Counter => {
+            DampenWidgetBuilder::from_app_state(&app.counter_state)
+                .build()
+                .map(|(handler, value)| Message::Handler(handler, value))
+        }
+        CurrentView::Settings => {
+            DampenWidgetBuilder::from_app_state(&app.settings_state)
+                .build()
+                .map(|(handler, value)| Message::Handler(handler, value))
+        }
+    }
+}
+
+fn init() -> (App, Task<Message>) {
+    (
+        App {
+            current_view: CurrentView::Counter,
+            counter_state: ui::window::create_app_state(),
+            settings_state: ui::settings::create_app_state(),
+        },
+        Task::none(),
+    )
+}
+
+pub fn main() -> iced::Result {
+    iced::application(init, update, view).run()
+}
+```
+
+**Step 4: Add navigation buttons**
+
+Edit `src/ui/window.dampen` to add a settings button:
+
+```xml
+<dampen>
+    <column padding="40" spacing="20" align="center">
+        <text value="Counter: {count}" size="48" weight="bold" />
+        
+        <row spacing="20">
+            <button label="-" on_click="decrement" enabled="{count > 0}" />
+            <button label="+" on_click="increment" />
+        </row>
+        
+        <button label="Reset" on_click="reset" />
+        
+        <!-- Add navigation button -->
+        <button label="Settings" on_click="go_to_settings" />
+    </column>
+</dampen>
+```
+
+Add the handler in `src/ui/window.rs`:
+
+```rust
+// In create_handler_registry()
+registry.register_command("go_to_settings", |_model: &mut dyn std::any::Any| {
+    // This would trigger Message::SwitchView(CurrentView::Settings)
+    // Implementation depends on your message routing
+    Task::none()
+});
+```
+
+### Benefits
+
+- ✅ Consistent structure across all windows
+- ✅ < 1 second to create new window
+- ✅ All boilerplate included
+- ✅ Safe (prevents overwrites)
+
+### Alternative: Use `#[dampen_app]` Macro
+
+For complex multi-view apps, consider using the `#[dampen_app]` macro which automatically generates view management code. See [docs/USAGE.md](USAGE.md#building-multi-view-applications-with-dampen_app) for details.
+
+---
+
 ## CLI Commands
+
+### Create New Project
+
+```bash
+dampen new my-app
+```
+
+### Add New UI Window
+
+```bash
+# Add in default location (src/ui/)
+dampen add --ui settings
+
+# Add in custom directory
+dampen add --ui admin_panel --path "src/ui/admin"
+```
 
 ### Validate XML
 

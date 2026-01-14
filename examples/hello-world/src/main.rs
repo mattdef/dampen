@@ -32,9 +32,9 @@ enum Message {
     handler_variant = "Handler",
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
+    default_view = "window",
     // Uncomment to enable view switching
     // switch_view_variant = "SwitchToView",
-    // default_view = "window"
 )]
 struct DampenApp;
 

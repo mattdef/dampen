@@ -86,13 +86,13 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 |-----------|--------|-------------|
 | Code refactoring | ✓ | Auto-Discovery Multi-View Application |
 
-### v0.2.3 - Enhanced multi-windows application (planned)
+### v0.2.3 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| CLI - Create window UI  | 🔲 | Create a new window with the command `dampen add --ui <window_name>` |
+| CLI - Create window UI  | ✓ | Create a new window with the command `dampen add --ui <window_name>` |
 
 ### v0.2.4 - Enhanced multi-windows application (planned)
 

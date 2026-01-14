@@ -77,6 +77,35 @@ cd my-app
 dampen run
 ```
 
+### Add New UI Windows
+
+**NEW!** Quickly scaffold new UI windows with the `dampen add` command:
+
+```bash
+# Add a settings window
+dampen add --ui settings
+
+# Add a window in custom directory
+dampen add --ui order_form --path "src/ui/orders"
+```
+
+This creates:
+- `settings.rs` - Model, handlers, and AppState setup
+- `settings.dampen` - Basic UI layout with data binding example
+
+Then add to `src/ui/mod.rs`:
+```rust
+pub mod settings;
+```
+
+**Benefits:**
+- ✅ Production-ready code in < 1 second
+- ✅ Consistent structure across windows
+- ✅ Prevents accidental overwrites
+- ✅ Reduces manual boilerplate
+
+See `dampen add --help` for more options.
+
 ## Project Structure
 
 The `dampen new` command creates a complete project structure:
@@ -331,10 +360,13 @@ Mode selection is **automatic** based on build profile:
 
 | CLI Command | Mode | Use Case |
 |-------------|------|----------|
+| `dampen new` | - | Create new project |
+| `dampen add` | - | Scaffold new UI window |
 | `dampen run` | Interpreted | Development with hot-reload |
 | `dampen build` | Codegen | Debug builds with codegen |
 | `dampen release` | Codegen | Production deployments (optimized) |
 | `dampen test` | Interpreted | Fast test iteration |
+| `dampen check` | - | Validate XML syntax |
 
 **Advanced usage:**
 
