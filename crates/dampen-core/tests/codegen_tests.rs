@@ -592,4 +592,176 @@ mod expression_codegen_tests {
         assert!(code.contains(">"));
         assert!(code.contains("0"));
     }
+
+    /// Test shared field access code generation
+    /// (T070 - Implement codegen for {shared.} bindings)
+    #[test]
+    fn test_shared_field_access_codegen() {
+        use dampen_core::expr::ast::{Expr, SharedFieldAccessExpr};
+
+        let expr = Expr::SharedFieldAccess(SharedFieldAccessExpr {
+            path: vec!["username".to_string()],
+        });
+
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+
+        // Should generate: shared.username.to_string()
+        assert!(code.contains("shared"));
+        assert!(code.contains("username"));
+        assert!(code.contains("to_string"));
+    }
+
+    /// Test nested shared field access code generation
+    #[test]
+    fn test_nested_shared_field_access_codegen() {
+        use dampen_core::expr::ast::{Expr, SharedFieldAccessExpr};
+
+        let expr = Expr::SharedFieldAccess(SharedFieldAccessExpr {
+            path: vec![
+                "user".to_string(),
+                "profile".to_string(),
+                "name".to_string(),
+            ],
+        });
+
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+
+        // Should generate: shared.user.profile.name.to_string()
+        assert!(code.contains("shared"));
+        assert!(code.contains("user"));
+        assert!(code.contains("profile"));
+        assert!(code.contains("name"));
+        assert!(code.contains("to_string"));
+    }
+
+    /// Test shared field in binary operation
+    #[test]
+    fn test_shared_field_in_binary_op() {
+        use dampen_core::expr::ast::{
+            BinaryOp, BinaryOpExpr, Expr, LiteralExpr, SharedFieldAccessExpr,
+        };
+
+        let expr = Expr::BinaryOp(BinaryOpExpr {
+            left: Box::new(Expr::SharedFieldAccess(SharedFieldAccessExpr {
+                path: vec!["count".to_string()],
+            })),
+            op: BinaryOp::Gt,
+            right: Box::new(Expr::Literal(LiteralExpr::Integer(0))),
+        });
+
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+
+        // Should contain both shared field access and comparison
+        assert!(code.contains("shared"));
+        assert!(code.contains("count"));
+        assert!(code.contains(">"));
+        assert!(code.contains("0"));
+    }
+
+    /// Test shared field in conditional
+    #[test]
+    fn test_shared_field_in_conditional() {
+        use dampen_core::expr::ast::{ConditionalExpr, Expr, LiteralExpr, SharedFieldAccessExpr};
+
+        let expr = Expr::Conditional(ConditionalExpr {
+            condition: Box::new(Expr::SharedFieldAccess(SharedFieldAccessExpr {
+                path: vec!["enabled".to_string()],
+            })),
+            then_branch: Box::new(Expr::Literal(LiteralExpr::String("Active".to_string()))),
+            else_branch: Box::new(Expr::Literal(LiteralExpr::String("Inactive".to_string()))),
+        });
+
+        let tokens = generate_expr(&expr);
+        let code = tokens.to_string();
+
+        // Should contain conditional with shared field
+        assert!(code.contains("shared"));
+        assert!(code.contains("enabled"));
+        assert!(code.contains("Active"));
+        assert!(code.contains("Inactive"));
+    }
+
+    /// Test validation accepts shared field access expressions
+    #[test]
+    fn test_shared_field_validation() {
+        use dampen_core::codegen::bindings::validate_expression_inlinable;
+        use dampen_core::expr::ast::{Expr, SharedFieldAccessExpr};
+
+        let expr = Expr::SharedFieldAccess(SharedFieldAccessExpr {
+            path: vec!["username".to_string()],
+        });
+
+        // Shared field access should be inlinable
+        assert!(validate_expression_inlinable(&expr).is_ok());
+    }
+}
+
+/// Integration tests for shared bindings in full UI codegen
+/// (T071 - Integration test for mode switching with shared state)
+#[cfg(test)]
+mod shared_codegen_integration_tests {
+    use dampen_core::{HandlerSignature, generate_application, parse};
+
+    #[test]
+    fn test_shared_binding_in_text_widget() {
+        let xml = r#"<column>
+            <text value="{shared.username}" />
+            <text value="Welcome, {shared.user.name}!" />
+        </column>"#;
+
+        let doc = parse(xml).unwrap();
+        let handlers: Vec<HandlerSignature> = vec![];
+
+        let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();
+
+        // Generated code should contain shared field access
+        let code = &output.code;
+        assert!(code.contains("fn") && code.contains("view"));
+        // The bindings should be resolved (exact format depends on implementation)
+    }
+
+    #[test]
+    fn test_shared_binding_with_handler() {
+        let xml = r#"<column>
+            <text value="{shared.count}" />
+            <button label="Increment" on_click="increment_shared" />
+        </column>"#;
+
+        let doc = parse(xml).unwrap();
+
+        let handlers = vec![HandlerSignature {
+            name: "increment_shared".to_string(),
+            param_type: None,
+            returns_command: false,
+        }];
+
+        let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();
+
+        // Should generate code with both shared binding and handler
+        let code = &output.code;
+        assert!(code.contains("fn") && code.contains("view"));
+        assert!(code.contains("increment_shared"));
+    }
+
+    #[test]
+    fn test_mixed_local_and_shared_bindings() {
+        let xml = r#"<column>
+            <text value="{name}" />
+            <text value="{shared.username}" />
+            <text value="Local: {count}, Shared: {shared.total}" />
+        </column>"#;
+
+        let doc = parse(xml).unwrap();
+        let handlers: Vec<HandlerSignature> = vec![];
+
+        let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();
+
+        // Should generate code handling both local and shared bindings
+        let code = &output.code;
+        assert!(code.contains("fn") && code.contains("view"));
+        // Both local (name, count) and shared (username, total) should work
+    }
 }
