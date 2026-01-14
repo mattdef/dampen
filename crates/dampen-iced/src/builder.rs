@@ -65,7 +65,7 @@ use crate::HandlerMessage;
 use crate::convert::{map_layout_constraints, map_style_properties};
 use crate::state::WidgetStateManager;
 use dampen_core::binding::{BindingValue, UiBindable};
-use dampen_core::expr::evaluate_binding_expr;
+use dampen_core::expr::evaluate_binding_expr_with_shared;
 use dampen_core::handler::HandlerRegistry;
 use dampen_core::ir::WidgetKind;
 use dampen_core::ir::node::{AttributeValue, InterpolatedPart, WidgetNode};
@@ -135,6 +135,9 @@ pub struct DampenWidgetBuilder<'a> {
     /// Application state for binding evaluation
     model: &'a dyn UiBindable,
 
+    /// Optional shared context for inter-window state
+    shared_context: Option<&'a dyn UiBindable>,
+
     /// Optional registry for event handler lookup
     handler_registry: Option<&'a HandlerRegistry>,
 
@@ -194,6 +197,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         Self {
             node: &document.root,
             model,
+            shared_context: None,
             handler_registry,
             style_classes: Some(&document.style_classes),
             verbose: false,
@@ -337,6 +341,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         Self {
             node,
             model,
+            shared_context: None,
             handler_registry,
             style_classes: None,
             verbose: false,
@@ -385,6 +390,34 @@ impl<'a> DampenWidgetBuilder<'a> {
     /// ```
     pub fn with_verbose(mut self, verbose: bool) -> Self {
         self.verbose = verbose;
+        self
+    }
+
+    /// Set the shared context for inter-window state bindings
+    ///
+    /// When a shared context is provided, bindings like `{shared.theme}`
+    /// will be resolved against this context instead of the local model.
+    ///
+    /// # Arguments
+    ///
+    /// * `shared` - Reference to a shared state implementing `UiBindable`
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::SharedContext;
+    ///
+    /// struct SharedState { theme: String }
+    /// // ... implement UiBindable for SharedState
+    ///
+    /// let shared_ctx = SharedContext::new(SharedState { theme: "dark".to_string() });
+    /// let guard = shared_ctx.read();
+    ///
+    /// let builder = DampenWidgetBuilder::new(/* ... */)
+    ///     .with_shared(&*guard);
+    /// ```
+    pub fn with_shared(mut self, shared: &'a dyn UiBindable) -> Self {
+        self.shared_context = Some(shared);
         self
     }
 
@@ -487,7 +520,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                 if let Some(value) = self.resolve_from_context(expr) {
                     value.to_display_string()
                 } else {
-                    match evaluate_binding_expr(expr, self.model) {
+                    match evaluate_binding_expr_with_shared(expr, self.model, self.shared_context) {
                         Ok(value) => {
                             if self.verbose {
                                 eprintln!(
@@ -515,7 +548,11 @@ impl<'a> DampenWidgetBuilder<'a> {
                             if let Some(value) = self.resolve_from_context(expr) {
                                 result.push_str(&value.to_display_string());
                             } else {
-                                match evaluate_binding_expr(expr, self.model) {
+                                match evaluate_binding_expr_with_shared(
+                                    expr,
+                                    self.model,
+                                    self.shared_context,
+                                ) {
                                     Ok(value) => result.push_str(&value.to_display_string()),
                                     Err(e) => {
                                         if self.verbose {
@@ -906,7 +943,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                 }
             }
             Some(AttributeValue::Binding(expr)) => {
-                match evaluate_binding_expr(expr, self.model) {
+                match evaluate_binding_expr_with_shared(expr, self.model, self.shared_context) {
                     Ok(value) => value.to_bool(),
                     Err(e) => {
                         if self.verbose {
@@ -1055,7 +1092,11 @@ impl<'a> DampenWidgetBuilder<'a> {
                         Some(value.to_display_string())
                     } else {
                         // Fallback to model evaluation
-                        match evaluate_binding_expr(param_expr, self.model) {
+                        match evaluate_binding_expr_with_shared(
+                            param_expr,
+                            self.model,
+                            self.shared_context,
+                        ) {
                             Ok(value) => {
                                 if self.verbose {
                                     eprintln!(
@@ -1358,7 +1399,11 @@ impl<'a> DampenWidgetBuilder<'a> {
                         }
                         Some(value.to_display_string())
                     } else {
-                        match evaluate_binding_expr(param_expr, self.model) {
+                        match evaluate_binding_expr_with_shared(
+                            param_expr,
+                            self.model,
+                            self.shared_context,
+                        ) {
                             Ok(value) => {
                                 if self.verbose {
                                     eprintln!(
@@ -2164,7 +2209,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                 let binding_result = if let Some(ctx_value) = self.resolve_from_context(expr) {
                     Ok(ctx_value)
                 } else {
-                    evaluate_binding_expr(expr, self.model)
+                    evaluate_binding_expr_with_shared(expr, self.model, self.shared_context)
                 };
 
                 match binding_result {
@@ -2379,7 +2424,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                 }
             }
             Some(AttributeValue::Binding(expr)) => {
-                match evaluate_binding_expr(expr, self.model) {
+                match evaluate_binding_expr_with_shared(expr, self.model, self.shared_context) {
                     Ok(value) => value.to_bool(),
                     Err(e) => {
                         if self.verbose {

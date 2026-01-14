@@ -8,5 +8,8 @@ pub use ast::{
     MethodCallExpr, SharedFieldAccessExpr, UnaryOp, UnaryOpExpr,
 };
 pub use error::{BindingError, BindingErrorKind};
-pub use eval::{evaluate_binding_expr, evaluate_expr, evaluate_formatted};
+pub use eval::{
+    evaluate_binding_expr, evaluate_binding_expr_with_shared, evaluate_expr,
+    evaluate_expr_with_shared, evaluate_formatted, evaluate_formatted_with_shared,
+};
 pub use tokenizer::tokenize_binding_expr;

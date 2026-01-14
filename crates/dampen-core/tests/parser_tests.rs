@@ -1255,3 +1255,356 @@ fn test_parse_position_without_offsets() {
     let result = parse(xml);
     assert!(result.is_err());
 }
+
+// ==================== Shared Field Access Tests ====================
+
+#[test]
+fn test_parse_shared_simple_field() {
+    use dampen_core::expr::{Expr, SharedFieldAccessExpr, tokenize_binding_expr};
+
+    let expr = "shared.theme";
+    let result = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+
+    match result.expr {
+        Expr::SharedFieldAccess(SharedFieldAccessExpr { path }) => {
+            assert_eq!(path, vec!["theme"]);
+        }
+        _ => panic!("Expected SharedFieldAccess, got {:?}", result.expr),
+    }
+}
+
+#[test]
+fn test_parse_shared_nested_field() {
+    use dampen_core::expr::{Expr, SharedFieldAccessExpr, tokenize_binding_expr};
+
+    let expr = "shared.user.preferences.theme";
+    let result = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+
+    match result.expr {
+        Expr::SharedFieldAccess(SharedFieldAccessExpr { path }) => {
+            assert_eq!(path, vec!["user", "preferences", "theme"]);
+        }
+        _ => panic!("Expected SharedFieldAccess, got {:?}", result.expr),
+    }
+}
+
+#[test]
+fn test_parse_shared_field_does_not_break_regular_fields() {
+    use dampen_core::expr::{Expr, FieldAccessExpr, tokenize_binding_expr};
+
+    // Regular field access should still work
+    let expr = "theme";
+    let result = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+
+    match result.expr {
+        Expr::FieldAccess(FieldAccessExpr { path }) => {
+            assert_eq!(path, vec!["theme"]);
+        }
+        _ => panic!("Expected FieldAccess, got {:?}", result.expr),
+    }
+
+    // Nested regular field access
+    let expr2 = "model.user.name";
+    let result2 = tokenize_binding_expr(expr2, 0, 1, 1).unwrap();
+
+    match result2.expr {
+        Expr::FieldAccess(FieldAccessExpr { path }) => {
+            assert_eq!(path, vec!["model", "user", "name"]);
+        }
+        _ => panic!("Expected FieldAccess, got {:?}", result2.expr),
+    }
+}
+
+#[test]
+fn test_parse_shared_field_alone_is_field_access() {
+    use dampen_core::expr::{Expr, FieldAccessExpr, tokenize_binding_expr};
+
+    // Just "shared" without a dot should be treated as a regular field
+    let expr = "shared";
+    let result = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+
+    match result.expr {
+        Expr::FieldAccess(FieldAccessExpr { path }) => {
+            assert_eq!(path, vec!["shared"]);
+        }
+        _ => panic!(
+            "Expected FieldAccess for bare 'shared', got {:?}",
+            result.expr
+        ),
+    }
+}
+
+#[test]
+fn test_parse_shared_field_in_comparison() {
+    use dampen_core::expr::{BinaryOp, Expr, tokenize_binding_expr};
+
+    let expr = "shared.theme == 'dark'";
+    let result = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+
+    match result.expr {
+        Expr::BinaryOp(bo) => {
+            assert_eq!(bo.op, BinaryOp::Eq);
+            match *bo.left {
+                Expr::SharedFieldAccess(sa) => {
+                    assert_eq!(sa.path, vec!["theme"]);
+                }
+                _ => panic!("Expected SharedFieldAccess on left"),
+            }
+        }
+        _ => panic!("Expected BinaryOp, got {:?}", result.expr),
+    }
+}
+
+#[test]
+fn test_parse_shared_field_in_conditional() {
+    use dampen_core::expr::{Expr, tokenize_binding_expr};
+
+    let expr = "if shared.is_admin then 'Admin' else 'User'";
+    let result = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+
+    match result.expr {
+        Expr::Conditional(cond) => match *cond.condition {
+            Expr::SharedFieldAccess(sa) => {
+                assert_eq!(sa.path, vec!["is_admin"]);
+            }
+            _ => panic!("Expected SharedFieldAccess in condition"),
+        },
+        _ => panic!("Expected Conditional, got {:?}", result.expr),
+    }
+}
+
+#[test]
+fn test_parse_mixed_model_and_shared_bindings() {
+    use dampen_core::expr::{BinaryOp, Expr, tokenize_binding_expr};
+
+    let expr = "count + shared.offset";
+    let result = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+
+    match result.expr {
+        Expr::BinaryOp(bo) => {
+            assert_eq!(bo.op, BinaryOp::Add);
+            match *bo.left {
+                Expr::FieldAccess(fa) => {
+                    assert_eq!(fa.path, vec!["count"]);
+                }
+                _ => panic!("Expected FieldAccess on left"),
+            }
+            match *bo.right {
+                Expr::SharedFieldAccess(sa) => {
+                    assert_eq!(sa.path, vec!["offset"]);
+                }
+                _ => panic!("Expected SharedFieldAccess on right"),
+            }
+        }
+        _ => panic!("Expected BinaryOp, got {:?}", result.expr),
+    }
+}
+
+#[test]
+fn test_parse_shared_method_call() {
+    use dampen_core::expr::{Expr, tokenize_binding_expr};
+
+    let expr = "shared.items.len()";
+    let result = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+
+    match result.expr {
+        Expr::MethodCall(mc) => {
+            assert_eq!(mc.method, "len");
+            match *mc.receiver {
+                Expr::SharedFieldAccess(sa) => {
+                    assert_eq!(sa.path, vec!["items"]);
+                }
+                _ => panic!("Expected SharedFieldAccess as receiver"),
+            }
+        }
+        _ => panic!("Expected MethodCall, got {:?}", result.expr),
+    }
+}
+
+#[test]
+fn test_parse_shared_uses_shared_method() {
+    use dampen_core::expr::tokenize_binding_expr;
+
+    // Simple shared field
+    let expr1 = "shared.theme";
+    let result1 = tokenize_binding_expr(expr1, 0, 1, 1).unwrap();
+    assert!(result1.expr.uses_shared());
+    assert!(!result1.expr.uses_model());
+
+    // Regular field
+    let expr2 = "count";
+    let result2 = tokenize_binding_expr(expr2, 0, 1, 1).unwrap();
+    assert!(!result2.expr.uses_shared());
+    assert!(result2.expr.uses_model());
+
+    // Mixed expression
+    let expr3 = "count + shared.offset";
+    let result3 = tokenize_binding_expr(expr3, 0, 1, 1).unwrap();
+    assert!(result3.expr.uses_shared());
+    assert!(result3.expr.uses_model());
+}
+
+// ==================== Shared Field Evaluation Tests ====================
+
+#[test]
+fn test_evaluate_shared_simple_field() {
+    use dampen_core::binding::{BindingValue, UiBindable};
+    use dampen_core::expr::{evaluate_expr_with_shared, tokenize_binding_expr};
+
+    // Create a simple shared state
+    struct SharedState {
+        theme: String,
+    }
+
+    impl UiBindable for SharedState {
+        fn get_field(&self, path: &[&str]) -> Option<BindingValue> {
+            match path {
+                ["theme"] => Some(BindingValue::String(self.theme.clone())),
+                _ => None,
+            }
+        }
+        fn available_fields() -> Vec<String> {
+            vec!["theme".to_string()]
+        }
+    }
+
+    struct EmptyModel;
+    impl UiBindable for EmptyModel {
+        fn get_field(&self, _path: &[&str]) -> Option<BindingValue> {
+            None
+        }
+        fn available_fields() -> Vec<String> {
+            vec![]
+        }
+    }
+
+    let shared = SharedState {
+        theme: "dark".to_string(),
+    };
+    let model = EmptyModel;
+
+    let expr = "shared.theme";
+    let binding = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+    let result = evaluate_expr_with_shared(&binding.expr, &model, Some(&shared)).unwrap();
+
+    assert_eq!(result, BindingValue::String("dark".to_string()));
+}
+
+#[test]
+fn test_evaluate_shared_graceful_degradation_no_context() {
+    use dampen_core::binding::{BindingValue, UiBindable};
+    use dampen_core::expr::{evaluate_expr_with_shared, tokenize_binding_expr};
+
+    struct EmptyModel;
+    impl UiBindable for EmptyModel {
+        fn get_field(&self, _path: &[&str]) -> Option<BindingValue> {
+            None
+        }
+        fn available_fields() -> Vec<String> {
+            vec![]
+        }
+    }
+
+    let model = EmptyModel;
+
+    // When no shared context is provided, should return empty string
+    let expr = "shared.theme";
+    let binding = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+    let result = evaluate_expr_with_shared(&binding.expr, &model, None).unwrap();
+
+    assert_eq!(result, BindingValue::String(String::new()));
+}
+
+#[test]
+fn test_evaluate_mixed_model_and_shared() {
+    use dampen_core::binding::{BindingValue, UiBindable};
+    use dampen_core::expr::{evaluate_expr_with_shared, tokenize_binding_expr};
+
+    struct Model {
+        count: i32,
+    }
+
+    impl UiBindable for Model {
+        fn get_field(&self, path: &[&str]) -> Option<BindingValue> {
+            match path {
+                ["count"] => Some(BindingValue::Integer(self.count as i64)),
+                _ => None,
+            }
+        }
+        fn available_fields() -> Vec<String> {
+            vec!["count".to_string()]
+        }
+    }
+
+    struct SharedState {
+        offset: i32,
+    }
+
+    impl UiBindable for SharedState {
+        fn get_field(&self, path: &[&str]) -> Option<BindingValue> {
+            match path {
+                ["offset"] => Some(BindingValue::Integer(self.offset as i64)),
+                _ => None,
+            }
+        }
+        fn available_fields() -> Vec<String> {
+            vec!["offset".to_string()]
+        }
+    }
+
+    let model = Model { count: 5 };
+    let shared = SharedState { offset: 10 };
+
+    // Expression that uses both model and shared
+    let expr = "count + shared.offset";
+    let binding = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+    let result = evaluate_expr_with_shared(&binding.expr, &model, Some(&shared)).unwrap();
+
+    assert_eq!(result, BindingValue::Integer(15));
+}
+
+#[test]
+fn test_evaluate_shared_in_conditional() {
+    use dampen_core::binding::{BindingValue, UiBindable};
+    use dampen_core::expr::{evaluate_expr_with_shared, tokenize_binding_expr};
+
+    struct SharedState {
+        is_admin: bool,
+    }
+
+    impl UiBindable for SharedState {
+        fn get_field(&self, path: &[&str]) -> Option<BindingValue> {
+            match path {
+                ["is_admin"] => Some(BindingValue::Bool(self.is_admin)),
+                _ => None,
+            }
+        }
+        fn available_fields() -> Vec<String> {
+            vec!["is_admin".to_string()]
+        }
+    }
+
+    struct EmptyModel;
+    impl UiBindable for EmptyModel {
+        fn get_field(&self, _path: &[&str]) -> Option<BindingValue> {
+            None
+        }
+        fn available_fields() -> Vec<String> {
+            vec![]
+        }
+    }
+
+    let model = EmptyModel;
+
+    // Test with admin = true
+    let shared_admin = SharedState { is_admin: true };
+    let expr = "if shared.is_admin then 'Admin' else 'User'";
+    let binding = tokenize_binding_expr(expr, 0, 1, 1).unwrap();
+    let result = evaluate_expr_with_shared(&binding.expr, &model, Some(&shared_admin)).unwrap();
+    assert_eq!(result, BindingValue::String("Admin".to_string()));
+
+    // Test with admin = false
+    let shared_user = SharedState { is_admin: false };
+    let result = evaluate_expr_with_shared(&binding.expr, &model, Some(&shared_user)).unwrap();
+    assert_eq!(result, BindingValue::String("User".to_string()));
+}

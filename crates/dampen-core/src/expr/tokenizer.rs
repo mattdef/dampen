@@ -3,7 +3,7 @@
 
 use crate::expr::{
     BinaryOp, BinaryOpExpr, BindingExpr, ConditionalExpr, Expr, FieldAccessExpr, LiteralExpr,
-    MethodCallExpr, UnaryOp, UnaryOpExpr,
+    MethodCallExpr, SharedFieldAccessExpr, UnaryOp, UnaryOpExpr,
 };
 use crate::ir::span::Span;
 
@@ -311,7 +311,87 @@ impl<'a> ExprParser<'a> {
 
         // Parse identifier
         let ident = self.parse_identifier()?;
-        path.push(ident);
+
+        // Check if this is a shared state access: `shared.field`
+        let is_shared = ident == "shared";
+
+        if is_shared {
+            // Must have a dot and at least one field after "shared"
+            self.skip_whitespace();
+            if !self.peek_str(".") {
+                // Just "shared" by itself - treat as regular field access (for backward compat)
+                path.push(ident);
+            } else {
+                // Consume the dot after "shared"
+                self.consume_str(".")?;
+
+                // Parse the shared field path
+                let mut shared_path = Vec::new();
+                let first_field = self.parse_identifier()?;
+                shared_path.push(first_field);
+
+                // Check for nested shared field access
+                loop {
+                    self.skip_whitespace();
+                    if self.peek_str(".") {
+                        self.consume_str(".")?;
+                        let next_ident = self.parse_identifier()?;
+                        shared_path.push(next_ident);
+                    } else {
+                        break;
+                    }
+                }
+
+                // Check for method call on shared field
+                self.skip_whitespace();
+                if self.peek_str("(") {
+                    self.consume_str("(")?;
+                    let mut args = Vec::new();
+
+                    // Parse arguments
+                    loop {
+                        self.skip_whitespace();
+                        if self.peek_str(")") {
+                            break;
+                        }
+
+                        let arg = self.parse()?;
+                        args.push(arg);
+
+                        self.skip_whitespace();
+                        if self.peek_str(",") {
+                            self.consume_str(",")?;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    self.consume_str(")")?;
+
+                    // Method call on the shared path
+                    let method = shared_path.pop().ok_or("Empty path for method call")?;
+                    let receiver = if shared_path.is_empty() {
+                        // Just `shared.method()` - receiver is the entire shared context
+                        Expr::SharedFieldAccess(SharedFieldAccessExpr { path: vec![] })
+                    } else {
+                        Expr::SharedFieldAccess(SharedFieldAccessExpr { path: shared_path })
+                    };
+
+                    return Ok(Expr::MethodCall(MethodCallExpr {
+                        receiver: Box::new(receiver),
+                        method,
+                        args,
+                    }));
+                }
+
+                // Just shared field access
+                return Ok(Expr::SharedFieldAccess(SharedFieldAccessExpr {
+                    path: shared_path,
+                }));
+            }
+        } else {
+            path.push(ident);
+        }
 
         // Check for nested field access
         loop {
