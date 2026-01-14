@@ -911,3 +911,143 @@ mod default_view_tests {
         );
     }
 }
+
+// ==============================================================================
+// Phase 9: User Story - Inter-Window Communication (shared_model attribute)
+// ==============================================================================
+
+#[cfg(test)]
+mod shared_model_tests {
+    use super::*;
+    use quote::quote;
+    use syn::parse2;
+
+    // Test parsing shared_model attribute
+    #[test]
+    fn test_parse_shared_model_attribute() {
+        // Note: This test validates parsing only.
+        // File existence validation is tested separately in integration tests.
+
+        // Ensure src directory exists and create shared.rs
+        std::fs::create_dir_all("src").expect("Failed to create src dir");
+        std::fs::write("src/shared.rs", "// temp file for test")
+            .expect("Failed to write shared.rs");
+
+        // Give it a moment to ensure file is written
+        std::thread::sleep(std::time::Duration::from_millis(10));
+
+        // Given: Macro attributes with shared_model
+        let attr = quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            shared_model = "SharedState"
+        };
+
+        // When: We parse the attributes
+        let result = parse2::<dampen_app::MacroAttributes>(attr);
+
+        // Then: shared_model should be parsed correctly
+        if result.is_err() {
+            eprintln!("Parse error: {:?}", result.as_ref().err());
+            eprintln!(
+                "src/shared.rs exists: {}",
+                std::path::Path::new("src/shared.rs").exists()
+            );
+        }
+        assert!(
+            result.is_ok(),
+            "Should parse shared_model attribute: {:?}",
+            result.err()
+        );
+        let attrs = result.unwrap();
+        assert!(attrs.shared_model.is_some(), "shared_model should be Some");
+        assert_eq!(
+            attrs.shared_model.unwrap().to_string(),
+            "SharedState",
+            "shared_model should be 'SharedState'"
+        );
+    }
+
+    // Test parsing without shared_model attribute
+    #[test]
+    fn test_parse_without_shared_model() {
+        // Given: Macro attributes without shared_model
+        let attr = quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler"
+        };
+
+        // When: We parse the attributes
+        let result = parse2::<dampen_app::MacroAttributes>(attr);
+
+        // Then: shared_model should be None
+        assert!(result.is_ok(), "Should parse without shared_model");
+        let attrs = result.unwrap();
+        assert!(
+            attrs.shared_model.is_none(),
+            "shared_model should be None when not specified"
+        );
+    }
+
+    // Test that unknown attributes still error
+    #[test]
+    fn test_unknown_attribute_still_errors() {
+        // Given: Macro attributes with an unknown attribute
+        let attr = quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            unknown_attr = "value"
+        };
+
+        // When: We parse the attributes
+        let result = parse2::<dampen_app::MacroAttributes>(attr);
+
+        // Then: Should error on unknown attribute
+        assert!(result.is_err(), "Should error on unknown attribute");
+        let err = result.unwrap_err();
+        let err_msg = err.to_string();
+        assert!(
+            err_msg.contains("Unknown attribute"),
+            "Error should mention unknown attribute"
+        );
+    }
+
+    // Test file existence validation
+    #[test]
+    fn test_shared_model_requires_file_to_exist() {
+        // Ensure src/shared.rs does NOT exist
+        std::fs::remove_file("src/shared.rs").ok();
+
+        // Given: Macro attributes with shared_model but no src/shared.rs
+        let attr = quote! {
+            ui_dir = "tests/fixtures/multi_view/src/ui",
+            message_type = "Message",
+            handler_variant = "Handler",
+            shared_model = "SharedState"
+        };
+
+        // When: We parse the attributes
+        let result = parse2::<dampen_app::MacroAttributes>(attr);
+
+        // Then: Should error about missing file
+        assert!(
+            result.is_err(),
+            "Should error when src/shared.rs doesn't exist"
+        );
+        let err = result.unwrap_err();
+        let err_msg = err.to_string();
+        assert!(
+            err_msg.contains("src/shared.rs") && err_msg.contains("not found"),
+            "Error should mention missing src/shared.rs file: {}",
+            err_msg
+        );
+        assert!(
+            err_msg.contains("help:"),
+            "Error should include helpful guidance: {}",
+            err_msg
+        );
+    }
+}

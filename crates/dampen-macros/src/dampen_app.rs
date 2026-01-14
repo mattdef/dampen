@@ -30,6 +30,7 @@ use crate::discovery::{ViewInfo, discover_dampen_files};
 /// - `switch_view_variant`: Message variant for programmatic view switching (e.g., `SwitchToView`)
 /// - `exclude`: Glob patterns to exclude from discovery (e.g., `["debug", "experimental/*"]`)
 /// - `default_view`: View to display on startup (without `.dampen` extension, defaults to first alphabetically)
+/// - `shared_model`: Optional shared state model type for inter-view communication (e.g., `"SharedState"`)
 ///
 /// # Examples
 ///
@@ -60,6 +61,46 @@ use crate::discovery::{ViewInfo, discover_dampen_files};
 /// struct MyApp;
 /// ```
 ///
+/// With shared state for inter-view communication:
+///
+/// ```ignore
+/// // src/shared.rs
+/// use dampen_macros::UiModel;
+///
+/// #[derive(Clone, Default, UiModel)]
+/// pub struct SharedState {
+///     pub user_name: String,
+///     pub theme: String,
+/// }
+///
+/// // src/main.rs
+/// mod shared;
+///
+/// #[dampen_app(
+///     ui_dir = "src/ui",
+///     message_type = "Message",
+///     handler_variant = "Handler",
+///     shared_model = "SharedState"
+/// )]
+/// struct MyApp;
+/// ```
+///
+/// With `shared_model`, all views can access and modify the shared state:
+///
+/// ```ignore
+/// // src/ui/settings.dampen
+/// <column>
+///     <text value="User: {shared.user_name}" />
+///     <button label="Update Theme" on_click="update_theme" />
+/// </column>
+///
+/// // src/ui/settings.rs
+/// #[ui_handler]
+/// pub fn update_theme(shared: &SharedContext<SharedState>) {
+///     shared.update(|s| s.theme = "dark".to_string());
+/// }
+/// ```
+///
 /// # Validation
 ///
 /// The macro validates that:
@@ -67,6 +108,7 @@ use crate::discovery::{ViewInfo, discover_dampen_files};
 /// - `ui_dir` exists and is a directory
 /// - Exclusion patterns compile as valid globs
 /// - `default_view` (if specified) exists in discovered views
+/// - `shared_model` (if specified) corresponds to an existing `src/shared.rs` file
 #[derive(Debug, Clone)]
 pub struct MacroAttributes {
     /// Required: Directory to scan for .dampen files (relative to crate root)
@@ -94,6 +136,10 @@ pub struct MacroAttributes {
     /// Optional: Default view to display on startup (without .dampen extension)
     /// If not specified, defaults to first view alphabetically
     pub default_view: Option<String>,
+
+    /// Optional: Shared state model type for inter-view communication
+    /// If specified, expects a type in `shared` module (e.g., `"SharedState"` → `shared::SharedState`)
+    pub shared_model: Option<Ident>,
 }
 
 impl Parse for MacroAttributes {
@@ -106,6 +152,7 @@ impl Parse for MacroAttributes {
         let mut switch_view_variant = None;
         let mut exclude = Vec::new();
         let mut default_view = None;
+        let mut shared_model = None;
 
         // Parse key-value pairs
         while !input.is_empty() {
@@ -153,6 +200,9 @@ impl Parse for MacroAttributes {
                         content.parse::<Token![,]>()?;
                     }
                 }
+            } else if key == "shared_model" {
+                let value: LitStr = input.parse()?;
+                shared_model = Some(Ident::new(&value.value(), value.span()));
             } else {
                 return Err(syn::Error::new(
                     key.span(),
@@ -201,6 +251,23 @@ impl Parse for MacroAttributes {
             }
         }
 
+        // Validate shared_model file exists if specified
+        if let Some(ref shared_model_name) = shared_model {
+            let shared_path = PathBuf::from("src/shared.rs");
+            if !shared_path.exists() {
+                return Err(syn::Error::new(
+                    input.span(),
+                    format!(
+                        "shared_model '{}' specified but 'src/shared.rs' not found\n\
+                        help: Create src/shared.rs with:\n\
+                        #[derive(Clone, Default, UiModel)]\n\
+                        pub struct {} {{ /* your shared state fields */ }}",
+                        shared_model_name, shared_model_name
+                    ),
+                ));
+            }
+        }
+
         Ok(MacroAttributes {
             ui_dir,
             message_type,
@@ -210,6 +277,7 @@ impl Parse for MacroAttributes {
             switch_view_variant,
             exclude,
             default_view,
+            shared_model,
         })
     }
 }
@@ -298,6 +366,14 @@ pub fn generate_app_struct(
     attrs: &MacroAttributes,
     struct_name: &Ident,
 ) -> TokenStream {
+    // Add shared field if shared_model is specified
+    let shared_field = attrs.shared_model.as_ref().map(|shared_model| {
+        quote! {
+            shared: dampen_core::SharedContext<shared::#shared_model>,
+        }
+    });
+
+    // Generate AppState fields with or without shared state type parameter
     let fields: Vec<_> = views
         .iter()
         .map(|v| {
@@ -310,8 +386,16 @@ pub fn generate_app_struct(
                 .map(|part| Ident::new(part, proc_macro2::Span::call_site()))
                 .collect();
 
-            quote! {
-                #field_name: dampen_core::AppState<#(#module_parts)::*::Model>
+            // If shared_model is specified, use AppState<Model, SharedState>
+            // Otherwise use AppState<Model>
+            if let Some(ref shared_model) = attrs.shared_model {
+                quote! {
+                    #field_name: dampen_core::AppState<#(#module_parts)::*::Model, shared::#shared_model>
+                }
+            } else {
+                quote! {
+                    #field_name: dampen_core::AppState<#(#module_parts)::*::Model>
+                }
             }
         })
         .collect();
@@ -328,6 +412,7 @@ pub fn generate_app_struct(
 
     quote! {
         pub struct #struct_name {
+            #shared_field
             #(#fields,)*
             current_view: CurrentView,
             #error_overlay_field
@@ -389,6 +474,20 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
         };
     };
 
+    // Initialize shared context if shared_model is specified
+    let (shared_init, shared_field_init) = if let Some(ref shared_model) = attrs.shared_model {
+        let init_code = quote! {
+            let shared = dampen_core::SharedContext::new(shared::#shared_model::default());
+        };
+        let field_init = Some(quote! {
+            shared: shared.clone(),
+        });
+        (Some(init_code), field_init)
+    } else {
+        (None, None)
+    };
+
+    // Generate field initializations with or without shared context
     let field_inits: Vec<_> = views
         .iter()
         .map(|v| {
@@ -401,8 +500,16 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
                 .map(|part| Ident::new(part, proc_macro2::Span::call_site()))
                 .collect();
 
-            quote! {
-                #field_name: #(#module_parts)::*::create_app_state()
+            // If shared_model is specified, call create_app_state_with_shared
+            // Otherwise call create_app_state
+            if attrs.shared_model.is_some() {
+                quote! {
+                    #field_name: #(#module_parts)::*::create_app_state_with_shared(shared.clone())
+                }
+            } else {
+                quote! {
+                    #field_name: #(#module_parts)::*::create_app_state()
+                }
             }
         })
         .collect();
@@ -419,7 +526,9 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
 
     quote! {
         pub fn init() -> Self {
+            #shared_init
             Self {
+                #shared_field_init
                 #(#field_inits,)*
                 current_view: CurrentView::#first_variant,
                 #error_overlay_init
@@ -532,6 +641,9 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
     let handler_variant = &attrs.handler_variant;
     let message_type = &attrs.message_type;
 
+    // Determine if we're using shared state
+    let use_shared = attrs.shared_model.is_some();
+
     // Generate match arms for each view's handler dispatch
     let view_match_arms: Vec<_> = views
         .iter()
@@ -539,13 +651,26 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
             let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
 
-            quote! {
-                CurrentView::#variant => {
-                    dispatch_handler_with_task(
-                        &mut self.#field_name.model,
-                        &self.#field_name.handler_registry,
-                        handler_msg
-                    )
+            if use_shared {
+                quote! {
+                    CurrentView::#variant => {
+                        dispatch_handler_with_task_and_shared(
+                            &mut self.#field_name.model,
+                            &self.#field_name.handler_registry,
+                            &self.shared,
+                            handler_msg
+                        )
+                    }
+                }
+            } else {
+                quote! {
+                    CurrentView::#variant => {
+                        dispatch_handler_with_task(
+                            &mut self.#field_name.model,
+                            &self.#field_name.handler_registry,
+                            handler_msg
+                        )
+                    }
                 }
             }
         })
@@ -692,8 +817,39 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             }
         });
 
-    quote! {
-        pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
+    // Generate helper function(s) for handler dispatch
+    let helper_functions = if use_shared {
+        // Generate version with shared context
+        if let Some(ref shared_model) = attrs.shared_model {
+            quote! {
+                // Helper function to dispatch handlers with shared state and return tasks
+                fn dispatch_handler_with_task_and_shared<M: dampen_core::UiBindable + 'static>(
+                    model: &mut M,
+                    registry: &dampen_core::HandlerRegistry,
+                    shared: &dampen_core::SharedContext<shared::#shared_model>,
+                    handler_msg: dampen_iced::HandlerMessage,
+                ) -> iced::Task<#message_type> {
+                    match handler_msg {
+                        dampen_iced::HandlerMessage::Handler(handler_name, value) => {
+                            let model_any: &mut dyn std::any::Any = model;
+                            let shared_any: &dyn std::any::Any = shared;
+                            if let Some(boxed_task) = registry.dispatch_with_shared(&handler_name, model_any, shared_any, value) {
+                                // Try to downcast to Task<Message>
+                                if let Ok(task) = boxed_task.downcast::<iced::Task<#message_type>>() {
+                                    return *task;
+                                }
+                            }
+                            iced::Task::none()
+                        }
+                    }
+                }
+            }
+        } else {
+            quote! {}
+        }
+    } else {
+        // Generate version without shared context
+        quote! {
             // Helper function to dispatch handlers and return tasks
             fn dispatch_handler_with_task<M: dampen_core::UiBindable + 'static>(
                 model: &mut M,
@@ -713,6 +869,12 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
                     }
                 }
             }
+        }
+    };
+
+    quote! {
+        pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
+            #helper_functions
 
             match message {
                 #message_type::#handler_variant(handler_msg) => {
