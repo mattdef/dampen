@@ -16,6 +16,7 @@ members = [
     "benchmarks",
     "tests/hot-reload-integration",
     "tests/integration",
+    "tests/contract",
 ]
 
 [workspace.package]
