@@ -9,14 +9,18 @@ use serde::{Deserialize, Serialize};
 mod _settings {}
 
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
-pub struct Model;
+pub struct Model {
+    /// Dummy field to trigger re-renders when shared state changes
+    #[ui_skip]
+    _refresh_trigger: usize,
+}
 
 pub fn create_app_state_with_shared(
     shared: SharedContext<SharedState>,
 ) -> AppState<Model, SharedState> {
     let document = _settings::document();
     let handlers = create_handler_registry();
-    let model = Model; // Unit struct, don't use default()
+    let model = Model::default();
     AppState::with_shared(document, model, handlers, shared)
 }
 
@@ -36,36 +40,47 @@ pub fn create_handler_registry() -> HandlerRegistry {
     // Handlers that modify shared state
     registry.register_with_value_and_shared(
         "change_theme",
-        |_model: &mut dyn Any, value: Box<dyn Any>, shared: &dyn Any| {
-            if let (Some(s), Ok(theme)) = (
+        |model: &mut dyn Any, value: Box<dyn Any>, shared: &dyn Any| {
+            if let (Some(m), Some(s), Ok(theme)) = (
+                model.downcast_mut::<Model>(),
                 shared.downcast_ref::<SharedContext<SharedState>>(),
                 value.downcast::<String>(),
             ) {
                 let mut guard = s.write();
                 guard.theme = *theme;
+                // Trigger re-render by modifying local model
+                m._refresh_trigger = m._refresh_trigger.wrapping_add(1);
             }
         },
     );
 
     registry.register_with_value_and_shared(
         "change_username",
-        |_model: &mut dyn Any, value: Box<dyn Any>, shared: &dyn Any| {
-            if let (Some(s), Ok(username)) = (
+        |model: &mut dyn Any, value: Box<dyn Any>, shared: &dyn Any| {
+            if let (Some(m), Some(s), Ok(username)) = (
+                model.downcast_mut::<Model>(),
                 shared.downcast_ref::<SharedContext<SharedState>>(),
                 value.downcast::<String>(),
             ) {
                 let mut guard = s.write();
                 guard.username = *username;
+                // Trigger re-render by modifying local model
+                m._refresh_trigger = m._refresh_trigger.wrapping_add(1);
             }
         },
     );
 
     registry.register_with_shared(
         "increment_notifications",
-        |_model: &mut dyn Any, shared: &dyn Any| {
-            if let Some(s) = shared.downcast_ref::<SharedContext<SharedState>>() {
+        |model: &mut dyn Any, shared: &dyn Any| {
+            if let (Some(m), Some(s)) = (
+                model.downcast_mut::<Model>(),
+                shared.downcast_ref::<SharedContext<SharedState>>(),
+            ) {
                 let mut guard = s.write();
                 guard.notification_count += 1;
+                // Trigger re-render by modifying local model
+                m._refresh_trigger = m._refresh_trigger.wrapping_add(1);
             }
         },
     );
