@@ -1096,6 +1096,46 @@ Shared state is **100% opt-in**:
 - Ensure downcast succeeds: `if let Some(s) = ...`
 - Check handler is registered with `_and_shared` variant
 
+**Issue: "Views don't update when shared state changes"**
+
+This is an Iced framework limitation: **modifying state doesn't automatically trigger re-renders**.
+
+**Solution**: Add a dummy trigger field to force re-renders:
+
+```rust
+#[derive(Default, UiModel, Clone)]
+pub struct Model {
+    #[ui_skip]  // Don't expose to UI bindings
+    _refresh_trigger: usize,
+}
+
+// In handlers that modify shared state:
+registry.register_with_value_and_shared(
+    "update_theme",
+    |model: &mut dyn Any, value: Box<dyn Any>, shared: &dyn Any| {
+        if let (Some(m), Some(s), Ok(theme)) = (
+            model.downcast_mut::<Model>(),
+            shared.downcast_ref::<SharedContext<SharedState>>(),
+            value.downcast::<String>(),
+        ) {
+            // Modify shared state
+            let mut guard = s.write();
+            guard.theme = *theme;
+            
+            // Trigger re-render by modifying local model
+            m._refresh_trigger = m._refresh_trigger.wrapping_add(1);
+        }
+    }
+);
+```
+
+**Why this works**:
+- Iced checks if the local model changed (via PartialEq/Clone)
+- Incrementing `_refresh_trigger` makes the model "different"
+- Iced re-renders the view, picking up the new shared state values
+
+**See**: `examples/macro-shared-state/src/ui/settings.rs` for a complete example
+
 **Error: "Shared state resets on hot-reload"**
 - This should not happen! File a bug report if it does
 - Verify you're using `dampen run` (dev mode)
