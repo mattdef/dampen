@@ -1017,6 +1017,53 @@ registry.register_with_command_and_shared(
 );
 ```
 
+#### Passing Parameters to Handlers
+
+Handlers can receive parameters from XML using the colon syntax `handler_name:parameter`.
+
+**String literal parameters** (for constant values):
+```xml
+<!-- Use single or double quotes for string literals -->
+<button label="Light Theme" on_click="change_theme:'Light'" />
+<button label="Dark Theme" on_click="change_theme:'Dark'" />
+<button label="Alice" on_click="set_username:'Alice'" />
+```
+
+**Field reference parameters** (from model or loop context):
+```xml
+<!-- No quotes - references a field from the model -->
+<button label="Save" on_click="save_value:{current_id}" />
+
+<!-- In a for loop, reference loop item fields -->
+<for expr="items" var="item">
+    <button label="Edit" on_click="edit_item:{item.id}" />
+    <button label="Delete" on_click="delete_item:{item.id}" />
+</for>
+```
+
+**Important:**
+- ✅ Use **quotes** for string literals: `on_click="handler:'value'"`
+- ✅ Use **braces** for field references: `on_click="handler:{field}"`
+- ❌ Without quotes, `light` is treated as a field name (and will be empty if not found)
+- ❌ Without braces, `{item.id}` won't be resolved from loop context
+
+**Example handler implementation:**
+```rust
+registry.register_with_value_and_shared(
+    "change_theme",
+    |model: &mut dyn Any, value: Box<dyn Any>, shared: &dyn Any| {
+        if let (Some(s), Ok(theme)) = (
+            shared.downcast_ref::<SharedContext<SharedState>>(),
+            value.downcast::<String>(),
+        ) {
+            s.write(|state| {
+                state.theme = *theme;  // theme is a Box<String>
+            });
+        }
+    },
+);
+```
+
 #### Thread Safety
 
 `SharedContext<S>` is **thread-safe** and uses `Arc<RwLock<S>>` internally:

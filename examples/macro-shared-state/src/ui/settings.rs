@@ -48,8 +48,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
             ) {
                 let mut guard = s.write();
                 guard.theme = *theme;
-                // Trigger re-render by modifying local model
-                m._refresh_trigger = m._refresh_trigger.wrapping_add(1);
+                m._refresh_trigger += 1;
             }
         },
     );
@@ -64,8 +63,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
             ) {
                 let mut guard = s.write();
                 guard.username = *username;
-                // Trigger re-render by modifying local model
-                m._refresh_trigger = m._refresh_trigger.wrapping_add(1);
+                m._refresh_trigger += 1;
             }
         },
     );
@@ -79,8 +77,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
             ) {
                 let mut guard = s.write();
                 guard.notification_count += 1;
-                // Trigger re-render by modifying local model
-                m._refresh_trigger = m._refresh_trigger.wrapping_add(1);
+                m._refresh_trigger += 1;
             }
         },
     );

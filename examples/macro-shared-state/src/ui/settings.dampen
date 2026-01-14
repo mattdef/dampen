@@ -12,15 +12,15 @@
         <column spacing="10">
             <text value="Change Theme:" size="16" weight="bold" />
             <row spacing="10">
-                <button label="🌞 Light" on_click="change_theme:light" />
-                <button label="🌙 Dark" on_click="change_theme:dark" />
+                <button label="🌞 Light" on_click="change_theme:'Light'" />
+                <button label="🌙 Dark" on_click="change_theme:'Dark'" />
             </row>
             
             <text value="Change Username:" size="16" weight="bold" />
             <row spacing="10">
-                <button label="Alice" on_click="change_username:Alice" />
-                <button label="Bob" on_click="change_username:Bob" />
-                <button label="Charlie" on_click="change_username:Charlie" />
+                <button label="Alice" on_click="change_username:'Alice'" />
+                <button label="Bob" on_click="change_username:'Bob'" />
+                <button label="Charlie" on_click="change_username:'Charlie'" />
             </row>
             
             <button label="🔔 Add Notification" on_click="increment_notifications" />
