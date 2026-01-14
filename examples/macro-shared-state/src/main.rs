@@ -53,7 +53,7 @@ pub fn main() -> iced::Result {
         MacroSharedStateApp::update,
         MacroSharedStateApp::view,
     )
-    .window_size(iced::Size::new(500.0, 400.0))
+    .window_size(iced::Size::new(500.0, 600.0))
     .centered()
     .title("Shared State with Macro")
     .subscription(MacroSharedStateApp::subscription)
