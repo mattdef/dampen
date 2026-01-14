@@ -8,3 +8,6 @@ mod mode_parity_tests;
 
 #[cfg(test)]
 mod shared_state_e2e;
+
+#[cfg(test)]
+mod backward_compat_examples;
