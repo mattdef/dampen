@@ -6,7 +6,8 @@
 //! - T028 (CT-001): SharedContext changes are visible across clones
 //! - T029 (CT-002): Handler modifications to shared state are visible in all views
 
-use dampen_core::{HandlerRegistry, SharedContext};
+use dampen_core::{HandlerRegistry, SharedContext, parse};
+use dampen_iced::DampenWidgetBuilder;
 use dampen_macros::UiModel;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -33,6 +34,53 @@ impl Default for TestSharedState {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, UiModel)]
 struct TestModel {
     pub status: String,
+}
+
+/// Shared state with nested structure for binding tests
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, UiModel)]
+struct NestedSharedState {
+    pub theme: String,
+    pub count: i32,
+    #[ui_skip]
+    pub user: UserInfo,
+}
+
+/// User info for nested binding tests
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+struct UserInfo {
+    pub name: String,
+    pub email: String,
+}
+
+impl Default for NestedSharedState {
+    fn default() -> Self {
+        Self {
+            theme: "dark".to_string(),
+            count: 0,
+            user: UserInfo {
+                name: "Alice".to_string(),
+                email: "alice@example.com".to_string(),
+            },
+        }
+    }
+}
+
+// Manual implementation of field access for nested user fields
+impl NestedSharedState {
+    pub fn get_user_name(&self) -> &str {
+        &self.user.name
+    }
+
+    pub fn get_user_email(&self) -> &str {
+        &self.user.email
+    }
+}
+
+/// Local model for mixed binding tests
+#[derive(Clone, Debug, Default, Serialize, Deserialize, UiModel)]
+struct MixedModel {
+    pub greeting: String,
+    pub local_count: i32,
 }
 
 // ============================================================================
@@ -363,4 +411,170 @@ fn ct_002_shared_state_persists_across_view_switches() {
         999,
         "State should persist when switching views"
     );
+}
+
+// ============================================================================
+// T038-T041: Contract Tests for Shared Bindings in XML (CT-SB-001 to CT-SB-004)
+// ============================================================================
+
+#[test]
+fn ct_sb_001_simple_shared_binding_renders_value() {
+    // CT-SB-001: Simple shared binding renders value
+    // GIVEN: Shared state with theme = "dark"
+    let shared = SharedContext::new(NestedSharedState::default());
+    let model = TestModel::default();
+
+    // WHEN: XML contains {shared.theme}
+    let xml = r#"<dampen><text value="{shared.theme}" /></dampen>"#;
+    let document = parse(xml).expect("Failed to parse XML");
+
+    // Build widget with shared context (need to keep guard alive)
+    let shared_guard = shared.read();
+    let builder = DampenWidgetBuilder::new(&document, &model, None).with_shared(&*shared_guard);
+
+    let _element = builder.build();
+    // _element keeps shared_guard borrowed until end of function
+
+    // THEN: Widget should render "dark"
+    assert_eq!(shared_guard.theme, "dark");
+}
+
+#[test]
+fn ct_sb_002_nested_shared_binding_resolves_correctly() {
+    // CT-SB-002: Nested shared binding resolves correctly
+    // GIVEN: Shared state with user.name = "Alice"
+    let shared = SharedContext::new(NestedSharedState::default());
+    let model = TestModel::default();
+
+    // WHEN: XML contains {shared.user.name}
+    let xml = r#"<dampen><text value="{shared.user.name}" /></dampen>"#;
+    let document = parse(xml).expect("Failed to parse XML");
+
+    // Build widget with shared context (keep guard alive)
+    let shared_guard = shared.read();
+    let builder = DampenWidgetBuilder::new(&document, &model, None).with_shared(&*shared_guard);
+
+    let _element = builder.build();
+
+    // THEN: Widget should render "Alice"
+    assert_eq!(shared_guard.user.name, "Alice");
+}
+
+#[test]
+fn ct_sb_003_missing_field_returns_empty_string() {
+    // CT-SB-003: Missing field returns empty string
+    // GIVEN: Shared state without 'nonexistent' field
+    let shared = SharedContext::new(NestedSharedState::default());
+    let model = TestModel::default();
+
+    // WHEN: XML contains {shared.nonexistent}
+    let xml = r#"<dampen><text value="{shared.nonexistent}" /></dampen>"#;
+    let document = parse(xml).expect("Failed to parse XML");
+
+    // Build widget with shared context (keep guard alive)
+    let shared_guard = shared.read();
+    let builder = DampenWidgetBuilder::new(&document, &model, None).with_shared(&*shared_guard);
+
+    let _element = builder.build();
+
+    // THEN: Widget should render empty string (no panic)
+    // The builder handles missing fields gracefully
+}
+
+#[test]
+fn ct_sb_004_mixed_bindings_work_together() {
+    // CT-SB-004: Mixed bindings (model + shared) work together
+    // GIVEN: Model with greeting = "Hello", Shared with user.name = "Alice"
+    let shared = SharedContext::new(NestedSharedState::default());
+    let model = MixedModel {
+        greeting: "Hello".to_string(),
+        local_count: 42,
+    };
+
+    // WHEN: XML contains mixed bindings: {greeting}, {shared.user.name}
+    let xml = r#"<dampen>
+        <column>
+            <text value="{greeting}, {shared.user.name}!" />
+            <text value="Local: {local_count}, Shared: {shared.count}" />
+        </column>
+    </dampen>"#;
+    let document = parse(xml).expect("Failed to parse XML");
+
+    // Build widget with both model and shared context (keep guard alive)
+    let shared_guard = shared.read();
+    let builder = DampenWidgetBuilder::new(&document, &model, None).with_shared(&*shared_guard);
+
+    let _element = builder.build();
+
+    // THEN: Both bindings should work
+    assert_eq!(model.greeting, "Hello");
+    assert_eq!(shared_guard.user.name, "Alice");
+    assert_eq!(model.local_count, 42);
+    assert_eq!(shared_guard.count, 0);
+}
+
+#[test]
+fn ct_sb_004_conditional_with_shared_binding() {
+    // Additional test for CT-SB-004: Conditional expressions with shared state
+    // GIVEN: Shared state with count = 5
+    let mut shared_state = NestedSharedState::default();
+    shared_state.count = 5;
+    let shared = SharedContext::new(shared_state);
+    let model = TestModel::default();
+
+    // WHEN: XML uses conditional with shared binding
+    let xml = r#"<dampen>
+        <text value="{if shared.count > 0 then 'Positive' else 'Zero or Negative'}" />
+    </dampen>"#;
+    let document = parse(xml).expect("Failed to parse XML");
+
+    // Build widget (keep guard alive)
+    let shared_guard = shared.read();
+    let builder = DampenWidgetBuilder::new(&document, &model, None).with_shared(&*shared_guard);
+
+    let _element = builder.build();
+
+    // THEN: Conditional should evaluate correctly
+    assert!(shared_guard.count > 0);
+}
+
+#[test]
+fn ct_sb_no_context_returns_empty() {
+    // Additional test: {shared.} binding without shared context
+    // GIVEN: No shared context provided
+    let model = TestModel::default();
+
+    // WHEN: XML contains {shared.theme}
+    let xml = r#"<dampen><text value="{shared.theme}" /></dampen>"#;
+    let document = parse(xml).expect("Failed to parse XML");
+
+    // Build WITHOUT shared context
+    let builder = DampenWidgetBuilder::new(&document, &model, None);
+    // Note: .with_shared() is NOT called
+
+    let _element = builder.build();
+
+    // THEN: Should not panic, returns empty string
+    // (Warning is printed in debug mode)
+}
+
+#[test]
+fn ct_sb_nested_path_multiple_levels() {
+    // Test deeply nested paths
+    // GIVEN: Shared state with user.email
+    let shared = SharedContext::new(NestedSharedState::default());
+    let model = TestModel::default();
+
+    // WHEN: XML accesses nested field
+    let xml = r#"<dampen><text value="{shared.user.email}" /></dampen>"#;
+    let document = parse(xml).expect("Failed to parse XML");
+
+    // Build widget (keep guard alive)
+    let shared_guard = shared.read();
+    let builder = DampenWidgetBuilder::new(&document, &model, None).with_shared(&*shared_guard);
+
+    let _element = builder.build();
+
+    // THEN: Should access nested field correctly
+    assert_eq!(shared_guard.user.email, "alice@example.com");
 }

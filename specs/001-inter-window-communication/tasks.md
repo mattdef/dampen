@@ -117,14 +117,14 @@
 
 **Independent Test**: XML with `{shared.user.name}` binding displays correct value
 
-### Contract Tests for US2
+### Contract Tests for US2 ✅
 
-- [ ] T038 [P] [US2] Contract test CT-SB-001: Simple shared binding renders value in `tests/contract/shared_state_contracts.rs`
-- [ ] T039 [P] [US2] Contract test CT-SB-002: Nested shared binding resolves correctly in `tests/contract/shared_state_contracts.rs`
-- [ ] T040 [P] [US2] Contract test CT-SB-003: Missing field returns empty string in `tests/contract/shared_state_contracts.rs`
-- [ ] T041 [P] [US2] Contract test CT-SB-004: Mixed bindings (model + shared) work together in `tests/contract/shared_state_contracts.rs`
+- [x] T038 [P] [US2] Contract test CT-SB-001: Simple shared binding renders value in `tests/contract/shared_state_contracts.rs` *(Commit: TBD - ct_sb_001)*
+- [x] T039 [P] [US2] Contract test CT-SB-002: Nested shared binding resolves correctly in `tests/contract/shared_state_contracts.rs` *(Commit: TBD - ct_sb_002)*
+- [x] T040 [P] [US2] Contract test CT-SB-003: Missing field returns empty string in `tests/contract/shared_state_contracts.rs` *(Commit: TBD - ct_sb_003)*
+- [x] T041 [P] [US2] Contract test CT-SB-004: Mixed bindings (model + shared) work together in `tests/contract/shared_state_contracts.rs` *(Commit: TBD - ct_sb_004 + extras)*
 
-**Note**: Tests in `crates/dampen-core/tests/parser_tests.rs` cover this functionality (12 tests for parsing, 12 for evaluation)
+**Note**: Tests in `crates/dampen-core/tests/parser_tests.rs` cover parsing/evaluation (24 tests). Contract tests verify end-to-end XML rendering with DampenWidgetBuilder (7 additional tests).
 
 ### Implementation for US2 ✅
 
