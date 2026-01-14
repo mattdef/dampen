@@ -772,6 +772,256 @@ See [docs/migration/multi-view-macro.md](migration/multi-view-macro.md) for migr
 
 ---
 
+### Shared State for Multi-View Applications
+
+**NEW in v0.2.4!** Share state across multiple views in your application using `SharedContext`.
+
+#### When to Use Shared State
+
+Use shared state when you need:
+- **User preferences** (theme, language) accessible from all views
+- **Session data** (logged-in user, auth tokens) shared across windows
+- **Application-wide settings** that multiple views can read and modify
+- **Cross-view communication** where one view's action affects another view's display
+
+#### Quick Start Example
+
+1. **Define your shared state model** in `src/shared.rs`:
+
+```rust
+use dampen_macros::UiModel;
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Default, UiModel, Serialize, Deserialize)]
+pub struct SharedState {
+    pub theme: String,
+    pub username: String,
+    pub language: String,
+}
+```
+
+2. **Create SharedContext in main.rs**:
+
+```rust
+use dampen_core::SharedContext;
+use crate::shared::SharedState;
+
+fn main() -> iced::Result {
+    // Create shared context
+    let shared = SharedContext::new(SharedState {
+        theme: "dark".to_string(),
+        username: "Guest".to_string(),
+        language: "en".to_string(),
+    });
+
+    // Initialize views with shared context
+    let window_state = ui::window::create_app_state_with_shared(shared.clone());
+    let settings_state = ui::settings::create_app_state_with_shared(shared.clone());
+
+    // ... rest of application setup
+}
+```
+
+3. **Update AppState constructors** to accept shared context:
+
+```rust
+// In src/ui/window.rs
+pub fn create_app_state_with_shared(
+    shared: SharedContext<SharedState>
+) -> AppState<Model, SharedState> {
+    let document = _window::document();
+    let handlers = create_handler_registry();
+    AppState::with_handlers(document, handlers)
+        .with_shared_context(shared)
+}
+```
+
+4. **Use `{shared.field}` bindings** in your XML:
+
+```xml
+<!-- src/ui/window.dampen -->
+<dampen>
+    <column padding="40" spacing="20">
+        <text value="Welcome, {shared.username}!" size="24" />
+        <text value="Theme: {shared.theme}" size="16" />
+        <text value="Language: {shared.language}" size="16" />
+    </column>
+</dampen>
+```
+
+5. **Create handlers that modify shared state**:
+
+```rust
+// In src/ui/settings.rs
+pub fn create_handler_registry() -> HandlerRegistry {
+    let mut registry = HandlerRegistry::new();
+
+    registry.register_with_value_and_shared(
+        "change_theme",
+        |_model: &mut dyn Any, shared: &dyn Any, theme: String| {
+            if let Some(s) = shared.downcast_ref::<SharedContext<SharedState>>() {
+                s.write(|state| {
+                    state.theme = theme;
+                });
+            }
+        }
+    );
+
+    registry
+}
+```
+
+#### Binding Syntax
+
+**Local model bindings** (view-specific state):
+```xml
+<text value="{message}" />          <!-- Local to this view -->
+<text value="{user.email}" />       <!-- Nested local field -->
+```
+
+**Shared state bindings** (cross-view state):
+```xml
+<text value="{shared.theme}" />     <!-- Shared across all views -->
+<text value="{shared.username}" />  <!-- Shared user data -->
+```
+
+You can mix both in the same view:
+```xml
+<column>
+    <text value="Hello, {shared.username}!" />  <!-- Shared -->
+    <text value="{local_message}" />            <!-- Local -->
+</column>
+```
+
+#### Handler Variants for Shared State
+
+**Simple handler with shared access** (read-only):
+```rust
+registry.register_with_shared(
+    "display_theme",
+    |model: &mut dyn Any, shared: &dyn Any| {
+        if let Some(s) = shared.downcast_ref::<SharedContext<SharedState>>() {
+            let theme = s.read(|state| state.theme.clone());
+            // Use theme value...
+        }
+    }
+);
+```
+
+**Value handler with shared access** (receives input + shared state):
+```rust
+registry.register_with_value_and_shared(
+    "update_preference",
+    |model: &mut dyn Any, shared: &dyn Any, value: String| {
+        if let Some(s) = shared.downcast_ref::<SharedContext<SharedState>>() {
+            s.write(|state| {
+                state.theme = value;
+            });
+        }
+    }
+);
+```
+
+**Command handler with shared access** (async operations):
+```rust
+registry.register_with_command_and_shared(
+    "save_settings",
+    |model: &mut dyn Any, shared: &dyn Any| -> Box<dyn Any> {
+        if let Some(s) = shared.downcast_ref::<SharedContext<SharedState>>() {
+            let state = s.read(|s| s.clone());
+            // Return async task to save settings...
+        }
+        Box::new(iced::Task::none())
+    }
+);
+```
+
+#### Thread Safety
+
+`SharedContext<S>` is **thread-safe** and uses `Arc<RwLock<S>>` internally:
+- **Multiple readers** can access shared state simultaneously
+- **Single writer** blocks until all readers finish
+- **Clone-friendly** - cloning creates a new reference to the same data
+- **Sub-microsecond** access time (no performance concerns)
+
+#### Hot-Reload Preservation
+
+Shared state **survives hot-reload** automatically:
+- Local view state (AppState<M>) resets on XML changes
+- Shared state (SharedContext<S>) persists across reloads
+- User preferences remain intact during development
+
+```rust
+// Hot-reload keeps shared state alive
+s.write(|state| state.theme = "dark".to_string());
+// Edit .dampen file and save...
+// theme is still "dark" after reload! ✅
+```
+
+#### Complete Example
+
+See the `shared-state` example for a full working application:
+
+```bash
+# Run the shared state example
+dampen run -p shared-state
+```
+
+**Project structure:**
+```
+examples/shared-state/
+├── src/
+│   ├── main.rs           # App initialization with SharedContext
+│   ├── shared.rs         # SharedState model
+│   └── ui/
+│       ├── window.rs     # Main view (displays shared state)
+│       ├── window.dampen
+│       ├── settings.rs   # Settings view (modifies shared state)
+│       └── settings.dampen
+```
+
+**Key features demonstrated:**
+- Creating SharedContext with initial state
+- Passing shared context to multiple views
+- Reading shared state with `{shared.field}` bindings
+- Modifying shared state from handlers
+- View switching with persistent shared state
+- Hot-reload preservation of shared state
+
+#### Best Practices
+
+1. **Keep shared state minimal** - Only share data truly needed across views
+2. **Use local state for view-specific data** - Don't over-share
+3. **Clone on read for expensive operations** - Minimize lock duration
+4. **Batch writes when possible** - Multiple writes in one `write()` call
+5. **Document shared fields** - Make cross-view dependencies clear
+
+#### Backward Compatibility
+
+Shared state is **100% opt-in**:
+- Existing apps work unchanged
+- AppState<M> defaults to AppState<M, ()>
+- No breaking changes to API
+- {field} bindings still work as before
+
+#### Troubleshooting
+
+**Error: "{shared.field} renders empty"**
+- Ensure AppState has shared_context set via `with_shared_context()`
+- Check SharedContext is cloned correctly when passing to views
+- Verify field name matches SharedState struct
+
+**Error: "Handlers not modifying shared state"**
+- Use `s.write(|state| ...)` not `s.read(|state| ...)`
+- Ensure downcast succeeds: `if let Some(s) = ...`
+- Check handler is registered with `_and_shared` variant
+
+**Error: "Shared state resets on hot-reload"**
+- This should not happen! File a bug report if it does
+- Verify you're using `dampen run` (dev mode)
+
+---
+
 ### Debugging Build Issues
 
 If your build fails:

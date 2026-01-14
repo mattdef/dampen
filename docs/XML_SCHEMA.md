@@ -478,6 +478,100 @@ Calls methods on bound values.
 <container style="{if is_error then 'error' else 'default'}" />
 ```
 
+### Shared State Bindings
+
+**NEW in v0.2.4!** Access application-wide shared state from any view.
+
+**Syntax:**
+```xml
+<text value="{shared.field}" />
+```
+
+**Local vs Shared Bindings:**
+
+```xml
+<!-- Local model binding (view-specific state) -->
+<text value="{message}" />
+<text value="{user.email}" />
+
+<!-- Shared state binding (cross-view state) -->
+<text value="{shared.theme}" />
+<text value="{shared.username}" />
+
+<!-- Mixed usage -->
+<column>
+    <text value="Welcome, {shared.username}!" />
+    <text value="{local_status}" />
+</column>
+```
+
+**Common Use Cases:**
+
+```xml
+<!-- User preferences -->
+<text value="Theme: {shared.theme}" />
+<text value="Language: {shared.language}" />
+
+<!-- Session data -->
+<text value="Logged in as: {shared.current_user}" />
+
+<!-- Application settings -->
+<toggler 
+    label="Dark Mode"
+    toggled="{shared.dark_mode}"
+    on_toggle="toggle_dark_mode"
+/>
+```
+
+**Nested Field Access:**
+
+```xml
+<!-- Access nested shared fields -->
+<text value="{shared.user.profile.name}" />
+<text value="{shared.settings.theme.primary_color}" />
+```
+
+**Requirements:**
+
+1. **Shared model** must derive `UiModel`:
+   ```rust
+   #[derive(Clone, UiModel, Serialize, Deserialize)]
+   pub struct SharedState {
+       pub theme: String,
+       pub username: String,
+   }
+   ```
+
+2. **AppState** must have shared context:
+   ```rust
+   let shared = SharedContext::new(SharedState::default());
+   let state = AppState::with_handlers(document, handlers)
+       .with_shared_context(shared);
+   ```
+
+3. **Handlers** can modify shared state:
+   ```rust
+   registry.register_with_value_and_shared(
+       "update_theme",
+       |model, shared, theme| {
+           if let Some(s) = shared.downcast_ref::<SharedContext<SharedState>>() {
+               s.write(|state| state.theme = theme);
+           }
+       }
+   );
+   ```
+
+**Behavior:**
+
+- **Thread-safe**: Multiple views can read simultaneously
+- **Hot-reload preserved**: Shared state survives XML reloads
+- **Type-safe**: Compile-time verification via UiModel trait
+- **Null-safe**: Missing fields render as empty string
+
+**See also:** `docs/USAGE.md` "Shared State for Multi-View Applications" section
+
+---
+
 ### Supported Operators
 
 | Operator | Description | Example |
