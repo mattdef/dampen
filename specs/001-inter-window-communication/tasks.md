@@ -191,8 +191,8 @@
 
 ### Contract Tests for US5
 
-- [ ] T058 [P] [US5] Contract test: AppState without shared_context works (backward compat) in `tests/contract/shared_state_contracts.rs`
-- [ ] T059 [P] [US5] Contract test: existing handlers work via dispatch_with_shared in `tests/contract/shared_state_contracts.rs`
+- [x] T058 [P] [US5] Contract test: AppState without shared_context works (backward compat) in `tests/contract/shared_state_contracts.rs` *(Commit: backward-compat-tests)*
+- [x] T059 [P] [US5] Contract test: existing handlers work via dispatch_with_shared in `tests/contract/shared_state_contracts.rs` *(Commit: backward-compat-tests)*
 
 ### Implementation for US5
 
@@ -262,22 +262,22 @@
 
 ## Progress Summary
 
-### ✅ Completed (57 tasks)
+###  ✅ Completed (59 tasks)
 - **Phase 1**: 5/5 tasks (100%)
 - **Phase 2**: 22/22 tasks (100%)
 - **Phase 3 (US1)**: 9/9 tasks (100%)
 - **Phase 4 (US2)**: 11/11 tasks (100%)
 - **Phase 5 (US3)**: 3/3 tasks (100%)
-- **Contract Tests**: 15/15 tests (100%) - T028-T029 (7 tests), T038-T041 (7 tests), T048-T051 (6 tests)
+- **Contract Tests**: 17/17 tests (100%) - T028-T029 (7 tests), T038-T041 (7 tests), T048-T051 (6 tests), T058-T059 (2 tests)
 
-### ⏳ Pending (37 tasks)
+### ⏳ Pending (35 tasks)
 - **Phase 6 (US4)**: 0/3 tasks
-- **Phase 7 (US5)**: 0/9 tasks
+- **Phase 7 (US5)**: 0/7 implementation tasks (2/2 contract tests complete)
 - **Phase 8 (US6)**: 0/6 tasks
 - **Phase 9 (Polish)**: 0/12 tasks
 - **Phase 10 (Documentation)**: 0/7 tasks
 
-### 📊 Overall Progress: 57/94 tasks completed (61%)
+### 📊 Overall Progress: 59/94 tasks completed (63%)
 
 ### 🎯 MVP Status (US1-US3): 23/23 tasks (100%) ✅ COMPLETE
 
@@ -285,7 +285,8 @@
 - ✅ US1: Shared preferences work across views (manual test passing)
 - ✅ US2: {shared.} bindings in XML with dev-mode warnings (11 tests)
 - ✅ US3: Handlers modify shared state, all views see changes (6 tests)
-- ✅ Contract tests verify cross-component guarantees (20 tests total)
+- ✅ Contract tests verify cross-component guarantees (22 tests total)
+- ✅ Backward compatibility verified (2 tests)
 - ✅ Example application demonstrates complete workflow
 
 **Status**: MVP is production-ready for basic shared state use cases. Hot-reload, macros, and codegen are optional enhancements for future phases.

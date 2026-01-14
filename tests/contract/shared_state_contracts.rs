@@ -6,7 +6,7 @@
 //! - T028 (CT-001): SharedContext changes are visible across clones
 //! - T029 (CT-002): Handler modifications to shared state are visible in all views
 
-use dampen_core::{HandlerRegistry, SharedContext, parse};
+use dampen_core::{AppState, HandlerRegistry, SharedContext, parse};
 use dampen_iced::DampenWidgetBuilder;
 use dampen_macros::UiModel;
 use serde::{Deserialize, Serialize};
@@ -838,5 +838,80 @@ fn ct_ha_006_command_handler_with_shared_returns_command() {
     assert_eq!(
         model.message, "Fetching user 123",
         "Handler should modify model"
+    );
+}
+
+// ============================================================================
+// T058-T059: Contract Tests for Backward Compatibility (CT-BC-001 to CT-BC-002)
+// ============================================================================
+
+#[test]
+fn ct_bc_001_appstate_without_shared_context_works() {
+    // CT-BC-001 (T058): AppState without shared_context works (backward compat)
+    // GIVEN: AppState created without shared context (S = ())
+    let xml = r#"<dampen><text value="Hello World" /></dampen>"#;
+    let document = parse(xml).expect("Failed to parse XML");
+
+    // Create HandlerTestModel for this test
+    let model = HandlerTestModel {
+        counter: 0,
+        message: "Test".to_string(),
+    };
+
+    // WHEN: Created using constructors that don't require shared state
+    let state1 = AppState::<HandlerTestModel, ()>::with_model(document.clone(), model.clone());
+    let state2 =
+        AppState::<HandlerTestModel, ()>::with_handlers(document.clone(), HandlerRegistry::new());
+
+    // THEN: AppState works normally without shared context
+    assert!(
+        state1.shared_context.is_none(),
+        "AppState without shared should have None shared_context"
+    );
+    assert!(
+        state2.shared_context.is_none(),
+        "AppState with handlers but no shared should have None shared_context"
+    );
+    assert_eq!(state1.model.counter, 0);
+    assert_eq!(state1.model.message, "Test");
+}
+
+#[test]
+fn ct_bc_002_existing_handlers_work_via_dispatch_with_shared() {
+    // CT-BC-002 (T059): Existing handlers work via dispatch_with_shared (backward compat)
+    // GIVEN: "Old-style" handler registered without shared state awareness
+    let registry = HandlerRegistry::new();
+    registry.register_simple("increment", |model| {
+        let model = model.downcast_mut::<HandlerTestModel>().unwrap();
+        model.counter += 1;
+    });
+
+    let mut model = HandlerTestModel {
+        counter: 5,
+        message: "Test".to_string(),
+    };
+
+    // Create a dummy shared context (not used by handler)
+    let shared = SharedContext::new(HandlerTestSharedState::default());
+
+    // WHEN: Dispatched via dispatch_with_shared (new API)
+    registry.dispatch_with_shared(
+        "increment",
+        &mut model as &mut dyn Any,
+        &shared as &dyn Any,
+        None,
+    );
+
+    // THEN: Handler executes normally, ignoring shared parameter
+    assert_eq!(
+        model.counter, 6,
+        "Old-style handler should work with new dispatch_with_shared API"
+    );
+
+    // Shared state should be untouched
+    assert_eq!(
+        shared.read().counter,
+        0,
+        "Simple handler should not affect shared state"
     );
 }
