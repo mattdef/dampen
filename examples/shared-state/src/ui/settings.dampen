@@ -1,0 +1,49 @@
+<dampen>
+    <column padding="40" spacing="20">
+        <!-- Header -->
+        <text value="Settings" size="32" weight="bold" />
+        
+        <!-- Theme Section -->
+        <column spacing="10">
+            <text value="Theme Settings" size="20" weight="bold" />
+            
+            <row spacing="10">
+                <text value="Current Theme:" size="16" />
+                <text value="{shared.theme}" size="16" weight="bold" />
+            </row>
+            
+            <button label="Toggle Theme" on_click="toggle_theme" />
+        </column>
+        
+        <!-- Language Section -->
+        <column spacing="10">
+            <text value="Language Settings" size="20" weight="bold" />
+            
+            <row spacing="10">
+                <text value="Current Language:" size="16" />
+                <text value="{shared.language}" size="16" weight="bold" />
+            </row>
+            
+            <row spacing="10">
+                <button label="English" on_click="set_language_en" />
+                <button label="Spanish" on_click="set_language_es" />
+                <button label="French" on_click="set_language_fr" />
+            </row>
+        </column>
+        
+        <!-- Notifications Section -->
+        <column spacing="10">
+            <text value="Notification Settings" size="20" weight="bold" />
+            
+            <row spacing="10">
+                <text value="Notifications:" size="16" />
+                <text value="{if shared.notifications_enabled then 'Enabled' else 'Disabled'}" size="16" weight="bold" />
+            </row>
+            
+            <button label="Toggle Notifications" on_click="toggle_notifications" />
+        </column>
+        
+        <!-- Info -->
+        <text value="Changes will be reflected in all windows" size="12" color="#666666" />
+    </column>
+</dampen>

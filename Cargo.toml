@@ -12,6 +12,7 @@ members = [
     "examples/styling",
     "examples/widget-showcase",
     "examples/settings",
+    "examples/shared-state",
     "benchmarks",
     "tests/hot-reload-integration",
     "tests/integration",

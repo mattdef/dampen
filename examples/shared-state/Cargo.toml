@@ -1,0 +1,26 @@
+[package]
+name = "shared-state"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+build = "build.rs"
+
+[dependencies]
+dampen-core = { workspace = true }
+dampen-macros = { workspace = true }
+dampen-iced = { workspace = true }
+dampen-dev = { workspace = true, optional = true }
+iced = { workspace = true }
+serde = { workspace = true }
+
+[build-dependencies]
+dampen-core = { workspace = true }
+
+[features]
+default = ["interpreted"]
+codegen = ["dampen-core/codegen"]
+interpreted = ["dampen-dev", "dampen-core/interpreted"]
+
+[[bin]]
+name = "shared-state"
+path = "src/main.rs"
