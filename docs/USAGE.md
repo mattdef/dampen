@@ -784,7 +784,88 @@ Use shared state when you need:
 - **Application-wide settings** that multiple views can read and modify
 - **Cross-view communication** where one view's action affects another view's display
 
-#### Quick Start Example
+#### Using the `#[dampen_app]` Macro (Recommended)
+
+The easiest way to add shared state is using the `shared_model` attribute:
+
+1. **Define your shared state model** in `src/shared.rs`:
+
+```rust
+use dampen_macros::UiModel;
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Default, UiModel, Serialize, Deserialize)]
+pub struct SharedState {
+    pub theme: String,
+    pub username: String,
+    pub language: String,
+}
+```
+
+2. **Add `shared_model` to your `#[dampen_app]` macro**:
+
+```rust
+mod shared;  // Import the shared module
+
+#[dampen_app(
+    ui_dir = "src/ui",
+    message_type = "Message",
+    handler_variant = "Handler",
+    shared_model = "SharedState"  // ← Add this line!
+)]
+struct MyApp;
+```
+
+**That's it!** The macro automatically:
+- ✅ Creates `SharedContext<shared::SharedState>`
+- ✅ Initializes it with `SharedState::default()`
+- ✅ Passes it to all views via `create_app_state_with_shared()`
+- ✅ Configures handlers to use `dispatch_with_shared()`
+
+3. **Update your view modules** to support shared context:
+
+```rust
+// In src/ui/window.rs
+pub fn create_app_state_with_shared(
+    shared: SharedContext<SharedState>
+) -> AppState<Model, SharedState> {
+    let document = _window::document();
+    let handlers = create_handler_registry();
+    AppState::with_handlers(document, handlers)
+        .with_shared_context(shared)
+}
+
+// Keep the old function for backward compatibility
+pub fn create_app_state() -> AppState<Model> {
+    let document = _window::document();
+    let handlers = create_handler_registry();
+    AppState::with_handlers(document, handlers)
+}
+```
+
+4. **Use `{shared.field}` bindings** in your XML:
+
+```xml
+<dampen>
+    <column padding="40" spacing="20">
+        <text value="Welcome, {shared.username}!" size="24" />
+        <text value="Theme: {shared.theme}" size="16" />
+        <text value="Language: {shared.language}" size="16" />
+    </column>
+</dampen>
+```
+
+5. **Create handlers that modify shared state** as described in the handler variants section below.
+
+**See the `macro-shared-state` example for a complete working application:**
+
+```bash
+dampen run -p macro-shared-state
+```
+
+---
+
+#### Manual Setup (Advanced)
 
 1. **Define your shared state model** in `src/shared.rs`:
 
@@ -960,18 +1041,18 @@ s.write(|state| state.theme = "dark".to_string());
 
 #### Complete Example
 
-See the `shared-state` example for a full working application:
+See the `macro-shared-state` example for a full working application:
 
 ```bash
-# Run the shared state example
-dampen run -p shared-state
+# Run the macro-based shared state example (recommended)
+dampen run -p macro-shared-state
 ```
 
 **Project structure:**
 ```
-examples/shared-state/
+examples/macro-shared-state/
 ├── src/
-│   ├── main.rs           # App initialization with SharedContext
+│   ├── main.rs           # App with #[dampen_app(shared_model = "SharedState")]
 │   ├── shared.rs         # SharedState model
 │   └── ui/
 │       ├── window.rs     # Main view (displays shared state)
@@ -981,8 +1062,7 @@ examples/shared-state/
 ```
 
 **Key features demonstrated:**
-- Creating SharedContext with initial state
-- Passing shared context to multiple views
+- Using `shared_model` attribute for automatic setup (zero boilerplate!)
 - Reading shared state with `{shared.field}` bindings
 - Modifying shared state from handlers
 - View switching with persistent shared state
