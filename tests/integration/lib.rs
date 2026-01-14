@@ -5,3 +5,6 @@ mod edge_case_tests;
 
 #[cfg(test)]
 mod mode_parity_tests;
+
+#[cfg(test)]
+mod shared_state_e2e;

@@ -915,3 +915,90 @@ fn ct_bc_002_existing_handlers_work_via_dispatch_with_shared() {
         "Simple handler should not affect shared state"
     );
 }
+
+// ============================================================================
+// T055: Contract Test for Hot-Reload (CT-HR-001)
+// ============================================================================
+
+#[test]
+fn ct_hr_001_shared_context_survives_document_replacement() {
+    // CT-HR-001 (T055): SharedContext survives document replacement
+    // GIVEN: AppState with shared context and some shared state value
+    let xml_v1 = r#"<dampen><text value="{shared.theme}" /></dampen>"#;
+    let document_v1 = parse(xml_v1).expect("Failed to parse XML v1");
+
+    let model = HandlerTestModel {
+        counter: 42,
+        message: "Original model".to_string(),
+    };
+
+    let shared = SharedContext::new(HandlerTestSharedState {
+        counter: 100,
+        message: "Dark theme".to_string(),
+    });
+
+    let mut state = AppState::with_shared(
+        document_v1,
+        model.clone(),
+        HandlerRegistry::new(),
+        shared.clone(),
+    );
+
+    // Verify initial state
+    assert_eq!(state.model.counter, 42);
+    assert_eq!(state.model.message, "Original model");
+    assert_eq!(state.shared().unwrap().counter, 100);
+    assert_eq!(state.shared().unwrap().message, "Dark theme");
+
+    // WHEN: Hot-reload with a new document (different XML)
+    let xml_v2 = r#"<dampen>
+        <column>
+            <text value="New UI Layout" />
+            <text value="{shared.message}" />
+        </column>
+    </dampen>"#;
+    let document_v2 = parse(xml_v2).expect("Failed to parse XML v2");
+
+    state.hot_reload(document_v2);
+
+    // THEN: Model state is preserved
+    assert_eq!(
+        state.model.counter, 42,
+        "Model should be preserved after hot-reload"
+    );
+    assert_eq!(
+        state.model.message, "Original model",
+        "Model should be preserved after hot-reload"
+    );
+
+    // AND: Shared context is preserved
+    assert!(
+        state.shared_context.is_some(),
+        "Shared context should still exist after hot-reload"
+    );
+    assert_eq!(
+        state.shared().unwrap().counter,
+        100,
+        "Shared state should be preserved after hot-reload"
+    );
+    assert_eq!(
+        state.shared().unwrap().message,
+        "Dark theme",
+        "Shared state should be preserved after hot-reload"
+    );
+
+    // AND: We can still modify shared state after hot-reload
+    state.shared_mut().unwrap().counter = 200;
+    assert_eq!(
+        state.shared().unwrap().counter,
+        200,
+        "Shared state should be modifiable after hot-reload"
+    );
+
+    // AND: Original shared context also sees the change (they share the same RwLock)
+    assert_eq!(
+        shared.read().counter,
+        200,
+        "Original shared context should see changes after hot-reload"
+    );
+}

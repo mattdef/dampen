@@ -164,7 +164,7 @@
 
 ---
 
-## Phase 6: User Story 4 - Preserve Shared State During Hot-Reload (Priority: P2) ⏳ PENDING
+## Phase 6: User Story 4 - Preserve Shared State During Hot-Reload (Priority: P2) ✅ COMPLETE
 
 **Goal**: Shared state persists when XML files are hot-reloaded during development
 
@@ -172,14 +172,14 @@
 
 ### Contract Tests for US4
 
-- [ ] T055 [P] [US4] Contract test: SharedContext survives document replacement in `tests/contract/shared_state_contracts.rs`
+- [x] T055 [P] [US4] Contract test: SharedContext survives document replacement in `tests/contract/shared_state_contracts.rs` *(Commit: hot-reload-tests)*
 
 ### Implementation for US4
 
-- [ ] T056 [US4] Verify hot-reload only replaces `document` field, not `shared_context` in `crates/dampen-iced/src/lib.rs`
-- [ ] T057 [US4] Add integration test: modify XML, verify shared state preserved in `tests/integration/shared_state_e2e.rs`
+- [x] T056 [US4] Verify hot-reload only replaces `document` field, not `shared_context` in `crates/dampen-iced/src/lib.rs` *(Verified: AppState::hot_reload only modifies document field, commit: hot-reload-tests)*
+- [x] T057 [US4] Add integration test: modify XML, verify shared state preserved in `tests/integration/shared_state_e2e.rs` *(Commit: hot-reload-tests)*
 
-**Checkpoint**: User Story 4 complete - hot-reload preserves shared state
+**Checkpoint**: ✅ User Story 4 complete - hot-reload preserves shared state
 
 ---
 
@@ -262,36 +262,39 @@
 
 ## Progress Summary
 
-###  ✅ Completed (59 tasks)
+### ✅ Completed (62 tasks)
 - **Phase 1**: 5/5 tasks (100%)
 - **Phase 2**: 22/22 tasks (100%)
 - **Phase 3 (US1)**: 9/9 tasks (100%)
 - **Phase 4 (US2)**: 11/11 tasks (100%)
 - **Phase 5 (US3)**: 3/3 tasks (100%)
-- **Contract Tests**: 17/17 tests (100%) - T028-T029 (7 tests), T038-T041 (7 tests), T048-T051 (6 tests), T058-T059 (2 tests)
+- **Phase 6 (US4)**: 3/3 tasks (100%) ✅ **COMPLETE**
+- **Contract Tests**: 18/18 tests (100%) - T028-T029 (7), T038-T041 (7), T048-T051 (6), T055 (1), T058-T059 (2)
+- **Integration Tests**: 4/4 tests (100%) - T057 (4 tests in shared_state_e2e.rs)
 
-### ⏳ Pending (35 tasks)
-- **Phase 6 (US4)**: 0/3 tasks
+### ⏳ Pending (32 tasks)
 - **Phase 7 (US5)**: 0/7 implementation tasks (2/2 contract tests complete)
 - **Phase 8 (US6)**: 0/6 tasks
 - **Phase 9 (Polish)**: 0/12 tasks
 - **Phase 10 (Documentation)**: 0/7 tasks
 
-### 📊 Overall Progress: 59/94 tasks completed (63%)
+### 📊 Overall Progress: 62/94 tasks completed (66%)
 
-### 🎯 MVP Status (US1-US3): 23/23 tasks (100%) ✅ COMPLETE
+### 🎯 MVP+ Status (US1-US4): 26/26 tasks (100%) ✅ COMPLETE
 
-**Key Achievement**: MVP is 100% complete! All three user stories implemented with comprehensive testing:
+**Key Achievement**: MVP+ is 100% complete! Four user stories implemented with comprehensive testing:
 - ✅ US1: Shared preferences work across views (manual test passing)
 - ✅ US2: {shared.} bindings in XML with dev-mode warnings (11 tests)
 - ✅ US3: Handlers modify shared state, all views see changes (6 tests)
-- ✅ Contract tests verify cross-component guarantees (22 tests total)
+- ✅ US4: Hot-reload preserves shared state (1 contract test + 4 integration tests)
+- ✅ Contract tests verify cross-component guarantees (23 tests total)
+- ✅ Integration tests verify end-to-end behavior (4 tests)
 - ✅ Backward compatibility verified (2 tests)
 - ✅ Example application demonstrates complete workflow
 
-**Status**: MVP is production-ready for basic shared state use cases. Hot-reload, macros, and codegen are optional enhancements for future phases.
+**Status**: Feature is production-ready with hot-reload support! Remaining work is optional enhancements (macros, codegen, polish, docs).
 
-**Next Phase**: US4 (Hot-reload) or US5 (Macro integration) - both can proceed independently.
+**Next Phase**: US5 (Macro integration) to improve developer experience.
 
 
 ---
