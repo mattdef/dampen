@@ -147,10 +147,10 @@
 
 ### Contract Tests for US3
 
-- [ ] T048 [P] [US3] Contract test CT-HA-001: Simple handler still works in `tests/contract/shared_state_contracts.rs`
-- [ ] T049 [P] [US3] Contract test CT-HA-002: WithShared handler receives shared context in `tests/contract/shared_state_contracts.rs`
-- [ ] T050 [P] [US3] Contract test CT-HA-003: WithValueAndShared receives all parameters in `tests/contract/shared_state_contracts.rs`
-- [ ] T051 [P] [US3] Contract test CT-HA-005: Shared state changes persist across views in `tests/contract/shared_state_contracts.rs`
+- [x] T048 [P] [US3] Contract test CT-HA-001: Simple handler still works in `tests/contract/shared_state_contracts.rs` *(Commit: handler-api-tests)*
+- [x] T049 [P] [US3] Contract test CT-HA-002: WithShared handler receives shared context in `tests/contract/shared_state_contracts.rs` *(Commit: handler-api-tests)*
+- [x] T050 [P] [US3] Contract test CT-HA-003: WithValueAndShared receives all parameters in `tests/contract/shared_state_contracts.rs` *(Commit: handler-api-tests)*
+- [x] T051 [P] [US3] Contract test CT-HA-005: Shared state changes persist across views in `tests/contract/shared_state_contracts.rs` *(Commit: handler-api-tests)*
 
 **Note**: Handler dispatch implementation verified in shared-state example
 
@@ -262,34 +262,36 @@
 
 ## Progress Summary
 
-### ✅ Completed (49 tasks)
+### ✅ Completed (57 tasks)
 - **Phase 1**: 5/5 tasks (100%)
 - **Phase 2**: 22/22 tasks (100%)
-- **Phase 3 (US1)**: 9/9 tasks (100% ✅)
-- **Phase 4 (US2)**: 7/7 tasks (100% ✅)
+- **Phase 3 (US1)**: 9/9 tasks (100%)
+- **Phase 4 (US2)**: 11/11 tasks (100%)
 - **Phase 5 (US3)**: 3/3 tasks (100%)
-- **Contract Tests**: 3/3 new tests (T028, T029 - 7 tests passing)
+- **Contract Tests**: 15/15 tests (100%) - T028-T029 (7 tests), T038-T041 (7 tests), T048-T051 (6 tests)
 
-### ⏳ Pending (45 tasks)
+### ⏳ Pending (37 tasks)
 - **Phase 6 (US4)**: 0/3 tasks
 - **Phase 7 (US5)**: 0/9 tasks
 - **Phase 8 (US6)**: 0/6 tasks
 - **Phase 9 (Polish)**: 0/12 tasks
+- **Phase 10 (Documentation)**: 0/7 tasks
 
-### 📊 Overall Progress: 49/94 tasks completed (52%)
+### 📊 Overall Progress: 57/94 tasks completed (61%)
 
-### 🎯 MVP Status (US1-US3): 19/19 tasks (100%) ✅ COMPLETE
+### 🎯 MVP Status (US1-US3): 23/23 tasks (100%) ✅ COMPLETE
 
 **Key Achievement**: MVP is 100% complete! All three user stories implemented with comprehensive testing:
 - ✅ US1: Shared preferences work across views (manual test passing)
-- ✅ US2: {shared.} bindings in XML with dev-mode warnings
-- ✅ US3: Handlers modify shared state, all views see changes
-- ✅ Contract tests verify cross-component guarantees (7 tests)
+- ✅ US2: {shared.} bindings in XML with dev-mode warnings (11 tests)
+- ✅ US3: Handlers modify shared state, all views see changes (6 tests)
+- ✅ Contract tests verify cross-component guarantees (20 tests total)
 - ✅ Example application demonstrates complete workflow
 
 **Status**: MVP is production-ready for basic shared state use cases. Hot-reload, macros, and codegen are optional enhancements for future phases.
 
 **Next Phase**: US4 (Hot-reload) or US5 (Macro integration) - both can proceed independently.
+
 
 ---
 

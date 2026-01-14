@@ -66,6 +66,7 @@ impl Default for NestedSharedState {
 }
 
 // Manual implementation of field access for nested user fields
+#[allow(dead_code)]
 impl NestedSharedState {
     pub fn get_user_name(&self) -> &str {
         &self.user.name
@@ -577,4 +578,265 @@ fn ct_sb_nested_path_multiple_levels() {
 
     // THEN: Should access nested field correctly
     assert_eq!(shared_guard.user.email, "alice@example.com");
+}
+
+// ============================================================================
+// T048-T051: Contract Tests for Handler API (CT-HA-001 to CT-HA-005)
+// ============================================================================
+
+/// Handler test model with fields needed for handler tests
+#[derive(Clone, Debug, Default, Serialize, Deserialize, UiModel)]
+struct HandlerTestModel {
+    pub counter: i32,
+    pub message: String,
+}
+
+/// Handler test shared state with fields needed for handler tests
+#[derive(Clone, Debug, Serialize, Deserialize, UiModel)]
+struct HandlerTestSharedState {
+    pub counter: i32,
+    pub message: String,
+}
+
+impl Default for HandlerTestSharedState {
+    fn default() -> Self {
+        Self {
+            counter: 0,
+            message: String::new(),
+        }
+    }
+}
+
+#[test]
+fn ct_ha_001_simple_handler_still_works() {
+    // CT-HA-001: Simple handler still works (backward compatibility)
+    // GIVEN: Handler registered with register_simple("click", ...)
+    let registry = HandlerRegistry::new();
+    registry.register_simple("click", |model| {
+        let model = model.downcast_mut::<HandlerTestModel>().unwrap();
+        model.counter += 1;
+    });
+
+    let mut model = HandlerTestModel {
+        counter: 0,
+        message: "Test".to_string(),
+    };
+    let shared = SharedContext::new(HandlerTestSharedState::default());
+
+    // WHEN: Dispatched via dispatch_with_shared (with shared parameter)
+    registry.dispatch_with_shared(
+        "click",
+        &mut model as &mut dyn Any,
+        &shared as &dyn Any,
+        None,
+    );
+
+    // THEN: Handler executes, model is modified, shared is ignored
+    assert_eq!(model.counter, 1, "Simple handler should modify model");
+    assert_eq!(
+        shared.read().counter,
+        0,
+        "Simple handler should not affect shared state"
+    );
+}
+
+#[test]
+fn ct_ha_002_with_shared_handler_receives_shared_context() {
+    // CT-HA-002: WithShared handler receives shared context
+    // GIVEN: Handler registered with register_with_shared("update", ...)
+    let registry = HandlerRegistry::new();
+    registry.register_with_shared("update", |model, shared| {
+        let model = model.downcast_mut::<HandlerTestModel>().unwrap();
+        let shared = shared
+            .downcast_ref::<SharedContext<HandlerTestSharedState>>()
+            .unwrap();
+
+        // Read from shared
+        let current_count = shared.read().counter;
+
+        // Write to shared
+        shared.write().counter = current_count + model.counter;
+
+        // Modify model
+        model.message = "Updated".to_string();
+    });
+
+    let mut model = HandlerTestModel {
+        counter: 5,
+        message: "Test".to_string(),
+    };
+    let shared = SharedContext::new(HandlerTestSharedState {
+        counter: 10,
+        message: "Shared".to_string(),
+    });
+
+    // WHEN: Dispatched with shared context
+    registry.dispatch_with_shared(
+        "update",
+        &mut model as &mut dyn Any,
+        &shared as &dyn Any,
+        None,
+    );
+
+    // THEN: Handler can read and write shared state
+    assert_eq!(model.message, "Updated", "Handler should modify model");
+    assert_eq!(
+        shared.read().counter,
+        15,
+        "Handler should read and write shared state (10 + 5)"
+    );
+}
+
+#[test]
+fn ct_ha_003_with_value_and_shared_receives_all_parameters() {
+    // CT-HA-003: WithValueAndShared receives all parameters
+    // GIVEN: Handler registered with register_with_value_and_shared("input", ...)
+    let registry = HandlerRegistry::new();
+    registry.register_with_value_and_shared("input", |model, value, shared| {
+        let model = model.downcast_mut::<HandlerTestModel>().unwrap();
+        let value = value.downcast_ref::<String>().unwrap();
+        let shared = shared
+            .downcast_ref::<SharedContext<HandlerTestSharedState>>()
+            .unwrap();
+
+        // Store value in both model and shared
+        model.message = value.clone();
+        shared.write().message = format!("Shared: {}", value);
+    });
+
+    let mut model = HandlerTestModel {
+        counter: 0,
+        message: "Initial".to_string(),
+    };
+    let shared = SharedContext::new(HandlerTestSharedState::default());
+
+    // WHEN: Dispatched with value "hello" and shared context
+    registry.dispatch_with_shared(
+        "input",
+        &mut model as &mut dyn Any,
+        &shared as &dyn Any,
+        Some("hello".to_string()),
+    );
+
+    // THEN: Handler receives model, "hello", and shared context
+    assert_eq!(model.message, "hello", "Handler should receive value");
+    assert_eq!(
+        shared.read().message,
+        "Shared: hello",
+        "Handler should write to shared state"
+    );
+}
+
+#[test]
+fn ct_ha_004_unknown_handler_returns_none() {
+    // CT-HA-004: Unknown handler returns None (not specified in T048-T051 but useful)
+    // GIVEN: No handler registered for "unknown"
+    let registry = HandlerRegistry::new();
+    let mut model = HandlerTestModel::default();
+    let shared = SharedContext::new(HandlerTestSharedState::default());
+
+    // WHEN: dispatch_with_shared("unknown", ...)
+    let result = registry.dispatch_with_shared(
+        "unknown",
+        &mut model as &mut dyn Any,
+        &shared as &dyn Any,
+        None,
+    );
+
+    // THEN: Returns None, no panic
+    assert!(result.is_none(), "Unknown handler should return None");
+}
+
+#[test]
+fn ct_ha_005_shared_state_changes_persist_across_views() {
+    // CT-HA-005: Shared state changes persist across views
+    // GIVEN: View A handler modifies shared.write().count = 42
+    let shared = SharedContext::new(HandlerTestSharedState {
+        counter: 0,
+        message: "Initial".to_string(),
+    });
+
+    // Create View A's handler registry
+    let view_a_registry = HandlerRegistry::new();
+    view_a_registry.register_with_shared("set_count", |_model, shared| {
+        let shared = shared
+            .downcast_ref::<SharedContext<HandlerTestSharedState>>()
+            .unwrap();
+        shared.write().counter = 42;
+    });
+
+    // Execute View A's handler
+    let mut view_a_model = HandlerTestModel::default();
+    view_a_registry.dispatch_with_shared(
+        "set_count",
+        &mut view_a_model as &mut dyn Any,
+        &shared as &dyn Any,
+        None,
+    );
+
+    // WHEN: View B reads shared.read().count (using a different model instance)
+    let view_b_model = HandlerTestModel::default();
+    let _ = view_b_model; // View B doesn't even need to use its model
+
+    // Clone shared context for View B (simulating different view)
+    let view_b_shared = shared.clone();
+
+    // THEN: Value is 42
+    assert_eq!(
+        view_b_shared.read().counter,
+        42,
+        "Shared state changes should persist across views"
+    );
+    assert_eq!(
+        shared.read().counter,
+        42,
+        "Original shared context should also reflect the change"
+    );
+}
+
+#[test]
+fn ct_ha_006_command_handler_with_shared_returns_command() {
+    // CT-HA-006: Command handler with shared returns command (bonus test)
+    // GIVEN: Handler registered with register_with_command_and_shared(...)
+    let registry = HandlerRegistry::new();
+    registry.register_with_command_and_shared("fetch", |model, shared| {
+        let model = model.downcast_mut::<HandlerTestModel>().unwrap();
+        let shared = shared
+            .downcast_ref::<SharedContext<HandlerTestSharedState>>()
+            .unwrap();
+
+        // Use shared state to create command
+        let user_id = shared.read().counter;
+        model.message = format!("Fetching user {}", user_id);
+
+        // Return a mock command (boxed string for testing)
+        Box::new(format!("FetchUserCommand({})", user_id)) as Box<dyn Any>
+    });
+
+    let mut model = HandlerTestModel::default();
+    let shared = SharedContext::new(HandlerTestSharedState {
+        counter: 123,
+        message: "".to_string(),
+    });
+
+    // WHEN: Dispatched with shared context
+    let result = registry.dispatch_with_shared(
+        "fetch",
+        &mut model as &mut dyn Any,
+        &shared as &dyn Any,
+        None,
+    );
+
+    // THEN: Returns Some(command)
+    assert!(result.is_some(), "Command handler should return Some");
+    let command = result.unwrap();
+    let command_str = command.downcast_ref::<String>().unwrap();
+    assert_eq!(
+        command_str, "FetchUserCommand(123)",
+        "Command should contain user_id from shared state"
+    );
+    assert_eq!(
+        model.message, "Fetching user 123",
+        "Handler should modify model"
+    );
 }
