@@ -47,12 +47,12 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| XML Parser | ✓ | Parsing of `.dampen` files |
-| IR (Intermediate Representation) | ✓ | Internal data structure for UI |
-| Iced Backend | ✓ | Complete widget mapping |
-| Proc Macros | ✓ | `#[derive(UiModel)]`, `#[dampen_ui]` |
-| Basic CLI | ✓ | Commands `new`, `check`, `build` |
-| Examples | ✓ | hello-world, counter, todo-app |
+| XML Parser | ✅ | Parsing of `.dampen` files |
+| IR (Intermediate Representation) | ✅ | Internal data structure for UI |
+| Iced Backend | ✅ | Complete widget mapping |
+| Proc Macros | ✅ | `#[derive(UiModel)]`, `#[dampen_ui]` |
+| Basic CLI | ✅ | Commands `new`, `check`, `build` |
+| Examples | ✅ | hello-world, counter, todo-app |
 
 ### v0.2.0 - Validation and Dual-Mode Architecture (In Progress)
 
@@ -60,11 +60,11 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| Version Validation | ✓ | XML schema validation |
-| Interpreted Mode | ✓ | Runtime parsing with hot-reload |
-| Codegen Mode | ✓ | Static code generation |
-| Parity Tests | ✓ | Ensure identical behavior |
-| Benchmarks | ✓ | Performance metrics |
+| Version Validation | ✅ | XML schema validation |
+| Interpreted Mode | ✅ | Runtime parsing with hot-reload |
+| Codegen Mode | ✅ | Static code generation |
+| Parity Tests | ✅ | Ensure identical behavior |
+| Benchmarks | ✅ | Performance metrics |
 
 ### v0.2.1 - Add versioning to the XML schema
 
@@ -72,11 +72,11 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| Versioning | ✓ | Add versioning to the XML schema |
-| Backward Compatibility | ✓ | Ensure backward compatibility |
-| Forward Compatibility | ✓ | Ensure forward compatibility |
-| Version Migration | ✓ | Provide migration tools |
-| Version Documentation | ✓ | Document version changes |
+| Versioning | ✅ | Add versioning to the XML schema |
+| Backward Compatibility | ✅ | Ensure backward compatibility |
+| Forward Compatibility | ✅ | Ensure forward compatibility |
+| Version Migration | ✅ | Provide migration tools |
+| Version Documentation | ✅ | Document version changes |
 
 ### v0.2.2 - Enhanced multi-windows application
 
@@ -84,7 +84,7 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| Code refactoring | ✓ | Auto-Discovery Multi-View Application |
+| Code refactoring | ✅ | Auto-Discovery Multi-View Application |
 
 ### v0.2.3 - Enhanced multi-windows application (Completed ✓)
 
@@ -92,9 +92,9 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| CLI - Create window UI  | ✓ | Create a new window with the command `dampen add --ui <window_name>` |
+| CLI - Create window UI  | ✅ | Create a new window with the command `dampen add --ui <window_name>` |
 
-### v0.2.4 - Enhanced multi-windows application (planned)
+### v0.2.4 - Enhanced multi-windows application (In progress 🚧)
 
 **Objective**: Improve user experience and functionality
 
