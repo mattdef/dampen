@@ -71,6 +71,7 @@ pub mod expr;
 pub mod handler;
 pub mod ir;
 pub mod parser;
+pub mod shared;
 pub mod state;
 pub mod traits;
 
@@ -89,8 +90,8 @@ pub use binding::{BindingValue, ToBindingValue, UiBindable};
 /// `{counter}`, `{items.len()}`, and `{if x > 0 then 'yes' else 'no'}`.
 pub use expr::{
     BinaryOp, BinaryOpExpr, BindingError, BindingErrorKind, BindingExpr, ConditionalExpr, Expr,
-    FieldAccessExpr, LiteralExpr, MethodCallExpr, UnaryOp, UnaryOpExpr, evaluate_binding_expr,
-    evaluate_expr, evaluate_formatted,
+    FieldAccessExpr, LiteralExpr, MethodCallExpr, SharedFieldAccessExpr, UnaryOp, UnaryOpExpr,
+    evaluate_binding_expr, evaluate_expr, evaluate_formatted,
 };
 
 /// Event handler management and signatures.
@@ -134,6 +135,12 @@ pub use codegen::{CodegenError, CodegenOutput, generate_application, validate_ha
 /// This module provides the [`AppState`](state::AppState) struct that combines
 /// a parsed UI document with application state and event handlers.
 pub use state::AppState;
+
+/// Shared state container for inter-window communication.
+///
+/// This module provides the [`SharedContext`](shared::SharedContext) struct for
+/// sharing state across multiple views in a Dampen application.
+pub use shared::SharedContext;
 
 /// Tokenize a binding expression for debugging or custom processing.
 pub use expr::tokenize_binding_expr;

@@ -223,6 +223,7 @@ pub fn generate_update_function(
 pub fn validate_expression_inlinable(expr: &crate::Expr) -> Result<(), CodegenError> {
     match expr {
         crate::Expr::FieldAccess(_) => Ok(()),
+        crate::Expr::SharedFieldAccess(_) => Ok(()), // Shared field access is inlinable
         crate::Expr::MethodCall(method_expr) => {
             validate_expression_inlinable(&method_expr.receiver)?;
             for arg in &method_expr.args {

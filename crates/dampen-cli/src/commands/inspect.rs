@@ -238,5 +238,8 @@ fn print_expr(expr: &dampen_core::Expr) {
             dampen_core::LiteralExpr::Float(f) => print!("Literal({})", f),
             dampen_core::LiteralExpr::Bool(b) => print!("Literal({})", b),
         },
+        dampen_core::Expr::SharedFieldAccess(sa) => {
+            print!("SharedFieldAccess(shared.{})", sa.path.join("."));
+        }
     }
 }

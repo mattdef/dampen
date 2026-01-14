@@ -816,6 +816,17 @@ fn validate_expr_fields(
         dampen_core::expr::Expr::Literal(_) => {
             // Literals don't reference fields, nothing to validate
         }
+        dampen_core::expr::Expr::SharedFieldAccess(shared_access) => {
+            // Validate shared field paths similar to regular field access
+            if shared_access.path.is_empty() || shared_access.path.iter().any(|f| f.is_empty()) {
+                errors.push(CheckError::InvalidBinding {
+                    field: "shared.<empty>".to_string(),
+                    file: file_path.to_path_buf(),
+                    line,
+                    col,
+                });
+            }
+        }
     }
 }
 
@@ -886,6 +897,10 @@ fn validate_binding_expr(
         }
         dampen_core::expr::Expr::Literal(_) => {
             // Literals are always valid
+        }
+        dampen_core::expr::Expr::SharedFieldAccess(_) => {
+            // Shared field access is valid if the field exists in shared state
+            // For now, we'll assume they're valid
         }
     }
 }

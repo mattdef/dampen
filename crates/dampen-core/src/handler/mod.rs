@@ -14,6 +14,9 @@ pub struct HandlerRegistry {
 #[derive(Clone)]
 #[allow(clippy::type_complexity)]
 pub enum HandlerEntry {
+    // ============================================
+    // Existing variants (unchanged for compatibility)
+    // ============================================
     /// Simple handler: `fn(&mut Model)`
     Simple(Arc<dyn Fn(&mut dyn Any) + Send + Sync>),
 
@@ -22,6 +25,24 @@ pub enum HandlerEntry {
 
     /// Handler returning command: `fn(&mut Model) -> Command<Message>`
     WithCommand(Arc<dyn Fn(&mut dyn Any) -> Box<dyn Any> + Send + Sync>),
+
+    // ============================================
+    // New variants for shared state access
+    // ============================================
+    /// Handler with shared context: `fn(&mut Model, &SharedContext<S>)`
+    ///
+    /// Use when the handler needs to read or write shared state.
+    WithShared(Arc<dyn Fn(&mut dyn Any, &dyn Any) + Send + Sync>),
+
+    /// Handler with value and shared: `fn(&mut Model, T, &SharedContext<S>)`
+    ///
+    /// Use when the handler receives input value and needs shared state.
+    WithValueAndShared(Arc<dyn Fn(&mut dyn Any, Box<dyn Any>, &dyn Any) + Send + Sync>),
+
+    /// Handler with command and shared: `fn(&mut Model, &SharedContext<S>) -> Command`
+    ///
+    /// Use when the handler needs shared state and returns a command.
+    WithCommandAndShared(Arc<dyn Fn(&mut dyn Any, &dyn Any) -> Box<dyn Any> + Send + Sync>),
 }
 
 impl std::fmt::Debug for HandlerEntry {
@@ -30,6 +51,9 @@ impl std::fmt::Debug for HandlerEntry {
             HandlerEntry::Simple(_) => f.write_str("Simple(handler)"),
             HandlerEntry::WithValue(_) => f.write_str("WithValue(handler)"),
             HandlerEntry::WithCommand(_) => f.write_str("WithCommand(handler)"),
+            HandlerEntry::WithShared(_) => f.write_str("WithShared(handler)"),
+            HandlerEntry::WithValueAndShared(_) => f.write_str("WithValueAndShared(handler)"),
+            HandlerEntry::WithCommandAndShared(_) => f.write_str("WithCommandAndShared(handler)"),
         }
     }
 }
@@ -75,6 +99,112 @@ impl HandlerRegistry {
         }
     }
 
+    // ============================================
+    // New registration methods for shared state
+    // ============================================
+
+    /// Register a handler that receives shared context.
+    ///
+    /// Use this for handlers that need to read or modify shared state
+    /// that is accessible across multiple views.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Handler name (referenced in XML `on_click="name"`)
+    /// * `handler` - Function that receives `(&mut Model, &SharedContext<S>)`
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::HandlerRegistry;
+    ///
+    /// let registry = HandlerRegistry::new();
+    /// registry.register_with_shared("update_theme", |model, shared| {
+    ///     let model = model.downcast_mut::<Model>().unwrap();
+    ///     let shared = shared.downcast_ref::<SharedContext<SharedState>>().unwrap();
+    ///     shared.write().theme = model.selected_theme.clone();
+    /// });
+    /// ```
+    pub fn register_with_shared<F>(&self, name: &str, handler: F)
+    where
+        F: Fn(&mut dyn Any, &dyn Any) + Send + Sync + 'static,
+    {
+        if let Ok(mut handlers) = self.handlers.write() {
+            handlers.insert(
+                name.to_string(),
+                HandlerEntry::WithShared(Arc::new(handler)),
+            );
+        }
+    }
+
+    /// Register a handler with both a value parameter and shared context.
+    ///
+    /// Use this for handlers that receive input (like text field values)
+    /// and also need access to shared state.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Handler name (referenced in XML `on_change="name"`)
+    /// * `handler` - Function that receives `(&mut Model, Box<dyn Any>, &SharedContext<S>)`
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::HandlerRegistry;
+    ///
+    /// let registry = HandlerRegistry::new();
+    /// registry.register_with_value_and_shared("set_username", |model, value, shared| {
+    ///     let model = model.downcast_mut::<Model>().unwrap();
+    ///     let name = value.downcast_ref::<String>().unwrap();
+    ///     let shared = shared.downcast_ref::<SharedContext<SharedState>>().unwrap();
+    ///     shared.write().username = name.clone();
+    /// });
+    /// ```
+    pub fn register_with_value_and_shared<F>(&self, name: &str, handler: F)
+    where
+        F: Fn(&mut dyn Any, Box<dyn Any>, &dyn Any) + Send + Sync + 'static,
+    {
+        if let Ok(mut handlers) = self.handlers.write() {
+            handlers.insert(
+                name.to_string(),
+                HandlerEntry::WithValueAndShared(Arc::new(handler)),
+            );
+        }
+    }
+
+    /// Register a handler that receives shared context and returns a command.
+    ///
+    /// Use this for async handlers that need shared state access.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Handler name (referenced in XML `on_click="name"`)
+    /// * `handler` - Function that receives `(&mut Model, &SharedContext<S>) -> Command`
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::HandlerRegistry;
+    ///
+    /// let registry = HandlerRegistry::new();
+    /// registry.register_with_command_and_shared("sync_settings", |model, shared| {
+    ///     let shared = shared.downcast_ref::<SharedContext<SharedState>>().unwrap();
+    ///     let settings = shared.read().clone();
+    ///     Box::new(Task::perform(save_settings(settings), Message::SettingsSaved))
+    /// });
+    /// ```
+    pub fn register_with_command_and_shared<F>(&self, name: &str, handler: F)
+    where
+        F: Fn(&mut dyn Any, &dyn Any) -> Box<dyn Any> + Send + Sync + 'static,
+    {
+        if let Ok(mut handlers) = self.handlers.write() {
+            handlers.insert(
+                name.to_string(),
+                HandlerEntry::WithCommandAndShared(Arc::new(handler)),
+            );
+        }
+    }
+
     /// Look up a handler by name
     pub fn get(&self, name: &str) -> Option<HandlerEntry> {
         self.handlers.read().ok()?.get(name).cloned()
@@ -83,12 +213,19 @@ impl HandlerRegistry {
     /// Dispatches a handler by name, executing it with the provided model and optional value.
     ///
     /// This is a convenience method that combines `get()` and handler invocation.
+    /// For handlers that require shared state, use [`dispatch_with_shared`](Self::dispatch_with_shared)
+    /// instead.
     ///
     /// # Arguments
     ///
     /// * `handler_name` - Name of the handler to dispatch
     /// * `model` - Mutable reference to the model (as `&mut dyn Any`)
     /// * `value` - Optional string value passed to WithValue handlers
+    ///
+    /// # Note
+    ///
+    /// This method does NOT support `WithShared`, `WithValueAndShared`, or `WithCommandAndShared`
+    /// handlers. Those handlers will be silently ignored. Use `dispatch_with_shared` instead.
     ///
     /// # Example
     ///
@@ -115,6 +252,12 @@ impl HandlerRegistry {
                 HandlerEntry::WithCommand(h) => {
                     h(model);
                 }
+                // Shared handlers require shared context - silently skip in dispatch()
+                HandlerEntry::WithShared(_)
+                | HandlerEntry::WithValueAndShared(_)
+                | HandlerEntry::WithCommandAndShared(_) => {
+                    // These handlers require shared context. Use dispatch_with_shared() instead.
+                }
             }
         }
     }
@@ -124,6 +267,9 @@ impl HandlerRegistry {
     /// This method is similar to `dispatch()` but returns the command/task from
     /// `WithCommand` handlers instead of discarding it. This is essential for
     /// integrating with the Elm/MVU pattern where handlers can return tasks.
+    ///
+    /// For handlers that require shared state, use [`dispatch_with_shared`](Self::dispatch_with_shared)
+    /// instead.
     ///
     /// # Arguments
     ///
@@ -135,6 +281,10 @@ impl HandlerRegistry {
     ///
     /// * `Some(Box<dyn Any>)` - The command/task from a `WithCommand` handler
     /// * `None` - For `Simple` and `WithValue` handlers, or if handler not found
+    ///
+    /// # Note
+    ///
+    /// This method does NOT support shared handlers. Use `dispatch_with_shared` instead.
     ///
     /// # Example
     ///
@@ -173,9 +323,81 @@ impl HandlerRegistry {
                     None
                 }
                 HandlerEntry::WithCommand(h) => Some(h(model)),
+                // Shared handlers require shared context - not supported here
+                HandlerEntry::WithShared(_)
+                | HandlerEntry::WithValueAndShared(_)
+                | HandlerEntry::WithCommandAndShared(_) => None,
             }
         } else {
             None
+        }
+    }
+
+    /// Dispatches a handler with shared context and returns any command it produces.
+    ///
+    /// This is the primary dispatch method for applications using shared state.
+    /// It handles all handler variants, passing the shared context to variants
+    /// that expect it.
+    ///
+    /// # Arguments
+    ///
+    /// * `handler_name` - Name of the handler to dispatch
+    /// * `model` - Mutable reference to the local model (as `&mut dyn Any`)
+    /// * `shared` - Reference to the shared context (as `&dyn Any`)
+    /// * `value` - Optional string value passed to WithValue/WithValueAndShared handlers
+    ///
+    /// # Returns
+    ///
+    /// * `Some(Box<dyn Any>)` - The command from `WithCommand` or `WithCommandAndShared` handlers
+    /// * `None` - For simple handlers, value handlers, or if handler not found
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::HandlerRegistry;
+    ///
+    /// let registry = HandlerRegistry::new();
+    /// registry.register_with_shared("toggle_theme", |model, shared| {
+    ///     let shared = shared.downcast_ref::<SharedContext<SharedState>>().unwrap();
+    ///     let current = shared.read().dark_mode;
+    ///     shared.write().dark_mode = !current;
+    /// });
+    ///
+    /// let model = &mut Model::default() as &mut dyn std::any::Any;
+    /// let shared = &shared_context as &dyn std::any::Any;
+    /// registry.dispatch_with_shared("toggle_theme", model, shared, None);
+    /// ```
+    pub fn dispatch_with_shared(
+        &self,
+        handler_name: &str,
+        model: &mut dyn Any,
+        shared: &dyn Any,
+        value: Option<String>,
+    ) -> Option<Box<dyn Any>> {
+        let entry = self.get(handler_name)?;
+
+        match entry {
+            // Existing variants (backward compatible - ignore shared)
+            HandlerEntry::Simple(h) => {
+                h(model);
+                None
+            }
+            HandlerEntry::WithValue(h) => {
+                h(model, Box::new(value.unwrap_or_default()));
+                None
+            }
+            HandlerEntry::WithCommand(h) => Some(h(model)),
+
+            // New shared variants
+            HandlerEntry::WithShared(h) => {
+                h(model, shared);
+                None
+            }
+            HandlerEntry::WithValueAndShared(h) => {
+                h(model, Box::new(value.unwrap_or_default()), shared);
+                None
+            }
+            HandlerEntry::WithCommandAndShared(h) => Some(h(model, shared)),
         }
     }
 

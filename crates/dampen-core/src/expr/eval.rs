@@ -11,6 +11,15 @@ use crate::expr::{
 pub fn evaluate_expr(expr: &Expr, model: &dyn UiBindable) -> Result<BindingValue, BindingError> {
     match expr {
         Expr::FieldAccess(field_expr) => evaluate_field_access(field_expr, model),
+        Expr::SharedFieldAccess(_) => {
+            // SharedFieldAccess requires shared context - use evaluate_expr_with_shared instead
+            Err(BindingError {
+                kind: BindingErrorKind::InvalidOperation,
+                message: "Shared field access requires shared context. Use evaluate_expr_with_shared instead.".to_string(),
+                span: crate::ir::span::Span::new(0, 0, 0, 0),
+                suggestion: None,
+            })
+        }
         Expr::MethodCall(method_expr) => evaluate_method_call(method_expr, model),
         Expr::BinaryOp(binary_expr) => evaluate_binary_op(binary_expr, model),
         Expr::UnaryOp(unary_expr) => evaluate_unary_op(unary_expr, model),

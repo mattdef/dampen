@@ -6,7 +6,7 @@
 use crate::CodegenError;
 use crate::expr::ast::{
     BinaryOp, BinaryOpExpr, ConditionalExpr, Expr, FieldAccessExpr, LiteralExpr, MethodCallExpr,
-    UnaryOp, UnaryOpExpr,
+    SharedFieldAccessExpr, UnaryOp, UnaryOpExpr,
 };
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
@@ -24,6 +24,7 @@ use quote::{format_ident, quote};
 pub fn generate_expr(expr: &Expr) -> TokenStream {
     match expr {
         Expr::FieldAccess(field_access) => generate_field_access(field_access),
+        Expr::SharedFieldAccess(shared_access) => generate_shared_field_access(shared_access),
         Expr::MethodCall(method_call) => generate_method_call(method_call),
         Expr::BinaryOp(binary_op) => generate_binary_op(binary_op),
         Expr::UnaryOp(unary_op) => generate_unary_op(unary_op),
@@ -38,6 +39,7 @@ pub fn generate_expr(expr: &Expr) -> TokenStream {
 pub fn validate_expression_inlinable(expr: &Expr) -> Result<(), CodegenError> {
     match expr {
         Expr::FieldAccess(_) => Ok(()),
+        Expr::SharedFieldAccess(_) => Ok(()), // Shared field access is inlinable
         Expr::MethodCall(method_expr) => {
             validate_expression_inlinable(&method_expr.receiver)?;
             for arg in &method_expr.args {
@@ -79,6 +81,26 @@ fn generate_field_access(expr: &FieldAccessExpr) -> TokenStream {
     let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
 
     quote! { #(#field_access).*.to_string() }
+}
+
+/// Generate code for a shared field access expression
+///
+/// # Arguments
+/// * `expr` - Shared field access with path components (after "shared.")
+///
+/// # Returns
+/// TokenStream generating `shared.field.to_string()` where `shared` refers to
+/// the shared context's read guard
+fn generate_shared_field_access(expr: &SharedFieldAccessExpr) -> TokenStream {
+    if expr.path.is_empty() {
+        return quote! { String::new() };
+    }
+
+    // Generate access to the shared context
+    // The generated code assumes a `shared` variable is in scope (the read guard)
+    let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
+
+    quote! { shared.#(#field_access).*.to_string() }
 }
 
 /// Generate code for a method call expression
