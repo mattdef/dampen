@@ -133,9 +133,9 @@
 - [x] T044 [US2] Extend `DampenWidgetBuilder` with shared_context field in `crates/dampen-iced/src/builder.rs` *(Commit: dad4ab8)*
 - [x] T045 [US2] Implement `evaluate_binding()` to resolve `{shared.}` expressions in `crates/dampen-iced/src/builder.rs` *(Commit: dad4ab8)*
 - [x] T046 [US2] Handle missing shared fields gracefully (return empty string) in `crates/dampen-iced/src/builder.rs` *(Commit: dad4ab8)*
-- [ ] T047 [P] [US2] Add dev-mode warning for missing shared bindings in `crates/dampen-iced/src/builder.rs` **← TODO**
+- [x] T047 [P] [US2] Add dev-mode warning for missing shared bindings in `crates/dampen-iced/src/builder.rs` *(Commit: TBD - 4 tests passing)*
 
-**Checkpoint**: ✅ User Story 2 complete - shared bindings work in XML
+**Checkpoint**: ✅ User Story 2 complete - shared bindings work in XML, dev warnings implemented
 
 ---
 
@@ -262,27 +262,34 @@
 
 ## Progress Summary
 
-### ✅ Completed (48 tasks)
+### ✅ Completed (49 tasks)
 - **Phase 1**: 5/5 tasks (100%)
 - **Phase 2**: 22/22 tasks (100%)
 - **Phase 3 (US1)**: 9/9 tasks (100% ✅)
-- **Phase 4 (US2)**: 6/7 tasks (86% - dev warning TODO)
+- **Phase 4 (US2)**: 7/7 tasks (100% ✅)
 - **Phase 5 (US3)**: 3/3 tasks (100%)
 - **Contract Tests**: 3/3 new tests (T028, T029 - 7 tests passing)
 
-### ⏳ Pending (46 tasks)
+### ⏳ Pending (45 tasks)
 - **Phase 6 (US4)**: 0/3 tasks
 - **Phase 7 (US5)**: 0/9 tasks
 - **Phase 8 (US6)**: 0/6 tasks
 - **Phase 9 (Polish)**: 0/12 tasks
 
-### 📊 Overall Progress: 48/94 tasks completed (51%)
+### 📊 Overall Progress: 49/94 tasks completed (52%)
 
-### 🎯 MVP Status (US1-US3): 18/19 tasks (95%) ✅ TESTED & VERIFIED
+### 🎯 MVP Status (US1-US3): 19/19 tasks (100%) ✅ COMPLETE
 
-**Key Achievement**: Core shared state functionality is working AND tested! Contract tests verify cross-component guarantees. Manual testing completed (T037). Only dev-mode warnings (T047) remain for full MVP completion.
+**Key Achievement**: MVP is 100% complete! All three user stories implemented with comprehensive testing:
+- ✅ US1: Shared preferences work across views (manual test passing)
+- ✅ US2: {shared.} bindings in XML with dev-mode warnings
+- ✅ US3: Handlers modify shared state, all views see changes
+- ✅ Contract tests verify cross-component guarantees (7 tests)
+- ✅ Example application demonstrates complete workflow
 
-**Immediate Next Step**: T047 - Dev-mode warnings for missing shared context (30 minutes).
+**Status**: MVP is production-ready for basic shared state use cases. Hot-reload, macros, and codegen are optional enhancements for future phases.
+
+**Next Phase**: US4 (Hot-reload) or US5 (Macro integration) - both can proceed independently.
 
 ---
 

@@ -516,6 +516,15 @@ impl<'a> DampenWidgetBuilder<'a> {
         match attr {
             AttributeValue::Static(value) => value.clone(),
             AttributeValue::Binding(expr) => {
+                // Dev-mode warning: Check if binding uses shared state but no context provided
+                #[cfg(debug_assertions)]
+                if expr.uses_shared() && self.shared_context.is_none() {
+                    eprintln!(
+                        "⚠️  Warning: Binding uses {{shared.}} syntax but no shared context was provided to DampenWidgetBuilder"
+                    );
+                    eprintln!("    Hint: Use .with_shared(&shared_state) when building widgets");
+                }
+
                 // Try context first, then model
                 if let Some(value) = self.resolve_from_context(expr) {
                     value.to_display_string()
@@ -545,6 +554,17 @@ impl<'a> DampenWidgetBuilder<'a> {
                     match part {
                         InterpolatedPart::Literal(lit) => result.push_str(lit),
                         InterpolatedPart::Binding(expr) => {
+                            // Dev-mode warning: Check if binding uses shared state but no context provided
+                            #[cfg(debug_assertions)]
+                            if expr.uses_shared() && self.shared_context.is_none() {
+                                eprintln!(
+                                    "⚠️  Warning: Interpolated binding uses {{shared.}} syntax but no shared context was provided"
+                                );
+                                eprintln!(
+                                    "    Hint: Use .with_shared(&shared_state) when building widgets"
+                                );
+                            }
+
                             if let Some(value) = self.resolve_from_context(expr) {
                                 result.push_str(&value.to_display_string());
                             } else {
