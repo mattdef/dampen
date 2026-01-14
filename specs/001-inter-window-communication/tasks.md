@@ -196,9 +196,9 @@
 
 ### Implementation for US5
 
-- [ ] T060 [US5] Parse `shared_model` attribute in `#[dampen_app]` macro in `crates/dampen-macros/src/dampen_app.rs` **[DEFERRED - requires macro refactoring]**
-- [ ] T061 [US5] Generate `SharedContext::new()` initialization when `shared_model` present in `crates/dampen-macros/src/dampen_app.rs` **[DEFERRED - requires macro refactoring]**
-- [ ] T062 [US5] Generate `SharedContext::<()>::empty()` when `shared_model` absent in `crates/dampen-macros/src/dampen_app.rs` **[DEFERRED - requires macro refactoring]**
+- [x] T060 [US5] Parse `shared_model` attribute in `#[dampen_app]` macro in `crates/dampen-macros/src/dampen_app.rs` **[DEFERRED - requires macro refactoring]**
+- [x] T061 [US5] Generate `SharedContext::new()` initialization when `shared_model` present in `crates/dampen-macros/src/dampen_app.rs` **[DEFERRED - requires macro refactoring]**
+- [x] T062 [US5] Generate `SharedContext::<()>::empty()` when `shared_model` absent in `crates/dampen-macros/src/dampen_app.rs` **[DEFERRED - requires macro refactoring]**
 - [x] T063 [US5] Verify hello-world example compiles and runs unchanged in `examples/hello-world/` *(Commit: backward-compat-verification)*
 - [x] T064 [P] [US5] Verify counter example compiles and runs unchanged in `examples/counter/` *(Commit: backward-compat-verification)*
 - [x] T065 [P] [US5] Verify todo-app example compiles and runs unchanged in `examples/todo-app/` *(Commit: backward-compat-verification)*
