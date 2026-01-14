@@ -6,6 +6,10 @@ use dampen_core::{AppState, HandlerRegistry};
 use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
 
+// Uncomment if using shared state:
+// use crate::shared::SharedState;
+// use dampen_core::SharedContext;
+
 /// Auto-load the {{WINDOW_NAME}}.dampen XML file.
 /// Path is relative to this file.
 #[dampen_ui("{{WINDOW_NAME}}.dampen")]
@@ -17,12 +21,49 @@ pub struct Model {
     pub message: String,
 }
 
-/// Create the AppState for the {{WINDOW_NAME}} window.
+/// Create the AppState for the {{WINDOW_NAME}} window (no shared state).
+///
+/// Use this constructor when shared_model is NOT enabled in #[dampen_app].
 pub fn create_app_state() -> AppState<Model> {
     let document = _window::document();
     let handler_registry = create_handler_registry();
     AppState::with_handlers(document, handler_registry)
 }
+
+/// Create the AppState WITH shared context (for shared state across views).
+///
+/// Use this constructor when shared_model IS enabled in #[dampen_app].
+/// The macro will automatically call this function and pass the SharedContext.
+///
+/// To enable:
+/// 1. Uncomment the imports at the top of this file
+/// 2. Uncomment this function
+/// 3. Add `shared_model = "SharedState"` to #[dampen_app] in main.rs
+/// 4. Create `src/shared.rs` with your SharedState model
+///
+/// Example shared handler:
+/// ```rust,ignore
+/// registry.register_with_shared("read_theme", |model, shared| {
+///     if let (Some(m), Some(s)) = (
+///         model.downcast_mut::<Model>(),
+///         shared.downcast_ref::<SharedContext<SharedState>>()
+///     ) {
+///         let guard = s.read();
+///         m.message = format!("Theme: {}", guard.theme);
+///     }
+/// });
+/// ```
+/*
+#[allow(dead_code)]
+pub fn create_app_state_with_shared(
+    shared: SharedContext<SharedState>,
+) -> AppState<Model, SharedState> {
+    let document = _window::document();
+    let handlers = create_handler_registry();
+    let model = Model::default();
+    AppState::with_shared(document, model, handlers, shared)
+}
+*/
 
 /// Create and configure the handler registry.
 pub fn create_handler_registry() -> HandlerRegistry {

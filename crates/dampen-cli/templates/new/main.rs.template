@@ -8,8 +8,17 @@
 //! - Hot-reload support in development mode
 //! - Ready for multi-view extension
 //! - Type-safe handler dispatch
+//!
+//! ## Enabling Shared State
+//! To share state across multiple views:
+//! 1. Uncomment `mod shared;` below
+//! 2. Create `src/shared.rs` with your SharedState model
+//! 3. Uncomment `shared_model = "SharedState"` in #[dampen_app]
+//! 4. Use `{shared.field}` bindings in your .dampen files
 
 mod ui;
+// Uncomment to enable shared state across views:
+// mod shared;
 
 use dampen_iced::HandlerMessage;
 use dampen_macros::dampen_app;
@@ -33,6 +42,14 @@ enum Message {
 }
 
 /// Main application structure with auto-generated view management
+///
+/// ## Shared State (Advanced)
+/// To enable shared state across multiple views, uncomment the shared_model attribute:
+/// - shared_model = "SharedState"  // Name must match struct in src/shared.rs
+///
+/// Then use `{shared.field}` bindings in XML and handlers with:
+/// - registry.register_with_shared() for handlers that read shared state
+/// - registry.register_with_value_and_shared() for handlers that modify shared state
 #[dampen_app(
     ui_dir = "src/ui",
     message_type = "Message",
@@ -42,6 +59,8 @@ enum Message {
     default_view = "window",
     // Uncomment to enable view switching:
     // switch_view_variant = "SwitchToView",
+    // Uncomment to enable shared state across views:
+    // shared_model = "SharedState",
 )]
 struct DampenApp;
 
