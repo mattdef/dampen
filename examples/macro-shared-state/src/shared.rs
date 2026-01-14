@@ -9,7 +9,7 @@ use dampen_macros::UiModel;
 ///
 /// This state is automatically wrapped in SharedContext<SharedState>
 /// by the #[dampen_app] macro when shared_model = "SharedState" is specified.
-#[derive(Clone, Default, Debug, UiModel)]
+#[derive(Clone, Debug, UiModel)]
 pub struct SharedState {
     /// Current theme name (e.g., "Light", "Dark", "Solarized")
     pub theme: String,
@@ -22,4 +22,15 @@ pub struct SharedState {
 
     /// Number of notifications (using i64 for UiBindable compatibility)
     pub notification_count: i64,
+}
+
+impl Default for SharedState {
+    fn default() -> Self {
+        Self {
+            theme: "Light".to_string(),
+            username: "Guest".to_string(),
+            language: "English".to_string(),
+            notification_count: 0,
+        }
+    }
 }
