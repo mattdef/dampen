@@ -11,6 +11,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Option A: Simplified Shared State with #[dampen_app] Macro Attribute
+- **shared_model Attribute**: One-line shared state setup in `#[dampen_app]` macro
+  - New `shared_model = "StateTypeName"` attribute automatically:
+    - Generates `SharedContext::new(module::StateTypeName::default())` in `init()`
+    - Passes shared context to all view constructors via `create_app_state_with_shared()`
+    - Wires up shared state dispatch in generated `update()` method
+  - Validates that `src/shared.rs` exists at compile time
+  - Zero boilerplate: eliminates ~30 lines of manual setup code per application
+- **UiBindable for SharedContext**: Enables automatic shared context passing
+  - Implemented `UiBindable` trait for `SharedContext<S>`
+  - Delegates `get_field()` to inner state via `read()` guard
+  - Allows `DampenWidgetBuilder` to treat shared context as a bindable source
+- **Automatic Shared Context Integration**: Widget builder auto-wires shared state
+  - Extended `from_app_state()` to automatically include shared context if present
+  - Checks `app_state.shared_context` and passes to builder via `with_shared()`
+  - Zero manual configuration required in view code
+- **CLI Template Updates**: New projects include commented shared state examples
+  - `dampen new` templates include `// mod shared;` with setup instructions
+  - `dampen add --ui` templates include commented `create_app_state_with_shared()` example
+  - Step-by-step documentation in template comments
+- **Example Application**: `examples/macro-shared-state/`
+  - Demonstrates `shared_model = "SharedState"` attribute usage
+  - Two views: window (displays state) and settings (modifies state)
+  - Theme switching, username changes, notification counter
+  - Compares with manual setup to show boilerplate elimination
+
 #### Inter-Window Communication (Feature 001-inter-window-communication)
 - **SharedContext<S>**: Thread-safe container for application-wide shared state
   - Generic over state type `S: UiBindable + Send + Sync`

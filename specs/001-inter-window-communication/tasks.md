@@ -244,10 +244,10 @@
 
 ### Documentation
 
-- [ ] T073 [P] Update `docs/USAGE.md` with shared state section **[DEFERRED - out of scope]**
-- [ ] T074 [P] Update `docs/XML_SCHEMA.md` with `{shared.}` binding documentation **[DEFERRED - out of scope]**
-- [ ] T075 [P] Add CHANGELOG.md entry for v0.2.4 inter-window communication **[DEFERRED - out of scope]**
-- [ ] T076 Update AGENTS.md with completed feature status **[DEFERRED - out of scope]**
+- [x] T073 [P] Update `docs/USAGE.md` with shared state section *(Commit: e95be69)*
+- [x] T074 [P] Update `docs/XML_SCHEMA.md` with `{shared.}` binding documentation *(Already complete - lines 481-572)*
+- [x] T075 [P] Add CHANGELOG.md entry for v0.2.4 inter-window communication *(Commit: TBD - Option A added)*
+- [x] T076 Update AGENTS.md with completed feature status *(Commit: TBD - Option A status added)*
 
 ### Code Quality
 
@@ -284,28 +284,26 @@
 
 ## Progress Summary
 
-### ✅ Completed (76 tasks)
+### ✅ Completed (80 tasks)
 - **Phase 1 (Setup)**: 5/5 tasks ✅
 - **Phase 2 (Foundational)**: 22/22 tasks ✅
 - **Phase 3 (US1)**: 9/9 tasks ✅
 - **Phase 4 (US2)**: 11/11 tasks ✅
 - **Phase 5 (US3)**: 3/3 tasks ✅
 - **Phase 6 (US4)**: 5/5 tasks ✅
-- **Phase 7 (US5)**: 6/9 tasks (67%) ✅ **FUNCTIONALLY COMPLETE** (3 deferred for macro refactoring)
+- **Phase 7 (US5)**: 9/9 tasks ✅ **COMPLETE** (T060-T062 implemented as Option A)
 - **Phase 8 (US6)**: 6/6 tasks ✅ **COMPLETE**
-- **Phase 9 (Polish)**: 4/12 tasks ✅ **FUNCTIONALLY COMPLETE** (8 deferred: 4 docs + 2 benchmarks + 2 redundant)
+- **Phase 9 (Polish)**: 8/12 tasks ✅ **COMPLETE** (4 docs now done, 2 benchmarks + 2 verification deferred)
 - **Contract Tests**: 23/23 tests (100%)
 - **Integration Tests**: 11/11 tests (100%) - T057 (4 shared_state_e2e), T063-T066 (6 backward_compat_examples), T067-T069 (3 mode_parity + 8 codegen tests)
 
 
-### ⏳ Pending (6 tasks - documentation only)
-- **Phase 9 (Polish)**: 4/12 tasks complete (8 deferred: 4 documentation + 2 benchmarks + 2 verification already done)
-- **Phase 10 (Documentation)**: Does not exist
+### ⏳ Pending (4 tasks - benchmarks only)
+- **Phase 9 (Polish)**: 8/12 tasks complete (4 deferred: 2 benchmarks + 2 verification already done)
 
-### 📊 Overall Progress: 76/94 tasks completed (81%)
+### 📊 Overall Progress: 80/94 tasks completed (85%)
 
-**Note**: 8 tasks deferred as non-critical for feature completion:
-- T073-T076: User documentation (can be done post-merge)
+**Note**: 4 tasks deferred as non-critical for feature completion:
 - T081-T082: Performance benchmarks (architecture validates performance)
 - T083-T084: Already verified via comprehensive test suite
 
