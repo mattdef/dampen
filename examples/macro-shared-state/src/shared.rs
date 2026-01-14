@@ -17,6 +17,9 @@ pub struct SharedState {
     /// Current username
     pub username: String,
 
+    /// Current language
+    pub language: String,
+
     /// Number of notifications (using i64 for UiBindable compatibility)
     pub notification_count: i64,
 }
