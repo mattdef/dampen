@@ -5,7 +5,6 @@ pub mod convert;
 pub mod state;
 pub mod style_mapping;
 pub mod theme_adapter;
-pub mod widgets;
 
 use dampen_core::{AttributeValue, Backend, EventKind, InterpolatedPart, WidgetKind, WidgetNode};
 use iced::widget::{button, column, row, text};
