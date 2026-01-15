@@ -63,7 +63,6 @@
 
 use crate::HandlerMessage;
 use crate::convert::{map_layout_constraints, map_style_properties};
-use crate::state::WidgetStateManager;
 use dampen_core::binding::{BindingValue, UiBindable};
 use dampen_core::expr::evaluate_binding_expr_with_shared;
 use dampen_core::handler::HandlerRegistry;
@@ -76,7 +75,6 @@ use iced::widget::{checkbox, image, pick_list, radio, slider, text_input, toggle
 use iced::{Element, Renderer, Theme};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 
 /// Builder for creating Iced widgets from Dampen markup
 ///
@@ -150,9 +148,6 @@ pub struct DampenWidgetBuilder<'a> {
     /// Factory function to create messages from handler names
     message_factory: Box<dyn Fn(&str, Option<String>) -> HandlerMessage + 'a>,
 
-    /// Shared state manager for widget state tracking
-    state_manager: Arc<Mutex<WidgetStateManager>>,
-
     /// Binding context stack for <for> loop variables
     /// Each context maps variable names to their BindingValues
     binding_context: RefCell<Vec<HashMap<String, BindingValue>>>,
@@ -204,7 +199,6 @@ impl<'a> DampenWidgetBuilder<'a> {
             message_factory: Box::new(|name, value| {
                 HandlerMessage::Handler(name.to_string(), value)
             }),
-            state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
             binding_context: RefCell::new(Vec::new()),
         }
     }
@@ -355,7 +349,6 @@ impl<'a> DampenWidgetBuilder<'a> {
             style_classes: None,
             verbose: false,
             message_factory: Box::new(message_factory),
-            state_manager: Arc::new(Mutex::new(WidgetStateManager::new())),
             binding_context: RefCell::new(Vec::new()),
         }
     }

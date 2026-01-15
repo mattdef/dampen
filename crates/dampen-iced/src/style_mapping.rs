@@ -1,11 +1,78 @@
 //! Style mapping from Dampen IR to Iced types
 //!
 //! This module maps Dampen's backend-agnostic style types to Iced-specific
-//! style types.
+//! style types, including widget state-specific styling.
 
 use dampen_core::ir::layout::{Alignment, Justification, LayoutConstraints, Length, Position};
 use dampen_core::ir::style::{Background, Color, StyleProperties};
+use dampen_core::ir::theme::{StyleClass, WidgetState};
 use iced::border::Radius;
+
+/// Resolve state-specific style properties from a style class
+///
+/// Returns the style override for the given widget state if defined,
+/// otherwise returns None to indicate the base style should be used.
+///
+/// # Arguments
+/// * `style_class` - The style class containing base and state-specific styles
+/// * `state` - The current widget state (Hover, Focus, Active, Disabled)
+///
+/// # Example
+/// ```ignore
+/// let style_class = /* ... StyleClass with hover styles ... */;
+/// if let Some(hover_style) = resolve_state_style(&style_class, WidgetState::Hover) {
+///     // Use hover-specific styles
+/// } else {
+///     // Use base styles
+/// }
+/// ```
+pub fn resolve_state_style(
+    style_class: &StyleClass,
+    state: WidgetState,
+) -> Option<&StyleProperties> {
+    style_class.state_variants.get(&state)
+}
+
+/// Merge state-specific style properties with base style properties
+///
+/// Returns a new StyleProperties where state-specific overrides take precedence
+/// over base styles. Any property not overridden in the state style retains
+/// the base value.
+///
+/// # Arguments
+/// * `base` - The base style properties
+/// * `state_override` - State-specific style properties to merge
+///
+/// # Example
+/// ```ignore
+/// let base = StyleProperties { background: Some(blue), color: Some(white), .. };
+/// let hover = StyleProperties { background: Some(light_blue), .. };
+/// let merged = merge_style_properties(&base, &hover);
+/// // Result: background=light_blue (from hover), color=white (from base)
+/// ```
+pub fn merge_style_properties(
+    base: &StyleProperties,
+    state_override: &StyleProperties,
+) -> StyleProperties {
+    StyleProperties {
+        // State override takes precedence if set
+        background: state_override
+            .background
+            .clone()
+            .or_else(|| base.background.clone()),
+        color: state_override.color.or(base.color),
+        border: state_override
+            .border
+            .clone()
+            .or_else(|| base.border.clone()),
+        shadow: state_override.shadow.or(base.shadow),
+        opacity: state_override.opacity.or(base.opacity),
+        transform: state_override
+            .transform
+            .clone()
+            .or_else(|| base.transform.clone()),
+    }
+}
 
 /// Map Color to Iced Color
 pub fn map_color(color: &Color) -> iced::Color {
