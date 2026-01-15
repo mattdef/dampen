@@ -9,7 +9,8 @@
 use dampen_core::ir::style::{Background, Color, StyleProperties};
 use dampen_core::ir::theme::{StyleClass, WidgetState};
 use dampen_iced::style_mapping::{
-    map_button_status, map_text_input_status, merge_style_properties, resolve_state_style,
+    map_button_status, map_checkbox_status, map_radio_status, map_text_input_status,
+    map_toggler_status, merge_style_properties, resolve_state_style,
 };
 use std::collections::HashMap;
 
@@ -382,5 +383,179 @@ fn test_map_text_input_status_disabled() {
         result,
         Some(WidgetState::Disabled),
         "Disabled status should map to Disabled state"
+    );
+}
+
+// ============================================================================
+// CHECKBOX STATUS MAPPING TESTS
+// ============================================================================
+
+#[test]
+fn test_map_checkbox_status_active() {
+    use iced::widget::checkbox::Status;
+
+    // Active status should map to None (use base style) - checked
+    let result = map_checkbox_status(Status::Active { is_checked: true });
+    assert_eq!(
+        result, None,
+        "Active (checked) status should map to None (base style)"
+    );
+
+    // Active status should map to None - unchecked
+    let result_unchecked = map_checkbox_status(Status::Active { is_checked: false });
+    assert_eq!(
+        result_unchecked, None,
+        "Active (unchecked) status should map to None (base style)"
+    );
+}
+
+#[test]
+fn test_map_checkbox_status_hovered() {
+    use iced::widget::checkbox::Status;
+
+    // Hovered status should map to WidgetState::Hover - checked
+    let result = map_checkbox_status(Status::Hovered { is_checked: true });
+    assert_eq!(
+        result,
+        Some(WidgetState::Hover),
+        "Hovered (checked) status should map to Hover state"
+    );
+
+    // Hovered status should map to WidgetState::Hover - unchecked
+    let result_unchecked = map_checkbox_status(Status::Hovered { is_checked: false });
+    assert_eq!(
+        result_unchecked,
+        Some(WidgetState::Hover),
+        "Hovered (unchecked) status should map to Hover state"
+    );
+}
+
+#[test]
+fn test_map_checkbox_status_disabled() {
+    use iced::widget::checkbox::Status;
+
+    // Disabled status should map to WidgetState::Disabled - checked
+    let result = map_checkbox_status(Status::Disabled { is_checked: true });
+    assert_eq!(
+        result,
+        Some(WidgetState::Disabled),
+        "Disabled (checked) status should map to Disabled state"
+    );
+
+    // Disabled status should map to WidgetState::Disabled - unchecked
+    let result_unchecked = map_checkbox_status(Status::Disabled { is_checked: false });
+    assert_eq!(
+        result_unchecked,
+        Some(WidgetState::Disabled),
+        "Disabled (unchecked) status should map to Disabled state"
+    );
+}
+
+// ============================================================================
+// RADIO STATUS MAPPING TESTS
+// ============================================================================
+
+#[test]
+fn test_map_radio_status_active() {
+    use iced::widget::radio::Status;
+
+    // Active status should map to None (use base style) - selected
+    let result = map_radio_status(Status::Active { is_selected: true });
+    assert_eq!(
+        result, None,
+        "Active (selected) status should map to None (base style)"
+    );
+
+    // Active status should map to None - unselected
+    let result_unselected = map_radio_status(Status::Active { is_selected: false });
+    assert_eq!(
+        result_unselected, None,
+        "Active (unselected) status should map to None (base style)"
+    );
+}
+
+#[test]
+fn test_map_radio_status_hovered() {
+    use iced::widget::radio::Status;
+
+    // Hovered status should map to WidgetState::Hover - selected
+    let result = map_radio_status(Status::Hovered { is_selected: true });
+    assert_eq!(
+        result,
+        Some(WidgetState::Hover),
+        "Hovered (selected) status should map to Hover state"
+    );
+
+    // Hovered status should map to WidgetState::Hover - unselected
+    let result_unselected = map_radio_status(Status::Hovered { is_selected: false });
+    assert_eq!(
+        result_unselected,
+        Some(WidgetState::Hover),
+        "Hovered (unselected) status should map to Hover state"
+    );
+}
+
+// ============================================================================
+// TOGGLER STATUS MAPPING TESTS
+// ============================================================================
+
+#[test]
+fn test_map_toggler_status_active() {
+    use iced::widget::toggler::Status;
+
+    // Active status should map to None (use base style) - toggled on
+    let result = map_toggler_status(Status::Active { is_toggled: true });
+    assert_eq!(
+        result, None,
+        "Active (on) status should map to None (base style)"
+    );
+
+    // Active status should map to None - toggled off
+    let result_off = map_toggler_status(Status::Active { is_toggled: false });
+    assert_eq!(
+        result_off, None,
+        "Active (off) status should map to None (base style)"
+    );
+}
+
+#[test]
+fn test_map_toggler_status_hovered() {
+    use iced::widget::toggler::Status;
+
+    // Hovered status should map to WidgetState::Hover - toggled on
+    let result = map_toggler_status(Status::Hovered { is_toggled: true });
+    assert_eq!(
+        result,
+        Some(WidgetState::Hover),
+        "Hovered (on) status should map to Hover state"
+    );
+
+    // Hovered status should map to WidgetState::Hover - toggled off
+    let result_off = map_toggler_status(Status::Hovered { is_toggled: false });
+    assert_eq!(
+        result_off,
+        Some(WidgetState::Hover),
+        "Hovered (off) status should map to Hover state"
+    );
+}
+
+#[test]
+fn test_map_toggler_status_disabled() {
+    use iced::widget::toggler::Status;
+
+    // Disabled status should map to WidgetState::Disabled - toggled on
+    let result = map_toggler_status(Status::Disabled { is_toggled: true });
+    assert_eq!(
+        result,
+        Some(WidgetState::Disabled),
+        "Disabled (on) status should map to Disabled state"
+    );
+
+    // Disabled status should map to WidgetState::Disabled - toggled off
+    let result_off = map_toggler_status(Status::Disabled { is_toggled: false });
+    assert_eq!(
+        result_off,
+        Some(WidgetState::Disabled),
+        "Disabled (off) status should map to Disabled state"
     );
 }

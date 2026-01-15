@@ -10,6 +10,7 @@ mod _app {}
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
 pub struct Model {
     pub count: i32,
+    pub name: String,
 }
 
 #[ui_handler]
@@ -54,6 +55,13 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_simple("reset", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
             reset(m);
+        }
+    });
+
+    registry.register_with_value("update_name", |model: &mut dyn std::any::Any, value| {
+        let model = model.downcast_mut::<Model>().unwrap();
+        if let Ok(name) = value.downcast::<String>() {
+            model.name = *name;
         }
     });
 

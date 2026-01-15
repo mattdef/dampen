@@ -124,6 +124,30 @@
                 width="fill"
             />
         </style>
+
+        <style name="text">
+            <base
+                background="#c5c5c5"
+                color="black"
+                border_radius="5"
+                border_width="1"
+                border_color="#3498db"
+            />
+            <hover
+                background="b4b4b4"
+                color="black"
+                border_width="2"
+                border_color="#3498db"
+                border_radius="5"
+            />
+            <focus
+                background="4c4c4c"
+                color="white"
+                border_width="2"
+                border_color="lightgreen"
+                border_radius="5"
+            />
+        </style>
     </styles>
 
     <!-- Set Global Theme -->
@@ -201,6 +225,12 @@
                         value="✓ Event handlers (on_click)"
                         size="12"
                         color="#27ae60"
+                    />
+                <text_input
+                        value="{name}"
+                        placeholder="Enter your name..."
+                        class="text"
+                        on_input="update_name"
                     />
             </column>
         </container>

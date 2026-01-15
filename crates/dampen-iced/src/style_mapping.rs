@@ -145,6 +145,107 @@ pub fn map_text_input_status(status: iced::widget::text_input::Status) -> Option
     }
 }
 
+/// Map checkbox status to unified widget state
+///
+/// Maps Iced's `checkbox::Status` enum to Dampen's `WidgetState`.
+/// Returns `None` for the default/active state (which should use base styles).
+///
+/// # Mapping
+/// - `checkbox::Status::Active { .. }` → `None` (default/resting state, use base style)
+/// - `checkbox::Status::Hovered { .. }` → `Some(WidgetState::Hover)` (mouse over)
+/// - `checkbox::Status::Disabled { .. }` → `Some(WidgetState::Disabled)` (not interactive)
+///
+/// # Note
+/// Each status variant includes `is_checked: bool` context, which is ignored for state mapping.
+/// The `is_checked` state should be handled separately in the style closure if needed.
+///
+/// # Example
+/// ```ignore
+/// use iced::widget::checkbox;
+/// use dampen_iced::style_mapping::map_checkbox_status;
+///
+/// let state = map_checkbox_status(checkbox::Status::Hovered { is_checked: true });
+/// assert_eq!(state, Some(WidgetState::Hover));
+///
+/// let base_state = map_checkbox_status(checkbox::Status::Active { is_checked: false });
+/// assert_eq!(base_state, None); // Use base style
+/// ```
+pub fn map_checkbox_status(status: iced::widget::checkbox::Status) -> Option<WidgetState> {
+    use iced::widget::checkbox::Status;
+    match status {
+        Status::Active { .. } => None, // Base/default state
+        Status::Hovered { .. } => Some(WidgetState::Hover), // Mouse over checkbox
+        Status::Disabled { .. } => Some(WidgetState::Disabled), // Checkbox disabled
+    }
+}
+
+/// Map radio button status to unified widget state
+///
+/// Maps Iced's `radio::Status` enum to Dampen's `WidgetState`.
+/// Returns `None` for the default/active state (which should use base styles).
+///
+/// # Mapping
+/// - `radio::Status::Active { .. }` → `None` (default/resting state, use base style)
+/// - `radio::Status::Hovered { .. }` → `Some(WidgetState::Hover)` (mouse over)
+///
+/// # Note
+/// - Each status variant includes `is_selected: bool` context, which is ignored for state mapping.
+/// - Radio buttons don't have a built-in `Disabled` status in Iced 0.14.
+/// - For disabled styling, check the `disabled` attribute in the builder and manually apply `WidgetState::Disabled`.
+///
+/// # Example
+/// ```ignore
+/// use iced::widget::radio;
+/// use dampen_iced::style_mapping::map_radio_status;
+///
+/// let state = map_radio_status(radio::Status::Hovered { is_selected: false });
+/// assert_eq!(state, Some(WidgetState::Hover));
+///
+/// let base_state = map_radio_status(radio::Status::Active { is_selected: true });
+/// assert_eq!(base_state, None); // Use base style
+/// ```
+pub fn map_radio_status(status: iced::widget::radio::Status) -> Option<WidgetState> {
+    use iced::widget::radio::Status;
+    match status {
+        Status::Active { .. } => None, // Base/default state
+        Status::Hovered { .. } => Some(WidgetState::Hover), // Mouse over radio
+    }
+}
+
+/// Map toggler status to unified widget state
+///
+/// Maps Iced's `toggler::Status` enum to Dampen's `WidgetState`.
+/// Returns `None` for the default/active state (which should use base styles).
+///
+/// # Mapping
+/// - `toggler::Status::Active { .. }` → `None` (default/resting state, use base style)
+/// - `toggler::Status::Hovered { .. }` → `Some(WidgetState::Hover)` (mouse over)
+/// - `toggler::Status::Disabled { .. }` → `Some(WidgetState::Disabled)` (not interactive)
+///
+/// # Note
+/// Each status variant includes `is_toggled: bool` context, which is ignored for state mapping.
+/// The `is_toggled` state should be handled separately in the style closure if needed.
+///
+/// # Example
+/// ```ignore
+/// use iced::widget::toggler;
+/// use dampen_iced::style_mapping::map_toggler_status;
+///
+/// let state = map_toggler_status(toggler::Status::Hovered { is_toggled: true });
+/// assert_eq!(state, Some(WidgetState::Hover));
+///
+/// let base_state = map_toggler_status(toggler::Status::Active { is_toggled: false });
+/// assert_eq!(base_state, None); // Use base style
+/// ```
+pub fn map_toggler_status(status: iced::widget::toggler::Status) -> Option<WidgetState> {
+    use iced::widget::toggler::Status;
+    match status {
+        Status::Active { .. } => None, // Base/default state
+        Status::Hovered { .. } => Some(WidgetState::Hover), // Mouse over toggler
+        Status::Disabled { .. } => Some(WidgetState::Disabled), // Toggler disabled
+    }
+}
+
 /// Map Color to Iced Color
 pub fn map_color(color: &Color) -> iced::Color {
     iced::Color {

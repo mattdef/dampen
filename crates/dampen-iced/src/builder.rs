@@ -1547,6 +1547,117 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         let mut checkbox = iced::widget::checkbox(is_checked);
 
+        // Resolve and apply checkbox styles with state-aware styling
+        // Get the StyleClass for state variant resolution
+        let style_class = if !node.classes.is_empty() {
+            self.style_classes
+                .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
+        } else {
+            None
+        };
+
+        // Resolve base styles (class + inline)
+        let resolved_base_style = match (self.resolve_class_styles(node), &node.style) {
+            (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
+            (Some(class_style), None) => Some(class_style),
+            (None, Some(node_style)) => Some(node_style.clone()),
+            (None, None) => None,
+        };
+
+        if let Some(base_style_props) = resolved_base_style {
+            // Clone for move into closure
+            let base_style_props = base_style_props.clone();
+            let style_class = style_class.cloned();
+
+            checkbox = checkbox.style(move |_theme, status| {
+                use crate::style_mapping::{
+                    map_checkbox_status, merge_style_properties, resolve_state_style,
+                };
+                use iced::widget::checkbox;
+                use iced::{Background, Border, Color};
+
+                // Map Iced checkbox status to WidgetState
+                let widget_state = map_checkbox_status(status);
+
+                // Resolve state-specific style if available
+                let final_style_props =
+                    if let (Some(class), Some(state)) = (&style_class, widget_state) {
+                        // Try to get state-specific style
+                        if let Some(state_style) = resolve_state_style(class, state) {
+                            // Merge state style with base style
+                            merge_style_properties(&base_style_props, state_style)
+                        } else {
+                            // No state variant defined, use base style
+                            base_style_props.clone()
+                        }
+                    } else {
+                        // No style class or no state, use base style
+                        base_style_props.clone()
+                    };
+
+                // Create checkbox style with defaults
+                let mut style = checkbox::Style {
+                    background: Background::Color(Color::WHITE),
+                    icon_color: Color::BLACK,
+                    border: Border::default(),
+                    text_color: None,
+                };
+
+                // Apply background color
+                if let Some(ref bg) = final_style_props.background {
+                    if let dampen_core::ir::style::Background::Color(color) = bg {
+                        style.background = Background::Color(Color {
+                            r: color.r,
+                            g: color.g,
+                            b: color.b,
+                            a: color.a,
+                        });
+                    }
+                }
+
+                // Apply text color
+                if let Some(ref text_color) = final_style_props.color {
+                    style.text_color = Some(Color {
+                        r: text_color.r,
+                        g: text_color.g,
+                        b: text_color.b,
+                        a: text_color.a,
+                    });
+                }
+
+                // Apply border
+                if let Some(ref border) = final_style_props.border {
+                    style.border = Border {
+                        color: Color {
+                            r: border.color.r,
+                            g: border.color.g,
+                            b: border.color.b,
+                            a: border.color.a,
+                        },
+                        width: border.width,
+                        radius: iced::border::Radius {
+                            top_left: border.radius.top_left,
+                            top_right: border.radius.top_right,
+                            bottom_right: border.radius.bottom_right,
+                            bottom_left: border.radius.bottom_left,
+                        },
+                    };
+                }
+
+                // Apply icon color if specified
+                if let Some(ref icon_color) = final_style_props.color {
+                    style.icon_color = Color {
+                        r: icon_color.r,
+                        g: icon_color.g,
+                        b: icon_color.b,
+                        a: icon_color.a,
+                    };
+                }
+
+                style
+            });
+        }
+
         // Connect event if handler exists
         if let Some(event_binding) = on_toggle_event {
             if self.handler_registry.is_some() {
@@ -1960,6 +2071,114 @@ impl<'a> DampenWidgetBuilder<'a> {
         }
 
         let mut toggler = iced::widget::toggler(is_active);
+
+        // Resolve and apply toggler styles with state-aware styling
+        // Get the StyleClass for state variant resolution
+        let style_class = if !node.classes.is_empty() {
+            self.style_classes
+                .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
+        } else {
+            None
+        };
+
+        // Resolve base styles (class + inline)
+        let resolved_base_style = match (self.resolve_class_styles(node), &node.style) {
+            (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
+            (Some(class_style), None) => Some(class_style),
+            (None, Some(node_style)) => Some(node_style.clone()),
+            (None, None) => None,
+        };
+
+        if let Some(base_style_props) = resolved_base_style {
+            // Clone for move into closure
+            let base_style_props = base_style_props.clone();
+            let style_class = style_class.cloned();
+
+            toggler = toggler.style(move |_theme, status| {
+                use crate::style_mapping::{
+                    map_toggler_status, merge_style_properties, resolve_state_style,
+                };
+                use iced::widget::toggler;
+                use iced::{Background, Color};
+
+                // Map Iced toggler status to WidgetState
+                let widget_state = map_toggler_status(status);
+
+                // Resolve state-specific style if available
+                let final_style_props =
+                    if let (Some(class), Some(state)) = (&style_class, widget_state) {
+                        // Try to get state-specific style
+                        if let Some(state_style) = resolve_state_style(class, state) {
+                            // Merge state style with base style
+                            merge_style_properties(&base_style_props, state_style)
+                        } else {
+                            // No state variant defined, use base style
+                            base_style_props.clone()
+                        }
+                    } else {
+                        // No style class or no state, use base style
+                        base_style_props.clone()
+                    };
+
+                // Create toggler style with defaults
+                let mut style = toggler::Style {
+                    background: Background::Color(Color::from_rgb(0.7, 0.7, 0.7)),
+                    background_border_width: 1.0,
+                    background_border_color: Color::TRANSPARENT,
+                    foreground: Background::Color(Color::WHITE),
+                    foreground_border_width: 0.0,
+                    foreground_border_color: Color::TRANSPARENT,
+                    border_radius: None,
+                    padding_ratio: 0.2,
+                    text_color: None,
+                };
+
+                // Apply background color
+                if let Some(ref bg) = final_style_props.background {
+                    if let dampen_core::ir::style::Background::Color(color) = bg {
+                        style.background = Background::Color(Color {
+                            r: color.r,
+                            g: color.g,
+                            b: color.b,
+                            a: color.a,
+                        });
+                    }
+                }
+
+                // Apply foreground color (the toggle indicator)
+                if let Some(ref fg_color) = final_style_props.color {
+                    style.foreground = Background::Color(Color {
+                        r: fg_color.r,
+                        g: fg_color.g,
+                        b: fg_color.b,
+                        a: fg_color.a,
+                    });
+                }
+
+                // Apply text color if specified
+                if let Some(ref text_color) = final_style_props.color {
+                    style.text_color = Some(Color {
+                        r: text_color.r,
+                        g: text_color.g,
+                        b: text_color.b,
+                        a: text_color.a,
+                    });
+                }
+
+                // Apply border
+                if let Some(ref border) = final_style_props.border {
+                    style.background_border_color = Color {
+                        r: border.color.r,
+                        g: border.color.g,
+                        b: border.color.b,
+                        a: border.color.a,
+                    };
+                    style.background_border_width = border.width;
+                }
+
+                style
+            });
+        }
 
         // Connect event if handler exists
         if let Some(handler_name) = on_toggle {
@@ -2681,6 +2900,119 @@ impl<'a> DampenWidgetBuilder<'a> {
             iced::widget::radio(label, value_id, selected_id, |_| {
                 HandlerMessage::Handler(String::new(), None)
             })
+        };
+
+        // Resolve and apply radio styles with state-aware styling
+        // Get the StyleClass for state variant resolution
+        let style_class = if !node.classes.is_empty() {
+            self.style_classes
+                .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
+        } else {
+            None
+        };
+
+        // Resolve base styles (class + inline)
+        let resolved_base_style = match (self.resolve_class_styles(node), &node.style) {
+            (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
+            (Some(class_style), None) => Some(class_style),
+            (None, Some(node_style)) => Some(node_style.clone()),
+            (None, None) => None,
+        };
+
+        let radio_widget = if let Some(base_style_props) = resolved_base_style {
+            // Clone for move into closure
+            let base_style_props = base_style_props.clone();
+            let style_class = style_class.cloned();
+
+            radio_widget.style(move |_theme, status| {
+                use crate::style_mapping::{
+                    map_radio_status, merge_style_properties, resolve_state_style,
+                };
+                use dampen_core::ir::WidgetState;
+                use iced::widget::radio;
+                use iced::{Background, Color};
+
+                // Map Iced radio status to WidgetState
+                // Note: Radio doesn't have Status::Disabled in Iced 0.14,
+                // so we need to manually check the disabled attribute
+                let widget_state = if is_disabled {
+                    Some(WidgetState::Disabled)
+                } else {
+                    map_radio_status(status)
+                };
+
+                // Resolve state-specific style if available
+                let final_style_props =
+                    if let (Some(class), Some(state)) = (&style_class, widget_state) {
+                        // Try to get state-specific style
+                        if let Some(state_style) = resolve_state_style(class, state) {
+                            // Merge state style with base style
+                            merge_style_properties(&base_style_props, state_style)
+                        } else {
+                            // No state variant defined, use base style
+                            base_style_props.clone()
+                        }
+                    } else {
+                        // No style class or no state, use base style
+                        base_style_props.clone()
+                    };
+
+                // Create radio style with defaults
+                let mut style = radio::Style {
+                    background: Background::Color(Color::WHITE),
+                    dot_color: Color::BLACK,
+                    border_width: 1.0,
+                    border_color: Color::from_rgb(0.5, 0.5, 0.5),
+                    text_color: None,
+                };
+
+                // Apply background color
+                if let Some(ref bg) = final_style_props.background {
+                    if let dampen_core::ir::style::Background::Color(color) = bg {
+                        style.background = Background::Color(Color {
+                            r: color.r,
+                            g: color.g,
+                            b: color.b,
+                            a: color.a,
+                        });
+                    }
+                }
+
+                // Apply text color
+                if let Some(ref text_color) = final_style_props.color {
+                    style.text_color = Some(Color {
+                        r: text_color.r,
+                        g: text_color.g,
+                        b: text_color.b,
+                        a: text_color.a,
+                    });
+                }
+
+                // Apply border
+                if let Some(ref border) = final_style_props.border {
+                    style.border_color = Color {
+                        r: border.color.r,
+                        g: border.color.g,
+                        b: border.color.b,
+                        a: border.color.a,
+                    };
+                    style.border_width = border.width;
+                }
+
+                // Apply dot color if specified
+                if let Some(ref dot_color) = final_style_props.color {
+                    style.dot_color = Color {
+                        r: dot_color.r,
+                        g: dot_color.g,
+                        b: dot_color.b,
+                        a: dot_color.a,
+                    };
+                }
+
+                style
+            })
+        } else {
+            radio_widget
         };
 
         radio_widget.into()

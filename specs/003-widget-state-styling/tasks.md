@@ -67,7 +67,7 @@ This is a Cargo workspace. Primary development in `crates/dampen-iced/` crate.
 - [x] T015 [US1] Modify button building in DampenWidgetBuilder::build_button in crates/dampen-iced/src/builder.rs to use status parameter
 - [x] T016 [US1] Integrate resolve_state_style and merge_style_properties into button style closure in crates/dampen-iced/src/builder.rs
 - [x] T017 [US1] Run button tests - verify all tests now PASS (144 tests total, 11 status mapping + 4 widget state tests)
-- [ ] T018 [US1] Manual validation: Run examples/styling with button state styles and verify hover/active/disabled visuals
+- [x] T018 [US1] Manual validation: Run examples/styling with button state styles and verify hover/active/disabled visuals
 
 **Checkpoint**: Button state styling fully functional - users can style buttons with hover/active/disabled states
 
@@ -81,19 +81,19 @@ This is a Cargo workspace. Primary development in `crates/dampen-iced/` crate.
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Write test_text_input_focus_styling in crates/dampen-iced/tests/widget_state_tests.rs
-- [ ] T020 [P] [US2] Write test_text_input_hover_styling in crates/dampen-iced/tests/widget_state_tests.rs
-- [ ] T021 [P] [US2] Write test_text_input_disabled_styling in crates/dampen-iced/tests/widget_state_tests.rs
-- [ ] T022 [US2] Run tests - verify all 3 text input tests FAIL before implementation
+- [x] T019 [P] [US2] Write test_text_input_focus_styling in crates/dampen-iced/tests/widget_state_tests.rs
+- [x] T020 [P] [US2] Write test_text_input_hover_styling in crates/dampen-iced/tests/widget_state_tests.rs
+- [x] T021 [P] [US2] Write test_text_input_disabled_styling in crates/dampen-iced/tests/widget_state_tests.rs
+- [x] T022 [US2] Run tests - verify all 3 text input tests FAIL before implementation
 
 ### Implementation for User Story 2
 
-- [ ] T023 [US2] Implement `map_text_input_status(status: text_input::Status) -> WidgetState` in crates/dampen-iced/src/style_mapping.rs
-- [ ] T024 [US2] Write unit test for map_text_input_status covering all 4 status variants in crates/dampen-iced/tests/status_mapping_tests.rs
-- [ ] T025 [US2] Modify text input building in DampenWidgetBuilder::build_text_input in crates/dampen-iced/src/builder.rs
-- [ ] T026 [US2] Integrate status-aware styling into text input style closure in crates/dampen-iced/src/builder.rs
-- [ ] T027 [US2] Run text input tests - verify all 3 tests now PASS
-- [ ] T028 [US2] Manual validation: Test focus/hover/disabled text input states in examples/styling
+- [x] T023 [US2] Implement `map_text_input_status(status: text_input::Status) -> WidgetState` in crates/dampen-iced/src/style_mapping.rs
+- [x] T024 [US2] Write unit test for map_text_input_status covering all 4 status variants in crates/dampen-iced/tests/status_mapping_tests.rs
+- [x] T025 [US2] Modify text input building in DampenWidgetBuilder::build_text_input in crates/dampen-iced/src/builder.rs
+- [x] T026 [US2] Integrate status-aware styling into text input style closure in crates/dampen-iced/src/builder.rs
+- [x] T027 [US2] Run text input tests - verify all 3 tests now PASS
+- [x] T028 [US2] Manual validation: Test focus/hover/disabled text input states in examples/styling
 
 **Checkpoint**: Text input state styling fully functional - focus indication works for accessibility
 

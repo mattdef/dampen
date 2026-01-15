@@ -434,3 +434,259 @@ fn test_text_input_disabled_styling() {
         panic!("Disabled style should have border");
     }
 }
+
+// ============================================================================
+// CHECKBOX/RADIO/TOGGLER STATE STYLING TESTS (Phase 5)
+// ============================================================================
+
+/// Test checkbox hover styling
+///
+/// Given: A checkbox with hover state styles defined
+/// When: Checkbox is hovered
+/// Then: Hover styles should be applied (e.g., background highlight)
+#[test]
+fn test_checkbox_hover_styling() {
+    // Arrange: Create a style class with base and hover styles
+    let mut state_variants = HashMap::new();
+    state_variants.insert(
+        WidgetState::Hover,
+        StyleProperties {
+            background: Some(bg_color(0.9, 0.95, 1.0)), // Light blue tint (hover)
+            ..Default::default()
+        },
+    );
+
+    let style_class = StyleClass {
+        name: "checkbox".to_string(),
+        style: StyleProperties {
+            background: Some(bg_color(1.0, 1.0, 1.0)), // White (base)
+            ..Default::default()
+        },
+        layout: None,
+        extends: vec![],
+        state_variants,
+        combined_state_variants: HashMap::new(),
+    };
+
+    // Act: Resolve hover state
+    let hover_style =
+        dampen_iced::style_mapping::resolve_state_style(&style_class, WidgetState::Hover);
+
+    // Assert: Hover style should exist
+    assert!(hover_style.is_some(), "Hover state should resolve to Some");
+
+    let hover_style = hover_style.unwrap();
+    if let Some(Background::Color(hover_color)) = &hover_style.background {
+        assert_eq!(hover_color.r, 0.9, "Hover background should be light blue");
+        assert_eq!(hover_color.g, 0.95);
+        assert_eq!(hover_color.b, 1.0);
+    } else {
+        panic!("Hover style should have background color");
+    }
+}
+
+/// Test checkbox disabled styling
+///
+/// Given: A checkbox with disabled state styles defined
+/// When: Checkbox is disabled
+/// Then: Disabled styles should be applied (grayed out)
+#[test]
+fn test_checkbox_disabled_styling() {
+    // Arrange: Create a style class with disabled styles
+    let mut state_variants = HashMap::new();
+    state_variants.insert(
+        WidgetState::Disabled,
+        StyleProperties {
+            background: Some(bg_color(0.85, 0.85, 0.85)), // Light gray (disabled)
+            color: Some(color(0.6, 0.6, 0.6)),            // Gray text
+            ..Default::default()
+        },
+    );
+
+    let style_class = StyleClass {
+        name: "checkbox".to_string(),
+        style: StyleProperties {
+            background: Some(bg_color(1.0, 1.0, 1.0)), // White (base)
+            color: Some(color(0.0, 0.0, 0.0)),         // Black text
+            ..Default::default()
+        },
+        layout: None,
+        extends: vec![],
+        state_variants,
+        combined_state_variants: HashMap::new(),
+    };
+
+    // Act: Resolve disabled state
+    let disabled_style =
+        dampen_iced::style_mapping::resolve_state_style(&style_class, WidgetState::Disabled);
+
+    // Assert: Disabled style should exist
+    assert!(
+        disabled_style.is_some(),
+        "Disabled state should resolve to Some"
+    );
+
+    let disabled_style = disabled_style.unwrap();
+
+    // Check background is gray
+    if let Some(Background::Color(disabled_bg)) = &disabled_style.background {
+        assert_eq!(disabled_bg.r, 0.85, "Disabled background should be gray");
+        assert_eq!(disabled_bg.g, 0.85);
+        assert_eq!(disabled_bg.b, 0.85);
+    } else {
+        panic!("Disabled style should have background color");
+    }
+
+    // Check text color is gray
+    if let Some(disabled_color) = disabled_style.color {
+        assert_eq!(disabled_color.r, 0.6, "Disabled text should be gray");
+        assert_eq!(disabled_color.g, 0.6);
+        assert_eq!(disabled_color.b, 0.6);
+    } else {
+        panic!("Disabled style should have text color");
+    }
+}
+
+/// Test radio button hover styling
+///
+/// Given: A radio button with hover state styles defined
+/// When: Radio button is hovered
+/// Then: Hover styles should be applied (e.g., subtle highlight)
+#[test]
+fn test_radio_hover_styling() {
+    // Arrange: Create a style class with base and hover styles
+    let mut state_variants = HashMap::new();
+    state_variants.insert(
+        WidgetState::Hover,
+        StyleProperties {
+            border: Some(border(2.0, 0.3, 0.6, 1.0)), // Blue border on hover
+            ..Default::default()
+        },
+    );
+
+    let style_class = StyleClass {
+        name: "radio".to_string(),
+        style: StyleProperties {
+            border: Some(border(1.0, 0.5, 0.5, 0.5)), // Gray border (base)
+            ..Default::default()
+        },
+        layout: None,
+        extends: vec![],
+        state_variants,
+        combined_state_variants: HashMap::new(),
+    };
+
+    // Act: Resolve hover state
+    let hover_style =
+        dampen_iced::style_mapping::resolve_state_style(&style_class, WidgetState::Hover);
+
+    // Assert: Hover style should exist
+    assert!(hover_style.is_some(), "Hover state should resolve to Some");
+
+    let hover_style = hover_style.unwrap();
+    if let Some(hover_border) = &hover_style.border {
+        assert_eq!(hover_border.width, 2.0, "Hover border should be 2px");
+        assert_eq!(hover_border.color.r, 0.3, "Hover border should be blue");
+        assert_eq!(hover_border.color.g, 0.6);
+        assert_eq!(hover_border.color.b, 1.0);
+    } else {
+        panic!("Hover style should have border");
+    }
+}
+
+/// Test toggler hover styling
+///
+/// Given: A toggler with hover state styles defined
+/// When: Toggler is hovered
+/// Then: Hover styles should be applied (e.g., track highlight)
+#[test]
+fn test_toggler_hover_styling() {
+    // Arrange: Create a style class with base and hover styles
+    let mut state_variants = HashMap::new();
+    state_variants.insert(
+        WidgetState::Hover,
+        StyleProperties {
+            background: Some(bg_color(0.85, 0.9, 1.0)), // Light blue tint (hover)
+            ..Default::default()
+        },
+    );
+
+    let style_class = StyleClass {
+        name: "toggler".to_string(),
+        style: StyleProperties {
+            background: Some(bg_color(0.8, 0.8, 0.8)), // Gray (base)
+            ..Default::default()
+        },
+        layout: None,
+        extends: vec![],
+        state_variants,
+        combined_state_variants: HashMap::new(),
+    };
+
+    // Act: Resolve hover state
+    let hover_style =
+        dampen_iced::style_mapping::resolve_state_style(&style_class, WidgetState::Hover);
+
+    // Assert: Hover style should exist
+    assert!(hover_style.is_some(), "Hover state should resolve to Some");
+
+    let hover_style = hover_style.unwrap();
+    if let Some(Background::Color(hover_color)) = &hover_style.background {
+        assert_eq!(hover_color.r, 0.85, "Hover background should be light blue");
+        assert_eq!(hover_color.g, 0.9);
+        assert_eq!(hover_color.b, 1.0);
+    } else {
+        panic!("Hover style should have background color");
+    }
+}
+
+/// Test toggler disabled styling
+///
+/// Given: A toggler with disabled state styles defined
+/// When: Toggler is disabled
+/// Then: Disabled styles should be applied (grayed out, no interaction)
+#[test]
+fn test_toggler_disabled_styling() {
+    // Arrange: Create a style class with disabled styles
+    let mut state_variants = HashMap::new();
+    state_variants.insert(
+        WidgetState::Disabled,
+        StyleProperties {
+            background: Some(bg_color(0.7, 0.7, 0.7)), // Gray (disabled)
+            ..Default::default()
+        },
+    );
+
+    let style_class = StyleClass {
+        name: "toggler".to_string(),
+        style: StyleProperties {
+            background: Some(bg_color(0.3, 0.7, 0.3)), // Green (base, active state)
+            ..Default::default()
+        },
+        layout: None,
+        extends: vec![],
+        state_variants,
+        combined_state_variants: HashMap::new(),
+    };
+
+    // Act: Resolve disabled state
+    let disabled_style =
+        dampen_iced::style_mapping::resolve_state_style(&style_class, WidgetState::Disabled);
+
+    // Assert: Disabled style should exist
+    assert!(
+        disabled_style.is_some(),
+        "Disabled state should resolve to Some"
+    );
+
+    let disabled_style = disabled_style.unwrap();
+
+    // Check background is gray
+    if let Some(Background::Color(disabled_bg)) = &disabled_style.background {
+        assert_eq!(disabled_bg.r, 0.7, "Disabled background should be gray");
+        assert_eq!(disabled_bg.g, 0.7);
+        assert_eq!(disabled_bg.b, 0.7);
+    } else {
+        panic!("Disabled style should have background color");
+    }
+}
