@@ -1,27 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<column padding="20" spacing="20">
-    <row spacing="10">
-        <button label="← Back" on_click="switch_to_window" />
-        <text value="Slider Widget" size="24" weight="bold" />
-    </row>
+<dampen verison="1.0">
+    <styles>
+        <style name="green" background="green">
+        </style>
+    </styles>
+    <column padding="20" spacing="20">
+        <row spacing="10">
+            <button label="← Back" on_click="switch_to_window" />
+            <text value="Slider Widget" size="24" weight="bold" />
+        </row>
 
-    <text value="Basic Slider (0-100)" size="18" weight="bold" />
-    <slider min="0" max="100" value="{slider_value}" on_change="update_slider" />
-    <text value="Value: {slider_value}" size="18" color="#3498db" />
+        <text value="Basic Slider (0-100)" size="18" weight="bold" />
+        <slider
+            min="0"
+            max="100"
+            value="{slider_value}"
+            on_change="update_slider"
+        />
+        <text value="Value: {slider_value}" size="18" color="#3498db" />
 
-    <text value="Volume Control" size="18" weight="bold" />
-    <slider min="0" max="100" step="10" value="{volume}" on_change="update_volume" />
-    <text value="Volume: {volume}%" size="14" />
+        <text value="Volume Control" size="18" weight="bold" />
+        <slider
+            min="0"
+            max="100"
+            step="10"
+            value="{volume}"
+            on_change="update_volume"
+        />
+        <text value="Volume: {volume}%" size="14" />
 
-    <text value="Temperature Scale" size="18" weight="bold" />
-    <slider min="-20" max="50" value="{temperature}" on_change="update_temperature" />
-    <text value="Temperature: {temperature} deg C" size="18" color="#666666" />
+        <text value="Temperature Scale" size="18" weight="bold" />
+        <slider
+            min="-20"
+            max="50"
+            value="{temperature}"
+            on_change="update_temperature"
+        />
+        <text
+            value="Temperature: {temperature} deg C"
+            size="18"
+            color="#666666"
+        />
 
-    <text value="Multiple Sliders" size="18" weight="bold" />
-    <text value="Red: {red}" size="14" color="#e74c3c" />
-    <slider min="0" max="255" value="{red}" on_change="update_red" />
-    <text value="Green: {green}" size="14" color="#27ae60" />
-    <slider min="0" max="255" value="{green}" on_change="update_green" />
-    <text value="Blue: {blue}" size="14" color="#3498db" />
-    <slider min="0" max="255" value="{blue}" on_change="update_blue" />
-</column>
+        <text value="Multiple Sliders" size="18" weight="bold" />
+        <text value="Red: {red}" size="14" color="#e74c3c" />
+        <slider min="0" max="255" value="{red}" on_change="update_red" />
+        <text value="Green: {green}" size="14" color="#27ae60" />
+        <slider
+            min="0"
+            max="255"
+            value="{green}"
+            on_change="update_green"
+            class="green"
+        />
+        <text value="Blue: {blue}" size="14" color="#3498db" />
+        <slider min="0" max="255" value="{blue}" on_change="update_blue" />
+    </column>
+</dampen>

@@ -9,8 +9,9 @@
 use dampen_core::ir::style::{Background, Color, StyleProperties};
 use dampen_core::ir::theme::{StyleClass, WidgetState};
 use dampen_iced::style_mapping::{
-    map_button_status, map_checkbox_status, map_radio_status, map_text_input_status,
-    map_toggler_status, merge_style_properties, resolve_state_style,
+    map_button_status, map_checkbox_status, map_picklist_status, map_radio_status,
+    map_slider_status, map_text_input_status, map_toggler_status, merge_style_properties,
+    resolve_state_style,
 };
 use std::collections::HashMap;
 
@@ -557,5 +558,125 @@ fn test_map_toggler_status_disabled() {
         result_off,
         Some(WidgetState::Disabled),
         "Disabled (off) status should map to Disabled state"
+    );
+}
+
+// ============================================================================
+// SLIDER STATUS MAPPING TESTS
+// ============================================================================
+
+#[test]
+fn test_map_slider_status_active() {
+    use iced::widget::slider::Status;
+
+    // Active status (not hovered, not dragged) should map to None (base style)
+    let result = map_slider_status(Status::Active, false);
+    assert_eq!(
+        result, None,
+        "Active status (not disabled) should map to None (base style)"
+    );
+}
+
+#[test]
+fn test_map_slider_status_hovered() {
+    use iced::widget::slider::Status;
+
+    // Hovered status should map to WidgetState::Hover
+    let result = map_slider_status(Status::Hovered, false);
+    assert_eq!(
+        result,
+        Some(WidgetState::Hover),
+        "Hovered status should map to Hover state"
+    );
+}
+
+#[test]
+fn test_map_slider_status_dragged() {
+    use iced::widget::slider::Status;
+
+    // Dragged status should map to WidgetState::Active
+    let result = map_slider_status(Status::Dragged, false);
+    assert_eq!(
+        result,
+        Some(WidgetState::Active),
+        "Dragged status should map to Active state"
+    );
+}
+
+#[test]
+fn test_map_slider_status_disabled() {
+    use iced::widget::slider::Status;
+
+    // Disabled should override any status and map to WidgetState::Disabled
+    let result_active = map_slider_status(Status::Active, true);
+    assert_eq!(
+        result_active,
+        Some(WidgetState::Disabled),
+        "Active status with disabled=true should map to Disabled state"
+    );
+
+    let result_hovered = map_slider_status(Status::Hovered, true);
+    assert_eq!(
+        result_hovered,
+        Some(WidgetState::Disabled),
+        "Hovered status with disabled=true should map to Disabled state"
+    );
+
+    let result_dragged = map_slider_status(Status::Dragged, true);
+    assert_eq!(
+        result_dragged,
+        Some(WidgetState::Disabled),
+        "Dragged status with disabled=true should map to Disabled state"
+    );
+}
+
+// ============================================================================
+// PICKLIST STATUS MAPPING TESTS
+// ============================================================================
+
+#[test]
+fn test_map_picklist_status_active() {
+    use iced::widget::pick_list::Status;
+
+    // Active status (closed, not hovered) should map to None (base style)
+    let result = map_picklist_status(Status::Active);
+    assert_eq!(
+        result, None,
+        "Active status should map to None (base style)"
+    );
+}
+
+#[test]
+fn test_map_picklist_status_hovered() {
+    use iced::widget::pick_list::Status;
+
+    // Hovered status should map to WidgetState::Hover
+    let result = map_picklist_status(Status::Hovered);
+    assert_eq!(
+        result,
+        Some(WidgetState::Hover),
+        "Hovered status should map to Hover state"
+    );
+}
+
+#[test]
+fn test_map_picklist_status_opened() {
+    use iced::widget::pick_list::Status;
+
+    // Opened status (dropdown visible) should map to WidgetState::Focus
+    // Note: Status::Opened is a struct variant with is_hovered field
+    let result = map_picklist_status(Status::Opened { is_hovered: false });
+    assert_eq!(
+        result,
+        Some(WidgetState::Focus),
+        "Opened status should map to Focus state (active interaction)"
+    );
+
+    // Test with is_hovered=true as well
+    let result_hovered = map_picklist_status(Status::Opened { is_hovered: true });
+    assert_eq!(
+        result_hovered,
+        Some(WidgetState::Focus),
+        "Opened (hovered) status should map to Focus state"
     );
 }

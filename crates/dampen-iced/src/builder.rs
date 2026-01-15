@@ -1818,6 +1818,10 @@ impl<'a> DampenWidgetBuilder<'a> {
             slider
         };
 
+        // TODO: State-aware styling available via map_slider_status() - see style_mapping.rs
+        // When implementing, check node.attributes for "disabled" attribute and pass
+        // to map_slider_status(status, is_disabled) since Iced slider::Status has no Disabled variant
+
         slider.into()
     }
 
@@ -1907,6 +1911,9 @@ impl<'a> DampenWidgetBuilder<'a> {
                 HandlerMessage::Handler("dummy".to_string(), None)
             })
         };
+
+        // TODO: State-aware styling available via map_picklist_status() - see style_mapping.rs
+        // Note: Status::Opened is a struct variant with is_hovered field
 
         pick_list.into()
     }
@@ -1998,6 +2005,11 @@ impl<'a> DampenWidgetBuilder<'a> {
                 HandlerMessage::Handler("dummy".to_string(), None)
             })
         };
+
+        // TODO: State-aware styling for ComboBox - see style_mapping.rs
+        // NOTE: Current implementation uses pick_list widget (so would use map_picklist_status)
+        // If switching to real combo_box widget, use map_text_input_status() since
+        // Iced combo_box uses text_input::Status enum (no separate combo_box::Status)
 
         combo_box.into()
     }

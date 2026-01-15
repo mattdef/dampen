@@ -246,6 +246,210 @@ pub fn map_toggler_status(status: iced::widget::toggler::Status) -> Option<Widge
     }
 }
 
+/// Map Iced slider status to Dampen WidgetState
+///
+/// Maps the Iced slider::Status enum to the appropriate Dampen WidgetState.
+/// Returns None for the base/default state (Active).
+///
+/// **Note on Disabled State**: Iced 0.14's slider::Status does NOT have a Disabled variant.
+/// Disabled state must be handled manually by checking the `disabled` attribute in the builder.
+///
+/// # Arguments
+/// * `status` - The Iced slider status
+/// * `is_disabled` - Manual disabled flag from attribute evaluation
+///
+/// # Returns
+/// * `Some(WidgetState::Hover)` - Mouse over slider
+/// * `Some(WidgetState::Active)` - User dragging slider thumb
+/// * `Some(WidgetState::Disabled)` - Slider is disabled (from manual check)
+/// * `None` - Base/default state (slider active but not hovered/dragged)
+///
+/// # Example
+/// ```
+/// use dampen_iced::style_mapping::map_slider_status;
+/// use iced::widget::slider;
+///
+/// let state = map_slider_status(slider::Status::Hovered, false);
+/// assert_eq!(state, Some(dampen_core::ir::WidgetState::Hover));
+///
+/// let drag_state = map_slider_status(slider::Status::Dragged, false);
+/// assert_eq!(drag_state, Some(dampen_core::ir::WidgetState::Active));
+///
+/// let disabled_state = map_slider_status(slider::Status::Active, true);
+/// assert_eq!(disabled_state, Some(dampen_core::ir::WidgetState::Disabled));
+/// ```
+pub fn map_slider_status(
+    status: iced::widget::slider::Status,
+    is_disabled: bool,
+) -> Option<WidgetState> {
+    // Check disabled first (manual handling since Iced doesn't have Status::Disabled)
+    if is_disabled {
+        return Some(WidgetState::Disabled);
+    }
+
+    use iced::widget::slider::Status;
+    match status {
+        Status::Active => None,                       // Base/default state
+        Status::Hovered => Some(WidgetState::Hover),  // Mouse over slider
+        Status::Dragged => Some(WidgetState::Active), // Dragging slider thumb
+    }
+}
+
+/// Map Iced pick_list status to Dampen WidgetState
+///
+/// Maps the Iced pick_list::Status enum to the appropriate Dampen WidgetState.
+/// Returns None for the base/default state (Active).
+///
+/// The `Opened` status (dropdown menu open) is mapped to `WidgetState::Focus`
+/// since it represents active user interaction with the widget.
+///
+/// # Arguments
+/// * `status` - The Iced pick_list status
+///
+/// # Returns
+/// * `Some(WidgetState::Hover)` - Mouse over picklist
+/// * `Some(WidgetState::Focus)` - Dropdown menu is open
+/// * `None` - Base/default state (dropdown closed, not hovered)
+///
+/// # Example
+/// ```
+/// use dampen_iced::style_mapping::map_picklist_status;
+/// use iced::widget::pick_list;
+///
+/// let state = map_picklist_status(pick_list::Status::Hovered);
+/// assert_eq!(state, Some(dampen_core::ir::WidgetState::Hover));
+///
+/// let opened_state = map_picklist_status(pick_list::Status::Opened { is_hovered: false });
+/// assert_eq!(opened_state, Some(dampen_core::ir::WidgetState::Focus));
+/// ```
+pub fn map_picklist_status(status: iced::widget::pick_list::Status) -> Option<WidgetState> {
+    use iced::widget::pick_list::Status;
+    match status {
+        Status::Active => None,                      // Base/default state
+        Status::Hovered => Some(WidgetState::Hover), // Mouse over picklist
+        Status::Opened { is_hovered: _ } => Some(WidgetState::Focus), // Dropdown menu open (treat as focused)
+    }
+}
+
+// ============================================================================
+// ComboBox Widget Status Mapping - Uses TextInput Status
+// ============================================================================
+//
+// ℹ️ ICED 0.14 API NOTE: ComboBox does not have its own Status enum
+//
+// ## Implementation Detail
+//
+// In Iced 0.14, the `combo_box` widget does not define its own `Status` enum.
+// Instead, it reuses `text_input::Status` since a combo box is essentially
+// a text input with a dropdown menu.
+//
+// The combo_box style closure signature is:
+// ```text
+// pub fn style<F>(self, f: F) -> Self
+// where
+//     F: 'a + Fn(&Theme, text_input::Status) -> text_input::Style
+// ```
+//
+// ## Dampen Mapping
+//
+// - ComboBox state styling uses `map_text_input_status()`
+// - States available: Active, Hovered, Focused, Disabled
+// - No separate mapping function needed for ComboBox
+//
+// ## Future Builder Integration
+//
+// When implementing state-aware styling for ComboBox in the builder,
+// use `map_text_input_status()` to convert the status to WidgetState:
+//
+// ```rust
+// let style = move |_theme: &Theme, status: text_input::Status| {
+//     let widget_state = map_text_input_status(status);
+//     // ... resolve and apply state-specific styling
+// };
+// combo_box.style(style)
+// ```
+//
+// See `build_combo_box()` in `builder.rs` for integration location.
+//
+// ============================================================================
+
+// ============================================================================
+// Container Widget Status Mapping - API Limitation
+// ============================================================================
+//
+// ⚠️ ICED 0.14 API LIMITATION: Container hover styling not currently available
+//
+// ## Problem
+//
+// In Iced 0.14, the `container` widget's style closure signature is:
+// ```text
+// pub fn style<F>(self, f: F) -> Self
+// where
+//     F: 'a + Fn(&Theme) -> container::Style
+// ```
+//
+// Unlike `button`, `text_input`, `checkbox`, `radio`, and `toggler` widgets,
+// the container style closure does NOT receive a `Status` parameter.
+// This means we cannot detect hover state in the style function.
+//
+// ## Impact on Dampen
+//
+// - Container widgets can receive base styles (background, border, etc.)
+// - Container widgets CANNOT receive hover-specific styles via the standard approach
+// - The `<hover>` state variant for containers in XML will be ignored
+//
+// ## Current Behavior
+//
+// The `DampenWidgetBuilder::build_container` method (via `apply_style_layout`)
+// applies only the base style:
+// ```text
+// container = container.style(move |_theme| iced_style);
+// //                                  ^^^ No status parameter!
+// ```
+//
+// ## Workaround (Future Enhancement)
+//
+// To support container hover styling, we would need to:
+//
+// 1. Create a custom `HoverContainer` widget wrapper around Iced's container
+// 2. Track mouse state manually using Iced's event system
+// 3. Apply state-aware styling based on tracked mouse position
+// 4. Integrate this wrapper into `DampenWidgetBuilder::build_container`
+//
+// This is tracked as a future enhancement (Phase 10+ or separate feature).
+//
+// ## Testing
+//
+// Integration tests for container hover styling are included but may be
+// marked as `#[ignore]` or conditional until the API limitation is resolved
+// or a custom wrapper is implemented.
+//
+// ## Related Issues
+//
+// - Spec: specs/003-widget-state-styling/spec.md (User Story 4)
+// - Tasks: specs/003-widget-state-styling/tasks.md (Phase 6, T044-T052)
+// - Research: specs/003-widget-state-styling/research.md (Container Widget section)
+//
+// ## Status Mapping Function (Placeholder)
+//
+// ```text
+// // This function signature would be used IF Iced added Status parameter:
+// pub fn map_container_status(status: container::Status) -> Option<WidgetState> {
+//     use iced::widget::container::Status;
+//     match status {
+//         Status::Active => None,  // Base/default state
+//         Status::Hovered => Some(WidgetState::Hover),  // Mouse over container
+//     }
+// }
+// ```
+//
+// Note: The above code is HYPOTHETICAL and will NOT compile because
+// `container::Status` is not publicly exported in Iced 0.14 and the style
+// closure does not receive it.
+// ============================================================================
+// Color and Layout Mapping Functions
+// ============================================================================
+
 /// Map Color to Iced Color
 pub fn map_color(color: &Color) -> iced::Color {
     iced::Color {
