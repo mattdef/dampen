@@ -74,6 +74,45 @@ pub fn merge_style_properties(
     }
 }
 
+//
+// Widget Status Mapping Functions
+//
+// These functions map Iced widget-specific status enums to Dampen's unified WidgetState enum.
+// This abstraction layer allows backend-agnostic state styling in the IR.
+//
+
+/// Map button status to unified widget state
+///
+/// Maps Iced's `button::Status` enum to Dampen's `WidgetState`.
+/// Returns `None` for the default/active state (which should use base styles).
+///
+/// # Mapping
+/// - `button::Status::Active` → `None` (default/resting state, use base style)
+/// - `button::Status::Hovered` → `Some(WidgetState::Hover)` (mouse over)
+/// - `button::Status::Pressed` → `Some(WidgetState::Active)` (mouse button down)
+/// - `button::Status::Disabled` → `Some(WidgetState::Disabled)` (not interactive)
+///
+/// # Example
+/// ```ignore
+/// use iced::widget::button;
+/// use dampen_iced::style_mapping::map_button_status;
+///
+/// let state = map_button_status(button::Status::Hovered);
+/// assert_eq!(state, Some(WidgetState::Hover));
+///
+/// let base_state = map_button_status(button::Status::Active);
+/// assert_eq!(base_state, None); // Use base style
+/// ```
+pub fn map_button_status(status: iced::widget::button::Status) -> Option<WidgetState> {
+    use iced::widget::button::Status;
+    match status {
+        Status::Active => None,                          // Base/default state
+        Status::Hovered => Some(WidgetState::Hover),     // Mouse over button
+        Status::Pressed => Some(WidgetState::Active),    // Mouse button pressed
+        Status::Disabled => Some(WidgetState::Disabled), // Button disabled
+    }
+}
+
 /// Map Color to Iced Color
 pub fn map_color(color: &Color) -> iced::Color {
     iced::Color {

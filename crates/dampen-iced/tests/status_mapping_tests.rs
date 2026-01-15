@@ -3,10 +3,11 @@
 //! Tests for:
 //! - resolve_state_style: Looking up state-specific styles
 //! - merge_style_properties: Merging state overrides with base styles
+//! - map_button_status: Mapping Iced button status to WidgetState
 
 use dampen_core::ir::style::{Background, Color, StyleProperties};
 use dampen_core::ir::theme::{StyleClass, WidgetState};
-use dampen_iced::style_mapping::{merge_style_properties, resolve_state_style};
+use dampen_iced::style_mapping::{map_button_status, merge_style_properties, resolve_state_style};
 use std::collections::HashMap;
 
 // Helper function to create a test color
@@ -260,4 +261,59 @@ fn test_merge_style_properties_full_override() {
     }
 
     assert_eq!(merged.opacity, Some(0.5), "Opacity should be from override");
+}
+
+//
+// Button Status Mapping Tests
+//
+
+#[test]
+fn test_map_button_status_active() {
+    use iced::widget::button::Status;
+
+    // Active status (not hovered, not pressed) should map to None (use base style)
+    let result = map_button_status(Status::Active);
+    assert_eq!(
+        result, None,
+        "Active (default) status should return None for base style"
+    );
+}
+
+#[test]
+fn test_map_button_status_hovered() {
+    use iced::widget::button::Status;
+
+    // Hovered status should map to WidgetState::Hover
+    let result = map_button_status(Status::Hovered);
+    assert_eq!(
+        result,
+        Some(WidgetState::Hover),
+        "Hovered status should map to Hover state"
+    );
+}
+
+#[test]
+fn test_map_button_status_pressed() {
+    use iced::widget::button::Status;
+
+    // Pressed status should map to WidgetState::Active
+    let result = map_button_status(Status::Pressed);
+    assert_eq!(
+        result,
+        Some(WidgetState::Active),
+        "Pressed status should map to Active state"
+    );
+}
+
+#[test]
+fn test_map_button_status_disabled() {
+    use iced::widget::button::Status;
+
+    // Disabled status should map to WidgetState::Disabled
+    let result = map_button_status(Status::Disabled);
+    assert_eq!(
+        result,
+        Some(WidgetState::Disabled),
+        "Disabled status should map to Disabled state"
+    );
 }

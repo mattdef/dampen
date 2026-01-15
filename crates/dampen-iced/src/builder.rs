@@ -1018,23 +1018,61 @@ impl<'a> DampenWidgetBuilder<'a> {
             }
         }
 
-        // Resolve and apply button styles using button-specific style function
-        let resolved_style = match (self.resolve_class_styles(node), &node.style) {
+        // Resolve and apply button styles with state-aware styling
+        // Get the StyleClass for state variant resolution
+        let style_class = if !node.classes.is_empty() {
+            self.style_classes.and_then(|classes| {
+                // Get the first class for state variant resolution
+                // In the future, we could merge state variants from multiple classes
+                node.classes.first().and_then(|name| classes.get(name))
+            })
+        } else {
+            None
+        };
+
+        // Resolve base styles (class + inline)
+        let resolved_base_style = match (self.resolve_class_styles(node), &node.style) {
             (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
             (Some(class_style), None) => Some(class_style),
             (None, Some(node_style)) => Some(node_style.clone()),
             (None, None) => None,
         };
 
-        if let Some(style_props) = resolved_style {
-            btn = btn.style(move |_theme, _status| {
+        if let Some(base_style_props) = resolved_base_style {
+            // Clone for move into closure
+            let base_style_props = base_style_props.clone();
+            let style_class = style_class.cloned();
+
+            btn = btn.style(move |_theme, status| {
+                use crate::style_mapping::{
+                    map_button_status, merge_style_properties, resolve_state_style,
+                };
                 use iced::widget::button;
                 use iced::{Background, Border, Color};
+
+                // Map Iced button status to WidgetState
+                let widget_state = map_button_status(status);
+
+                // Resolve state-specific style if available
+                let final_style_props =
+                    if let (Some(class), Some(state)) = (&style_class, widget_state) {
+                        // Try to get state-specific style
+                        if let Some(state_style) = resolve_state_style(class, state) {
+                            // Merge state style with base style
+                            merge_style_properties(&base_style_props, state_style)
+                        } else {
+                            // No state variant defined, use base style
+                            base_style_props.clone()
+                        }
+                    } else {
+                        // No style class or no state, use base style
+                        base_style_props.clone()
+                    };
 
                 let mut style = button::Style::default();
 
                 // Apply background color
-                if let Some(ref bg) = style_props.background {
+                if let Some(ref bg) = final_style_props.background {
                     if let dampen_core::ir::style::Background::Color(color) = bg {
                         style.background = Some(Background::Color(Color {
                             r: color.r,
@@ -1046,7 +1084,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                 }
 
                 // Apply text color
-                if let Some(ref text_color) = style_props.color {
+                if let Some(ref text_color) = final_style_props.color {
                     style.text_color = Color {
                         r: text_color.r,
                         g: text_color.g,
@@ -1056,7 +1094,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                 }
 
                 // Apply border
-                if let Some(ref border) = style_props.border {
+                if let Some(ref border) = final_style_props.border {
                     style.border = Border {
                         color: Color {
                             r: border.color.r,
@@ -1075,7 +1113,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                 }
 
                 // Apply shadow
-                if let Some(ref shadow) = style_props.shadow {
+                if let Some(ref shadow) = final_style_props.shadow {
                     style.shadow = iced::Shadow {
                         color: Color {
                             r: shadow.color.r,
