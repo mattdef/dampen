@@ -4,10 +4,13 @@
 //! - resolve_state_style: Looking up state-specific styles
 //! - merge_style_properties: Merging state overrides with base styles
 //! - map_button_status: Mapping Iced button status to WidgetState
+//! - map_text_input_status: Mapping Iced text_input status to WidgetState
 
 use dampen_core::ir::style::{Background, Color, StyleProperties};
 use dampen_core::ir::theme::{StyleClass, WidgetState};
-use dampen_iced::style_mapping::{map_button_status, merge_style_properties, resolve_state_style};
+use dampen_iced::style_mapping::{
+    map_button_status, map_text_input_status, merge_style_properties, resolve_state_style,
+};
 use std::collections::HashMap;
 
 // Helper function to create a test color
@@ -311,6 +314,70 @@ fn test_map_button_status_disabled() {
 
     // Disabled status should map to WidgetState::Disabled
     let result = map_button_status(Status::Disabled);
+    assert_eq!(
+        result,
+        Some(WidgetState::Disabled),
+        "Disabled status should map to Disabled state"
+    );
+}
+
+// ============================================================================
+// TEXT INPUT STATUS MAPPING TESTS
+// ============================================================================
+
+#[test]
+fn test_map_text_input_status_active() {
+    use iced::widget::text_input::Status;
+
+    // Active status should map to None (use base style)
+    let result = map_text_input_status(Status::Active);
+    assert_eq!(
+        result, None,
+        "Active status should map to None (base style)"
+    );
+}
+
+#[test]
+fn test_map_text_input_status_hovered() {
+    use iced::widget::text_input::Status;
+
+    // Hovered status should map to WidgetState::Hover
+    let result = map_text_input_status(Status::Hovered);
+    assert_eq!(
+        result,
+        Some(WidgetState::Hover),
+        "Hovered status should map to Hover state"
+    );
+}
+
+#[test]
+fn test_map_text_input_status_focused() {
+    use iced::widget::text_input::Status;
+
+    // Focused status should map to WidgetState::Focus
+    // Status::Focused is a struct variant with is_hovered field
+    let result = map_text_input_status(Status::Focused { is_hovered: false });
+    assert_eq!(
+        result,
+        Some(WidgetState::Focus),
+        "Focused status should map to Focus state"
+    );
+
+    // Test with is_hovered=true as well
+    let result_hovered = map_text_input_status(Status::Focused { is_hovered: true });
+    assert_eq!(
+        result_hovered,
+        Some(WidgetState::Focus),
+        "Focused (hovered) status should map to Focus state"
+    );
+}
+
+#[test]
+fn test_map_text_input_status_disabled() {
+    use iced::widget::text_input::Status;
+
+    // Disabled status should map to WidgetState::Disabled
+    let result = map_text_input_status(Status::Disabled);
     assert_eq!(
         result,
         Some(WidgetState::Disabled),

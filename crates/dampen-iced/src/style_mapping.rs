@@ -113,6 +113,38 @@ pub fn map_button_status(status: iced::widget::button::Status) -> Option<WidgetS
     }
 }
 
+/// Map text input status to unified widget state
+///
+/// Maps Iced's `text_input::Status` enum to Dampen's `WidgetState`.
+/// Returns `None` for the default/active state (which should use base styles).
+///
+/// # Mapping
+/// - `text_input::Status::Active` → `None` (default/resting state, use base style)
+/// - `text_input::Status::Hovered` → `Some(WidgetState::Hover)` (mouse over)
+/// - `text_input::Status::Focused` → `Some(WidgetState::Focus)` (has keyboard focus)
+/// - `text_input::Status::Disabled` → `Some(WidgetState::Disabled)` (not interactive)
+///
+/// # Example
+/// ```ignore
+/// use iced::widget::text_input;
+/// use dampen_iced::style_mapping::map_text_input_status;
+///
+/// let state = map_text_input_status(text_input::Status::Focused);
+/// assert_eq!(state, Some(WidgetState::Focus));
+///
+/// let base_state = map_text_input_status(text_input::Status::Active);
+/// assert_eq!(base_state, None); // Use base style
+/// ```
+pub fn map_text_input_status(status: iced::widget::text_input::Status) -> Option<WidgetState> {
+    use iced::widget::text_input::Status;
+    match status {
+        Status::Active => None,                             // Base/default state
+        Status::Hovered => Some(WidgetState::Hover),        // Mouse over input
+        Status::Focused { .. } => Some(WidgetState::Focus), // Input has keyboard focus (ignore fields)
+        Status::Disabled => Some(WidgetState::Disabled),    // Input disabled
+    }
+}
+
 /// Map Color to Iced Color
 pub fn map_color(color: &Color) -> iced::Color {
     iced::Color {
