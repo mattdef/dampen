@@ -716,14 +716,11 @@ impl<'a> DampenWidgetBuilder<'a> {
                 // Resolve theme colors for this widget type at render time
                 let mut theme_style = dampen_core::ir::style::StyleProperties::default();
 
-                match widget_kind {
-                    WidgetKind::Container => {
-                        if let Some(ref surface) = palette.surface {
-                            theme_style.background =
-                                Some(dampen_core::ir::style::Background::Color(*surface));
-                        }
+                if widget_kind == WidgetKind::Container {
+                    if let Some(ref surface) = palette.surface {
+                        theme_style.background =
+                            Some(dampen_core::ir::style::Background::Color(*surface));
                     }
-                    _ => {}
                 }
 
                 // Merge theme with static styles (theme is base, static overrides)
