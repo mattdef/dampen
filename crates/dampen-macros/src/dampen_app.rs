@@ -1192,11 +1192,17 @@ pub fn generate_subscription_method(
     };
 
     Some(quote! {
+        #[cfg(debug_assertions)]
         pub fn subscription(&self) -> iced::Subscription<#message_type> {
             #hot_reload_sub
             #system_theme_sub
 
             #sub_expr
+        }
+
+        #[cfg(not(debug_assertions))]
+        pub fn subscription(&self) -> iced::Subscription<#message_type> {
+            iced::Subscription::none()
         }
     })
 }
