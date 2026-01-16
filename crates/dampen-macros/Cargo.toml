@@ -28,6 +28,7 @@ globset = "0.4.18"
 
 [dev-dependencies]
 dampen-core = { path = "../dampen-core" }
+dampen-dev = { path = "../dampen-dev" }
 trybuild = "1.0"
 insta = "1.0"
 

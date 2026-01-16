@@ -34,6 +34,7 @@ pub mod application;
 pub mod bindings;
 pub mod config;
 pub mod handlers;
+pub mod theme;
 pub mod update;
 pub mod view;
 
@@ -361,6 +362,9 @@ pub enum CodegenError {
 
     #[error("Binding expression error: {0}")]
     BindingError(String),
+
+    #[error("Theme code generation error: {0}")]
+    ThemeError(String),
 
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),

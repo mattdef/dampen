@@ -633,6 +633,124 @@ fn validate_handlers(
     }
 }
 
+/// Result type for theme hot-reload attempts
+#[derive(Debug)]
+pub enum ThemeReloadResult {
+    /// Reload succeeded
+    Success,
+
+    /// Theme file parse error
+    ParseError(String),
+
+    /// Theme document validation error
+    ValidationError(String),
+
+    /// No theme context to reload
+    NoThemeContext,
+
+    /// Theme file not found
+    FileNotFound,
+}
+
+/// Attempts to hot-reload the theme from a changed theme.dampen file.
+///
+/// This function handles theme file changes specifically:
+/// 1. Read the new theme file content
+/// 2. Parse the new ThemeDocument
+/// 3. Update the ThemeContext if valid
+///
+/// # Arguments
+///
+/// * `theme_path` - Path to the theme.dampen file
+/// * `theme_context` - The current ThemeContext to reload
+///
+/// # Returns
+///
+/// A `ThemeReloadResult` indicating success or the specific type of failure
+///
+/// # Example
+///
+/// ```no_run
+/// use dampen_dev::reload::{attempt_theme_hot_reload, ThemeReloadResult};
+/// use dampen_core::state::ThemeContext;
+///
+/// fn handle_theme_file_change(theme_path: &std::path::Path, ctx: &mut Option<ThemeContext>) {
+///     let result = attempt_theme_hot_reload(theme_path, ctx);
+///
+///     match result {
+///         ThemeReloadResult::Success => {
+///             println!("Theme reloaded successfully");
+///         }
+///         ThemeReloadResult::ParseError(err) => {
+///             eprintln!("Failed to parse theme file: {}", err);
+///         }
+///         ThemeReloadResult::ValidationError(err) => {
+///             eprintln!("Theme validation failed: {}", err);
+///         }
+///         ThemeReloadResult::NoThemeContext => {
+///             eprintln!("No theme context to reload");
+///         }
+///         ThemeReloadResult::FileNotFound => {
+///             eprintln!("Theme file not found");
+///         }
+///     }
+/// }
+/// ```
+pub fn attempt_theme_hot_reload(
+    theme_path: &std::path::Path,
+    theme_context: &mut Option<dampen_core::state::ThemeContext>,
+) -> ThemeReloadResult {
+    let theme_context = match theme_context {
+        Some(ctx) => ctx,
+        None => return ThemeReloadResult::NoThemeContext,
+    };
+
+    let content = match std::fs::read_to_string(theme_path) {
+        Ok(c) => c,
+        Err(e) => return ThemeReloadResult::ParseError(format!("Failed to read file: {}", e)),
+    };
+
+    let new_doc = match dampen_core::parser::theme_parser::parse_theme_document(&content) {
+        Ok(doc) => doc,
+        Err(e) => {
+            return ThemeReloadResult::ParseError(format!(
+                "Failed to parse theme document: {}",
+                e.message
+            ));
+        }
+    };
+
+    if let Err(e) = new_doc.validate() {
+        return ThemeReloadResult::ValidationError(e.to_string());
+    }
+
+    theme_context.reload(new_doc);
+    ThemeReloadResult::Success
+}
+
+/// Check if a path is a theme file path
+pub fn is_theme_file_path(path: &std::path::Path) -> bool {
+    path.file_name()
+        .and_then(|n| n.to_str())
+        .map(|n| n == "theme.dampen")
+        .unwrap_or(false)
+}
+
+/// Find the theme directory path from a changed file path
+///
+/// If the changed file is in or under the theme directory, returns the theme directory.
+/// Otherwise returns None.
+pub fn get_theme_dir_from_path(path: &std::path::Path) -> Option<std::path::PathBuf> {
+    let path = std::fs::canonicalize(path).ok()?;
+    let theme_file_name = path.file_name()?;
+
+    if theme_file_name == "theme.dampen" {
+        return Some(path.parent()?.to_path_buf());
+    }
+
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1326,5 +1444,232 @@ mod tests {
                 result
             ),
         }
+    }
+}
+
+#[cfg(test)]
+mod theme_reload_tests {
+    use super::*;
+    use dampen_core::ir::style::Color;
+    use dampen_core::ir::theme::{SpacingScale, Theme, ThemeDocument, ThemePalette, Typography};
+    use tempfile::TempDir;
+
+    fn create_test_palette(primary: &str) -> ThemePalette {
+        ThemePalette {
+            primary: Some(Color::from_hex(primary).unwrap()),
+            secondary: Some(Color::from_hex("#2ecc71").unwrap()),
+            success: Some(Color::from_hex("#27ae60").unwrap()),
+            warning: Some(Color::from_hex("#f39c12").unwrap()),
+            danger: Some(Color::from_hex("#e74c3c").unwrap()),
+            background: Some(Color::from_hex("#ecf0f1").unwrap()),
+            surface: Some(Color::from_hex("#ffffff").unwrap()),
+            text: Some(Color::from_hex("#2c3e50").unwrap()),
+            text_secondary: Some(Color::from_hex("#7f8c8d").unwrap()),
+        }
+    }
+
+    fn create_test_theme(name: &str, primary: &str) -> Theme {
+        Theme {
+            name: name.to_string(),
+            palette: create_test_palette(primary),
+            typography: Typography {
+                font_family: Some("sans-serif".to_string()),
+                font_size_base: Some(16.0),
+                font_size_small: Some(12.0),
+                font_size_large: Some(24.0),
+                font_weight: dampen_core::ir::theme::FontWeight::Normal,
+                line_height: Some(1.5),
+            },
+            spacing: SpacingScale { unit: Some(8.0) },
+            base_styles: std::collections::HashMap::new(),
+            extends: None,
+        }
+    }
+
+    fn create_test_document() -> ThemeDocument {
+        ThemeDocument {
+            themes: std::collections::HashMap::from([
+                ("light".to_string(), create_test_theme("light", "#3498db")),
+                ("dark".to_string(), create_test_theme("dark", "#5dade2")),
+            ]),
+            default_theme: Some("light".to_string()),
+            follow_system: true,
+        }
+    }
+
+    fn create_test_theme_context() -> dampen_core::state::ThemeContext {
+        let doc = create_test_document();
+        dampen_core::state::ThemeContext::from_document(doc, None).unwrap()
+    }
+
+    #[test]
+    fn test_attempt_theme_hot_reload_success() {
+        let temp_dir = TempDir::new().unwrap();
+        let theme_dir = temp_dir.path().join("src/ui/theme");
+        std::fs::create_dir_all(&theme_dir).unwrap();
+
+        let theme_content = r##"
+            <dampen version="1.0">
+                <themes>
+                    <theme name="light">
+                        <palette
+                            primary="#111111"
+                            secondary="#2ecc71"
+                            success="#27ae60"
+                            warning="#f39c12"
+                            danger="#e74c3c"
+                            background="#ecf0f1"
+                            surface="#ffffff"
+                            text="#2c3e50"
+                            text_secondary="#7f8c8d" />
+                    </theme>
+                </themes>
+                <default_theme name="light" />
+            </dampen>
+        "##;
+
+        let theme_path = theme_dir.join("theme.dampen");
+        std::fs::write(&theme_path, theme_content).unwrap();
+
+        let mut theme_ctx = Some(create_test_theme_context());
+        let result = attempt_theme_hot_reload(&theme_path, &mut theme_ctx);
+
+        match result {
+            ThemeReloadResult::Success => {
+                let ctx = theme_ctx.unwrap();
+                assert_eq!(ctx.active_name(), "light");
+                assert_eq!(
+                    ctx.active().palette.primary,
+                    Some(Color::from_hex("#111111").unwrap())
+                );
+            }
+            _ => panic!("Expected Success, got {:?}", result),
+        }
+    }
+
+    #[test]
+    fn test_attempt_theme_hot_reload_parse_error() {
+        let temp_dir = TempDir::new().unwrap();
+        let theme_dir = temp_dir.path().join("src/ui/theme");
+        std::fs::create_dir_all(&theme_dir).unwrap();
+
+        let theme_path = theme_dir.join("theme.dampen");
+        std::fs::write(&theme_path, "invalid xml").unwrap();
+
+        let mut theme_ctx = Some(create_test_theme_context());
+        let result = attempt_theme_hot_reload(&theme_path, &mut theme_ctx);
+
+        match result {
+            ThemeReloadResult::ParseError(_) => {}
+            _ => panic!("Expected ParseError, got {:?}", result),
+        }
+    }
+
+    #[test]
+    fn test_attempt_theme_hot_reload_no_theme_context() {
+        let temp_dir = TempDir::new().unwrap();
+        let theme_dir = temp_dir.path().join("src/ui/theme");
+        std::fs::create_dir_all(&theme_dir).unwrap();
+
+        let theme_path = theme_dir.join("theme.dampen");
+        std::fs::write(
+            &theme_path,
+            r#"<dampen version="1.0"><themes></themes></dampen>"#,
+        )
+        .unwrap();
+
+        let mut theme_ctx: Option<dampen_core::state::ThemeContext> = None;
+        let result = attempt_theme_hot_reload(&theme_path, &mut theme_ctx);
+
+        match result {
+            ThemeReloadResult::NoThemeContext => {}
+            _ => panic!("Expected NoThemeContext, got {:?}", result),
+        }
+    }
+
+    #[test]
+    fn test_attempt_theme_hot_reload_preserves_active_theme() {
+        let temp_dir = TempDir::new().unwrap();
+        let theme_dir = temp_dir.path().join("src/ui/theme");
+        std::fs::create_dir_all(&theme_dir).unwrap();
+
+        let theme_content = r##"
+            <dampen version="1.0">
+                <themes>
+                    <theme name="new_theme">
+                        <palette
+                            primary="#ff0000"
+                            secondary="#2ecc71"
+                            success="#27ae60"
+                            warning="#f39c12"
+                            danger="#e74c3c"
+                            background="#ecf0f1"
+                            surface="#ffffff"
+                            text="#2c3e50"
+                            text_secondary="#7f8c8d" />
+                    </theme>
+                    <theme name="dark">
+                        <palette
+                            primary="#5dade2"
+                            secondary="#52be80"
+                            success="#27ae60"
+                            warning="#f39c12"
+                            danger="#ec7063"
+                            background="#2c3e50"
+                            surface="#34495e"
+                            text="#ecf0f1"
+                            text_secondary="#95a5a6" />
+                    </theme>
+                </themes>
+                <default_theme name="new_theme" />
+            </dampen>
+        "##;
+
+        let theme_path = theme_dir.join("theme.dampen");
+        std::fs::write(&theme_path, theme_content).unwrap();
+
+        let mut theme_ctx = Some(create_test_theme_context());
+        theme_ctx.as_mut().unwrap().set_theme("dark").unwrap();
+        assert_eq!(theme_ctx.as_ref().unwrap().active_name(), "dark");
+
+        let result = attempt_theme_hot_reload(&theme_path, &mut theme_ctx);
+
+        match result {
+            ThemeReloadResult::Success => {
+                let ctx = theme_ctx.unwrap();
+                assert_eq!(ctx.active_name(), "dark");
+            }
+            _ => panic!("Expected Success, got {:?}", result),
+        }
+    }
+
+    #[test]
+    fn test_is_theme_file_path() {
+        assert!(is_theme_file_path(&std::path::PathBuf::from(
+            "src/ui/theme/theme.dampen"
+        )));
+        assert!(!is_theme_file_path(&std::path::PathBuf::from(
+            "src/ui/window.dampen"
+        )));
+        assert!(is_theme_file_path(&std::path::PathBuf::from(
+            "/some/path/theme.dampen"
+        )));
+    }
+
+    #[test]
+    fn test_get_theme_dir_from_path() {
+        let temp_dir = TempDir::new().unwrap();
+        let theme_dir = temp_dir.path().join("src/ui/theme");
+        std::fs::create_dir_all(&theme_dir).unwrap();
+        let theme_path = theme_dir.join("theme.dampen");
+        std::fs::write(
+            &theme_path,
+            "<dampen version=\"1.0\"><themes></themes></dampen>",
+        )
+        .unwrap();
+
+        let result = get_theme_dir_from_path(&theme_path);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), theme_dir);
     }
 }

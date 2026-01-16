@@ -64,6 +64,10 @@
 //! - [`UiBindable`](crate::binding::UiBindable) - Trait for bindable models
 //! - [`SharedContext`](crate::shared::SharedContext) - Shared state container
 
+mod theme_context;
+
+pub use theme_context::ThemeContext;
+
 use std::marker::PhantomData;
 use std::sync::{RwLockReadGuard, RwLockWriteGuard};
 
@@ -91,6 +95,7 @@ use crate::{binding::UiBindable, handler::HandlerRegistry, ir::DampenDocument};
 /// * `model` - Application state model for data bindings
 /// * `handler_registry` - Registry of event handlers for UI interactions
 /// * `shared_context` - Optional reference to shared state across views
+/// * `theme_context` - Optional theme context for theming support
 #[derive(Debug, Clone)]
 pub struct AppState<M: UiBindable = (), S: UiBindable + Send + Sync + 'static = ()> {
     /// The parsed UI document containing widget tree and themes.
@@ -105,6 +110,10 @@ pub struct AppState<M: UiBindable = (), S: UiBindable + Send + Sync + 'static = 
 
     /// Optional reference to shared context for inter-window communication.
     pub shared_context: Option<SharedContext<S>>,
+
+    /// Optional theme context for theming support.
+    /// None when no theme.dampen file is present.
+    pub theme_context: Option<ThemeContext>,
 
     /// Type marker to capture the generic parameters.
     _marker: PhantomData<(M, S)>,
@@ -138,6 +147,7 @@ impl<M: UiBindable> AppState<M, ()> {
             model: M::default(),
             handler_registry: HandlerRegistry::default(),
             shared_context: None,
+            theme_context: None,
             _marker: PhantomData,
         }
     }
@@ -166,6 +176,7 @@ impl<M: UiBindable> AppState<M, ()> {
             model,
             handler_registry: HandlerRegistry::default(),
             shared_context: None,
+            theme_context: None,
             _marker: PhantomData,
         }
     }
@@ -194,6 +205,7 @@ impl<M: UiBindable> AppState<M, ()> {
             model: M::default(),
             handler_registry,
             shared_context: None,
+            theme_context: None,
             _marker: PhantomData,
         }
     }
@@ -231,6 +243,7 @@ impl<M: UiBindable> AppState<M, ()> {
             model,
             handler_registry,
             shared_context: None,
+            theme_context: None,
             _marker: PhantomData,
         }
     }
@@ -287,6 +300,7 @@ impl<M: UiBindable, S: UiBindable + Send + Sync + 'static> AppState<M, S> {
             model,
             handler_registry,
             shared_context: Some(shared_context),
+            theme_context: None,
             _marker: PhantomData,
         }
     }
@@ -365,5 +379,35 @@ impl<M: UiBindable, S: UiBindable + Send + Sync + 'static> AppState<M, S> {
     /// ```
     pub fn hot_reload(&mut self, new_document: DampenDocument) {
         self.document = new_document;
+    }
+
+    /// Set the theme context for this AppState.
+    ///
+    /// This is used by the application initialization code to load themes
+    /// from theme.dampen files and apply them to the application.
+    ///
+    /// # Arguments
+    ///
+    /// * `theme_context` - The theme context to use for this application state
+    pub fn set_theme_context(&mut self, theme_context: ThemeContext) {
+        self.theme_context = Some(theme_context);
+    }
+
+    /// Get a reference to the theme context if available.
+    ///
+    /// # Returns
+    ///
+    /// Reference to the theme context, or None if no theme is loaded
+    pub fn theme_context(&self) -> Option<&ThemeContext> {
+        self.theme_context.as_ref()
+    }
+
+    /// Get a mutable reference to the theme context if available.
+    ///
+    /// # Returns
+    ///
+    /// Mutable reference to the theme context, or None if no theme is loaded
+    pub fn theme_context_mut(&mut self) -> Option<&mut ThemeContext> {
+        self.theme_context.as_mut()
     }
 }

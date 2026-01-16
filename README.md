@@ -182,31 +182,54 @@ struct TodoItem {
 
 ### Advanced Theming System
 
-```xml
-<themes>
-    <theme name="light">
-        <palette 
-            primary="#3498db" 
-            secondary="#2ecc71"
-            background="#ecf0f1"
-            text="#2c3e50" />
-        <typography font_family="Inter, sans-serif" font_size_base="16" />
-        <spacing unit="8" />
-    </theme>
-    
-    <theme name="dark">
-        <palette 
-            primary="#5dade2" 
-            secondary="#52be80"
-            background="#2c3e50"
-            text="#ecf0f1" />
-        <typography font_family="Inter, sans-serif" font_size_base="16" />
-        <spacing unit="8" />
-    </theme>
-</themes>
+Define themes in `src/ui/theme/theme.dampen` for complete application theming:
 
-<global_theme name="light" />
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen version="1.0">
+    <themes>
+        <theme name="light">
+            <palette
+                primary="#3498db"
+                secondary="#2ecc71"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c"
+                background="#ecf0f1"
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d" />
+            <typography font_family="Inter, sans-serif" font_size_base="16" />
+            <spacing unit="8" />
+        </theme>
+
+        <theme name="dark" extends="light">
+            <palette
+                background="#1a1a2e"
+                surface="#16213e"
+                text="#eaeaea"
+                text_secondary="#a0a0a0" />
+        </theme>
+    </themes>
+
+    <default_theme name="light" />
+    <follow_system enabled="true" />
+</dampen>
 ```
+
+**Runtime Theme Switching:**
+```xml
+<button label="Dark Mode" on_click="set_theme('dark')" />
+<button label="Light Mode" on_click="set_theme('light')" />
+```
+
+**Theme Features:**
+- **Theme Inheritance** - Extend themes with `extends="base_theme"`
+- **System Detection** - Auto-detect dark/light mode with `<follow_system enabled="true" />`
+- **Hot-Reload** - Edit `theme.dampen` and see changes instantly in development
+- **Runtime Switching** - Switch themes without restarting
+
+See [STYLING.md](docs/STYLING.md) for complete documentation.
 
 ### Reusable Style Classes
 

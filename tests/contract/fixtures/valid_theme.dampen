@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen version="1.0">
+    <themes>
+        <theme name="light">
+            <palette
+                primary="#3498db"
+                secondary="#2ecc71"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c"
+                background="#ecf0f1"
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d" />
+            <typography
+                font_family="Inter, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="24"
+                font_weight="normal"
+                line_height="1.5" />
+            <spacing unit="8" />
+        </theme>
+        <theme name="dark">
+            <palette
+                primary="#3498db"
+                secondary="#2ecc71"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c"
+                background="#2c3e50"
+                surface="#1a1a2e"
+                text="#ecf0f1"
+                text_secondary="#95a5a6" />
+            <typography
+                font_family="Inter, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="24"
+                font_weight="normal"
+                line_height="1.5" />
+            <spacing unit="8" />
+        </theme>
+    </themes>
+    <default_theme name="light" />
+    <follow_system enabled="true" />
+</dampen>

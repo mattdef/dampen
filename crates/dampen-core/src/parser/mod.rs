@@ -5,6 +5,7 @@ pub mod style_parser;
 pub mod theme_parser;
 
 use crate::expr::tokenize_binding_expr;
+use crate::expr::{BindingExpr, Expr, LiteralExpr};
 use crate::ir::{
     AttributeValue, DampenDocument, EventBinding, EventKind, InterpolatedPart, SchemaVersion, Span,
     WidgetKind, WidgetNode,
@@ -598,20 +599,39 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
 
             if let Some(event) = event_kind {
                 // Parse handler name and optional parameter
-                // Syntax: "handler_name" or "handler_name:{expression}"
+                // Syntax: "handler_name", "handler_name:{expression}", or "handler_name:'value'"
                 let (handler_name, param) = if let Some(colon_pos) = value.find(':') {
                     let handler = value[..colon_pos].to_string();
                     let param_str = &value[colon_pos + 1..];
 
-                    // Remove surrounding braces if present: {item.id} -> item.id
-                    let param_clean = param_str.trim_matches('{').trim_matches('}');
+                    // Check for single-quoted string: 'value'
+                    if param_str.starts_with('\'')
+                        && param_str.ends_with('\'')
+                        && param_str.len() >= 2
+                    {
+                        let quoted_value = &param_str[1..param_str.len() - 1];
+                        // Create a static string binding expression
+                        let expr = BindingExpr {
+                            expr: Expr::Literal(LiteralExpr::String(quoted_value.to_string())),
+                            span: Span::new(
+                                colon_pos + 1,
+                                colon_pos + 1 + param_str.len(),
+                                1,
+                                colon_pos as u32 + 1,
+                            ),
+                        };
+                        (handler, Some(expr))
+                    } else {
+                        // Remove surrounding braces if present: {item.id} -> item.id
+                        let param_clean = param_str.trim_matches('{').trim_matches('}');
 
-                    // Parse parameter as binding expression
-                    match crate::expr::tokenize_binding_expr(param_clean, 0, 1, 1) {
-                        Ok(expr) => (handler, Some(expr)),
-                        Err(_) => {
-                            // If parsing fails, treat the whole string as handler name
-                            (value.to_string(), None)
+                        // Parse parameter as binding expression
+                        match crate::expr::tokenize_binding_expr(param_clean, 0, 1, 1) {
+                            Ok(expr) => (handler, Some(expr)),
+                            Err(_) => {
+                                // If parsing fails, treat the whole string as handler name
+                                (value.to_string(), None)
+                            }
                         }
                     }
                 } else {
@@ -657,6 +677,9 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         Vec::new()
     };
 
+    // Extract theme attribute into theme_ref field (supports both static and binding)
+    let theme_ref = attributes.get("theme").cloned();
+
     // Parse children
     let mut children = Vec::new();
     for child in node.children() {
@@ -701,7 +724,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         span: get_span(node, source),
         style,
         layout,
-        theme_ref: None,
+        theme_ref,
         classes,
         breakpoint_attributes,
     })

@@ -113,6 +113,126 @@ impl Color {
         })
     }
 
+    /// Parse color from hex string
+    ///
+    /// Supports:
+    /// - "#RGB" (e.g., "#f00" → red)
+    /// - "#RRGGBB" (e.g., "#ff0000" → red)
+    /// - "#RRGGBBAA" (e.g., "#ff000080" → semi-transparent red)
+    pub fn from_hex(s: &str) -> Result<Self, String> {
+        let s = s.trim();
+        if !s.starts_with('#') {
+            return Err(format!("Invalid hex color '{}': must start with '#'", s));
+        }
+
+        let hex = &s[1..];
+        let (r, g, b, a) = match hex.len() {
+            3 => {
+                // Expand each character to two (e.g., "f" -> "ff")
+                let r = u8::from_str_radix(&format!("{}{}", &hex[0..1], &hex[0..1]), 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                let g = u8::from_str_radix(&format!("{}{}", &hex[1..2], &hex[1..2]), 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                let b = u8::from_str_radix(&format!("{}{}", &hex[2..3], &hex[2..3]), 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                (r, g, b, 255)
+            }
+            6 => {
+                let r = u8::from_str_radix(&hex[0..2], 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                let g = u8::from_str_radix(&hex[2..4], 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                let b = u8::from_str_radix(&hex[4..6], 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                (r, g, b, 255)
+            }
+            8 => {
+                let r = u8::from_str_radix(&hex[0..2], 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                let g = u8::from_str_radix(&hex[2..4], 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                let b = u8::from_str_radix(&hex[4..6], 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                let a = u8::from_str_radix(&hex[6..8], 16)
+                    .map_err(|_| format!("Invalid hex color '{}'", s))?;
+                (r, g, b, a)
+            }
+            _ => {
+                return Err(format!(
+                    "Invalid hex color '{}': expected 3, 6, or 8 hex digits",
+                    s
+                ));
+            }
+        };
+
+        Ok(Color {
+            r: r as f32 / 255.0,
+            g: g as f32 / 255.0,
+            b: b as f32 / 255.0,
+            a: a as f32 / 255.0,
+        })
+    }
+
+    /// Convert to hex string
+    pub fn to_hex(&self) -> String {
+        let r = (self.r.clamp(0.0, 1.0) * 255.0) as u8;
+        let g = (self.g.clamp(0.0, 1.0) * 255.0) as u8;
+        let b = (self.b.clamp(0.0, 1.0) * 255.0) as u8;
+        format!("#{:02x}{:02x}{:02x}", r, g, b)
+    }
+
+    /// Create color from RGB bytes (0-255 range)
+    ///
+    /// # Arguments
+    ///
+    /// * `r` - Red component (0-255)
+    /// * `g` - Green component (0-255)
+    /// * `b` - Blue component (0-255)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use dampen_core::ir::style::Color;
+    ///
+    /// let color = Color::from_rgb8(52, 152, 219);
+    /// assert_eq!(color.r, 52.0 / 255.0);
+    /// ```
+    pub fn from_rgb8(r: u8, g: u8, b: u8) -> Self {
+        Self {
+            r: r as f32 / 255.0,
+            g: g as f32 / 255.0,
+            b: b as f32 / 255.0,
+            a: 1.0,
+        }
+    }
+
+    /// Create color from RGBA bytes (0-255 range)
+    ///
+    /// # Arguments
+    ///
+    /// * `r` - Red component (0-255)
+    /// * `g` - Green component (0-255)
+    /// * `b` - Blue component (0-255)
+    /// * `a` - Alpha component (0-255)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use dampen_core::ir::style::Color;
+    ///
+    /// let color = Color::from_rgba8(52, 152, 219, 200);
+    /// assert_eq!(color.r, 52.0 / 255.0);
+    /// assert_eq!(color.a, 200.0 / 255.0);
+    /// ```
+    pub fn from_rgba8(r: u8, g: u8, b: u8, a: u8) -> Self {
+        Self {
+            r: r as f32 / 255.0,
+            g: g as f32 / 255.0,
+            b: b as f32 / 255.0,
+            a: a as f32 / 255.0,
+        }
+    }
+
     /// Validate color values
     pub fn validate(&self) -> Result<(), String> {
         if self.r < 0.0 || self.r > 1.0 {

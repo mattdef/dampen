@@ -961,7 +961,7 @@ fn validate_references(
 
     // Validate each theme definition (US5: Theme Property Validation)
     for (name, theme) in &document.themes {
-        if let Err(msg) = theme.validate() {
+        if let Err(msg) = theme.validate(false) {
             // Check if it's a circular dependency error
             if msg.contains("circular") || msg.contains("Circular") {
                 errors.push(CheckError::XmlValidationError {
@@ -1052,13 +1052,21 @@ fn validate_widget_with_styles(
 
     // Validate theme reference
     if let Some(theme_ref) = &node.theme_ref {
-        if !document.themes.contains_key(theme_ref) {
-            errors.push(CheckError::UnknownTheme {
-                theme: theme_ref.clone(),
-                file: file_path.to_path_buf(),
-                line: node.span.line,
-                col: node.span.column,
-            });
+        match theme_ref {
+            AttributeValue::Static(theme_name) => {
+                if !document.themes.contains_key(theme_name) {
+                    errors.push(CheckError::UnknownTheme {
+                        theme: theme_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                    });
+                }
+            }
+            AttributeValue::Binding(_) | AttributeValue::Interpolated(_) => {
+                // Binding expressions can't be validated at check time
+                // They will be evaluated at runtime
+            }
         }
     }
 

@@ -10,12 +10,13 @@ This guide covers the complete styling system for Dampen UI, including themes, s
 ## Table of Contents
 
 1. [Themes](#themes)
-2. [Inline Styles](#inline-styles)
-3. [Layout & Alignment](#layout--alignment)
-4. [Style Classes](#style-classes)
-5. [State-Based Styling](#state-based-styling)
-6. [Responsive Design](#responsive-design)
-7. [Best Practices](#best-practices)
+2. [Global Theme File](#global-theme-file)
+3. [Inline Styles](#inline-styles)
+4. [Layout & Alignment](#layout--alignment)
+5. [Style Classes](#style-classes)
+6. [State-Based Styling](#state-based-styling)
+7. [Responsive Design](#responsive-design)
+8. [Best Practices](#best-practices)
 
 ---
 
@@ -86,6 +87,301 @@ Defines the spacing scale used throughout the app.
 ```
 
 All spacing values are multiples of this unit.
+
+### Custom Themes with Inheritance
+
+Themes can inherit from other themes using the `extends` attribute. This allows you to create theme variants without duplicating all properties.
+
+#### Basic Inheritance
+
+```xml
+<dampen>
+    <themes>
+        <!-- Base theme with all colors defined -->
+        <theme name="base">
+            <palette
+                primary="#3498db"
+                secondary="#2ecc71"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c"
+                background="#ecf0f1"
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d" />
+            <typography
+                font_family="Inter, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="24"
+                font_weight="normal"
+                line_height="1.5" />
+            <spacing unit="8" />
+        </theme>
+
+        <!-- Dark theme - only override what's different -->
+        <theme name="dark" extends="base">
+            <palette
+                background="#2c3e50"
+                surface="#34495e"
+                text="#ecf0f1"
+                text_secondary="#95a5a6" />
+            <!-- Other colors inherited from "base" -->
+        </theme>
+
+        <!-- High contrast variant of dark -->
+        <theme name="dark_contrast" extends="dark">
+            <palette
+                primary="#5dade2"
+                secondary="#58d68d" />
+        </theme>
+    </themes>
+
+    <default_theme name="dark" />
+</dampen>
+```
+
+#### Benefits of Inheritance
+
+| Benefit | Description |
+|---------|-------------|
+| **Reduced Duplication** | Only define what's different |
+| **Consistency** | Changes to base theme propagate to variants |
+| **Maintainability** | Single source of truth for common properties |
+| **Flexibility** | Create as many variants as needed |
+
+#### Inheritance Rules
+
+1. **Child theme values take precedence** - Any property defined in the child overrides the parent's value
+2. **Missing values are inherited** - Properties not defined in the child use the parent's value
+3. **Maximum depth: 5 levels** - Prevents circular dependencies
+4. **No circular inheritance** - Theme A cannot extend B if B extends A
+
+#### Validation
+
+Dampen validates theme inheritance at parse time:
+
+```xml
+<!-- Circular inheritance - will fail validation -->
+<theme name="a" extends="b">
+<theme name="b" extends="a">
+```
+
+Error message:
+```
+THEME_007: Circular theme inheritance detected: a → b → a
+```
+
+```xml
+<!-- Missing parent theme - will fail validation -->
+<theme name="child" extends="nonexistent">
+```
+
+Error message:
+```
+THEME_006: Parent theme 'nonexistent' not found for theme 'child'
+```
+
+#### Tips for Theme Inheritance
+
+- **Start with a base theme** containing all required colors and typography
+- **Name your base theme** something generic like "base", "default", or "core"
+- **Use semantic names** for variants: "dark", "light", "high_contrast"
+- **Test inheritance chain** by modifying the base theme and verifying variants update
+
+#### Complete Example: Multi-Theme App
+
+```xml
+<dampen>
+    <themes>
+        <!-- Brand base -->
+        <theme name="brand">
+            <palette
+                primary="#6366f1"
+                secondary="#8b5cf6"
+                success="#22c55e"
+                warning="#f59e0b"
+                danger="#ef4444"
+                background="#f8fafc"
+                surface="#ffffff"
+                text="#1e293b"
+                text_secondary="#64748b" />
+            <typography
+                font_family="Inter, system-ui, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="20"
+                line_height="1.5" />
+            <spacing unit="4" />
+        </theme>
+
+        <!-- Light variant -->
+        <theme name="light" extends="brand" />
+
+        <!-- Dark variant -->
+        <theme name="dark" extends="brand">
+            <palette
+                background="#0f172a"
+                surface="#1e293b"
+                text="#f1f5f9"
+                text_secondary="#94a3b8" />
+        </theme>
+
+        <!-- High contrast for accessibility -->
+        <theme name="high_contrast" extends="dark">
+            <palette
+                primary="#00ffff"
+                secondary="#ff00ff"
+                background="#000000"
+                surface="#1a1a1a"
+                text="#ffffff"
+                text_secondary="#ffff00" />
+            <typography
+                font_size_base="18"
+                font_size_large="24"
+                line_height="1.4" />
+        </theme>
+    </themes>
+
+    <default_theme name="light" />
+    <follow_system enabled="true" />
+</dampen>
+```
+
+---
+
+## Global Theme File
+
+For applications with complex theming needs, you can define themes in a separate `theme.dampen` file instead of inline in your window files.
+
+### File Location
+
+Place your theme file at:
+
+```
+src/ui/theme/theme.dampen
+```
+
+This location is:
+- Automatically discovered by Dampen
+- Watched for hot-reload in development mode
+- Shared across all windows in your application
+
+### Creating a Theme File
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen version="1.0">
+    <themes>
+        <theme name="light">
+            <palette
+                primary="#3498db"
+                secondary="#2ecc71"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c"
+                background="#ecf0f1"
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d" />
+            <typography
+                font_family="Inter, sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="24" />
+            <spacing unit="8" />
+        </theme>
+
+        <theme name="dark" extends="light">
+            <palette
+                background="#1a1a2e"
+                surface="#16213e"
+                text="#eaeaea"
+                text_secondary="#a0a0a0" />
+        </theme>
+    </themes>
+
+    <default_theme name="light" />
+    <follow_system enabled="true" />
+</dampen>
+```
+
+### Default Theme Selection
+
+The `<default_theme>` element specifies which theme to use when no preference is set:
+
+```xml
+<default_theme name="light" />
+```
+
+### System Theme Detection
+
+Enable automatic dark/light mode detection:
+
+```xml
+<follow_system enabled="true" />
+```
+
+When enabled, Dampen will:
+1. Detect the system's dark/light preference at startup
+2. Use matching theme name ("dark" or "light") if available
+3. Fall back to `default_theme` if system preference doesn't match any theme
+
+### Runtime Theme Switching
+
+Switch themes at runtime using the `set_theme()` handler action:
+
+```xml
+<row spacing="10">
+    <button label="Light" on_click="set_theme('light')" />
+    <button label="Dark" on_click="set_theme('dark')" />
+</row>
+```
+
+Or use data binding to switch themes reactively:
+
+```rust
+#[derive(UiModel)]
+struct Model {
+    current_theme: String,
+}
+```
+
+```xml
+<window theme="{current_theme}">
+    <!-- content -->
+</window>
+```
+
+### Benefits of Separate Theme File
+
+| Benefit | Description |
+|---------|-------------|
+| **Single Source of Truth** | All themes defined in one place |
+| **Hot-Reload** | Edit themes without restarting |
+| **Multi-Window** | Same theme applies to all windows |
+| **Cleaner Windows** | Window files focus on UI structure |
+
+### Project Structure with Theme File
+
+```
+my-app/
+├── src/
+│   ├── main.rs
+│   └── ui/
+│       ├── mod.rs
+│       ├── window.dampen      # UI without inline themes
+│       └── theme/
+│           └── theme.dampen   # All theme definitions
+└── Cargo.toml
+```
+
+### Backward Compatibility
+
+If `src/ui/theme/theme.dampen` doesn't exist:
+- Existing inline `<themes>` sections continue to work
+- Applications without theming use Iced's default theme
+- No changes required to existing applications
 
 ---
 

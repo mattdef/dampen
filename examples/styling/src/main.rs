@@ -19,6 +19,8 @@ enum Message {
     /// Dismiss error overlay
     #[cfg(debug_assertions)]
     DismissError,
+    /// System theme change
+    SystemThemeChanged(String),
 }
 
 /// Main application structure with auto-generated view management
@@ -27,7 +29,9 @@ enum Message {
     message_type = "Message",
     handler_variant = "Handler",
     hot_reload_variant = "HotReload",
-    dismiss_error_variant = "DismissError"
+    dismiss_error_variant = "DismissError",
+    system_theme_variant = "SystemThemeChanged",
+    exclude = ["theme/*"]
 )]
 struct StylingApp;
 
@@ -36,6 +40,7 @@ pub fn main() -> iced::Result {
     println!("🔥 Hot-reload enabled! Edit src/ui/window.dampen to see live updates.");
 
     iced::application(StylingApp::init, StylingApp::update, StylingApp::view)
+        .theme(StylingApp::theme)
         .subscription(StylingApp::subscription)
         .run()
 }

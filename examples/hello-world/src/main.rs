@@ -33,6 +33,7 @@ enum Message {
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
     default_view = "window",
+    exclude = ["theme/*"],
     // Uncomment to enable view switching
     // switch_view_variant = "SwitchToView",
 )]

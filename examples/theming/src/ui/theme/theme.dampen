@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen version="1.0">
+    <themes>
+        <theme name="light">
+            <palette
+                primary="#3498db"
+                secondary="#2ecc71"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c"
+                background="#ecf0f1"
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d"
+            />
+            <typography
+                font_family="sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="24"
+                font_weight="normal"
+                line_height="1.5"
+            />
+            <spacing unit="8" />
+        </theme>
+
+        <theme name="dark" extends="light">
+            <palette
+                background="#1a1a2e"
+                surface="#16213e"
+                text="#eaeaea"
+                text_secondary="#a0a0a0"
+            />
+        </theme>
+
+        <theme name="brand">
+            <palette
+                primary="#6366f1"
+                secondary="#8b5cf6"
+                success="#22c55e"
+                warning="#f59e0b"
+                danger="#ef4444"
+                background="#f8fafc"
+                surface="#ffffff"
+                text="#1e293b"
+                text_secondary="#64748b"
+            />
+            <typography
+                font_family="sans-serif"
+                font_size_base="16"
+                font_size_small="12"
+                font_size_large="28"
+                font_weight="medium"
+                line_height="1.6"
+            />
+            <spacing unit="6" />
+        </theme>
+
+        <theme name="high_contrast" extends="dark">
+            <palette
+                primary="#00ffff"
+                secondary="#ff00ff"
+                success="#00ff00"
+                warning="#ffff00"
+                danger="#ff0000"
+                background="#000000"
+                surface="#1a1a1a"
+                text="#ffffff"
+                text_secondary="#ffff00"
+            />
+            <typography
+                font_family="sans-serif"
+                font_size_base="18"
+                font_size_small="12"
+                font_size_large="32"
+                font_weight="normal"
+                line_height="1.4"
+            />
+            <spacing unit="8" />
+        </theme>
+    </themes>
+
+    <default_theme name="light" />
+    <follow_system enabled="true" />
+</dampen>

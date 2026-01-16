@@ -2,7 +2,6 @@
 
 use crate::HandlerMessage;
 use crate::builder::DampenWidgetBuilder;
-use crate::builder::helpers::merge_styles;
 use dampen_core::ir::node::WidgetNode;
 use iced::{Element, Renderer, Theme};
 
@@ -61,20 +60,15 @@ impl<'a> DampenWidgetBuilder<'a> {
         let mut toggler = iced::widget::toggler(is_active);
 
         // Resolve and apply toggler styles with state-aware styling
+        // Use complete style resolution: theme → class → inline
+        let resolved_base_style = self.resolve_complete_styles(node);
+
         // Get the StyleClass for state variant resolution
         let style_class = if !node.classes.is_empty() {
             self.style_classes
                 .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
         } else {
             None
-        };
-
-        // Resolve base styles (class + inline)
-        let resolved_base_style = match (self.resolve_class_styles(node), &node.style) {
-            (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
-            (Some(class_style), None) => Some(class_style),
-            (None, Some(node_style)) => Some(node_style.clone()),
-            (None, None) => None,
         };
 
         if let Some(base_style_props) = resolved_base_style {

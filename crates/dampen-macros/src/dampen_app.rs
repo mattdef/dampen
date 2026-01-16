@@ -140,6 +140,9 @@ pub struct MacroAttributes {
     /// Optional: Shared state model type for inter-view communication
     /// If specified, expects a type in `shared` module (e.g., `"SharedState"` → `shared::SharedState`)
     pub shared_model: Option<Ident>,
+
+    /// Optional: Message variant for system theme change events
+    pub system_theme_variant: Option<Ident>,
 }
 
 impl Parse for MacroAttributes {
@@ -153,6 +156,7 @@ impl Parse for MacroAttributes {
         let mut exclude = Vec::new();
         let mut default_view = None;
         let mut shared_model = None;
+        let mut system_theme_variant = None;
 
         // Parse key-value pairs
         while !input.is_empty() {
@@ -177,6 +181,9 @@ impl Parse for MacroAttributes {
             } else if key == "switch_view_variant" {
                 let value: LitStr = input.parse()?;
                 switch_view_variant = Some(Ident::new(&value.value(), value.span()));
+            } else if key == "system_theme_variant" {
+                let value: LitStr = input.parse()?;
+                system_theme_variant = Some(Ident::new(&value.value(), value.span()));
             } else if key == "default_view" {
                 let value: LitStr = input.parse()?;
                 let view_name = value.value();
@@ -282,6 +289,7 @@ impl Parse for MacroAttributes {
             exclude,
             default_view,
             shared_model,
+            system_theme_variant,
         })
     }
 }
@@ -518,6 +526,19 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
         })
         .collect();
 
+    // Generate theme context setting for each view
+    let theme_context_setters: Vec<_> = views
+        .iter()
+        .map(|v| {
+            let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+            quote! {
+                if let Some(ref ctx) = theme_context {
+                    app.#field_name.set_theme_context(ctx.clone());
+                }
+            }
+        })
+        .collect();
+
     // Add error_overlay initialization if dismiss_error_variant is specified
     let error_overlay_init = if attrs.dismiss_error_variant.is_some() {
         Some(quote! {
@@ -531,12 +552,27 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
     quote! {
         pub fn init() -> Self {
             #shared_init
-            Self {
+
+            // Load theme context from theme.dampen if present
+            // Try CARGO_MANIFEST_DIR first, then fall back to current dir
+            let project_dir = std::env::var("CARGO_MANIFEST_DIR")
+                .map(std::path::PathBuf::from)
+                .unwrap_or_else(|_| std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(".")));
+
+            let theme_context_result = dampen_dev::theme_loader::load_theme_context(&project_dir);
+            let theme_context = theme_context_result.ok().flatten();
+
+            let mut app = Self {
                 #shared_field_init
                 #(#field_inits,)*
                 current_view: CurrentView::#first_variant,
                 #error_overlay_init
-            }
+            };
+
+            // Set theme context on all view states
+            #(#theme_context_setters)*
+
+            app
         }
 
         pub fn new() -> Self {
@@ -658,6 +694,17 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             if use_shared {
                 quote! {
                     CurrentView::#variant => {
+                        // Handle built-in set_theme action
+                        if let dampen_iced::HandlerMessage::Handler(name, value) = &handler_msg {
+                            if name == "set_theme" {
+                                if let Some(ref mut ctx) = self.#field_name.theme_context {
+                                    if let Some(theme_name) = value {
+                                        let _ = ctx.set_theme(&theme_name);
+                                    }
+                                }
+                                return iced::Task::none();
+                            }
+                        }
                         dispatch_handler_with_task_and_shared(
                             &mut self.#field_name.model,
                             &self.#field_name.handler_registry,
@@ -669,6 +716,17 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
             } else {
                 quote! {
                     CurrentView::#variant => {
+                        // Handle built-in set_theme action
+                        if let dampen_iced::HandlerMessage::Handler(name, value) = &handler_msg {
+                            if name == "set_theme" {
+                                if let Some(ref mut ctx) = self.#field_name.theme_context {
+                                    if let Some(theme_name) = value {
+                                        let _ = ctx.set_theme(&theme_name);
+                                    }
+                                }
+                                return iced::Task::none();
+                            }
+                        }
                         dispatch_handler_with_task(
                             &mut self.#field_name.model,
                             &self.#field_name.handler_registry,
@@ -876,6 +934,30 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
         }
     };
 
+    // Generate update_system_preference match arm if system_theme_variant is specified
+    let system_theme_arm = if let Some(system_theme_variant) = &attrs.system_theme_variant {
+        let update_all_views: Vec<_> = views
+            .iter()
+            .map(|v| {
+                let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+                quote! {
+                    if let Some(ref mut ctx) = self.#field_name.theme_context {
+                        ctx.update_system_preference(&theme_name);
+                    }
+                }
+            })
+            .collect();
+
+        Some(quote! {
+            #message_type::#system_theme_variant(theme_name) => {
+                #(#update_all_views)*
+                iced::Task::none()
+            }
+        })
+    } else {
+        None
+    };
+
     quote! {
         pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
             #helper_functions
@@ -889,6 +971,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
                 #hot_reload_arm
                 #dismiss_error_arm
                 #switch_view_arm
+                #system_theme_arm
                 _ => iced::Task::none(),
             }
         }
@@ -974,6 +1057,46 @@ pub fn generate_view_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
     }
 }
 
+/// Generates the `theme()` method to resolve the active Iced theme.
+///
+/// Creates logic that:
+/// - Matches on `current_view` to find the active AppState
+/// - Retrieves the active Dampen theme from the AppState's ThemeContext
+/// - Converts it to an `iced::Theme` using the `ThemeAdapter`
+///
+/// # Arguments
+///
+/// * `views` - Slice of discovered view information
+///
+/// # Returns
+///
+/// Token stream containing the `theme()` method implementation.
+pub fn generate_theme_method(views: &[ViewInfo]) -> TokenStream {
+    let view_match_arms: Vec<_> = views
+        .iter()
+        .map(|v| {
+            let variant = Ident::new(&v.variant_name, proc_macro2::Span::call_site());
+            let field_name = Ident::new(&v.field_name, proc_macro2::Span::call_site());
+
+            quote! {
+                CurrentView::#variant => {
+                    self.#field_name.theme_context()
+                        .map(|ctx| dampen_iced::theme_adapter::ThemeAdapter::to_iced(ctx.active()))
+                        .unwrap_or(iced::Theme::Light)
+                }
+            }
+        })
+        .collect();
+
+    quote! {
+        pub fn theme(&self) -> iced::Theme {
+            match self.current_view {
+                #(#view_match_arms)*
+            }
+        }
+    }
+}
+
 /// Generates the `subscription()` method for hot-reload file watching (debug builds only).
 ///
 /// Creates subscription logic that:
@@ -1014,30 +1137,66 @@ pub fn generate_subscription_method(
     views: &[ViewInfo],
     attrs: &MacroAttributes,
 ) -> Option<TokenStream> {
-    let hot_reload_variant = attrs.hot_reload_variant.as_ref()?;
     let message_type = &attrs.message_type;
 
-    // Collect all .dampen file paths from views
-    let watch_paths: Vec<_> = views
-        .iter()
-        .map(|v| {
-            let path = v.dampen_file.to_string_lossy().to_string();
-            quote! { std::path::PathBuf::from(#path) }
-        })
-        .collect();
+    // Hot reload subscription
+    let hot_reload_sub = if let Some(hot_reload_variant) = &attrs.hot_reload_variant {
+        // Collect all .dampen file paths from views
+        let watch_paths: Vec<_> = views
+            .iter()
+            .map(|v| {
+                let path = v.dampen_file.to_string_lossy().to_string();
+                quote! { std::path::PathBuf::from(#path) }
+            })
+            .collect();
 
-    Some(quote! {
-        #[cfg(debug_assertions)]
-        pub fn subscription(&self) -> iced::Subscription<#message_type> {
-            dampen_dev::subscription::watch_files(
+        Some(quote! {
+            #[cfg(debug_assertions)]
+            let hot_reload = dampen_dev::subscription::watch_files(
                 vec![#(#watch_paths),*],
                 100  // 100ms debounce
-            ).map(#message_type::#hot_reload_variant)
-        }
+            ).map(#message_type::#hot_reload_variant);
+        })
+    } else {
+        None
+    };
 
-        #[cfg(not(debug_assertions))]
+    // System theme subscription
+    let system_theme_sub = attrs
+        .system_theme_variant
+        .as_ref()
+        .map(|system_theme_variant| {
+            quote! {
+                let system_theme = dampen_dev::subscription::watch_system_theme()
+                    .map(#message_type::#system_theme_variant);
+            }
+        });
+
+    // Combine subscriptions
+    let mut subs = Vec::new();
+    if hot_reload_sub.is_some() {
+        subs.push(quote! { hot_reload });
+    }
+    if system_theme_sub.is_some() {
+        subs.push(quote! { system_theme });
+    }
+
+    if subs.is_empty() {
+        return None;
+    }
+
+    let sub_expr = if subs.len() == 1 {
+        quote! { #(#subs)* }
+    } else {
+        quote! { iced::Subscription::batch(vec![#(#subs),*]) }
+    };
+
+    Some(quote! {
         pub fn subscription(&self) -> iced::Subscription<#message_type> {
-            iced::Subscription::none()
+            #hot_reload_sub
+            #system_theme_sub
+
+            #sub_expr
         }
     })
 }
@@ -1148,6 +1307,7 @@ pub fn dampen_app_impl(attr: TokenStream, item: TokenStream) -> Result<TokenStre
     let switch_to_methods = generate_switch_to_methods(&views);
     let update_method = generate_update_method(&views, &attrs);
     let view_method = generate_view_method(&views, &attrs);
+    let theme_method = generate_theme_method(&views);
     let subscription_method = generate_subscription_method(&views, &attrs);
 
     // Build impl block with optional subscription method
@@ -1158,6 +1318,7 @@ pub fn dampen_app_impl(attr: TokenStream, item: TokenStream) -> Result<TokenStre
                 #switch_to_methods
                 #update_method
                 #view_method
+                #theme_method
                 #subscription
             }
         }
@@ -1168,6 +1329,7 @@ pub fn dampen_app_impl(attr: TokenStream, item: TokenStream) -> Result<TokenStre
                 #switch_to_methods
                 #update_method
                 #view_method
+                #theme_method
             }
         }
     };

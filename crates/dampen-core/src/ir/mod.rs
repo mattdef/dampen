@@ -17,8 +17,8 @@ pub use style::{
     StyleProperties, Transform,
 };
 pub use theme::{
-    FontWeight, SpacingScale, StateSelector, StyleClass, Theme, ThemePalette, Typography,
-    WidgetState,
+    FontWeight, IcedPaletteColors, SpacingScale, StateSelector, StyleClass, Theme, ThemeDocument,
+    ThemeError, ThemeErrorKind, ThemePalette, Typography, WidgetState,
 };
 
 /// A complete parsed Dampen UI document.

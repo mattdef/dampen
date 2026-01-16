@@ -5,22 +5,148 @@
 use crate::ir::layout::LayoutConstraints;
 use crate::ir::style::{Color, StyleProperties};
 use crate::ir::theme::{
-    FontWeight, SpacingScale, StyleClass, Theme, ThemePalette, Typography, WidgetState,
+    FontWeight, SpacingScale, StyleClass, Theme, ThemeDocument, ThemeError, ThemeErrorKind,
+    ThemePalette, Typography, WidgetState,
 };
 use std::collections::HashMap;
 
-/// Parse a theme definition from XML attributes
-pub fn parse_theme(
-    name: String,
-    palette_attrs: &HashMap<String, String>,
-    typography_attrs: &HashMap<String, String>,
-    spacing_unit: Option<f32>,
-) -> Result<Theme, String> {
-    let palette = parse_palette(palette_attrs)?;
-    let typography = parse_typography(typography_attrs)?;
-    let spacing = SpacingScale {
-        unit: spacing_unit.unwrap_or(4.0),
+/// Parse a complete theme.dampen document
+pub fn parse_theme_document(xml: &str) -> Result<ThemeDocument, ThemeError> {
+    let doc = roxmltree::Document::parse(xml).map_err(|e| ThemeError {
+        kind: ThemeErrorKind::MissingPaletteColor,
+        message: format!("THEME_003: Failed to parse XML: {}", e),
+    })?;
+
+    // Get the first child element (the <dampen> root)
+    let root = doc.root().first_child().ok_or_else(|| ThemeError {
+        kind: ThemeErrorKind::MissingPaletteColor,
+        message: "THEME_003: No root element found".to_string(),
+    })?;
+
+    // Verify root element
+    if root.tag_name().name() != "dampen" {
+        return Err(ThemeError {
+            kind: ThemeErrorKind::MissingPaletteColor,
+            message: "THEME_003: Root element must be <dampen>".to_string(),
+        });
+    }
+
+    let mut themes = HashMap::new();
+    let mut default_theme = None;
+    let mut follow_system = true;
+
+    // Parse child elements
+    for child in root.children() {
+        if child.node_type() != roxmltree::NodeType::Element {
+            continue;
+        }
+
+        let tag = child.tag_name().name();
+
+        match tag {
+            "themes" => {
+                // Parse each theme
+                for grandchild in child.children() {
+                    if grandchild.node_type() != roxmltree::NodeType::Element {
+                        continue;
+                    }
+
+                    if grandchild.tag_name().name() == "theme" {
+                        let theme = parse_theme_from_node_simple(grandchild)?;
+                        if themes.contains_key(&theme.name) {
+                            return Err(ThemeError {
+                                kind: ThemeErrorKind::DuplicateThemeName,
+                                message: format!(
+                                    "THEME_005: Duplicate theme name: '{}'",
+                                    theme.name
+                                ),
+                            });
+                        }
+                        themes.insert(theme.name.clone(), theme);
+                    }
+                }
+            }
+            "default_theme" => {
+                if let Some(name) = child.attribute("name") {
+                    default_theme = Some(name.to_string());
+                }
+            }
+            "follow_system" => {
+                if let Some(enabled) = child.attribute("enabled") {
+                    follow_system = enabled.parse::<bool>().unwrap_or(true);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let document = ThemeDocument {
+        themes,
+        default_theme,
+        follow_system,
     };
+
+    document.validate()?;
+    Ok(document)
+}
+
+/// Parse a theme node (simplified version for ThemeDocument parsing)
+fn parse_theme_from_node_simple(node: roxmltree::Node) -> Result<Theme, ThemeError> {
+    let name = node
+        .attribute("name")
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| "default".to_string());
+
+    let extends = node.attribute("extends").map(|s| s.to_string());
+
+    let mut palette_attrs = HashMap::new();
+    let mut typography_attrs = HashMap::new();
+    let mut spacing_unit = None;
+
+    // Parse child elements
+    for child in node.children() {
+        if child.node_type() != roxmltree::NodeType::Element {
+            continue;
+        }
+
+        let tag = child.tag_name().name();
+
+        match tag {
+            "palette" => {
+                for attr in child.attributes() {
+                    palette_attrs.insert(attr.name().to_string(), attr.value().to_string());
+                }
+            }
+            "typography" => {
+                for attr in child.attributes() {
+                    typography_attrs.insert(attr.name().to_string(), attr.value().to_string());
+                }
+            }
+            "spacing" => {
+                if let Some(unit) = child.attribute("unit") {
+                    spacing_unit = unit.parse::<f32>().ok();
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let palette = parse_palette(&palette_attrs).map_err(|e| ThemeError {
+        kind: ThemeErrorKind::MissingPaletteColor,
+        message: format!("THEME_003: Invalid palette: {}", e),
+    })?;
+
+    let typography = parse_typography(&typography_attrs).map_err(|e| ThemeError {
+        kind: ThemeErrorKind::MissingPaletteColor,
+        message: format!("THEME_003: Invalid typography: {}", e),
+    })?;
+
+    let spacing = SpacingScale { unit: spacing_unit };
+
+    spacing.validate().map_err(|e| ThemeError {
+        kind: ThemeErrorKind::MissingPaletteColor,
+        message: format!("THEME_003: Invalid spacing: {}", e),
+    })?;
 
     let theme = Theme {
         name,
@@ -28,19 +154,45 @@ pub fn parse_theme(
         typography,
         spacing,
         base_styles: HashMap::new(),
+        extends,
     };
 
-    theme.validate()?;
+    Ok(theme)
+}
+
+/// Parse a theme definition from XML attributes
+pub fn parse_theme(
+    name: String,
+    palette_attrs: &HashMap<String, String>,
+    typography_attrs: &HashMap<String, String>,
+    spacing_unit: Option<f32>,
+    extends: Option<String>,
+) -> Result<Theme, String> {
+    let palette = parse_palette(palette_attrs)?;
+    let typography = parse_typography(typography_attrs)?;
+    let spacing = SpacingScale { unit: spacing_unit };
+
+    let theme = Theme {
+        name,
+        palette,
+        typography,
+        spacing,
+        base_styles: HashMap::new(),
+        extends: extends.clone(),
+    };
+
+    theme.validate(extends.is_some())?;
     Ok(theme)
 }
 
 /// Parse theme palette from attributes
 pub fn parse_palette(attrs: &HashMap<String, String>) -> Result<ThemePalette, String> {
-    let get_color = |key: &str| -> Result<Color, String> {
-        let value = attrs
-            .get(key)
-            .ok_or_else(|| format!("Missing required palette color: {}", key))?;
-        Color::parse(value)
+    let get_color = |key: &str| -> Result<Option<Color>, String> {
+        if let Some(value) = attrs.get(key) {
+            Ok(Some(Color::parse(value)?))
+        } else {
+            Ok(None)
+        }
     };
 
     Ok(ThemePalette {
@@ -58,39 +210,36 @@ pub fn parse_palette(attrs: &HashMap<String, String>) -> Result<ThemePalette, St
 
 /// Parse typography from attributes
 pub fn parse_typography(attrs: &HashMap<String, String>) -> Result<Typography, String> {
-    let font_family = attrs
-        .get("font_family")
-        .cloned()
-        .unwrap_or_else(|| "sans-serif".to_string());
+    let font_family = attrs.get("font_family").cloned();
 
-    let font_size_base: f32 = attrs
-        .get("font_size_base")
-        .unwrap_or(&"16.0".to_string())
-        .parse()
-        .map_err(|_| "Invalid font_size_base")?;
+    let font_size_base = if let Some(s) = attrs.get("font_size_base") {
+        Some(s.parse().map_err(|_| "Invalid font_size_base")?)
+    } else {
+        None
+    };
 
-    let font_size_small: f32 = attrs
-        .get("font_size_small")
-        .unwrap_or(&"12.0".to_string())
-        .parse()
-        .map_err(|_| "Invalid font_size_small")?;
+    let font_size_small = if let Some(s) = attrs.get("font_size_small") {
+        Some(s.parse().map_err(|_| "Invalid font_size_small")?)
+    } else {
+        None
+    };
 
-    let font_size_large: f32 = attrs
-        .get("font_size_large")
-        .unwrap_or(&"20.0".to_string())
-        .parse()
-        .map_err(|_| "Invalid font_size_large")?;
+    let font_size_large = if let Some(s) = attrs.get("font_size_large") {
+        Some(s.parse().map_err(|_| "Invalid font_size_large")?)
+    } else {
+        None
+    };
 
     let font_weight = match attrs.get("font_weight") {
         Some(w) => FontWeight::parse(w)?,
         None => FontWeight::Normal,
     };
 
-    let line_height: f32 = attrs
-        .get("line_height")
-        .unwrap_or(&"1.5".to_string())
-        .parse()
-        .map_err(|_| "Invalid line_height")?;
+    let line_height = if let Some(s) = attrs.get("line_height") {
+        Some(s.parse().map_err(|_| "Invalid line_height")?)
+    } else {
+        None
+    };
 
     Ok(Typography {
         font_family,
@@ -396,6 +545,8 @@ pub fn parse_theme_from_node(
         .map(|s| s.to_string())
         .unwrap_or_else(|| "default".to_string());
 
+    let extends = node.attribute("extends").map(|s| s.to_string());
+
     let mut palette_attrs = HashMap::new();
     let mut typography_attrs = HashMap::new();
     let mut spacing_unit = None;
@@ -423,29 +574,20 @@ pub fn parse_theme_from_node(
         }
     }
 
-    // Validate required palette colors
-    let required_colors = ["primary", "secondary", "background", "text"];
-    for color in &required_colors {
-        if !palette_attrs.contains_key(*color) {
-            return Err(ParseError {
-                kind: ParseErrorKind::InvalidValue,
-                message: format!("Theme palette missing required color: {}", color),
-                span: crate::ir::Span::default(),
-                suggestion: None,
-            });
-        }
-    }
-
     // Parse using existing function
-    let theme =
-        parse_theme(name, &palette_attrs, &typography_attrs, spacing_unit).map_err(|e| {
-            ParseError {
-                kind: ParseErrorKind::InvalidValue,
-                message: format!("Failed to parse theme: {}", e),
-                span: crate::ir::Span::default(),
-                suggestion: None,
-            }
-        })?;
+    let theme = parse_theme(
+        name,
+        &palette_attrs,
+        &typography_attrs,
+        spacing_unit,
+        extends,
+    )
+    .map_err(|e| ParseError {
+        kind: ParseErrorKind::InvalidValue,
+        message: format!("Failed to parse theme: {}", e),
+        span: crate::ir::Span::default(),
+        suggestion: None,
+    })?;
 
     Ok(theme)
 }

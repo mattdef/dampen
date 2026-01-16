@@ -11,3 +11,6 @@ mod shared_state_e2e;
 
 #[cfg(test)]
 mod backward_compat_examples;
+
+#[cfg(test)]
+mod theme_e2e;

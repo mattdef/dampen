@@ -320,3 +320,29 @@ pub fn watch_files<P: AsRef<std::path::Path>>(
     use iced::advanced::subscription::from_recipe;
     from_recipe(recipe)
 }
+
+/// Create a subscription that monitors system theme changes.
+///
+/// This uses Iced's built-in system theme detection via `iced::system::theme_changes()`,
+/// which leverages winit's native theme detection. This is more reliable than polling
+/// with external crates like `dark-light`.
+///
+/// # Returns
+///
+/// A subscription that yields `"light"` or `"dark"` strings when the system theme changes.
+///
+/// # Example
+///
+/// ```no_run
+/// use dampen_dev::subscription::watch_system_theme;
+///
+/// let subscription = watch_system_theme();
+/// // Maps to your message type, e.g.: subscription.map(Message::SystemThemeChanged)
+/// ```
+pub fn watch_system_theme() -> Subscription<String> {
+    iced::system::theme_changes().map(|mode| match mode {
+        iced::theme::Mode::Light => "light".to_string(),
+        iced::theme::Mode::Dark => "dark".to_string(),
+        iced::theme::Mode::None => "light".to_string(), // Default to light if unspecified
+    })
+}

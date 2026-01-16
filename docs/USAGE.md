@@ -27,6 +27,7 @@ This guide covers everything you need to know to build applications **with** Dam
    - [Building Multi-View Applications](#building-multi-view-applications-with-dampen_app)
    - [Debugging Build Issues](#debugging-build-issues)
    - [Testing Your Application](#testing-your-application)
+   - [Theming](#theming)
 6. [Working with Workspaces](#working-with-workspaces)
 7. [Troubleshooting](#troubleshooting)
 
@@ -427,6 +428,80 @@ dampen inspect src/ui/window.dampen --mode codegen
 - `--mode <MODE>` - Output mode (ir, codegen)
 
 **Use Case:** Debugging, learning, understanding code generation.
+
+---
+
+## Theming
+
+Dampen's theming system lets you define consistent colors, typography, and spacing across your application.
+
+### Creating a Theme File
+
+Create `src/ui/theme/theme.dampen`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen version="1.0">
+    <themes>
+        <theme name="light">
+            <palette
+                primary="#3498db"
+                secondary="#2ecc71"
+                success="#27ae60"
+                warning="#f39c12"
+                danger="#e74c3c"
+                background="#ecf0f1"
+                surface="#ffffff"
+                text="#2c3e50"
+                text_secondary="#7f8c8d" />
+            <typography font_family="Inter, sans-serif" font_size_base="16" />
+            <spacing unit="8" />
+        </theme>
+
+        <theme name="dark" extends="light">
+            <palette
+                background="#1a1a2e"
+                surface="#16213e"
+                text="#eaeaea"
+                text_secondary="#a0a0a0" />
+        </theme>
+    </themes>
+
+    <default_theme name="light" />
+    <follow_system enabled="true" />
+</dampen>
+```
+
+### Theme Properties
+
+| Element | Description |
+|---------|-------------|
+| `<palette>` | 9 color definitions (primary, secondary, success, warning, danger, background, surface, text, text_secondary) |
+| `<typography>` | Font family, sizes, line height |
+| `<spacing>` | Base unit for spacing scale |
+
+### Runtime Theme Switching
+
+Switch themes at runtime:
+
+```xml
+<row spacing="10">
+    <button label="Light" on_click="set_theme('light')" />
+    <button label="Dark" on_click="set_theme('dark')" />
+</row>
+```
+
+### Hot-Reload
+
+In development mode (`dampen run`), changes to `theme.dampen` apply instantly without restart.
+
+### More Information
+
+See [STYLING.md](STYLING.md) for complete theming documentation including:
+- Theme inheritance
+- Custom themes
+- Widget-level overrides
+- Style classes
 
 ---
 

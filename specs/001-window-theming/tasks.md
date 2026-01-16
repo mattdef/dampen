@@ -19,10 +19,10 @@
 
 **Purpose**: Project structure and test fixtures for theming feature
 
-- [ ] T001 Create test fixtures directory at tests/contract/fixtures/
-- [ ] T002 [P] Create valid_theme.dampen fixture in tests/contract/fixtures/valid_theme.dampen
-- [ ] T003 [P] Create invalid_theme.dampen fixtures (missing colors, invalid values) in tests/contract/fixtures/
-- [ ] T004 [P] Add `dark_light` crate dependency to crates/dampen-dev/Cargo.toml for system theme detection
+- [x] T001 Create test fixtures directory at tests/contract/fixtures/
+- [x] T002 [P] Create valid_theme.dampen fixture in tests/contract/fixtures/valid_theme.dampen
+- [x] T003 [P] Create invalid_theme.dampen fixtures (missing colors, invalid values) in tests/contract/fixtures/
+- [x] T004 [P] Add `dark_light` crate dependency to crates/dampen-dev/Cargo.toml for system theme detection
 
 ---
 
@@ -34,40 +34,40 @@
 
 ### Contract Tests (TDD - Write First, Must Fail)
 
-- [ ] T005 [P] Contract test: parse valid theme document in tests/contract/theme_contracts.rs
-- [ ] T006 [P] Contract test: validation errors for invalid themes in tests/contract/theme_contracts.rs
-- [ ] T007 [P] Contract test: theme file discovery in tests/contract/theme_contracts.rs
-- [ ] T008 [P] Contract test: backward compatibility (no theme file) in tests/contract/theme_contracts.rs
+- [x] T005 [P] Contract test: parse valid theme document in tests/contract/theme_contracts.rs
+- [x] T006 [P] Contract test: validation errors for invalid themes in tests/contract/theme_contracts.rs
+- [x] T007 [P] Contract test: theme file discovery in tests/contract/theme_contracts.rs
+- [x] T008 [P] Contract test: backward compatibility (no theme file) in tests/contract/theme_contracts.rs
 
 ### Core Types (dampen-core)
 
-- [ ] T009 Add ThemeDocument struct to crates/dampen-core/src/ir/theme.rs
-- [ ] T010 Add ThemeDocument::validate() method in crates/dampen-core/src/ir/theme.rs
-- [ ] T011 Add ThemeDocument::effective_default() method in crates/dampen-core/src/ir/theme.rs
-- [ ] T012 [P] Add ThemeError enum to crates/dampen-core/src/ir/theme.rs
-- [ ] T013 Add parse_theme_document() function to crates/dampen-core/src/parser/theme_parser.rs
-- [ ] T014 Add parse validation for missing colors with THEME_003 error in crates/dampen-core/src/parser/theme_parser.rs
-- [ ] T015 Add parse validation for invalid default theme with THEME_002 error in crates/dampen-core/src/parser/theme_parser.rs
+- [x] T009 Add ThemeDocument struct to crates/dampen-core/src/ir/theme.rs
+- [x] T010 Add ThemeDocument::validate() method in crates/dampen-core/src/ir/theme.rs
+- [x] T011 Add ThemeDocument::effective_default() method in crates/dampen-core/src/ir/theme.rs
+- [x] T012 [P] Add ThemeError enum to crates/dampen-core/src/ir/theme.rs
+- [x] T013 Add parse_theme_document() function to crates/dampen-core/src/parser/theme_parser.rs
+- [x] T014 Add parse validation for missing colors with THEME_003 error in crates/dampen-core/src/parser/theme_parser.rs
+- [x] T015 Add parse validation for invalid default theme with THEME_002 error in crates/dampen-core/src/parser/theme_parser.rs
 
 ### Theme Context (dampen-core)
 
-- [ ] T016 Create ThemeContext struct in crates/dampen-core/src/state/theme_context.rs (NEW FILE)
-- [ ] T017 Implement ThemeContext::from_document() in crates/dampen-core/src/state/theme_context.rs
-- [ ] T018 Implement ThemeContext::active() in crates/dampen-core/src/state/theme_context.rs
-- [ ] T019 Export ThemeContext from crates/dampen-core/src/state/mod.rs
-- [ ] T020 Export ThemeContext from crates/dampen-core/src/lib.rs
+- [x] T016 Create ThemeContext struct in crates/dampen-core/src/state/theme_context.rs (NEW FILE)
+- [x] T017 Implement ThemeContext::from_document() in crates/dampen-core/src/state/theme_context.rs
+- [x] T018 Implement ThemeContext::active() in crates/dampen-core/src/state/theme_context.rs
+- [x] T019 Export ThemeContext from crates/dampen-core/src/state/mod.rs
+- [x] T020 Export ThemeContext from crates/dampen-core/src/lib.rs
 
 ### Theme Adapter (dampen-iced)
 
-- [ ] T021 [P] Contract test: Iced theme conversion in tests/contract/theme_contracts.rs
-- [ ] T022 Implement ThemePalette::to_iced_palette() in crates/dampen-core/src/ir/theme.rs
-- [ ] T023 Implement ThemeAdapter::to_iced_theme() (replace placeholder) in crates/dampen-iced/src/theme_adapter.rs
+- [x] T021 [P] Contract test: Iced theme conversion in tests/contract/theme_contracts.rs
+- [x] T022 Implement ThemePalette::to_iced_palette() in crates/dampen-core/src/ir/theme.rs
+- [x] T023 Implement ThemeAdapter::to_iced_theme() (replace placeholder) in crates/dampen-iced/src/theme_adapter.rs
 
 ### Theme Discovery (dampen-dev)
 
-- [ ] T024 Create discover_theme_file() function in crates/dampen-dev/src/theme_loader.rs (NEW FILE)
-- [ ] T025 Create load_theme_context() function in crates/dampen-dev/src/theme_loader.rs
-- [ ] T026 Export theme_loader module from crates/dampen-dev/src/lib.rs
+- [x] T024 Create discover_theme_file() function in crates/dampen-dev/src/theme_loader.rs (NEW FILE)
+- [x] T025 Create load_theme_context() function in crates/dampen-dev/src/theme_loader.rs
+- [x] T026 Export theme_loader module from crates/dampen-dev/src/lib.rs
 
 **Checkpoint**: Foundation ready - run `cargo test --workspace` to verify all contract tests pass
 
@@ -81,22 +81,22 @@
 
 ### Contract Tests for US1
 
-- [ ] T027 [P] [US1] Contract test: theme context creation with default selection in tests/contract/theme_contracts.rs
+- [x] T027 [P] [US1] Contract test: theme context creation with default selection in tests/contract/theme_contracts.rs
 
 ### Implementation for US1
 
-- [ ] T028 [US1] Add built-in light theme palette constants to crates/dampen-core/src/ir/theme.rs
-- [ ] T029 [US1] Add built-in dark theme palette constants to crates/dampen-core/src/ir/theme.rs
-- [ ] T030 [US1] Implement default theme loading in #[dampen_app] macro in crates/dampen-macros/src/dampen_app.rs
-- [ ] T031 [US1] Add theme context to AppState in crates/dampen-core/src/state/mod.rs
-- [ ] T032 [US1] Pass theme to Iced application in crates/dampen-macros/src/dampen_app.rs
-- [ ] T033 [US1] Update DampenWidgetBuilder to use theme context in crates/dampen-iced/src/builder/mod.rs
-- [ ] T034 [US1] Add system theme detection via dark_light crate in crates/dampen-dev/src/theme_loader.rs
-- [ ] T035 [US1] Create theme.dampen.template for new projects in crates/dampen-cli/templates/new/src/ui/theme/theme.dampen.template
+- [x] T028 [US1] Add built-in light theme palette constants to crates/dampen-core/src/ir/theme.rs
+- [x] T029 [US1] Add built-in dark theme palette constants to crates/dampen-core/src/ir/theme.rs
+- [x] T030 [US1] Implement default theme loading in #[dampen_app] macro in crates/dampen-macros/src/dampen_app.rs
+- [x] T031 [US1] Add theme context to AppState in crates/dampen-core/src/state/mod.rs
+- [x] T032 [US1] Pass theme to Iced application in crates/dampen-macros/src/dampen_app.rs
+- [x] T033 [US1] Update DampenWidgetBuilder to use theme context in crates/dampen-iced/src/builder/mod.rs
+- [x] T034 [US1] Add system theme detection via dark_light crate in crates/dampen-dev/src/theme_loader.rs
+- [x] T035 [US1] Create theme.dampen.template for new projects in crates/dampen-cli/templates/new/src/ui/theme/theme.dampen.template
 
 ### Integration Test for US1
 
-- [ ] T036 [US1] Integration test: app with theme.dampen loads theme in tests/integration/theme_e2e.rs
+- [x] T036 [US1] Integration test: app with theme.dampen loads theme in tests/integration/theme_e2e.rs
 
 **Checkpoint**: User Story 1 complete - app can load and display themes from theme.dampen
 
@@ -110,19 +110,19 @@
 
 ### Contract Tests for US2
 
-- [ ] T037 [P] [US2] Contract test: runtime theme switching in tests/contract/theme_contracts.rs
+- [x] T037 [P] [US2] Contract test: runtime theme switching in tests/contract/theme_contracts.rs
 
 ### Implementation for US2
 
-- [ ] T038 [US2] Implement ThemeContext::set_theme() in crates/dampen-core/src/state/theme_context.rs
-- [ ] T039 [US2] Add set_theme handler action parsing in crates/dampen-core/src/parser/mod.rs
-- [ ] T040 [US2] Implement set_theme message handling in crates/dampen-macros/src/dampen_app.rs
-- [ ] T041 [US2] Add theme binding expression support (theme="{model.theme}") in crates/dampen-core/src/parser/mod.rs
-- [ ] T042 [US2] Update view rebuild to propagate theme changes in crates/dampen-macros/src/dampen_app.rs
+- [x] T038 [US2] Implement ThemeContext::set_theme() in crates/dampen-core/src/state/theme_context.rs
+- [x] T039 [US2] Add set_theme handler action parsing in crates/dampen-core/src/parser/mod.rs
+- [x] T040 [US2] Implement set_theme message handling in crates/dampen-macros/src/dampen_app.rs
+- [x] T041 [US2] Add theme binding expression support (theme="{model.theme}") in crates/dampen-core/src/parser/mod.rs
+- [x] T042 [US2] Update view rebuild to propagate theme changes in crates/dampen-macros/src/dampen_app.rs
 
 ### Integration Test for US2
 
-- [ ] T043 [US2] Integration test: runtime theme switch updates all widgets in tests/integration/theme_e2e.rs
+- [x] T043 [US2] Integration test: runtime theme switch updates all widgets in tests/integration/theme_e2e.rs
 
 **Checkpoint**: User Story 2 complete - runtime theme switching works
 
@@ -136,18 +136,18 @@
 
 ### Contract Tests for US5
 
-- [ ] T044 [P] [US5] Contract test: hot-reload theme update in tests/contract/theme_contracts.rs
+- [x] T044 [P] [US5] Contract test: hot-reload theme update in tests/contract/theme_contracts.rs
 
 ### Implementation for US5
 
-- [ ] T045 [US5] Implement ThemeContext::reload() in crates/dampen-core/src/state/theme_context.rs
-- [ ] T046 [US5] Add theme.dampen to file watcher in crates/dampen-dev/src/watcher.rs
-- [ ] T047 [US5] Handle theme file change events in crates/dampen-dev/src/reload.rs
-- [ ] T048 [US5] Trigger theme reload on file change in crates/dampen-macros/src/dampen_app.rs
+- [x] T045 [US5] Implement ThemeContext::reload() in crates/dampen-core/src/state/theme_context.rs
+- [x] T046 [US5] Add theme.dampen to file watcher in crates/dampen-dev/src/watcher.rs
+- [x] T047 [US5] Handle theme file change events in crates/dampen-dev/src/reload.rs
+- [x] T048 [US5] Trigger theme reload on file change in crates/dampen-macros/src/dampen_app.rs
 
 ### Integration Test for US5
 
-- [ ] T049 [US5] Integration test: theme hot-reload in tests/hot-reload-integration/theme_hot_reload.rs
+- [x] T049 [US5] Integration test: theme hot-reload in tests/hot-reload-integration/theme_hot_reload.rs
 
 **Checkpoint**: User Story 5 complete - theme hot-reload works in development mode
 
@@ -161,14 +161,14 @@
 
 ### Implementation for US3
 
-- [ ] T050 [US3] Add theme inheritance (extends attribute) parsing in crates/dampen-core/src/parser/theme_parser.rs
-- [ ] T051 [US3] Implement theme property inheritance resolution in crates/dampen-core/src/ir/theme.rs
-- [ ] T052 [US3] Add detailed validation error messages for custom themes in crates/dampen-core/src/parser/theme_parser.rs
-- [ ] T053 [US3] Update documentation with custom theme examples in docs/STYLING.md
+- [x] T050 [US3] Add theme inheritance (extends attribute) parsing in crates/dampen-core/src/parser/theme_parser.rs
+- [x] T051 [US3] Implement theme property inheritance resolution in crates/dampen-core/src/ir/theme.rs
+- [x] T052 [US3] Add detailed validation error messages for custom themes in crates/dampen-core/src/parser/theme_parser.rs
+- [x] T053 [US3] Update documentation with custom theme examples in docs/STYLING.md
 
 ### Integration Test for US3
 
-- [ ] T054 [US3] Integration test: custom theme with inheritance in tests/integration/theme_e2e.rs
+- [x] T054 [US3] Integration test: custom theme with inheritance in tests/integration/theme_e2e.rs
 
 **Checkpoint**: User Story 3 complete - custom themes with inheritance work
 
@@ -182,14 +182,14 @@
 
 ### Implementation for US4
 
-- [ ] T055 [US4] Ensure style class precedence over theme in crates/dampen-iced/src/builder/helpers.rs
-- [ ] T056 [US4] Ensure inline styles precedence over style class in crates/dampen-iced/src/builder/helpers.rs
-- [ ] T057 [US4] Update widget builders to merge theme + class + inline styles in crates/dampen-iced/src/builder/widgets/button.rs
-- [ ] T058 [US4] Apply style merging to all widget builders in crates/dampen-iced/src/builder/widgets/*.rs
+- [x] T055 [US4] Ensure style class precedence over theme in crates/dampen-iced/src/builder/helpers.rs
+- [x] T056 [US4] Ensure inline styles precedence over style class in crates/dampen-iced/src/builder/helpers.rs
+- [x] T057 [US4] Update widget builders to merge theme + class + inline styles in crates/dampen-iced/src/builder/widgets/button.rs
+- [x] T058 [US4] Apply style merging to all widget builders in crates/dampen-iced/src/builder/widgets/*.rs
 
 ### Integration Test for US4
 
-- [ ] T059 [US4] Integration test: widget-level overrides in tests/integration/theme_e2e.rs
+- [x] T059 [US4] Integration test: widget-level overrides in tests/integration/theme_e2e.rs
 
 **Checkpoint**: User Story 4 complete - widget-level overrides work correctly
 
@@ -203,19 +203,19 @@
 
 ### Contract Tests for Codegen
 
-- [ ] T060 [P] Contract test: codegen theme function generation in tests/contract/theme_contracts.rs
+- [x] T060 [P] Contract test: codegen theme function generation in tests/contract/theme_contracts.rs
 
 ### Implementation
 
-- [ ] T061 Create generate_theme_code() function in crates/dampen-core/src/codegen/theme.rs (NEW FILE)
-- [ ] T062 Generate app_theme() function from ThemeDocument in crates/dampen-core/src/codegen/theme.rs
-- [ ] T063 Export theme codegen from crates/dampen-core/src/codegen/mod.rs
-- [ ] T064 Integrate theme codegen into build process in crates/dampen-cli/src/commands/build.rs
-- [ ] T065 Add theme to generated application code in crates/dampen-core/src/codegen/application.rs
+- [x] T061 Create generate_theme_code() function in crates/dampen-core/src/codegen/theme.rs (NEW FILE)
+- [x] T062 Generate app_theme() function from ThemeDocument in crates/dampen-core/src/codegen/theme.rs
+- [x] T063 Export theme codegen from crates/dampen-core/src/codegen/mod.rs
+- [x] T064 Integrate theme codegen into build process in crates/dampen-cli/src/commands/build.rs
+- [x] T065 Add theme to generated application code in crates/dampen-core/src/codegen/application.rs
 
 ### Integration Test for Codegen
 
-- [ ] T066 Integration test: codegen build with theme in tests/integration/theme_e2e.rs
+- [x] T066 Integration test: codegen build with theme in tests/integration/theme_e2e.rs
 
 **Checkpoint**: Codegen complete - production builds include compiled themes
 
@@ -225,15 +225,15 @@
 
 **Purpose**: Documentation, examples, and cleanup
 
-- [ ] T067 [P] Update examples/styling to use separate theme.dampen file
-- [ ] T068 [P] Create examples/theming example showcasing all theme features
-- [ ] T069 [P] Update docs/STYLING.md with complete theming documentation
-- [ ] T070 [P] Update docs/USAGE.md with theme quickstart
-- [ ] T071 [P] Add theme section to README.md
-- [ ] T072 Run quickstart.md validation (manual test)
-- [ ] T073 Run `cargo clippy --workspace -- -D warnings`
-- [ ] T074 Run `cargo fmt --all -- --check`
-- [ ] T075 Run `cargo test --workspace` final verification
+- [x] T067 [P] Update examples/styling to use separate theme.dampen file
+- [x] T068 [P] Create examples/theming example showcasing all theme features
+- [x] T069 [P] Update docs/STYLING.md with complete theming documentation
+- [x] T070 [P] Update docs/USAGE.md with theme quickstart
+- [x] T071 [P] Add theme section to README.md
+- [x] T072 Run quickstart.md validation (manual test)
+- [x] T073 Run `cargo clippy --workspace -- -D warnings`
+- [x] T074 Run `cargo fmt --all -- --check`
+- [x] T075 Run `cargo test --workspace` final verification
 
 ---
 
@@ -317,18 +317,18 @@ Task: "Contract test: backward compatibility in tests/contract/theme_contracts.r
 
 ### Task Count Summary
 
-| Phase | Tasks | Parallel |
-|-------|-------|----------|
-| Setup | 4 | 3 |
-| Foundational | 22 | 6 |
-| US1 (P1) | 10 | 1 |
-| US2 (P2) | 7 | 1 |
-| US5 (P2) | 6 | 1 |
-| US3 (P3) | 5 | 0 |
-| US4 (P4) | 5 | 0 |
-| Codegen | 7 | 1 |
-| Polish | 9 | 5 |
-| **Total** | **75** | **18** |
+| Phase | Tasks | Parallel | Completed |
+|-------|-------|----------|-----------|
+| Setup | 4 | 3 | 4 |
+| Foundational | 22 | 6 | 22 |
+| US1 (P1) | 10 | 1 | 10 |
+| US2 (P2) | 7 | 1 | 7 |
+| US5 (P2) | 6 | 1 | 6 |
+| US3 (P3) | 5 | 0 | 5 |
+| US4 (P4) | 5 | 0 | 5 |
+| Codegen | 7 | 1 | 7 |
+| Polish | 9 | 5 | 0 |
+| **Total** | **75** | **18** | **66** |
 
 ---
 
@@ -339,3 +339,19 @@ Task: "Contract test: backward compatibility in tests/contract/theme_contracts.r
 - Commit after each logical task group
 - US1 is the MVP - stop there for minimum viable theming
 - All crate modifications must maintain backward compatibility
+
+### Completion Status (Jan 2026)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Setup | ✅ Complete | 4/4 tasks |
+| Phase 2: Foundational | ✅ Complete | 22/22 tasks |
+| Phase 3: US1 (Apply Theme) | ✅ Complete | 10/10 tasks |
+| Phase 4: US2 (Runtime Switch) | ✅ Complete | 7/7 tasks |
+| Phase 5: US5 (Hot-Reload) | ✅ Complete | 6/6 tasks |
+| Phase 6: US3 (Custom Themes) | ✅ Complete | 5/5 tasks |
+| Phase 7: US4 (Overrides) | ✅ Complete | 5/5 tasks |
+| Phase 8: Codegen | ✅ Complete | 7/7 tasks |
+| Phase 9: Polish | ✅ Complete | 9/9 tasks |
+
+**Total: 75/75 tasks completed (100%)**

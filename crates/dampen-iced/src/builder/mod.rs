@@ -71,6 +71,7 @@ use dampen_core::ir::WidgetKind;
 use dampen_core::ir::node::WidgetNode;
 use dampen_core::ir::theme::StyleClass;
 use dampen_core::state::AppState;
+use dampen_core::state::ThemeContext;
 use iced::{Element, Renderer, Theme};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -141,6 +142,9 @@ pub struct DampenWidgetBuilder<'a> {
     /// Optional style classes for theme support
     pub(super) style_classes: Option<&'a HashMap<String, StyleClass>>,
 
+    /// Optional theme context for theming support
+    pub(super) theme_context: Option<&'a ThemeContext>,
+
     /// Enable verbose logging for debugging
     pub(super) verbose: bool,
 
@@ -194,6 +198,7 @@ impl<'a> DampenWidgetBuilder<'a> {
             shared_context: None,
             handler_registry,
             style_classes: Some(&document.style_classes),
+            theme_context: None,
             verbose: false,
             message_factory: Box::new(|name, value| {
                 HandlerMessage::Handler(name.to_string(), value)
@@ -283,6 +288,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             builder = builder.with_shared(shared_ctx as &dyn UiBindable);
         }
 
+        // Include theme context if present
+        if let Some(ref theme_ctx) = app_state.theme_context {
+            builder = builder.with_theme_context(theme_ctx);
+        }
+
         builder
     }
 }
@@ -346,6 +356,7 @@ impl<'a> DampenWidgetBuilder<'a> {
             shared_context: None,
             handler_registry,
             style_classes: None,
+            theme_context: None,
             verbose: false,
             message_factory: Box::new(message_factory),
             binding_context: RefCell::new(Vec::new()),
@@ -419,6 +430,29 @@ impl<'a> DampenWidgetBuilder<'a> {
     /// ```
     pub fn with_shared(mut self, shared: &'a dyn UiBindable) -> Self {
         self.shared_context = Some(shared);
+        self
+    }
+
+    /// Set the theme context for theming support
+    ///
+    /// When a theme context is provided, widgets will use the active theme
+    /// colors and styling from the theme.dampen file.
+    ///
+    /// # Arguments
+    ///
+    /// * `theme_context` - Reference to the theme context
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use dampen_core::ThemeContext;
+    ///
+    /// let theme_ctx = /* ... */;
+    /// let builder = DampenWidgetBuilder::new(/* ... */)
+    ///     .with_theme_context(&theme_ctx);
+    /// ```
+    pub fn with_theme_context(mut self, theme_context: &'a ThemeContext) -> Self {
+        self.theme_context = Some(theme_context);
         self
     }
 

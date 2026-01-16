@@ -60,11 +60,9 @@ pub struct BuildArgs {
 /// dampen build --features tokio,logging
 /// ```
 pub fn execute(args: &BuildArgs) -> Result<(), String> {
-    // Run debug build with codegen
     execute_production_build(args)
 }
 
-/// Execute production build using cargo build
 fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     use std::process::Command;
 
@@ -72,7 +70,6 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
         eprintln!("Running debug build with codegen...");
     }
 
-    // Check if build.rs exists
     if !Path::new("build.rs").exists() {
         return Err(
             "build.rs not found. This project may not be configured for codegen builds."
@@ -80,16 +77,13 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
         );
     }
 
-    // Check if Cargo.toml exists
     if !Path::new("Cargo.toml").exists() {
         return Err("Cargo.toml not found. Are you in a Rust project directory?".to_string());
     }
 
-    // Build the cargo command
     let mut cmd = Command::new("cargo");
     cmd.arg("build");
 
-    // Add package specification if provided
     if let Some(ref package) = args.package {
         cmd.arg("-p").arg(package);
     }
@@ -98,14 +92,11 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
         cmd.arg("--verbose");
     }
 
-    // Build features list: always include 'codegen', plus any user-specified features
     let mut all_features = vec!["codegen".to_string()];
     all_features.extend(args.features.clone());
 
-    // Add features flag
     cmd.arg("--features").arg(all_features.join(","));
 
-    // Execute cargo build
     if args.verbose {
         let features_str = all_features.join(",");
         eprintln!("Executing: cargo build --features {}", features_str);

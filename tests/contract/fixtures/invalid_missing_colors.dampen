@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen version="1.0">
+    <themes>
+        <theme name="incomplete">
+            <palette primary="#3498db" />
+        </theme>
+    </themes>
+</dampen>

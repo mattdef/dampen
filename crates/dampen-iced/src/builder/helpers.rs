@@ -10,6 +10,7 @@
 use crate::HandlerMessage;
 use dampen_core::binding::BindingValue;
 use dampen_core::expr::evaluate_binding_expr_with_shared;
+use dampen_core::ir::WidgetKind;
 use dampen_core::ir::node::{AttributeValue, InterpolatedPart, WidgetNode};
 use std::collections::HashMap;
 
@@ -187,6 +188,77 @@ impl<'a> DampenWidgetBuilder<'a> {
         }
     }
 
+    /// Resolve the theme name from a theme_ref attribute value
+    ///
+    /// Supports:
+    /// - Static values: `theme="dark"` → returns "dark"
+    /// - Binding expressions: `theme="{model.theme}"` → evaluates binding
+    /// - Interpolated: `theme="custom-{model.variant}"` → combines literal and binding
+    ///
+    /// # Arguments
+    ///
+    /// * `theme_ref` - The theme reference attribute value (may be None)
+    ///
+    /// # Returns
+    ///
+    /// The resolved theme name as a string, or None if no theme is specified
+    #[allow(dead_code)]
+    pub(super) fn resolve_theme(&self, theme_ref: &Option<AttributeValue>) -> Option<String> {
+        match theme_ref {
+            None => None,
+            Some(AttributeValue::Static(name)) => Some(name.clone()),
+            Some(AttributeValue::Binding(expr)) => {
+                // Try context first, then model
+                if let Some(value) = self.resolve_from_context(expr) {
+                    Some(value.to_display_string())
+                } else {
+                    match evaluate_binding_expr_with_shared(expr, self.model, self.shared_context) {
+                        Ok(value) => Some(value.to_display_string()),
+                        Err(_) => {
+                            if self.verbose {
+                                eprintln!("[DampenWidgetBuilder] Theme binding error");
+                            }
+                            None
+                        }
+                    }
+                }
+            }
+            Some(AttributeValue::Interpolated(parts)) => {
+                let mut result = String::new();
+                for part in parts {
+                    match part {
+                        InterpolatedPart::Literal(lit) => result.push_str(lit),
+                        InterpolatedPart::Binding(expr) => {
+                            if let Some(value) = self.resolve_from_context(expr) {
+                                result.push_str(&value.to_display_string());
+                            } else {
+                                match evaluate_binding_expr_with_shared(
+                                    expr,
+                                    self.model,
+                                    self.shared_context,
+                                ) {
+                                    Ok(value) => result.push_str(&value.to_display_string()),
+                                    Err(_) => {
+                                        if self.verbose {
+                                            eprintln!(
+                                                "[DampenWidgetBuilder] Theme binding error in interpolated value"
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if result.is_empty() {
+                    None
+                } else {
+                    Some(result)
+                }
+            }
+        }
+    }
+
     /// Resolve styles from class names
     pub(super) fn resolve_class_styles(
         &self,
@@ -218,6 +290,290 @@ impl<'a> DampenWidgetBuilder<'a> {
         }
 
         Some(merged_style)
+    }
+
+    /// Resolve theme-based styles from the active theme context
+    ///
+    /// This extracts color defaults from the theme palette for use as widget base styles.
+    /// Returns `None` if no theme context is available.
+    ///
+    /// # Theme Colors Used
+    ///
+    /// - `primary` → background for buttons, interactive elements
+    /// - `text` → text color for labels
+    /// - `background` → container backgrounds
+    /// - `surface` → card/pane backgrounds
+    ///
+    /// # Arguments
+    ///
+    /// * `widget_kind` - The kind of widget being styled (affects which colors to use)
+    ///
+    /// # Returns
+    ///
+    /// StyleProperties with theme colors, or None if no theme context
+    pub(super) fn resolve_theme_styles(
+        &self,
+        widget_kind: WidgetKind,
+    ) -> Option<dampen_core::ir::style::StyleProperties> {
+        let theme_ctx = self.theme_context?;
+        let theme = theme_ctx.active();
+        let palette = &theme.palette;
+
+        // Determine which theme colors to use based on widget type
+        let mut style = dampen_core::ir::style::StyleProperties::default();
+
+        match widget_kind {
+            WidgetKind::Button => {
+                // Buttons use primary color for background
+                if let Some(ref primary) = palette.primary {
+                    style.background = Some(dampen_core::ir::style::Background::Color(*primary));
+                }
+                // Buttons use text color
+                if let Some(ref text) = palette.text {
+                    style.color = Some(*text);
+                }
+            }
+            WidgetKind::Container => {
+                // Containers use background/surface colors
+                if let Some(ref surface) = palette.surface {
+                    style.background = Some(dampen_core::ir::style::Background::Color(*surface));
+                }
+            }
+            WidgetKind::Text => {
+                // Text widgets use text color
+                if let Some(ref text) = palette.text {
+                    style.color = Some(*text);
+                }
+            }
+            _ => {
+                // Other widgets: use text color if available
+                if let Some(ref text) = palette.text {
+                    style.color = Some(*text);
+                }
+            }
+        }
+
+        // Check if we actually got any theme colors
+        if style.background.is_none() && style.color.is_none() {
+            None
+        } else {
+            Some(style)
+        }
+    }
+
+    /// Create a style closure that resolves theme colors at render time.
+    ///
+    /// This is the key to making theme switching work visually. Instead of
+    /// resolving theme colors at build time (which would capture them permanently),
+    /// this method returns a closure that looks up colors from the active theme
+    /// each time Iced renders the widget.
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - The widget node being styled (for inline styles and classes)
+    ///
+    /// # Returns
+    ///
+    /// A closure that can be passed to Iced widget's `.style()` method
+    pub(super) fn create_theme_aware_style_closure(
+        &self,
+        node: &WidgetNode,
+    ) -> Option<
+        impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style + 'a,
+    > {
+        let theme_context = self.theme_context?;
+        let widget_kind = node.kind.clone();
+
+        // Get class styles (these are static, not from theme)
+        let class_styles = if !node.classes.is_empty() {
+            self.style_classes.and_then(|classes| {
+                node.classes
+                    .first()
+                    .and_then(|name| classes.get(name))
+                    .cloned()
+            })
+        } else {
+            None
+        };
+
+        // Get inline styles (also static)
+        let inline_style = node.style.clone();
+
+        Some(
+            move |_theme: &iced::Theme, status: iced::widget::button::Status| {
+                use crate::style_mapping::{
+                    map_button_status, merge_style_properties, resolve_state_style,
+                };
+                use iced::widget::button;
+                use iced::{Background, Border, Color};
+
+                // Get the active theme at RUNTIME (not build time!)
+                let active_theme = theme_context.active();
+                let palette = &active_theme.palette;
+
+                // Resolve theme colors for this widget type at render time
+                let mut theme_style = dampen_core::ir::style::StyleProperties::default();
+
+                match widget_kind {
+                    WidgetKind::Container => {
+                        if let Some(ref surface) = palette.surface {
+                            theme_style.background =
+                                Some(dampen_core::ir::style::Background::Color(*surface));
+                        }
+                    }
+                    WidgetKind::Button => {
+                        if let Some(ref primary) = palette.primary {
+                            theme_style.background =
+                                Some(dampen_core::ir::style::Background::Color(*primary));
+                        }
+                        if let Some(ref text) = palette.text {
+                            theme_style.color = Some(*text);
+                        }
+                    }
+                    WidgetKind::Text => {
+                        if let Some(ref text) = palette.text {
+                            theme_style.color = Some(*text);
+                        }
+                    }
+                    _ => {
+                        if let Some(ref text) = palette.text {
+                            theme_style.color = Some(*text);
+                        }
+                    }
+                }
+
+                // Merge theme with class styles (theme is base, class overrides)
+                let mut merged = theme_style;
+                if let Some(ref class_style) = class_styles {
+                    merged = merge_styles(merged, &class_style.style);
+                }
+
+                // Merge with inline styles (highest precedence)
+                if let Some(ref inline) = inline_style {
+                    merged = merge_styles(merged, inline);
+                }
+
+                // Handle state variants
+                let final_style_props = if let (Some(class), Some(state)) =
+                    (&class_styles, map_button_status(status))
+                {
+                    if let Some(state_style) = resolve_state_style(class, state) {
+                        merge_style_properties(&merged, state_style)
+                    } else {
+                        merged
+                    }
+                } else {
+                    merged
+                };
+
+                // Convert to Iced style
+                let mut style = button::Style::default();
+
+                if let Some(ref bg) = final_style_props.background {
+                    if let dampen_core::ir::style::Background::Color(color) = bg {
+                        style.background = Some(Background::Color(Color {
+                            r: color.r,
+                            g: color.g,
+                            b: color.b,
+                            a: color.a,
+                        }));
+                    }
+                }
+
+                if let Some(ref text_color) = final_style_props.color {
+                    style.text_color = Color {
+                        r: text_color.r,
+                        g: text_color.g,
+                        b: text_color.b,
+                        a: text_color.a,
+                    };
+                }
+
+                if let Some(ref border) = final_style_props.border {
+                    style.border = Border {
+                        color: Color {
+                            r: border.color.r,
+                            g: border.color.g,
+                            b: border.color.b,
+                            a: border.color.a,
+                        },
+                        width: border.width,
+                        radius: iced::border::Radius {
+                            top_left: border.radius.top_left,
+                            top_right: border.radius.top_right,
+                            bottom_right: border.radius.bottom_right,
+                            bottom_left: border.radius.bottom_left,
+                        },
+                    };
+                }
+
+                if let Some(ref shadow) = final_style_props.shadow {
+                    style.shadow = iced::Shadow {
+                        color: Color {
+                            r: shadow.color.r,
+                            g: shadow.color.g,
+                            b: shadow.color.b,
+                            a: shadow.color.a,
+                        },
+                        offset: iced::Vector {
+                            x: shadow.offset_x,
+                            y: shadow.offset_y,
+                        },
+                        blur_radius: shadow.blur_radius,
+                    };
+                }
+
+                style
+            },
+        )
+    }
+
+    /// Resolve complete styles with proper precedence: theme → class → inline
+    ///
+    /// This is the main entry point for style resolution, combining:
+    /// 1. Theme palette colors (base defaults)
+    /// 2. Style class definitions (override theme)
+    /// 3. Inline node styles (override class)
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - The widget node being styled
+    ///
+    /// # Returns
+    ///
+    /// Merged StyleProperties, or None if no styles are defined
+    pub(super) fn resolve_complete_styles(
+        &self,
+        node: &WidgetNode,
+    ) -> Option<dampen_core::ir::style::StyleProperties> {
+        // Layer 1: Theme styles (base)
+        let theme_styles = self.resolve_theme_styles(node.kind.clone())?;
+
+        // Layer 2: Class styles (override theme)
+        let class_styles = self.resolve_class_styles(node);
+
+        // Layer 3: Inline styles (override class)
+        let inline_style = &node.style;
+
+        // Merge all layers: theme → class → inline
+        let merged = match (class_styles, inline_style) {
+            (Some(class_style), Some(inline_style)) => {
+                // Merge class on top of theme, then inline on top of class
+                let theme_then_class = merge_styles(theme_styles, &class_style);
+                merge_styles(theme_then_class, inline_style)
+            }
+            (Some(class_style), None) => {
+                // Only theme + class
+                merge_styles(theme_styles, &class_style)
+            }
+            (None, Some(inline_style)) => {
+                // Only theme + inline
+                merge_styles(theme_styles, inline_style)
+            }
+            (None, None) => theme_styles,
+        };
+
+        Some(merged)
     }
 
     /// Resolve layout constraints from class names
@@ -278,7 +634,7 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         let element: iced::Element<'a, HandlerMessage, iced::Theme, iced::Renderer> = widget.into();
 
-        // Resolve styles: class styles first, then node styles override
+        // Resolve class and inline styles (static, not from theme)
         let resolved_style = match (self.resolve_class_styles(node), &node.style) {
             (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
             (Some(class_style), None) => Some(class_style),
@@ -306,8 +662,9 @@ impl<'a> DampenWidgetBuilder<'a> {
         };
 
         let has_style = resolved_style.is_some();
+        let has_theme_context = self.theme_context.is_some();
 
-        if !needs_container_for_layout && !has_style {
+        if !needs_container_for_layout && !has_style && !has_theme_context {
             return element;
         }
 
@@ -336,8 +693,48 @@ impl<'a> DampenWidgetBuilder<'a> {
             }
         }
 
-        // Apply resolved style (visual properties)
-        if let Some(style) = resolved_style {
+        // Apply resolved style (visual properties) with theme-aware styling
+        if self.theme_context.is_some() {
+            // Use theme-aware styling that resolves colors at render time
+            let widget_kind = node.kind.clone();
+            let resolved_style = resolved_style.clone();
+            let theme_context = self.theme_context;
+
+            container = container.style(move |_theme: &iced::Theme| {
+                use crate::convert::map_style_properties;
+
+                // Get the active theme at RUNTIME (not build time!)
+                let ctx = match theme_context {
+                    Some(ctx) => ctx,
+                    None => {
+                        return map_style_properties(&resolved_style.clone().unwrap_or_default());
+                    }
+                };
+                let active_theme = ctx.active();
+                let palette = &active_theme.palette;
+
+                // Resolve theme colors for this widget type at render time
+                let mut theme_style = dampen_core::ir::style::StyleProperties::default();
+
+                match widget_kind {
+                    WidgetKind::Container => {
+                        if let Some(ref surface) = palette.surface {
+                            theme_style.background =
+                                Some(dampen_core::ir::style::Background::Color(*surface));
+                        }
+                    }
+                    _ => {}
+                }
+
+                // Merge theme with static styles (theme is base, static overrides)
+                let merged = match resolved_style.as_ref() {
+                    Some(static_style) => merge_styles(theme_style, static_style),
+                    None => theme_style,
+                };
+
+                map_style_properties(&merged)
+            });
+        } else if let Some(style) = resolved_style {
             use crate::convert::map_style_properties;
             let iced_style = map_style_properties(&style);
             container = container.style(move |_theme| iced_style);

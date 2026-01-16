@@ -1,54 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dampen version="1.0">
-    <!-- Theme Definitions -->
-    <themes>
-        <theme name="light">
-            <palette
-                primary="#3498db"
-                secondary="#2ecc71"
-                success="#27ae60"
-                warning="#f39c12"
-                danger="#e74c3c"
-                background="#ecf0f1"
-                surface="#ffffff"
-                text="#2c3e50"
-                text_secondary="#7f8c8d"
-            />
-            <typography
-                font_family="Inter, sans-serif"
-                font_size_base="16"
-                font_size_small="12"
-                font_size_large="20"
-                font_weight="normal"
-                line_height="1.5"
-            />
-            <spacing unit="8" />
-        </theme>
-
-        <theme name="dark">
-            <palette
-                primary="#5dade2"
-                secondary="#52be80"
-                success="#27ae60"
-                warning="#f39c12"
-                danger="#ec7063"
-                background="#2c3e50"
-                surface="#34495e"
-                text="#ecf0f1"
-                text_secondary="#95a5a6"
-            />
-            <typography
-                font_family="Inter, sans-serif"
-                font_size_base="16"
-                font_size_small="12"
-                font_size_large="20"
-                font_weight="normal"
-                line_height="1.5"
-            />
-            <spacing unit="8" />
-        </theme>
-    </themes>
-
     <!-- Style Classes -->
     <styles>
         <!-- Button Styles with State Variants -->
@@ -105,7 +56,6 @@
         <!-- Card Style -->
         <style name="card">
             <base
-                background="#ffffff"
                 padding="20"
                 border_radius="12"
                 border_width="1"
@@ -150,24 +100,15 @@
         </style>
     </styles>
 
-    <!-- Set Global Theme -->
-    <global_theme name="light" />
-
     <!-- Main UI wrapped in scrollable -->
     <scrollable>
         <column padding="40" spacing="30">
         <!-- Header Section -->
         <column spacing="15">
-            <text
-                    value="Dampen Styling Showcase"
-                    size="36"
-                    weight="bold"
-                    color="#cccccc"
-                />
+            <text value="Dampen Styling Showcase" size="36" weight="bold" />
             <text
                     value="Comprehensive demo of all layout, sizing, theming, and styling features"
                     size="14"
-                    color="#7f8c8d"
                 />
         </column>
 
@@ -178,7 +119,6 @@
                         value="1. Basic Styling &amp; Data Binding"
                         size="20"
                         weight="bold"
-                        color="#2c3e50"
                     />
                 <text
                         value="Current count: {count}"
@@ -242,7 +182,6 @@
                         value="2. Layout Constraints &amp; Sizing"
                         size="20"
                         weight="bold"
-                        color="#2c3e50"
                     />
 
                 <!-- Fixed width -->
@@ -344,7 +283,6 @@
                         value="3. Borders, Radius &amp; Shadows"
                         size="20"
                         weight="bold"
-                        color="#2c3e50"
                     />
 
                 <row spacing="15">
@@ -406,7 +344,6 @@
                         value="4. Style Classes &amp; State Variants"
                         size="20"
                         weight="bold"
-                        color="#2c3e50"
                     />
                 <text
                         value="Hover over buttons to see state transitions (hover, active, disabled)"
@@ -458,12 +395,7 @@
         <!-- Section 5: Theming -->
         <container class="card">
             <column spacing="15">
-                <text
-                        value="5. Theming System"
-                        size="20"
-                        weight="bold"
-                        color="#2c3e50"
-                    />
+                <text value="5. Theming System" size="20" weight="bold" />
                 <text
                         value="Theme: light (see &lt;themes&gt; section for palette, typography, spacing)"
                         size="13"

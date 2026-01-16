@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen version="1.0">
+    <!-- Style Classes -->
+    <styles>
+        <style name="section">
+            <base
+                padding="20"
+                border_radius="12"
+                border_width="1"
+                opacity="0.9"
+            />
+        </style>
+
+        <style name="theme_btn">
+            <base padding="10 20" border_radius="8" border_width="2" />
+        </style>
+    </styles>
+
+    <!-- Main UI -->
+    <scrollable>
+        <column padding="30" spacing="25">
+            <!-- Header -->
+            <column spacing="10">
+                <text
+                    value="Dampen Theming System"
+                    size="32"
+                    weight="bold"
+                    color="#2c3e50"
+                />
+                <text
+                    value="Demonstrating runtime theme switching, inheritance, and customization"
+                    size="14"
+                    color="#7f8c8d"
+                />
+            </column>
+
+            <!-- Theme Switcher Section -->
+            <container class="section">
+                <column spacing="15">
+                    <text
+                        value="1. Runtime Theme Switching"
+                        size="20"
+                        weight="bold"
+                        color="#2c3e50"
+                    />
+                    <text
+                        value="Click buttons to switch themes via set_theme() handler"
+                        size="13"
+                        color="#7f8c8d"
+                    />
+
+                    <row spacing="12">
+                        <button
+                            label="Light"
+                            on_click="set_theme:'light'"
+                            class="theme_btn"
+                            border_color="#3498db"
+                            hover_background="#3498db"
+                            hover_color="#ffffff"
+                            active_background="#2ecc71"
+                            active_color="#ffffff"
+                        />
+                        <button
+                            label="Dark"
+                            on_click="set_theme:'dark'"
+                            class="theme_btn"
+                            border_color="#5dade2"
+                            hover_background="#5dade2"
+                            hover_color="#ffffff"
+                            active_background="#52be80"
+                            active_color="#ffffff"
+                        />
+                        <button
+                            label="Brand"
+                            on_click="set_theme:'brand'"
+                            class="theme_btn"
+                            border_color="#6366f1"
+                            hover_background="#6366f1"
+                            hover_color="#ffffff"
+                            active_background="#8b5cf6"
+                            active_color="#ffffff"
+                        />
+                        <button
+                            label="High Contrast"
+                            on_click="set_theme:'high_contrast'"
+                            class="theme_btn"
+                            border_color="#00ffff"
+                            hover_background="#00ffff"
+                            hover_color="#000000"
+                            active_background="#ff00ff"
+                            active_color="#ffffff"
+                        />
+                    </row>
+
+                    <text
+                        value="Edit src/ui/theme/theme.dampen for hot-reload!"
+                        size="12"
+                        color="#27ae60"
+                    />
+                </column>
+            </container>
+
+            <!-- Palette Colors Section -->
+            <container class="section">
+                <column spacing="15">
+                    <text
+                        value="2. Theme Palette"
+                        size="20"
+                        weight="bold"
+                        color="#2c3e50"
+                    />
+                    <text
+                        value="Theme colors are defined in theme.dampen"
+                        size="13"
+                        color="#7f8c8d"
+                    />
+
+                    <row spacing="10">
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#3498db"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                            />
+                            <text value="primary" size="11" color="#2c3e50" />
+                        </column>
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#2ecc71"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                            />
+                            <text value="secondary" size="11" color="#2c3e50" />
+                        </column>
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#27ae60"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                            />
+                            <text value="success" size="11" color="#2c3e50" />
+                        </column>
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#f39c12"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                            />
+                            <text value="warning" size="11" color="#2c3e50" />
+                        </column>
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#e74c3c"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                            />
+                            <text value="danger" size="11" color="#2c3e50" />
+                        </column>
+                    </row>
+
+                    <row spacing="10">
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#ecf0f1"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                                border_width="1"
+                                border_color="#bdc3c7"
+                            />
+                            <text
+                                value="background"
+                                size="11"
+                                color="#2c3e50"
+                            />
+                        </column>
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#ffffff"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                                border_width="1"
+                                border_color="#bdc3c7"
+                            />
+                            <text value="surface" size="11" color="#2c3e50" />
+                        </column>
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#2c3e50"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                            />
+                            <text value="text" size="11" color="#ecf0f1" />
+                        </column>
+                        <column spacing="5" align_x="center">
+                            <container
+                                background="#7f8c8d"
+                                width="fill"
+                                height="40"
+                                border_radius="4"
+                            />
+                            <text
+                                value="text_secondary"
+                                size="11"
+                                color="#2c3e50"
+                            />
+                        </column>
+                    </row>
+                </column>
+            </container>
+
+            <!-- Typography Section -->
+            <container class="section">
+                <column spacing="15">
+                    <text
+                        value="3. Typography"
+                        size="20"
+                        weight="bold"
+                        color="#2c3e50"
+                    />
+                    <text
+                        value="Font family, sizes, and line height from theme"
+                        size="13"
+                        color="#7f8c8d"
+                    />
+
+                    <column spacing="8">
+                        <text
+                            value="Large: Heading Text"
+                            size="24"
+                            weight="bold"
+                            color="#2c3e50"
+                        />
+                        <text
+                            value="Base: Body text with line height 1.5"
+                            size="16"
+                            color="#2c3e50"
+                        />
+                        <text
+                            value="Small: Caption text"
+                            size="12"
+                            color="#7f8c8d"
+                        />
+                    </column>
+                </column>
+            </container>
+
+            <!-- Spacing Section -->
+            <container class="section">
+                <column spacing="15">
+                    <text
+                        value="4. Spacing Scale"
+                        size="20"
+                        weight="bold"
+                        color="#2c3e50"
+                    />
+                    <text value="Base unit: 8px" size="13" color="#7f8c8d" />
+
+                    <row spacing="8">
+                        <container
+                            background="#3498db"
+                            padding="8"
+                            border_radius="4"
+                        >
+                            <text value="1x" size="11" color="#ffffff" />
+                        </container>
+                        <container
+                            background="#2ecc71"
+                            padding="16"
+                            border_radius="4"
+                        >
+                            <text value="2x" size="11" color="#ffffff" />
+                        </container>
+                        <container
+                            background="#27ae60"
+                            padding="24"
+                            border_radius="4"
+                        >
+                            <text value="3x" size="11" color="#ffffff" />
+                        </container>
+                        <container
+                            background="#f39c12"
+                            padding="32"
+                            border_radius="4"
+                        >
+                            <text value="4x" size="11" color="#ffffff" />
+                        </container>
+                    </row>
+                </column>
+            </container>
+
+            <!-- Summary -->
+            <container
+                background="#ecf0f1"
+                padding="20"
+                border_radius="10"
+                border_width="1"
+                border_color="#bdc3c7"
+            >
+                <column spacing="10">
+                    <text
+                        value="Key Theming Concepts"
+                        size="18"
+                        weight="bold"
+                        color="#2c3e50"
+                    />
+                    <column spacing="5">
+                        <text
+                            value="1. Define themes in src/ui/theme/theme.dampen"
+                            size="13"
+                            color="#2c3e50"
+                        />
+                        <text
+                            value="2. Use 'extends' for theme inheritance"
+                            size="13"
+                            color="#2c3e50"
+                        />
+                        <text
+                            value="3. Configure palette, typography, spacing"
+                            size="13"
+                            color="#2c3e50"
+                        />
+                        <text
+                            value="4. Switch themes at runtime with set_theme()"
+                            size="13"
+                            color="#2c3e50"
+                        />
+                        <text
+                            value="5. Hot-reload theme changes in dev mode"
+                            size="13"
+                            color="#2c3e50"
+                        />
+                    </column>
+                </column>
+            </container>
+        </column>
+    </scrollable>
+</dampen>

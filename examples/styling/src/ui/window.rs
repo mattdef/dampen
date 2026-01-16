@@ -1,7 +1,7 @@
 // Auto-loaded UI module for counter example.
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{UiModel, dampen_ui, ui_handler};
+use dampen_macros::{UiModel, dampen_ui};
 use serde::{Deserialize, Serialize};
 
 #[dampen_ui("window.dampen")]
@@ -13,19 +13,16 @@ pub struct Model {
     pub name: String,
 }
 
-#[ui_handler]
 fn increment(model: &mut Model) {
     model.count += 1;
     println!("Incremented to: {}", model.count);
 }
 
-#[ui_handler]
 fn decrement(model: &mut Model) {
     model.count -= 1;
     println!("Decremented to: {}", model.count);
 }
 
-#[ui_handler]
 fn reset(model: &mut Model) {
     model.count = 0;
     println!("Reset to: {}", model.count);

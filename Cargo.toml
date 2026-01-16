@@ -10,6 +10,7 @@ members = [
     "examples/counter",
     "examples/todo-app",
     "examples/styling",
+    "examples/theming",
     "examples/widget-showcase",
     "examples/settings",
     "examples/macro-shared-state",

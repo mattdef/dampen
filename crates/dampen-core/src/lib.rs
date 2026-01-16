@@ -136,6 +136,12 @@ pub use codegen::{CodegenError, CodegenOutput, generate_application, validate_ha
 /// a parsed UI document with application state and event handlers.
 pub use state::AppState;
 
+/// Runtime theme context for managing active themes.
+///
+/// This module provides the [`ThemeContext`](state::ThemeContext) struct for
+/// managing theme state including active theme, switching, and hot-reload.
+pub use state::ThemeContext;
+
 /// Shared state container for inter-window communication.
 ///
 /// This module provides the [`SharedContext`](shared::SharedContext) struct for

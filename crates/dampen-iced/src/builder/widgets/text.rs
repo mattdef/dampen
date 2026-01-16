@@ -2,7 +2,7 @@
 
 use crate::HandlerMessage;
 use crate::builder::DampenWidgetBuilder;
-use crate::builder::helpers::{merge_styles, parse_color};
+use crate::builder::helpers::parse_color;
 use dampen_core::ir::node::WidgetNode;
 use iced::{Element, Renderer, Theme};
 
@@ -22,23 +22,45 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         let mut text_widget = iced::widget::text(value);
 
-        // Resolve and apply text styles
-        let resolved_style = match (self.resolve_class_styles(node), &node.style) {
-            (Some(class_style), Some(node_style)) => Some(merge_styles(class_style, node_style)),
-            (Some(class_style), None) => Some(class_style),
-            (None, Some(node_style)) => Some(node_style.clone()),
-            (None, None) => None,
-        };
+        // Resolve text color with theme awareness
+        // Priority: direct color attribute > inline style color > theme color > default
+        let mut theme_color_applied = false;
 
-        // Apply color from styles
+        if let Some(theme_ctx) = self.theme_context {
+            // Get theme text color at render time
+            let active_theme = theme_ctx.active();
+            if let Some(ref text_color) = active_theme.palette.text {
+                // Check if there's no direct color attribute or inline style overriding it
+                let has_direct_color = node.attributes.contains_key("color");
+                let has_inline_color = node.style.as_ref().and_then(|s| s.color.as_ref()).is_some();
+
+                if !has_direct_color && !has_inline_color {
+                    text_widget = text_widget.color(iced::Color {
+                        r: text_color.r,
+                        g: text_color.g,
+                        b: text_color.b,
+                        a: text_color.a,
+                    });
+                    theme_color_applied = true;
+                }
+            }
+        }
+
+        // Resolve and apply text styles with complete resolution: theme → class → inline
+        // (but skip theme colors since we already applied them above if appropriate)
+        let resolved_style = self.resolve_complete_styles(node);
+
+        // Apply color from styles (only if not already applied from theme)
         if let Some(style_props) = resolved_style {
             if let Some(ref color) = style_props.color {
-                text_widget = text_widget.color(iced::Color {
-                    r: color.r,
-                    g: color.g,
-                    b: color.b,
-                    a: color.a,
-                });
+                if !theme_color_applied {
+                    text_widget = text_widget.color(iced::Color {
+                        r: color.r,
+                        g: color.g,
+                        b: color.b,
+                        a: color.a,
+                    });
+                }
             }
         }
 

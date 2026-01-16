@@ -9,7 +9,9 @@ publish = false
 dampen-core = { workspace = true }
 dampen-macros = { workspace = true }
 dampen-iced = { workspace = true }
+dampen-dev = { workspace = true }
 serde = { workspace = true }
+tempfile = "3.0"
 
 [lib]
 path = "lib.rs"
@@ -17,3 +19,7 @@ path = "lib.rs"
 [[test]]
 name = "shared_state_contracts"
 path = "shared_state_contracts.rs"
+
+[[test]]
+name = "theme_contracts"
+path = "theme_contracts.rs"

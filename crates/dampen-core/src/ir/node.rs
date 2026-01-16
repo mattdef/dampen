@@ -16,7 +16,7 @@ pub struct WidgetNode {
     // Styling extensions
     pub style: Option<StyleProperties>,
     pub layout: Option<LayoutConstraints>,
-    pub theme_ref: Option<String>,
+    pub theme_ref: Option<AttributeValue>,
     pub classes: Vec<String>,
     pub breakpoint_attributes: HashMap<Breakpoint, HashMap<String, AttributeValue>>,
 }
