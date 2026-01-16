@@ -50,9 +50,7 @@ Themes provide a consistent look and feel across your application.
         </theme>
     </themes>
     
-    <global_theme name="custom" />
-    
-    <!-- Your UI here -->
+    <default_theme name="custom" />
 </dampen>
 ```
 
