@@ -136,6 +136,11 @@ impl ProjectInfo {
         loop {
             let cargo_toml = current.join("Cargo.toml");
             if cargo_toml.exists() {
+                // If we hit /tmp/Cargo.toml, we likely shouldn't consider it a project root
+                // unless we are specifically in /tmp. This prevents picking up stray files.
+                if current == Path::new("/tmp") && start != Path::new("/tmp") {
+                    return None;
+                }
                 return Some(current.to_path_buf());
             }
 
@@ -416,8 +421,12 @@ some-other-crate = "1.0"
 
     #[test]
     fn test_detect_no_cargo_toml() {
+        // Use a deeper temporary directory to ensure we don't hit /tmp/Cargo.toml
         let temp = TempDir::new().unwrap();
-        let _guard = std::env::set_current_dir(temp.path());
+        let deep_dir = temp.path().join("a/b/c");
+        fs::create_dir_all(&deep_dir).unwrap();
+
+        let _guard = std::env::set_current_dir(&deep_dir);
 
         let result = ProjectInfo::detect();
 
