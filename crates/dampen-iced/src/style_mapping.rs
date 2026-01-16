@@ -468,6 +468,8 @@ pub fn map_layout_constraints(layout: &LayoutConstraints) -> IcedLayout {
         padding: map_padding(layout),
         align_items: layout.align_items.map(map_alignment),
         justify_content: layout.justify_content.map(map_justification),
+        align_x: layout.align_x.map(map_alignment_to_horizontal),
+        align_y: layout.align_y.map(map_alignment_to_vertical),
         position: layout.position,
         top: layout.top,
         right: layout.right,
@@ -524,6 +526,26 @@ pub fn map_justification(justification: Justification) -> iced::Alignment {
         Justification::SpaceBetween => iced::Alignment::Center, // Iced doesn't have SpaceBetween
         Justification::SpaceAround => iced::Alignment::Center,  // Iced doesn't have SpaceAround
         Justification::SpaceEvenly => iced::Alignment::Center,  // Iced doesn't have SpaceEvenly
+    }
+}
+
+/// Map Alignment to iced::alignment::Horizontal (for align_x)
+pub fn map_alignment_to_horizontal(alignment: Alignment) -> iced::alignment::Horizontal {
+    match alignment {
+        Alignment::Start => iced::alignment::Horizontal::Left,
+        Alignment::Center => iced::alignment::Horizontal::Center,
+        Alignment::End => iced::alignment::Horizontal::Right,
+        Alignment::Stretch => iced::alignment::Horizontal::Left,
+    }
+}
+
+/// Map Alignment to iced::alignment::Vertical (for align_y)
+pub fn map_alignment_to_vertical(alignment: Alignment) -> iced::alignment::Vertical {
+    match alignment {
+        Alignment::Start => iced::alignment::Vertical::Top,
+        Alignment::Center => iced::alignment::Vertical::Center,
+        Alignment::End => iced::alignment::Vertical::Bottom,
+        Alignment::Stretch => iced::alignment::Vertical::Top,
     }
 }
 
@@ -656,6 +678,8 @@ pub struct IcedLayout {
     pub padding: iced::Padding,
     pub align_items: Option<iced::Alignment>,
     pub justify_content: Option<iced::Alignment>,
+    pub align_x: Option<iced::alignment::Horizontal>,
+    pub align_y: Option<iced::alignment::Vertical>,
     pub position: Option<Position>,
     pub top: Option<f32>,
     pub right: Option<f32>,
@@ -672,6 +696,8 @@ impl Default for IcedLayout {
             padding: iced::Padding::new(0.0),
             align_items: None,
             justify_content: None,
+            align_x: None,
+            align_y: None,
             position: None,
             top: None,
             right: None,

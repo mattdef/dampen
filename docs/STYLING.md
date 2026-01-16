@@ -1,7 +1,7 @@
 # Dampen Styling System
 
-**Version**: 1.0.0  
-**Last Updated**: 2026-01-02
+**Version**: 1.1.0  
+**Last Updated**: 2026-01-16
 
 This guide covers the complete styling system for Dampen UI, including themes, style classes, inline styles, and state-based styling.
 
@@ -11,10 +11,11 @@ This guide covers the complete styling system for Dampen UI, including themes, s
 
 1. [Themes](#themes)
 2. [Inline Styles](#inline-styles)
-3. [Style Classes](#style-classes)
-4. [State-Based Styling](#state-based-styling)
-5. [Responsive Design](#responsive-design)
-6. [Best Practices](#best-practices)
+3. [Layout & Alignment](#layout--alignment)
+4. [Style Classes](#style-classes)
+5. [State-Based Styling](#state-based-styling)
+6. [Responsive Design](#responsive-design)
+7. [Best Practices](#best-practices)
 
 ---
 
@@ -122,6 +123,8 @@ Override theme defaults directly on widgets.
 | `width` | Length | `200`, `fill`, `shrink` | Widget width |
 | `height` | Length | `100`, `fill`, `shrink` | Widget height |
 | `spacing` | Length | `10` | Child spacing |
+| `align_x` | Alignment | `start`, `center`, `end` | Horizontal alignment |
+| `align_y` | Alignment | `start`, `center`, `end` | Vertical alignment |
 
 ### Length Values
 
@@ -155,6 +158,105 @@ background="linear-gradient(90deg, #ff0000 0%, #0000ff 100%)"
 
 <!-- Radial -->
 background="radial-gradient(circle, #ff0000 0%, #0000ff 100%)"
+```
+
+---
+
+## Layout & Alignment
+
+Control the positioning of widgets and their children.
+
+### Alignment Values
+
+All alignment properties accept these values:
+
+| Value | Description |
+|-------|-------------|
+| `start` | Align to start (left for horizontal, top for vertical) |
+| `center` | Center alignment |
+| `end` | Align to end (right for horizontal, bottom for vertical) |
+
+### Container Alignment
+
+Center content within a container:
+
+```xml
+<container width="200" height="100" align_x="center" align_y="center">
+    <text value="Centered Content" />
+</container>
+```
+
+### Column Alignment
+
+Align children horizontally within a column:
+
+```xml
+<column width="fill" align_x="center">
+    <text value="Centered Text" />
+    <button label="Centered Button" />
+</column>
+```
+
+### Row Alignment
+
+Align children vertically within a row:
+
+```xml
+<row height="fill" align_y="center">
+    <text value="Vertically Centered" />
+    <button label="Aligned" />
+</row>
+```
+
+### Text Alignment
+
+Align text content within its bounds:
+
+```xml
+<container width="200">
+    <text value="Right Aligned" align_x="end" />
+    <text value="Centered" align_x="center" />
+</container>
+```
+
+### Alignment by Widget Type
+
+| Widget | `align_x` | `align_y` |
+|--------|-----------|-----------|
+| `container` | Horizontal position of child | Vertical position of child |
+| `column` | Horizontal alignment of children | Vertical alignment within container |
+| `row` | Horizontal alignment within container | Vertical alignment of children |
+| `text` | Text horizontal alignment | Text vertical alignment |
+
+### Alignment in Style Classes
+
+```xml
+<style_classes>
+    <style name="centered_card"
+        background="#ffffff"
+        padding="20"
+        width="300"
+        height="200"
+        align_x="center"
+        align_y="center" />
+</style_classes>
+
+<container class="centered_card">
+    <text value="Perfectly Centered" />
+</container>
+```
+
+### Responsive Alignment
+
+Alignment can also be responsive:
+
+```xml
+<container 
+    mobile:align_x="start"
+    desktop:align_x="center"
+    width="fill" height="200">
+    <text value="Responsive Alignment" />
+</container>
 ```
 
 ---
@@ -523,6 +625,8 @@ All style class attributes plus:
 - `theme_ref` - apply local theme
 - `disabled` - boolean to disable widget
 - `mobile:*`, `tablet:*`, `desktop:*` - responsive variants
+- `align_x` - horizontal alignment (start, center, end)
+- `align_y` - vertical alignment (start, center, end)
 
 ### State Variants
 

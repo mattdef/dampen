@@ -64,7 +64,7 @@ Note: Files starting directly with widgets (without `<dampen>` root) implicitly 
 Stacks children top-to-bottom.
 
 ```xml
-<column spacing="10" padding="20" align="center">
+<column spacing="10" padding="20" align_x="center">
     <text value="First" />
     <text value="Second" />
 </column>
@@ -75,7 +75,8 @@ Stacks children top-to-bottom.
 |-----------|------|---------|-------------|
 | `spacing` | length | 0 | Space between children |
 | `padding` | length/box | 0 | Inner padding |
-| `align` | align | start | Horizontal: start, center, end |
+| `align_x` | align | start | Horizontal alignment of children: start, center, end |
+| `align_y` | align | start | Vertical alignment within container: start, center, end |
 | `width` | length | auto | Width constraint |
 | `height` | length | auto | Height constraint |
 
@@ -84,7 +85,7 @@ Stacks children top-to-bottom.
 Places children left-to-right.
 
 ```xml
-<row spacing="10" align="center">
+<row spacing="10" align_y="center">
     <button label="Cancel" />
     <button label="OK" />
 </row>
@@ -95,7 +96,8 @@ Places children left-to-right.
 |-----------|------|---------|-------------|
 | `spacing` | length | 0 | Space between children |
 | `padding` | length/box | 0 | Inner padding |
-| `align` | align | start | Vertical: start, center, end |
+| `align_x` | align | start | Horizontal alignment within container: start, center, end |
+| `align_y` | align | start | Vertical alignment of children: start, center, end |
 | `width` | length | auto | Width constraint |
 | `height` | length | auto | Height constraint |
 
@@ -175,6 +177,8 @@ Displays text content.
 | `color` | color | inherit | Text color |
 | `font` | font-ref | default | Font family |
 | `weight` | weight | normal | normal, bold, light |
+| `align_x` | align | start | Horizontal alignment: start, center, end |
+| `align_y` | align | start | Vertical alignment: start, center, end |
 | `style` | style-ref | - | Style reference |
 
 ### `<image>` - Image Display

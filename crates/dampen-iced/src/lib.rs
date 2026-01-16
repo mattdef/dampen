@@ -216,9 +216,17 @@ pub fn render_with_layout<'a>(
                 .height(layout.height)
                 .padding(layout.padding);
 
-            // Apply alignment
+            // Apply align_items (vertical alignment of children)
             if let Some(align) = layout.align_items {
                 container = container.align_y(align);
+            }
+
+            // Apply direct alignment (align_x, align_y)
+            if let Some(align_x) = layout.align_x {
+                container = container.align_x(align_x);
+            }
+            if let Some(align_y) = layout.align_y {
+                container = container.align_y(align_y);
             }
         }
 

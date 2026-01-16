@@ -29,6 +29,10 @@ pub struct LayoutConstraints {
     pub justify_content: Option<Justification>,
     pub align_self: Option<Alignment>,
 
+    /// Direct alignment (for Container, Text, etc.)
+    pub align_x: Option<Alignment>,
+    pub align_y: Option<Alignment>,
+
     /// Layout direction
     pub direction: Option<Direction>,
 

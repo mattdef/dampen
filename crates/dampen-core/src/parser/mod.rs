@@ -1022,6 +1022,17 @@ fn parse_layout_attributes(
         has_any = true;
     }
 
+    // Parse direct alignment (align_x, align_y)
+    if let Some(AttributeValue::Static(value)) = attributes.get("align_x") {
+        layout.align_x = Some(parse_alignment(value)?);
+        has_any = true;
+    }
+
+    if let Some(AttributeValue::Static(value)) = attributes.get("align_y") {
+        layout.align_y = Some(parse_alignment(value)?);
+        has_any = true;
+    }
+
     // Parse align shorthand (sets both align_items and justify_content)
     if let Some(AttributeValue::Static(value)) = attributes.get("align") {
         let alignment = parse_alignment(value)?;

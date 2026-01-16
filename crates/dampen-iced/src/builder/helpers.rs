@@ -328,6 +328,12 @@ impl<'a> DampenWidgetBuilder<'a> {
             if let Some(align) = iced_layout.align_items {
                 container = container.align_y(align);
             }
+            if let Some(align_x) = iced_layout.align_x {
+                container = container.align_x(align_x);
+            }
+            if let Some(align_y) = iced_layout.align_y {
+                container = container.align_y(align_y);
+            }
         }
 
         // Apply resolved style (visual properties)
@@ -411,6 +417,8 @@ pub(super) fn merge_layouts(
         align_items: override_layout.align_items.or(base.align_items),
         justify_content: override_layout.justify_content.or(base.justify_content),
         align_self: override_layout.align_self.or(base.align_self),
+        align_x: override_layout.align_x.or(base.align_x),
+        align_y: override_layout.align_y.or(base.align_y),
         direction: override_layout.direction.or(base.direction),
         position: override_layout.position.or(base.position),
         top: override_layout.top.or(base.top),

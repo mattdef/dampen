@@ -72,6 +72,12 @@ impl<'a> DampenWidgetBuilder<'a> {
             }
         }
 
-        text_widget.into()
+        // Note: align_x and align_y are NOT applied here.
+        // These layout properties are handled by apply_style_layout which wraps
+        // the text in a container when width/height/padding are specified.
+        // The text widget in Iced only supports horizontal/vertical alignment
+        // when it has a fixed size, which is managed at the container level.
+
+        self.apply_style_layout(text_widget, node)
     }
 }

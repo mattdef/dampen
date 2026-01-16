@@ -3,6 +3,7 @@
 use crate::HandlerMessage;
 use crate::builder::DampenWidgetBuilder;
 use crate::convert::map_layout_constraints;
+use crate::style_mapping::map_alignment;
 use dampen_core::ir::node::WidgetNode;
 use iced::{Element, Renderer, Theme};
 
@@ -35,6 +36,10 @@ impl<'a> DampenWidgetBuilder<'a> {
             if layout.height.is_some() {
                 let iced_layout = map_layout_constraints(&layout);
                 row = row.height(iced_layout.height);
+            }
+            // Apply alignment - Row only supports align_y (vertical alignment of children)
+            if let Some(align_y) = layout.align_y {
+                row = row.align_y(map_alignment(align_y));
             }
         }
 
