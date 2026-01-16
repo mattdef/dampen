@@ -102,15 +102,15 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 |-----------|--------|-------------|
 | Window Communication | ✅ | Inter-window messaging |
 
-### v0.2.5 - Enhanced multi-windows application (in progress)
+### v0.2.5 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| Window Theming | 🔲 | Customizable window appearance |
+| Window Theming | ✅ | Customizable window appearance |
 
-### v0.2.6 - Enhanced multi-windows application (planned)
+### v0.2.6 - Enhanced multi-windows application (in progress)
 
 **Objective**: Improve user experience and functionality
 
