@@ -180,32 +180,6 @@ struct TodoItem {
 }
 ```
 
-### Type-Safe Event Handlers
-
-```rust
-#[ui_handler]
-fn increment(model: &mut Model) {
-    model.count += 1;
-}
-
-#[ui_handler]
-fn add_item(model: &mut Model, text: String) {
-    model.items.push(TodoItem {
-        id: model.next_id,
-        text,
-        completed: false,
-    });
-    model.next_id += 1;
-}
-
-#[ui_handler]
-fn toggle_item(model: &mut Model, id: usize) {
-    if let Some(item) = model.items.iter_mut().find(|i| i.id == id) {
-        item.completed = !item.completed;
-    }
-}
-```
-
 ### Advanced Theming System
 
 ```xml
@@ -262,20 +236,6 @@ fn toggle_item(model: &mut Model, id: usize) {
 
 <button class="btn_primary" label="Submit" on_click="submit" />
 <button class="btn_danger" label="Delete" on_click="delete" />
-```
-
-### Responsive Design with Breakpoints
-
-```xml
-<column 
-    mobile:spacing="10"
-    tablet:spacing="15"
-    desktop:spacing="20">
-    <text 
-        mobile:size="18"
-        desktop:size="32"
-        value="Responsive text" />
-</column>
 ```
 
 ### Available Widgets
