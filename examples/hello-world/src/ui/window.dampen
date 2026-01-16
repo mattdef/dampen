@@ -1,8 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dampen version="1.0">
-    <column padding="40" spacing="20">
-        <text value="Hello, Gravity!" size="32" weight="bold" />
-        <button label="Click me!" on_click="greet" />
-        <text value="{message}" size="24" />
+    <styles>
+        <style name="btn_sample">
+            <base
+                background="#1f4f5e"
+                border_radius="8"
+                border_width="1"
+                color="#cccccc"
+            />
+            <hover background="#a1d487" color="black" />
+        </style>
+        <style name="ctr_sample">
+            <base
+                background="#3d3e40"
+                border_radius="10"
+                border_width="1"
+                width="fill"
+                padding="10"
+                align_items="center"
+            />
+        </style>
+    </styles>
+    <column padding="20" spacing="20">
+        <container class="ctr_sample">
+            <row width="fill" padding="10">
+                <text
+                    value="Hello, Dampen!"
+                    size="32"
+                    weight="bold"
+                    align="center"
+                />
+            </row>
+            <row width="fill" padding="10">
+                <button label="Click me!" class="btn_sample" on_click="greet" />
+            </row>
+            <row width="fill" padding="10" justify_content="center">
+                <text value="{message}" size="24" />
+            </row>
+        </container>
     </column>
 </dampen>

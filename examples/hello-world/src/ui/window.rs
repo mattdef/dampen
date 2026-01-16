@@ -34,7 +34,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
     // Register the greet handler
     registry.register_simple("greet", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
-            m.message = "Hello You!".to_string();
+            m.message = "It's a good start !".to_string();
         }
     });
 
