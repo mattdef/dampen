@@ -462,7 +462,10 @@ impl<'a> DampenWidgetBuilder<'a> {
     /// # Returns
     ///
     /// An Iced Element representing the widget
-    pub(super) fn build_widget(&self, node: &WidgetNode) -> Element<'a, HandlerMessage, Theme, Renderer>
+    pub(super) fn build_widget(
+        &self,
+        node: &WidgetNode,
+    ) -> Element<'a, HandlerMessage, Theme, Renderer>
     where
         HandlerMessage: Clone + 'static,
     {

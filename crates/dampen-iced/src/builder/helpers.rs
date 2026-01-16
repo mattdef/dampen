@@ -187,40 +187,6 @@ impl<'a> DampenWidgetBuilder<'a> {
         }
     }
 
-    /// Get optional message from handler name
-    ///
-    /// Looks up the handler name in the registry and creates a message
-    /// using the configured message factory.
-    ///
-    /// # Arguments
-    ///
-    /// * `handler_name` - Name of the handler to look up
-    ///
-    /// # Returns
-    ///
-    /// `Some(message)` if handler exists, `None` otherwise
-    pub(super) fn get_handler_message(&self, handler_name: &str) -> Option<HandlerMessage>
-    where
-        HandlerMessage: Clone + 'static,
-    {
-        if let Some(registry) = self.handler_registry {
-            if registry.contains(handler_name) {
-                if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] Handler '{}' found", handler_name);
-                }
-                return Some((self.message_factory)(handler_name, None));
-            }
-        }
-
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Handler '{}' not found in registry",
-                handler_name
-            );
-        }
-        None
-    }
-
     /// Resolve styles from class names
     pub(super) fn resolve_class_styles(
         &self,
