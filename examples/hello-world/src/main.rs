@@ -23,6 +23,8 @@ enum Message {
     /// Dismiss error overlay
     #[cfg(debug_assertions)]
     DismissError,
+    /// System theme change
+    SystemThemeChanged(String),
 }
 
 /// Main application structure with auto-generated view management
@@ -32,6 +34,7 @@ enum Message {
     handler_variant = "Handler",
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
+    system_theme_variant = "SystemThemeChanged",
     default_view = "window",
     exclude = ["theme/*"],
     // Uncomment to enable view switching
@@ -45,6 +48,7 @@ pub fn main() -> iced::Result {
     iced::application(DampenApp::init, DampenApp::update, DampenApp::view)
         .window_size(iced::Size::new(400.0, 300.0))
         .centered()
+        .theme(DampenApp::theme)
         .title("Dampen Hello World!")
         .subscription(DampenApp::subscription)
         .run()

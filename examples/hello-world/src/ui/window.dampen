@@ -13,7 +13,6 @@
         </style>
         <style name="ctr_sample">
             <base
-                background="#3d3e40"
                 border_radius="10"
                 border_width="1"
                 border_color="#b2e598"
