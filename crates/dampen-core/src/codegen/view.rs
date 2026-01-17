@@ -93,18 +93,6 @@ impl<'a> MergedLayout<'a> {
             .and_then(|l| l.height.as_ref())
             .or_else(|| self.class_layout.and_then(|l| l.height.as_ref()))
     }
-
-    fn align_x(&self) -> Option<&'a crate::ir::layout::Alignment> {
-        self.node_layout
-            .and_then(|l| l.align_x.as_ref())
-            .or_else(|| self.class_layout.and_then(|l| l.align_x.as_ref()))
-    }
-
-    fn align_y(&self) -> Option<&'a crate::ir::layout::Alignment> {
-        self.node_layout
-            .and_then(|l| l.align_y.as_ref())
-            .or_else(|| self.class_layout.and_then(|l| l.align_y.as_ref()))
-    }
 }
 
 /// Generate code for a widget node
