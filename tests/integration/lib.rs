@@ -14,3 +14,6 @@ mod backward_compat_examples;
 
 #[cfg(test)]
 mod theme_e2e;
+
+#[cfg(test)]
+mod style_codegen_e2e;

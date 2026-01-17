@@ -137,6 +137,7 @@ fn create_project(project_name: &str, project_path: &Path) -> Result<(), String>
     generate_ui_mod_rs(project_path, project_name)?;
     generate_ui_window_rs(project_path, project_name)?;
     generate_window_dampen(project_path, project_name)?;
+    generate_theme_dampen(project_path, project_name)?;
     generate_integration_test(project_path, project_name)?;
     generate_readme(project_path, project_name)?;
 
@@ -163,6 +164,16 @@ fn create_project_structure(project_path: &Path) -> Result<(), String> {
     let ui_dir = src_dir.join("ui");
     fs::create_dir(&ui_dir)
         .map_err(|e| format!("Failed to create directory '{}': {}", ui_dir.display(), e))?;
+
+    // Create src/ui/theme/ directory
+    let theme_dir = ui_dir.join("theme");
+    fs::create_dir(&theme_dir).map_err(|e| {
+        format!(
+            "Failed to create directory '{}': {}",
+            theme_dir.display(),
+            e
+        )
+    })?;
 
     // Create tests/ directory
     let tests_dir = project_path.join("tests");
@@ -215,7 +226,7 @@ fn generate_build_rs(project_path: &Path, _project_name: &str) -> Result<(), Str
 
 /// Generate src/main.rs from template
 fn generate_main_rs(project_path: &Path, project_name: &str) -> Result<(), String> {
-    let template = include_str!("../../templates/new/main.rs.template");
+    let template = include_str!("../../templates/new/src/main.rs.template");
     let content = template.replace("{{PROJECT_NAME}}", project_name);
 
     let file_path = project_path.join("src/main.rs");
@@ -251,10 +262,22 @@ fn generate_ui_window_rs(project_path: &Path, project_name: &str) -> Result<(), 
 
 /// Generate src/ui/window.dampen from template
 fn generate_window_dampen(project_path: &Path, project_name: &str) -> Result<(), String> {
-    let template = include_str!("../../templates/new/window.dampen.template");
+    let template = include_str!("../../templates/new/src/ui/window.dampen.template");
     let content = template.replace("{{PROJECT_NAME}}", project_name);
 
     let file_path = project_path.join("src/ui/window.dampen");
+    fs::write(&file_path, content)
+        .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
+
+    Ok(())
+}
+
+/// Generate src/ui/theme/theme.dampen template
+fn generate_theme_dampen(project_path: &Path, project_name: &str) -> Result<(), String> {
+    let template = include_str!("../../templates/new/src/ui/theme/theme.dampen.template");
+    let content = template.replace("{{PROJECT_NAME}}", project_name);
+
+    let file_path = project_path.join("src/ui/theme/theme.dampen");
     fs::write(&file_path, content)
         .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
 

@@ -69,6 +69,23 @@ pub fn generate_handler_dispatch(
     })
 }
 
+/// Helper function to convert snake_case to UpperCamelCase
+fn to_upper_camel_case(s: &str) -> String {
+    let mut result = String::new();
+    let mut capitalize_next = true;
+    for c in s.chars() {
+        if c == '_' {
+            capitalize_next = true;
+        } else if capitalize_next {
+            result.push(c.to_ascii_uppercase());
+            capitalize_next = false;
+        } else {
+            result.push(c);
+        }
+    }
+    result
+}
+
 /// Generate handler dispatch for simple handlers (no parameters, no return)
 fn generate_handler_simple(
     handler_name: &str,
@@ -76,7 +93,8 @@ fn generate_handler_simple(
     message_ident: &syn::Ident,
     _returns_command: bool,
 ) -> TokenStream {
-    let handler_ident = format_ident!("{}", handler_name);
+    let variant_name = to_upper_camel_case(handler_name);
+    let handler_ident = format_ident!("{}", variant_name);
     quote! {
         #handler_name => {
             #message_ident::#handler_ident
@@ -100,7 +118,8 @@ fn generate_handler_with_value(
     _model_ident: &syn::Ident,
     message_ident: &syn::Ident,
 ) -> TokenStream {
-    let handler_ident = format_ident!("{}", handler_name);
+    let variant_name = to_upper_camel_case(handler_name);
+    let handler_ident = format_ident!("{}", variant_name);
     let type_ident = format_ident!("{}", value_type);
     quote! {
         #handler_name => {
@@ -125,7 +144,8 @@ fn generate_handler_with_command(
     _model_ident: &syn::Ident,
     message_ident: &syn::Ident,
 ) -> TokenStream {
-    let handler_ident = format_ident!("{}", handler_name);
+    let variant_name = to_upper_camel_case(handler_name);
+    let handler_ident = format_ident!("{}", variant_name);
     let type_ident = format_ident!("{}", value_type);
     quote! {
         #handler_name => {
@@ -160,7 +180,8 @@ pub fn generate_update_function(
         .iter()
         .map(|handler| {
             let _model_ident = format_ident!("{}", model_name);
-            let _handler_ident = format_ident!("{}", handler.name);
+            let variant_name = to_upper_camel_case(&handler.name);
+            let _handler_ident = format_ident!("{}", variant_name);
             let handler_name_str = handler.name.clone();
 
             match (&handler.param_type, handler.returns_command) {

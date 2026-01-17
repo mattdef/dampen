@@ -5,7 +5,8 @@ use quote::quote;
 
 use super::CodegenError;
 use super::theme::generate_theme_code;
-use crate::ir::theme::ThemeDocument;
+use crate::ir::theme::{StyleClass, ThemeDocument};
+use std::collections::HashMap;
 
 /// Generate Application trait implementation
 pub fn generate_application_trait(
@@ -33,16 +34,18 @@ pub fn generate_application_trait(
 }
 
 /// Generate theme code and add it to the application
+/// Generate Application trait implementation with theme support
 pub fn generate_application_with_theme(
     model_name: &str,
     message_name: &str,
     theme_document: Option<&ThemeDocument>,
+    style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, CodegenError> {
     let model_ident = syn::Ident::new(model_name, proc_macro2::Span::call_site());
     let message_ident = syn::Ident::new(message_name, proc_macro2::Span::call_site());
 
     let theme_code = if let Some(doc) = theme_document {
-        match generate_theme_code(doc, "app") {
+        match generate_theme_code(doc, style_classes, "app") {
             Ok(generated) => generated.code,
             Err(e) => {
                 return Err(CodegenError::ThemeError(e));
@@ -133,7 +136,9 @@ mod tests {
             follow_system: true,
         };
 
-        let result = generate_application_with_theme("MyModel", "MyMessage", Some(&doc));
+        let style_classes = HashMap::new();
+        let result =
+            generate_application_with_theme("MyModel", "MyMessage", Some(&doc), &style_classes);
         assert!(result.is_ok());
         let code = result.unwrap().to_string();
 
@@ -144,7 +149,8 @@ mod tests {
 
     #[test]
     fn test_application_without_theme() {
-        let result = generate_application_with_theme("MyModel", "MyMessage", None);
+        let style_classes = HashMap::new();
+        let result = generate_application_with_theme("MyModel", "MyMessage", None, &style_classes);
         assert!(result.is_ok());
         let code = result.unwrap().to_string();
 

@@ -23,18 +23,22 @@ impl<'a> DampenWidgetBuilder<'a> {
         let mut text_widget = iced::widget::text(value);
 
         // Resolve text color with theme awareness
-        // Priority: direct color attribute > inline style color > theme color > default
+        // Priority: direct color attribute > inline style color > class color > theme color > default
         let mut theme_color_applied = false;
 
         if let Some(theme_ctx) = self.theme_context {
             // Get theme text color at render time
             let active_theme = theme_ctx.active();
             if let Some(ref text_color) = active_theme.palette.text {
-                // Check if there's no direct color attribute or inline style overriding it
+                // Check if there's no direct color attribute, inline style, or class color overriding it
                 let has_direct_color = node.attributes.contains_key("color");
                 let has_inline_color = node.style.as_ref().and_then(|s| s.color.as_ref()).is_some();
+                let has_class_color = self
+                    .resolve_class_styles(node)
+                    .and_then(|s| s.color)
+                    .is_some();
 
-                if !has_direct_color && !has_inline_color {
+                if !has_direct_color && !has_inline_color && !has_class_color {
                     text_widget = text_widget.color(iced::Color {
                         r: text_color.r,
                         g: text_color.g,

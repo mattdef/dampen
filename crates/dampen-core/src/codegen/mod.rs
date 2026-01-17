@@ -34,6 +34,7 @@ pub mod application;
 pub mod bindings;
 pub mod config;
 pub mod handlers;
+pub mod subscription;
 pub mod theme;
 pub mod update;
 pub mod view;
@@ -228,14 +229,14 @@ pub fn generate_application(
 
     let view_fn = view::generate_view(document, model_name, message_name)?;
 
-    let update_match_arms = update::generate_update_match_arms(handlers, message_name)?;
+    let update_arms = update::generate_arms(handlers, message_name)?;
 
     let model_ident = syn::Ident::new(model_name, proc_macro2::Span::call_site());
     let message_ident = syn::Ident::new(message_name, proc_macro2::Span::call_site());
 
     let combined = quote! {
-        use crate::ui::window::{self, #model_ident};
-        use iced::{Element, Task, executor};
+        use iced::{Element, Task};
+        use crate::ui::window::*;
 
         #message_enum
 
@@ -244,11 +245,12 @@ pub fn generate_application(
         }
 
         pub fn update_model(model: &mut #model_ident, message: #message_ident) -> Task<#message_ident> {
-            #update_match_arms
+            match message {
+                #update_arms
+            }
         }
 
         pub fn view_model(model: &#model_ident) -> Element<'_, #message_ident> {
-            let count = &model.count;
             #view_fn
         }
     };
@@ -259,16 +261,128 @@ pub fn generate_application(
     })
 }
 
+use crate::ir::theme::ThemeDocument;
+
+/// Generate complete application code with theme and subscription support
+///
+/// This is the full-featured entry point for code generation that includes:
+/// - Message enum with system theme variant (if follow_system is enabled)
+/// - Subscription function for system theme detection
+/// - Theme code generation
+/// - View and update functions
+///
+/// # Arguments
+///
+/// * `document` - Parsed Dampen document
+/// * `model_name` - Name of the model struct (e.g., "Model")
+/// * `message_name` - Name of the message enum (e.g., "Message")
+/// * `handlers` - List of handler signatures
+/// * `theme_document` - Optional theme document for theme code generation
+///
+/// # Returns
+///
+/// `Ok(CodegenOutput)` with generated code and warnings
+pub fn generate_application_with_theme_and_subscriptions(
+    document: &DampenDocument,
+    model_name: &str,
+    message_name: &str,
+    handlers: &[HandlerSignature],
+    theme_document: Option<&ThemeDocument>,
+) -> Result<CodegenOutput, CodegenError> {
+    let warnings = Vec::new();
+
+    // Create subscription config from theme document
+    let sub_config =
+        subscription::SubscriptionConfig::from_theme_document(theme_document, message_name);
+
+    // Generate message enum with system theme variant if needed
+    let message_enum = generate_message_enum_with_subscription(handlers, Some(&sub_config));
+
+    let view_fn = view::generate_view(document, model_name, message_name)?;
+
+    let update_arms = update::generate_arms(handlers, message_name)?;
+
+    // Generate system theme update arm if needed
+    let system_theme_arm = subscription::generate_system_theme_update_arm(&sub_config);
+
+    let model_ident = syn::Ident::new(model_name, proc_macro2::Span::call_site());
+    let message_ident = syn::Ident::new(message_name, proc_macro2::Span::call_site());
+
+    // Generate theme code if theme document is provided
+    let theme_code = if let Some(theme_doc) = theme_document {
+        match theme::generate_theme_code(theme_doc, &document.style_classes, "app") {
+            Ok(generated) => {
+                let code_str = generated.code;
+                syn::parse_str::<TokenStream>(&code_str).unwrap_or_default()
+            }
+            Err(e) => {
+                return Err(CodegenError::ThemeError(e));
+            }
+        }
+    } else {
+        TokenStream::new()
+    };
+
+    // Generate subscription function
+    let subscription_fn = subscription::generate_subscription_function(&sub_config);
+
+    let has_theme = theme_document.is_some();
+    let theme_method = if has_theme {
+        quote! {
+            pub fn theme(_model: &#model_ident) -> iced::Theme {
+                app_theme()
+            }
+        }
+    } else {
+        quote! {}
+    };
+
+    let combined = quote! {
+        use iced::{Element, Task, Theme};
+        use crate::ui::window::*;
+        use std::collections::HashMap;
+
+        #theme_code
+
+        #message_enum
+
+        pub fn new_model() -> (#model_ident, Task<#message_ident>) {
+            (#model_ident::default(), Task::none())
+        }
+
+        pub fn update_model(model: &mut #model_ident, message: #message_ident) -> Task<#message_ident> {
+            match message {
+                #update_arms
+                #system_theme_arm
+            }
+        }
+
+        pub fn view_model(model: &#model_ident) -> Element<'_, #message_ident> {
+            #view_fn
+        }
+
+        #theme_method
+
+        #subscription_fn
+    };
+
+    Ok(CodegenOutput {
+        code: combined.to_string(),
+        warnings,
+    })
+}
+
 /// Generate Message enum from handler signatures
 fn generate_message_enum(handlers: &[HandlerSignature]) -> TokenStream {
-    if handlers.is_empty() {
-        return quote! {
-            #[derive(Clone, Debug)]
-            pub enum Message {}
-        };
-    }
+    generate_message_enum_with_subscription(handlers, None)
+}
 
-    let variants: Vec<_> = handlers
+/// Generate Message enum from handler signatures with optional subscription config
+fn generate_message_enum_with_subscription(
+    handlers: &[HandlerSignature],
+    sub_config: Option<&subscription::SubscriptionConfig>,
+) -> TokenStream {
+    let handler_variants: Vec<_> = handlers
         .iter()
         .map(|h| {
             // Convert snake_case to UpperCamelCase
@@ -284,10 +398,25 @@ fn generate_message_enum(handlers: &[HandlerSignature]) -> TokenStream {
         })
         .collect();
 
+    // Add system theme variant if configured
+    let system_theme_variant = sub_config.and_then(subscription::generate_system_theme_variant);
+
+    let all_variants: Vec<TokenStream> = handler_variants
+        .into_iter()
+        .chain(system_theme_variant)
+        .collect();
+
+    if all_variants.is_empty() {
+        return quote! {
+            #[derive(Clone, Debug)]
+            pub enum Message {}
+        };
+    }
+
     quote! {
         #[derive(Clone, Debug)]
         pub enum Message {
-            #(#variants),*
+            #(#all_variants),*
         }
     }
 }

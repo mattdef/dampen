@@ -13,6 +13,7 @@ categories = { workspace = true }
 [dependencies]
 # Core dependencies
 dampen-core = { workspace = true }
+dampen-iced = { workspace = true }
 iced = { workspace = true }
 
 # File watching

@@ -682,7 +682,8 @@ mod contract_theme_codegen_integration {
             follow_system: true,
         };
 
-        let result = generate_theme_code(&doc, "integration_test");
+        let result =
+            generate_theme_code(&doc, &std::collections::HashMap::new(), "integration_test");
 
         assert!(result.is_ok(), "Codegen should succeed: {:?}", result.err());
         let code = result.unwrap().code;
@@ -701,7 +702,7 @@ mod contract_theme_codegen_integration {
             follow_system: false,
         };
 
-        let result = generate_theme_code(&doc, "syntax_test");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "syntax_test");
 
         assert!(result.is_ok());
         let code = result.unwrap().code;
@@ -725,7 +726,7 @@ mod contract_theme_codegen_integration {
             follow_system: false,
         };
 
-        let result = generate_theme_code(&doc, "multi_theme");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "multi_theme");
 
         assert!(result.is_ok());
         let code = result.unwrap().code;
@@ -747,7 +748,7 @@ mod contract_theme_codegen_integration {
             follow_system: false,
         };
 
-        let result = generate_theme_code(&doc, "brand_theme");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "brand_theme");
 
         assert!(result.is_ok());
         let code = result.unwrap().code;
@@ -764,7 +765,7 @@ mod contract_theme_codegen_integration {
             follow_system: true,
         };
 
-        let result = generate_theme_code(&doc, "empty_test");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "empty_test");
 
         assert!(result.is_err(), "Should fail with no themes");
         let err = result.unwrap_err();
@@ -783,7 +784,8 @@ mod contract_theme_codegen_integration {
             follow_system: true,
         };
 
-        let result_follows = generate_theme_code(&doc_follows, "follows");
+        let result_follows =
+            generate_theme_code(&doc_follows, &std::collections::HashMap::new(), "follows");
         assert!(result_follows.is_ok());
         assert!(result_follows.unwrap().code.contains("true"));
 
@@ -793,7 +795,11 @@ mod contract_theme_codegen_integration {
             follow_system: false,
         };
 
-        let result_no_follow = generate_theme_code(&doc_no_follow, "no_follow");
+        let result_no_follow = generate_theme_code(
+            &doc_no_follow,
+            &std::collections::HashMap::new(),
+            "no_follow",
+        );
         assert!(result_no_follow.is_ok());
         assert!(result_no_follow.unwrap().code.contains("false"));
     }

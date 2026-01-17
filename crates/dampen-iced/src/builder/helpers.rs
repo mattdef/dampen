@@ -775,6 +775,44 @@ pub(super) fn parse_color(color_str: &str) -> Option<dampen_core::ir::style::Col
     })
 }
 
+/// Parse a length value from string (e.g., "fill", "shrink", "100", "50%")
+///
+/// # Supported Formats
+///
+/// - `"fill"` → `Length::Fill`
+/// - `"shrink"` → `Length::Shrink`
+/// - `"100"` → `Length::Fixed(100.0)`
+/// - `"50%"` → `Length::FillPortion(8)` (approximation)
+///
+/// # Arguments
+///
+/// * `s` - Length string to parse
+///
+/// # Returns
+///
+/// Parsed `iced::Length` or `None` if invalid
+pub(super) fn parse_length(s: &str) -> Option<iced::Length> {
+    let s = s.trim().to_lowercase();
+    if s == "fill" {
+        Some(iced::Length::Fill)
+    } else if s == "shrink" {
+        Some(iced::Length::Shrink)
+    } else if let Some(pct) = s.strip_suffix('%') {
+        if let Ok(p) = pct.parse::<f32>() {
+            // Iced doesn't have a direct percentage, use FillPortion as approximation
+            let portion = ((p / 100.0) * 16.0).round() as u16;
+            let portion = portion.max(1);
+            Some(iced::Length::FillPortion(portion))
+        } else {
+            None
+        }
+    } else if let Ok(px) = s.parse::<f32>() {
+        Some(iced::Length::Fixed(px))
+    } else {
+        None
+    }
+}
+
 /// Merge two StyleProperties, with the second one taking precedence
 pub(super) fn merge_styles(
     base: dampen_core::ir::style::StyleProperties,

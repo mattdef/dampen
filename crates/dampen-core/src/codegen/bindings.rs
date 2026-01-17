@@ -72,7 +72,7 @@ pub fn validate_expression_inlinable(expr: &Expr) -> Result<(), CodegenError> {
 /// * `expr` - Field access with path components
 ///
 /// # Returns
-/// TokenStream generating `field.to_string()` (without self prefix)
+/// TokenStream generating `model.field.to_string()`
 fn generate_field_access(expr: &FieldAccessExpr) -> TokenStream {
     if expr.path.is_empty() {
         return quote! { String::new() };
@@ -80,7 +80,7 @@ fn generate_field_access(expr: &FieldAccessExpr) -> TokenStream {
 
     let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
 
-    quote! { #(#field_access).*.to_string() }
+    quote! { model.#(#field_access).*.to_string() }
 }
 
 /// Generate code for a shared field access expression
@@ -109,7 +109,7 @@ fn generate_shared_field_access(expr: &SharedFieldAccessExpr) -> TokenStream {
 /// * `expr` - Method call with receiver and arguments
 ///
 /// # Returns
-/// TokenStream generating `self.receiver.method(args).to_string()`
+/// TokenStream generating `model.receiver.method(args).to_string()`
 fn generate_method_call(expr: &MethodCallExpr) -> TokenStream {
     let receiver_tokens = generate_expr(&expr.receiver);
     let method_ident = format_ident!("{}", expr.method);

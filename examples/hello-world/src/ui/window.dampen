@@ -35,7 +35,7 @@
                 align_y="start"
             />
             <rule direction="horizontal" />
-            <space width="fill" />
+            <space height="20" />
             <button label="Click me!" class="btn_sample" on_click="greet" />
             <text
                 class="tx_center"
@@ -45,7 +45,6 @@
                 height="fill"
                 align_x="center"
                 align_y="center"
-                padding="10"
             />
         </container>
     </column>

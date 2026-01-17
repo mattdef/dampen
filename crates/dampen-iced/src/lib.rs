@@ -3,7 +3,11 @@
 pub mod builder;
 pub mod convert;
 pub mod style_mapping;
+pub mod system_theme;
 pub mod theme_adapter;
+
+// Re-export system theme subscription for production use
+pub use system_theme::watch_system_theme;
 
 use dampen_core::{AttributeValue, Backend, EventKind, InterpolatedPart, WidgetKind, WidgetNode};
 use iced::widget::{button, column, row, text};

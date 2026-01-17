@@ -27,6 +27,11 @@ pub fn create_app_state() -> AppState<Model> {
     AppState::with_handlers(document, handler_registry)
 }
 
+/// Registered greet handler
+pub fn greet(model: &mut Model) {
+    model.message = "It's a good start !".to_string();
+}
+
 /// Create and configure the handler registry.
 pub fn create_handler_registry() -> HandlerRegistry {
     let registry = HandlerRegistry::new();
@@ -34,7 +39,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
     // Register the greet handler
     registry.register_simple("greet", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
-            m.message = "It's a good start !".to_string();
+            greet(m);
         }
     });
 

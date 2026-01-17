@@ -323,9 +323,12 @@ pub fn watch_files<P: AsRef<std::path::Path>>(
 
 /// Create a subscription that monitors system theme changes.
 ///
-/// This uses Iced's built-in system theme detection via `iced::system::theme_changes()`,
-/// which leverages winit's native theme detection. This is more reliable than polling
-/// with external crates like `dark-light`.
+/// This is a re-export from `dampen_iced` for backward compatibility.
+/// New code should use `dampen_iced::watch_system_theme()` directly, as it
+/// is available in both debug and release builds without the dampen-dev dependency.
+///
+/// Uses Iced's built-in system theme detection via `iced::system::theme_changes()`,
+/// which leverages winit's native theme detection.
 ///
 /// # Returns
 ///
@@ -340,9 +343,6 @@ pub fn watch_files<P: AsRef<std::path::Path>>(
 /// // Maps to your message type, e.g.: subscription.map(Message::SystemThemeChanged)
 /// ```
 pub fn watch_system_theme() -> Subscription<String> {
-    iced::system::theme_changes().map(|mode| match mode {
-        iced::theme::Mode::Light => "light".to_string(),
-        iced::theme::Mode::Dark => "dark".to_string(),
-        iced::theme::Mode::None => "light".to_string(), // Default to light if unspecified
-    })
+    // Re-export from dampen-iced for backward compatibility
+    dampen_iced::watch_system_theme()
 }

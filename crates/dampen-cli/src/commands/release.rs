@@ -26,6 +26,10 @@ pub struct ReleaseArgs {
     /// Target directory for build artifacts
     #[arg(long)]
     target_dir: Option<String>,
+
+    /// Use interpreted mode instead of codegen (recommended until codegen is fully implemented)
+    #[arg(long)]
+    interpreted: bool,
 }
 
 /// Execute the release command
@@ -60,16 +64,26 @@ pub fn execute(args: &ReleaseArgs) -> Result<(), String> {
         return Err("Cargo.toml not found. Are you in a Rust project directory?".to_string());
     }
 
-    // Check if build.rs exists
-    if !Path::new("build.rs").exists() {
+    // Check if build.rs exists (only required for codegen mode)
+    if !args.interpreted && !Path::new("build.rs").exists() {
         return Err(
-            "build.rs not found. This project may not be configured for production builds."
+            "build.rs not found. This project may not be configured for codegen builds.\n\
+             Tip: Use --interpreted flag for release builds without codegen."
                 .to_string(),
         );
     }
 
+    let mode_name = if args.interpreted {
+        "interpreted"
+    } else {
+        "codegen"
+    };
+
     if args.verbose {
-        eprintln!("Building for production (release mode with codegen)...");
+        eprintln!(
+            "Building for production (release mode with {})...",
+            mode_name
+        );
     }
 
     // Build the cargo command
@@ -91,9 +105,19 @@ pub fn execute(args: &ReleaseArgs) -> Result<(), String> {
         cmd.arg("--verbose");
     }
 
-    // Build features list: always include 'codegen', plus user-specified features
-    let mut all_features = vec!["codegen".to_string()];
-    all_features.extend(args.features.clone());
+    // Build features list based on mode
+    let all_features = if args.interpreted {
+        // Interpreted mode: use default features (interpreted)
+        let mut features = vec!["interpreted".to_string()];
+        features.extend(args.features.clone());
+        features
+    } else {
+        // Codegen mode: disable defaults and enable codegen
+        cmd.arg("--no-default-features");
+        let mut features = vec!["codegen".to_string()];
+        features.extend(args.features.clone());
+        features
+    };
 
     // Add features flag
     cmd.arg("--features").arg(all_features.join(","));

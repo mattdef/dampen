@@ -1161,34 +1161,52 @@ pub fn generate_subscription_method(
         None
     };
 
-    // System theme subscription
+    // System theme subscription (works in both debug and release builds)
+    // Uses dampen_iced::watch_system_theme() which wraps iced::system::theme_changes()
     let system_theme_sub = attrs
         .system_theme_variant
         .as_ref()
         .map(|system_theme_variant| {
             quote! {
-                let system_theme = dampen_dev::subscription::watch_system_theme()
+                let system_theme = dampen_iced::watch_system_theme()
                     .map(#message_type::#system_theme_variant);
             }
         });
 
-    // Combine subscriptions
-    let mut subs = Vec::new();
+    // Build subscription expressions for debug mode (hot reload + system theme)
+    let mut debug_subs = Vec::new();
     if hot_reload_sub.is_some() {
-        subs.push(quote! { hot_reload });
+        debug_subs.push(quote! { hot_reload });
     }
     if system_theme_sub.is_some() {
-        subs.push(quote! { system_theme });
+        debug_subs.push(quote! { system_theme });
     }
 
-    if subs.is_empty() {
+    // Build subscription expressions for release mode (system theme only)
+    let mut release_subs = Vec::new();
+    if system_theme_sub.is_some() {
+        release_subs.push(quote! { system_theme });
+    }
+
+    // If no subscriptions at all, don't generate the method
+    if debug_subs.is_empty() && release_subs.is_empty() {
         return None;
     }
 
-    let sub_expr = if subs.len() == 1 {
-        quote! { #(#subs)* }
+    let debug_sub_expr = if debug_subs.len() == 1 {
+        quote! { #(#debug_subs)* }
+    } else if debug_subs.len() > 1 {
+        quote! { iced::Subscription::batch(vec![#(#debug_subs),*]) }
     } else {
-        quote! { iced::Subscription::batch(vec![#(#subs),*]) }
+        quote! { iced::Subscription::none() }
+    };
+
+    let release_sub_expr = if release_subs.len() == 1 {
+        quote! { #(#release_subs)* }
+    } else if release_subs.len() > 1 {
+        quote! { iced::Subscription::batch(vec![#(#release_subs),*]) }
+    } else {
+        quote! { iced::Subscription::none() }
     };
 
     Some(quote! {
@@ -1197,12 +1215,14 @@ pub fn generate_subscription_method(
             #hot_reload_sub
             #system_theme_sub
 
-            #sub_expr
+            #debug_sub_expr
         }
 
         #[cfg(not(debug_assertions))]
         pub fn subscription(&self) -> iced::Subscription<#message_type> {
-            iced::Subscription::none()
+            #system_theme_sub
+
+            #release_sub_expr
         }
     })
 }

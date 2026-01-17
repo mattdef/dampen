@@ -730,7 +730,7 @@ mod contract_theme_codegen {
     #[test]
     fn contract_codegen_generates_valid_rust_code() {
         let doc = create_light_dark_document();
-        let result = generate_theme_code(&doc, "app");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "app");
 
         assert!(
             result.is_ok(),
@@ -747,16 +747,17 @@ mod contract_theme_codegen {
             code.code.contains("pub fn app_themes"),
             "Generated code should contain app_themes function"
         );
+        // Accept either "Theme" or "iced::Theme" since the generated code imports Theme
         assert!(
-            code.code.contains("iced::Theme"),
-            "Generated code should use iced::Theme"
+            code.code.contains("-> Theme") || code.code.contains("iced::Theme"),
+            "Generated code should use Theme type"
         );
     }
 
     #[test]
     fn contract_codegen_includes_theme_colors() {
         let doc = create_light_dark_document();
-        let result = generate_theme_code(&doc, "app");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "app");
 
         assert!(result.is_ok());
         let code = result.unwrap();
@@ -786,7 +787,7 @@ mod contract_theme_codegen {
             follow_system: false,
         };
 
-        let result = generate_theme_code(&doc, "my_app");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "my_app");
 
         assert!(result.is_ok());
         let code = result.unwrap();
@@ -809,7 +810,7 @@ mod contract_theme_codegen {
             follow_system: true,
         };
 
-        let result = generate_theme_code(&doc, "app");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "app");
 
         assert!(result.is_err(), "Should fail with no themes");
         let err = result.unwrap_err();
@@ -823,7 +824,7 @@ mod contract_theme_codegen {
     #[test]
     fn contract_codegen_default_theme_in_generated_code() {
         let doc = create_light_dark_document();
-        let result = generate_theme_code(&doc, "app");
+        let result = generate_theme_code(&doc, &std::collections::HashMap::new(), "app");
 
         assert!(result.is_ok());
         let code = result.unwrap();

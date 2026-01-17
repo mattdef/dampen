@@ -1,5 +1,6 @@
 ---
 source: crates/dampen-core/tests/codegen_snapshot_tests.rs
+assertion_line: 233
 expression: output.code
 ---
-use crate :: ui :: window :: { self , Model } ; use iced :: { Element , Task , executor } ; # [derive (Clone , Debug)] pub enum Message { } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { } } pub fn view_model (model : & Model) -> Element < '_ , Message > { let count = & model . count ; iced :: widget :: container (vec ! [iced :: widget :: text ("Inside" . to_string ())]) . padding (20f32) }
+use iced :: { Element , Task } ; use crate :: ui :: window :: * ; # [derive (Clone , Debug)] pub enum Message { } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { } } pub fn view_model (model : & Model) -> Element < '_ , Message > { iced :: widget :: container (iced :: widget :: text ("Inside" . to_string ()) . into ()) . padding (20f32) . width (iced :: Length :: Fixed (300f32)) . height (iced :: Length :: Fixed (200f32)) . into () }

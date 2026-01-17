@@ -26,6 +26,20 @@ pub fn generate_update_match_arms(
     handlers: &[HandlerSignature],
     message_name: &str,
 ) -> Result<TokenStream, super::CodegenError> {
+    let arms = generate_arms(handlers, message_name)?;
+
+    Ok(quote! {
+        match message {
+            #arms
+        }
+    })
+}
+
+/// Generate ONLY the match arms (without the match message { ... } wrapper)
+pub fn generate_arms(
+    handlers: &[HandlerSignature],
+    message_name: &str,
+) -> Result<TokenStream, super::CodegenError> {
     let message_ident = format_ident!("{}", message_name);
 
     let match_arms: Vec<TokenStream> = handlers
@@ -38,20 +52,20 @@ pub fn generate_update_match_arms(
             if let Some(_param_type) = &handler.param_type {
                 quote! {
                     #message_ident::#variant_ident(value) => {
-                        ui::window::#handler_name(model, value);
+                        #handler_name(model, value);
                         iced::Task::none()
                     }
                 }
             } else if handler.returns_command {
                 quote! {
                     #message_ident::#variant_ident => {
-                        ui::window::#handler_name(model)
+                        #handler_name(model)
                     }
                 }
             } else {
                 quote! {
                     #message_ident::#variant_ident => {
-                        ui::window::#handler_name(model);
+                        #handler_name(model);
                         iced::Task::none()
                     }
                 }
@@ -60,8 +74,6 @@ pub fn generate_update_match_arms(
         .collect();
 
     Ok(quote! {
-        match message {
-            #(#match_arms)*
-        }
+        #(#match_arms)*
     })
 }

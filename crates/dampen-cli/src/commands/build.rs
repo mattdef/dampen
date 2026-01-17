@@ -92,6 +92,9 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
         cmd.arg("--verbose");
     }
 
+    // Disable default features to avoid conflict between codegen and interpreted
+    cmd.arg("--no-default-features");
+
     let mut all_features = vec!["codegen".to_string()];
     all_features.extend(args.features.clone());
 

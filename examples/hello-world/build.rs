@@ -26,6 +26,10 @@ fn main() {
 
 #[cfg(feature = "codegen")]
 fn generate_ui_code() {
+    use dampen_core::codegen::{CodegenError, generate_application_with_theme_and_subscriptions};
+    use dampen_core::parser::theme_parser::parse_theme_document;
+    use dampen_core::{HandlerSignature, parser};
+
     // Get output directory for generated code
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR not set");
     let out_path = PathBuf::from(&out_dir);
@@ -37,75 +41,90 @@ fn generate_ui_code() {
         return;
     }
 
-    let dampen_files = find_dampen_files(&ui_dir);
+    println!("cargo:rerun-if-changed=src/ui/");
 
-    if dampen_files.is_empty() {
-        eprintln!("Warning: No .dampen files found in src/ui/");
+    // Parse theme file if it exists
+    let theme_path = ui_dir.join("theme/theme.dampen");
+    let theme_document = if theme_path.exists() {
+        println!("cargo:rerun-if-changed={}", theme_path.display());
+        match fs::read_to_string(&theme_path) {
+            Ok(content) => match parse_theme_document(&content) {
+                Ok(doc) => Some(doc),
+                Err(e) => {
+                    eprintln!("Warning: Failed to parse theme file: {}", e);
+                    None
+                }
+            },
+            Err(e) => {
+                eprintln!("Warning: Failed to read theme file: {}", e);
+                None
+            }
+        }
+    } else {
+        None
+    };
+
+    // Parse the main window.dampen file
+    let window_path = ui_dir.join("window.dampen");
+    if !window_path.exists() {
+        eprintln!("Warning: src/ui/window.dampen not found");
         return;
     }
 
-    println!("cargo:rerun-if-changed=src/ui/");
+    println!("cargo:rerun-if-changed={}", window_path.display());
 
-    // Generate code for all .dampen files
-    let mut generated = String::new();
-    generated.push_str("// Auto-generated - DO NOT EDIT\n");
-    generated.push_str("// Regenerate with: cargo build --features codegen\n\n");
+    let window_content = match fs::read_to_string(&window_path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error: Failed to read window.dampen: {}", e);
+            return;
+        }
+    };
 
-    for file in &dampen_files {
-        println!("cargo:rerun-if-changed={}", file.display());
+    let document = match parser::parse(&window_content) {
+        Ok(doc) => doc,
+        Err(e) => {
+            eprintln!("Error: Failed to parse window.dampen: {}", e);
+            return;
+        }
+    };
 
-        // Parse XML and generate code using dampen-core
-        // This is a placeholder - full implementation will use dampen-core parser and codegen
-        let module_name = file
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("unknown");
+    // Define handlers (these match what's registered in window.rs)
+    let handlers = vec![HandlerSignature {
+        name: "greet".to_string(),
+        param_type: None,
+        returns_command: false,
+    }];
 
-        generated.push_str(&format!(
-            "// Generated from: {}\n\
-             pub mod {} {{\n\
-             \tuse dampen_core::DampenDocument;\n\
-             \tuse std::sync::LazyLock;\n\
-             \n\
-             \tpub static DOCUMENT: LazyLock<DampenDocument> = LazyLock::new(|| {{\n\
-             \t\t// TODO: Generate actual widget code here\n\
-             \t\tpanic!(\"Codegen not yet fully implemented for {}\")\n\
-             \t}});\n\
-             \n\
-             \tpub fn document() -> DampenDocument {{\n\
-             \t\t(*DOCUMENT).clone()\n\
-             \t}}\n\
-             }}\n\n",
-            file.display(),
-            module_name,
-            module_name
-        ));
-    }
+    // Generate the application code with theme and subscription support
+    let output = match generate_application_with_theme_and_subscriptions(
+        &document,
+        "Model",
+        "Message",
+        &handlers,
+        theme_document.as_ref(),
+    ) {
+        Ok(output) => output,
+        Err(e) => {
+            eprintln!("Error: Code generation failed: {}", e);
+            return;
+        }
+    };
 
     // Write generated code
     let output_file = out_path.join("ui_generated.rs");
-    fs::write(&output_file, &generated).expect("Failed to write generated code");
+    if let Err(e) = fs::write(&output_file, &output.code) {
+        eprintln!("Error: Failed to write generated code: {}", e);
+        return;
+    }
+
+    // Print any warnings
+    for warning in &output.warnings {
+        println!("cargo:warning={}", warning);
+    }
 
     // Expose path to generated code
     println!("cargo:rustc-env=DAMPEN_GENERATED={}", output_file.display());
 
-    println!("Generated UI code from {} files", dampen_files.len());
-}
-
-#[cfg(feature = "codegen")]
-fn find_dampen_files(dir: &PathBuf) -> Vec<PathBuf> {
-    let mut files = Vec::new();
-
-    if let Ok(entries) = fs::read_dir(dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.is_dir() {
-                files.extend(find_dampen_files(&path));
-            } else if path.extension().and_then(|s| s.to_str()) == Some("dampen") {
-                files.push(path);
-            }
-        }
-    }
-
-    files
+    println!("Generated UI code successfully");
 }
