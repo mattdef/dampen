@@ -34,6 +34,7 @@ pub mod application;
 pub mod bindings;
 pub mod config;
 pub mod handlers;
+pub mod inventory;
 pub mod subscription;
 pub mod theme;
 pub mod update;
@@ -82,6 +83,40 @@ pub struct HandlerInfo {
 
     /// Source line number
     pub source_line: u32,
+}
+
+impl HandlerInfo {
+    /// Convert HandlerInfo to HandlerSignature for code generation.
+    ///
+    /// This bridges the metadata emitted by #[ui_handler] with the signature
+    /// format expected by the code generator.
+    ///
+    /// # Returns
+    ///
+    /// A HandlerSignature suitable for use with generate_application()
+    pub fn to_signature(&self) -> HandlerSignature {
+        // Determine param_type based on signature type
+        let param_type = match self.signature_type {
+            HandlerSignatureType::Simple => None,
+            HandlerSignatureType::WithValue => {
+                // Extract the second parameter type (first is &mut Model)
+                if self.param_types.len() > 1 {
+                    Some(self.param_types[1].to_string())
+                } else {
+                    None
+                }
+            }
+            HandlerSignatureType::WithCommand => None,
+        };
+
+        let returns_command = matches!(self.signature_type, HandlerSignatureType::WithCommand);
+
+        HandlerSignature {
+            name: self.name.to_string(),
+            param_type,
+            returns_command,
+        }
+    }
 }
 
 /// Result of code generation

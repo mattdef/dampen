@@ -91,8 +91,9 @@ fn test_generated_model_has_ui_model_derive() {
         "Should define Model struct"
     );
     assert!(
-        rs_content.contains("use dampen_macros::{UiModel, dampen_ui}"),
-        "Should import UiModel macro"
+        rs_content
+            .contains("use dampen_macros::{UiModel, dampen_ui, ui_handler, inventory_handlers}"),
+        "Should import UiModel and handler macros"
     );
 }
 

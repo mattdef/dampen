@@ -6,7 +6,7 @@
 // use crate::{CurrentView, Message};
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{UiModel, dampen_ui};
+use dampen_macros::{UiModel, dampen_ui, inventory_handlers, ui_handler};
 use serde::{Deserialize, Serialize};
 
 /// Auto-load the app.dampen XML file.
@@ -27,9 +27,14 @@ pub fn create_app_state() -> AppState<Model> {
     AppState::with_handlers(document, handler_registry)
 }
 
-/// Registered greet handler
+#[ui_handler]
 pub fn greet(model: &mut Model) {
     model.message = "It's a good start !".to_string();
+}
+
+// Declare all handlers in this module for build-time code generation
+inventory_handlers! {
+    greet
 }
 
 /// Create and configure the handler registry.

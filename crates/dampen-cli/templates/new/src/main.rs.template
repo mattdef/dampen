@@ -1,10 +1,14 @@
 //! {{PROJECT_NAME}} - A Dampen UI application
 //!
-//! This example demonstrates how to create a Dampen application
-//! with minimal boilerplate using the #[dampen_app] macro.
+//! This application demonstrates how to create a Dampen application
+//! with support for both development and production modes.
+//!
+//! ## Modes
+//! - **Interpreted mode** (default): Uses `#[dampen_app]` macro with hot-reload
+//! - **Codegen mode**: Uses pre-generated code for production builds
 //!
 //! ## Features
-//! - Auto-generated view management with #[dampen_app]
+//! - Auto-generated view management
 //! - Hot-reload support in development mode
 //! - Ready for multi-view extension
 //! - Type-safe handler dispatch
@@ -16,17 +20,31 @@
 //! 3. Uncomment `shared_model = "SharedState"` in #[dampen_app]
 //! 4. Use `{shared.field}` bindings in your .dampen files
 
+// Ensure codegen and interpreted are mutually exclusive
+#[cfg(all(feature = "codegen", feature = "interpreted"))]
+compile_error!(
+    "Features 'codegen' and 'interpreted' are mutually exclusive. Use --no-default-features with --features codegen for production builds."
+);
+
+// ============================================================================
+// INTERPRETED MODE (development with hot-reload)
+// ============================================================================
+#[cfg(feature = "interpreted")]
 mod ui;
 // Uncomment to enable shared state across views:
+// #[cfg(feature = "interpreted")]
 // mod shared;
 
+#[cfg(feature = "interpreted")]
 use dampen_iced::HandlerMessage;
+#[cfg(feature = "interpreted")]
 use dampen_macros::dampen_app;
 
-#[cfg(debug_assertions)]
+#[cfg(all(feature = "interpreted", debug_assertions))]
 use dampen_dev::FileEvent;
 
-/// Application messages
+/// Application messages (interpreted mode)
+#[cfg(feature = "interpreted")]
 #[derive(Clone, Debug)]
 enum Message {
     /// Uncomment to enable view switching between multiple views
@@ -43,7 +61,7 @@ enum Message {
     SystemThemeChanged(String),
 }
 
-/// Main application structure with auto-generated view management
+/// Main application structure with auto-generated view management (interpreted mode)
 ///
 /// ## Shared State (Advanced)
 /// To enable shared state across multiple views, uncomment the shared_model attribute:
@@ -52,6 +70,7 @@ enum Message {
 /// Then use `{shared.field}` bindings in XML and handlers with:
 /// - registry.register_with_shared() for handlers that read shared state
 /// - registry.register_with_value_and_shared() for handlers that modify shared state
+#[cfg(feature = "interpreted")]
 #[dampen_app(
     ui_dir = "src/ui",
     message_type = "Message",
@@ -68,9 +87,13 @@ enum Message {
 )]
 struct DampenApp;
 
+#[cfg(feature = "interpreted")]
 pub fn main() -> iced::Result {
     #[cfg(debug_assertions)]
     println!("🔥 Hot-reload enabled! Edit src/ui/*.dampen files to see live updates.");
+
+    #[cfg(not(debug_assertions))]
+    println!("🚀 Running in interpreted release mode.");
 
     iced::application(DampenApp::init, DampenApp::update, DampenApp::view)
         .window_size(iced::Size::new(400.0, 300.0))
@@ -79,4 +102,31 @@ pub fn main() -> iced::Result {
         .title("{{PROJECT_NAME}}")
         .subscription(DampenApp::subscription)
         .run()
+}
+
+// ============================================================================
+// CODEGEN MODE (production builds with pre-generated code)
+// ============================================================================
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+mod ui;
+
+// Include the generated code (contains Message enum, update/view functions, etc.)
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+include!(concat!(env!("OUT_DIR"), "/ui_generated.rs"));
+
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+pub fn main() -> iced::Result {
+    println!("🚀 Running in codegen mode (production)");
+
+    iced::application(
+        window::new_model,
+        window::update_model,
+        window::view_model,
+    )
+    .window_size(iced::Size::new(400.0, 300.0))
+    .centered()
+    .theme(window::theme)
+    .title("{{PROJECT_NAME}}")
+    .subscription(|_model| window::subscription_model())
+    .run()
 }

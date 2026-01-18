@@ -3,7 +3,7 @@
 // This file is automatically compiled and loads the corresponding {{WINDOW_NAME}}.dampen XML file.
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{UiModel, dampen_ui};
+use dampen_macros::{UiModel, dampen_ui, ui_handler, inventory_handlers};
 use serde::{Deserialize, Serialize};
 
 // Uncomment if using shared state:
@@ -19,6 +19,18 @@ mod _window {}
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
 pub struct Model {
     pub message: String,
+}
+
+/// Example handler for {{WINDOW_NAME}}
+/// Note: Handlers must be public for codegen mode to work
+#[ui_handler]
+pub fn on_action(model: &mut Model) {
+    model.message = "Action triggered!".to_string();
+}
+
+// Declare all handlers in this module for build-time code generation
+inventory_handlers! {
+    on_action
 }
 
 /// Create the AppState for the {{WINDOW_NAME}} window (no shared state).
@@ -72,7 +84,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
     // Register handlers for {{WINDOW_NAME}}
     registry.register_simple("on_action", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
-            m.message = "Action triggered!".to_string();
+            on_action(m);
         }
     });
 

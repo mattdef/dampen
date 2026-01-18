@@ -1,7 +1,7 @@
 // Auto-loaded UI module for counter example.
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{UiModel, dampen_ui, ui_handler};
+use dampen_macros::{UiModel, dampen_ui, inventory_handlers, ui_handler};
 use serde::{Deserialize, Serialize};
 
 #[dampen_ui("window.dampen")]
@@ -13,21 +13,28 @@ pub struct Model {
 }
 
 #[ui_handler]
-fn increment(model: &mut Model) {
+pub fn increment(model: &mut Model) {
     model.count += 1;
     println!("Incremented to: {}", model.count);
 }
 
 #[ui_handler]
-fn decrement(model: &mut Model) {
+pub fn decrement(model: &mut Model) {
     model.count -= 1;
     println!("Decremented to: {}", model.count);
 }
 
 #[ui_handler]
-fn reset(model: &mut Model) {
+pub fn reset(model: &mut Model) {
     model.count = 0;
     println!("Reset to: {}", model.count);
+}
+
+// Declare all handlers in this module for build-time code generation
+inventory_handlers! {
+    increment,
+    decrement,
+    reset
 }
 
 pub fn create_app_state() -> AppState<Model> {

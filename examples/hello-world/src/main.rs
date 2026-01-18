@@ -75,53 +75,23 @@ pub fn main() -> iced::Result {
 
 // ============================================================================
 // CODEGEN MODE (production builds with pre-generated code)
-// Note: This mode requires fixing bugs in dampen-core/src/codegen/
-// For now, use interpreted mode with release builds instead.
 // ============================================================================
 #[cfg(all(feature = "codegen", not(feature = "interpreted")))]
 mod ui;
 
-// Include the generated code
+// Include the generated code (contains Message enum, update/view functions, etc.)
 #[cfg(all(feature = "codegen", not(feature = "interpreted")))]
 include!(concat!(env!("OUT_DIR"), "/ui_generated.rs"));
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-use ui::window::Model;
 
 #[cfg(all(feature = "codegen", not(feature = "interpreted")))]
 pub fn main() -> iced::Result {
     println!("🚀 Running in codegen mode (production)");
 
-    iced::application(codegen_init, codegen_update, codegen_view)
+    iced::application(window::new_model, window::update_model, window::view_model)
         .window_size(iced::Size::new(400.0, 300.0))
         .centered()
-        .theme(codegen_theme)
+        .theme(window::theme)
         .title("Dampen Hello World!")
-        .subscription(codegen_subscription)
+        .subscription(|_model| window::subscription_model())
         .run()
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_init() -> (Model, iced::Task<Message>) {
-    (Model::default(), iced::Task::none())
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_update(model: &mut Model, message: Message) -> iced::Task<Message> {
-    update_model(model, message)
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_view(model: &Model) -> iced::Element<'_, Message> {
-    view_model(model)
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_theme(_model: &Model) -> iced::Theme {
-    app_theme()
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_subscription(_model: &Model) -> iced::Subscription<Message> {
-    subscription_model()
 }

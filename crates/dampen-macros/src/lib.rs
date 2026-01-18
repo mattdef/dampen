@@ -6,6 +6,7 @@ use proc_macro::TokenStream;
 
 mod dampen_app;
 mod discovery;
+mod inventory_handlers;
 mod ui_handler;
 mod ui_loader;
 mod ui_model;
@@ -105,4 +106,49 @@ pub fn dampen_app(attr: TokenStream, item: TokenStream) -> TokenStream {
         Ok(tokens) => tokens.into(),
         Err(e) => e.to_compile_error().into(),
     }
+}
+
+/// Declare an inventory of UI handlers for build-time code generation.
+///
+/// This macro must be used in any module that contains `#[ui_handler]` functions
+/// when building with the `codegen` feature. It creates a constant that the build
+/// script can use to discover available handlers.
+///
+/// # Convention
+///
+/// Each `.rs` file in the `ui/` directory should have a corresponding `.dampen` file
+/// with the same name. For example:
+/// - `src/ui/window.rs` ↔ `src/ui/window.dampen`
+/// - `src/ui/settings.rs` ↔ `src/ui/settings.dampen`
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use dampen_macros::{ui_handler, inventory_handlers};
+///
+/// #[ui_handler]
+/// fn increment(model: &mut Model) {
+///     model.count += 1;
+/// }
+///
+/// #[ui_handler]
+/// fn decrement(model: &mut Model) {
+///     model.count -= 1;
+/// }
+///
+/// // Declare all handlers in this module
+/// inventory_handlers! {
+///     increment,
+///     decrement
+/// }
+/// ```
+///
+/// # Errors
+///
+/// This macro will fail at compile time if:
+/// - No handler names are provided
+/// - A referenced handler doesn't have the `#[ui_handler]` attribute
+#[proc_macro]
+pub fn inventory_handlers(input: TokenStream) -> TokenStream {
+    inventory_handlers::process_inventory_handlers(input)
 }
