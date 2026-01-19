@@ -161,6 +161,7 @@ fn apply_widget_style(
     widget: TokenStream,
     node: &crate::WidgetNode,
     widget_type: &str,
+    style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
     // Check if widget has any styling
     let has_inline_style = node.style.is_some();
@@ -171,10 +172,18 @@ fn apply_widget_style(
         return Ok(widget);
     }
 
+    // Get style class if widget has classes
+    let style_class = if let Some(class_name) = node.classes.first() {
+        style_classes.get(class_name)
+    } else {
+        None
+    };
+
     // Generate style closure based on priority
     if let Some(ref style_props) = node.style {
         // Priority 1: Inline styles
-        let style_closure = generate_inline_style_closure(style_props, widget_type)?;
+        let style_closure =
+            generate_inline_style_closure(style_props, widget_type, &node.kind, style_class)?;
         Ok(quote! {
             #widget.style(#style_closure)
         })
@@ -189,21 +198,127 @@ fn apply_widget_style(
     }
 }
 
+/// Generate state-specific style application code
+///
+/// Creates a match expression that applies different styles based on widget state.
+/// Merges base style with state-specific overrides.
+///
+/// # Arguments
+/// * `base_style` - The base style struct (used when state is None)
+/// * `style_class` - The style class containing state variants
+/// * `widget_state_ident` - Identifier for the widget_state variable
+/// * `style_struct_fn` - Function to generate style struct from StyleProperties
+fn generate_state_style_match(
+    base_style: TokenStream,
+    style_class: &StyleClass,
+    widget_state_ident: &syn::Ident,
+    style_struct_fn: fn(&StyleProperties) -> Result<TokenStream, super::CodegenError>,
+) -> Result<TokenStream, super::CodegenError> {
+    use crate::ir::theme::WidgetState;
+
+    // Collect all state variants
+    let mut state_arms = Vec::new();
+
+    for (state, state_props) in &style_class.state_variants {
+        let state_variant = match state {
+            WidgetState::Hover => quote! { dampen_core::ir::WidgetState::Hover },
+            WidgetState::Focus => quote! { dampen_core::ir::WidgetState::Focus },
+            WidgetState::Active => quote! { dampen_core::ir::WidgetState::Active },
+            WidgetState::Disabled => quote! { dampen_core::ir::WidgetState::Disabled },
+        };
+
+        // Generate style struct for this state
+        let state_style = style_struct_fn(state_props)?;
+
+        state_arms.push(quote! {
+            Some(#state_variant) => #state_style
+        });
+    }
+
+    // Generate match expression
+    Ok(quote! {
+        match #widget_state_ident {
+            #(#state_arms,)*
+            None => #base_style
+        }
+    })
+}
+
 /// Generate inline style closure for a widget
 ///
 /// Creates a closure like: |_theme: &iced::Theme, status| { ... }
+///
+/// # State-Aware Styling
+///
+/// When a widget has state variants (hover, focus, etc.), this generates
+/// code that maps the status parameter to WidgetState and applies the
+/// appropriate style.
+///
+/// # Arguments
+/// * `style_props` - Base style properties for the widget
+/// * `widget_type` - Type of widget ("button", "text_input", etc.)
+/// * `widget_kind` - The WidgetKind enum (needed for status mapping)
+/// * `style_class` - Optional style class with state variants
 fn generate_inline_style_closure(
     style_props: &StyleProperties,
     widget_type: &str,
+    widget_kind: &WidgetKind,
+    style_class: Option<&StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
+    // Check if we have state-specific styling
+    let has_state_variants = style_class
+        .map(|sc| !sc.state_variants.is_empty())
+        .unwrap_or(false);
+
     match widget_type {
         "button" => {
-            let style_struct = generate_button_style_struct(style_props)?;
-            Ok(quote! {
-                |_theme: &iced::Theme, _status: iced::widget::button::Status| {
-                    #style_struct
+            let base_style = generate_button_style_struct(style_props)?;
+
+            if has_state_variants {
+                // Generate state-aware closure
+                let status_ident = format_ident!("status");
+                if let Some(status_mapping) =
+                    super::status_mapping::generate_status_mapping(widget_kind, &status_ident)
+                {
+                    let widget_state_ident = format_ident!("widget_state");
+                    // Safe: has_state_variants guarantees style_class.is_some()
+                    let class = style_class.ok_or_else(|| {
+                        super::CodegenError::InvalidWidget(
+                            "Expected style class with state variants".to_string(),
+                        )
+                    })?;
+                    let style_match = generate_state_style_match(
+                        base_style,
+                        class,
+                        &widget_state_ident,
+                        generate_button_style_struct,
+                    )?;
+
+                    Ok(quote! {
+                        |_theme: &iced::Theme, #status_ident: iced::widget::button::Status| {
+                            // Map Iced status to WidgetState
+                            let #widget_state_ident = #status_mapping;
+
+                            // Apply state-specific styling
+                            #style_match
+                        }
+                    })
+                } else {
+                    // Widget kind doesn't support status mapping, fall back to simple closure
+                    Ok(quote! {
+                        |_theme: &iced::Theme, _status: iced::widget::button::Status| {
+                            #base_style
+                        }
+                    })
                 }
-            })
+            } else {
+                // No state variants, use simple closure
+                Ok(quote! {
+                    |_theme: &iced::Theme, _status: iced::widget::button::Status| {
+                        #base_style
+                    }
+                })
+            }
         }
         "container" => {
             let style_struct = generate_container_style_struct(style_props)?;
@@ -214,12 +329,178 @@ fn generate_inline_style_closure(
             })
         }
         "text_input" => {
-            let style_struct = generate_text_input_style_struct(style_props)?;
-            Ok(quote! {
-                |_theme: &iced::Theme, _status: iced::widget::text_input::Status| {
-                    #style_struct
+            let base_style = generate_text_input_style_struct(style_props)?;
+
+            if has_state_variants {
+                // Generate state-aware closure
+                let status_ident = format_ident!("status");
+                if let Some(status_mapping) =
+                    super::status_mapping::generate_status_mapping(widget_kind, &status_ident)
+                {
+                    let widget_state_ident = format_ident!("widget_state");
+                    let class = style_class.ok_or_else(|| {
+                        super::CodegenError::InvalidWidget(
+                            "Expected style class with state variants".to_string(),
+                        )
+                    })?;
+                    let style_match = generate_state_style_match(
+                        base_style,
+                        class,
+                        &widget_state_ident,
+                        generate_text_input_style_struct,
+                    )?;
+
+                    Ok(quote! {
+                        |_theme: &iced::Theme, #status_ident: iced::widget::text_input::Status| {
+                            // Map Iced status to WidgetState
+                            let #widget_state_ident = #status_mapping;
+
+                            // Apply state-specific styling
+                            #style_match
+                        }
+                    })
+                } else {
+                    // Widget kind doesn't support status mapping, fall back to simple closure
+                    Ok(quote! {
+                        |_theme: &iced::Theme, _status: iced::widget::text_input::Status| {
+                            #base_style
+                        }
+                    })
                 }
-            })
+            } else {
+                // No state variants, use simple closure
+                Ok(quote! {
+                    |_theme: &iced::Theme, _status: iced::widget::text_input::Status| {
+                        #base_style
+                    }
+                })
+            }
+        }
+        "checkbox" => {
+            let base_style = generate_checkbox_style_struct(style_props)?;
+
+            if has_state_variants {
+                let status_ident = format_ident!("status");
+                if let Some(status_mapping) =
+                    super::status_mapping::generate_status_mapping(widget_kind, &status_ident)
+                {
+                    let widget_state_ident = format_ident!("widget_state");
+                    let class = style_class.ok_or_else(|| {
+                        super::CodegenError::InvalidWidget(
+                            "Expected style class with state variants".to_string(),
+                        )
+                    })?;
+                    let style_match = generate_state_style_match(
+                        base_style,
+                        class,
+                        &widget_state_ident,
+                        generate_checkbox_style_struct,
+                    )?;
+
+                    Ok(quote! {
+                        |_theme: &iced::Theme, #status_ident: iced::widget::checkbox::Status| {
+                            let #widget_state_ident = #status_mapping;
+                            #style_match
+                        }
+                    })
+                } else {
+                    Ok(quote! {
+                        |_theme: &iced::Theme, _status: iced::widget::checkbox::Status| {
+                            #base_style
+                        }
+                    })
+                }
+            } else {
+                Ok(quote! {
+                    |_theme: &iced::Theme, _status: iced::widget::checkbox::Status| {
+                        #base_style
+                    }
+                })
+            }
+        }
+        "toggler" => {
+            let base_style = generate_toggler_style_struct(style_props)?;
+
+            if has_state_variants {
+                let status_ident = format_ident!("status");
+                if let Some(status_mapping) =
+                    super::status_mapping::generate_status_mapping(widget_kind, &status_ident)
+                {
+                    let widget_state_ident = format_ident!("widget_state");
+                    let class = style_class.ok_or_else(|| {
+                        super::CodegenError::InvalidWidget(
+                            "Expected style class with state variants".to_string(),
+                        )
+                    })?;
+                    let style_match = generate_state_style_match(
+                        base_style,
+                        class,
+                        &widget_state_ident,
+                        generate_toggler_style_struct,
+                    )?;
+
+                    Ok(quote! {
+                        |_theme: &iced::Theme, #status_ident: iced::widget::toggler::Status| {
+                            let #widget_state_ident = #status_mapping;
+                            #style_match
+                        }
+                    })
+                } else {
+                    Ok(quote! {
+                        |_theme: &iced::Theme, _status: iced::widget::toggler::Status| {
+                            #base_style
+                        }
+                    })
+                }
+            } else {
+                Ok(quote! {
+                    |_theme: &iced::Theme, _status: iced::widget::toggler::Status| {
+                        #base_style
+                    }
+                })
+            }
+        }
+        "slider" => {
+            let base_style = generate_slider_style_struct(style_props)?;
+
+            if has_state_variants {
+                let status_ident = format_ident!("status");
+                if let Some(status_mapping) =
+                    super::status_mapping::generate_status_mapping(widget_kind, &status_ident)
+                {
+                    let widget_state_ident = format_ident!("widget_state");
+                    let class = style_class.ok_or_else(|| {
+                        super::CodegenError::InvalidWidget(
+                            "Expected style class with state variants".to_string(),
+                        )
+                    })?;
+                    let style_match = generate_state_style_match(
+                        base_style,
+                        class,
+                        &widget_state_ident,
+                        generate_slider_style_struct,
+                    )?;
+
+                    Ok(quote! {
+                        |_theme: &iced::Theme, #status_ident: iced::widget::slider::Status| {
+                            let #widget_state_ident = #status_mapping;
+                            #style_match
+                        }
+                    })
+                } else {
+                    Ok(quote! {
+                        |_theme: &iced::Theme, _status: iced::widget::slider::Status| {
+                            #base_style
+                        }
+                    })
+                }
+            } else {
+                Ok(quote! {
+                    |_theme: &iced::Theme, _status: iced::widget::slider::Status| {
+                        #base_style
+                    }
+                })
+            }
         }
         _ => {
             // For unsupported widgets, return a no-op closure
@@ -456,6 +737,98 @@ fn generate_text_input_style_struct(
     })
 }
 
+/// Generate checkbox style struct from StyleProperties
+fn generate_checkbox_style_struct(
+    props: &StyleProperties,
+) -> Result<TokenStream, super::CodegenError> {
+    let background_expr = props
+        .background
+        .as_ref()
+        .map(|bg| {
+            let expr = generate_background_expr(bg);
+            quote! { #expr }
+        })
+        .unwrap_or_else(|| quote! { iced::Background::Color(iced::Color::WHITE) });
+
+    let border_expr = props
+        .border
+        .as_ref()
+        .map(generate_border_expr)
+        .unwrap_or_else(|| quote! { iced::Border::default() });
+
+    let text_color = props
+        .color
+        .as_ref()
+        .map(generate_color_expr)
+        .unwrap_or_else(|| quote! { iced::Color::BLACK });
+
+    Ok(quote! {
+        iced::widget::checkbox::Style {
+            background: #background_expr,
+            icon_color: #text_color,
+            border: #border_expr,
+            text_color: None,
+        }
+    })
+}
+
+/// Generate toggler style struct from StyleProperties
+fn generate_toggler_style_struct(
+    props: &StyleProperties,
+) -> Result<TokenStream, super::CodegenError> {
+    let background_expr = props
+        .background
+        .as_ref()
+        .map(|bg| {
+            let expr = generate_background_expr(bg);
+            quote! { #expr }
+        })
+        .unwrap_or_else(
+            || quote! { iced::Background::Color(iced::Color::from_rgb(0.5, 0.5, 0.5)) },
+        );
+
+    Ok(quote! {
+        iced::widget::toggler::Style {
+            background: #background_expr,
+            background_border_width: 0.0,
+            background_border_color: iced::Color::TRANSPARENT,
+            foreground: iced::Background::Color(iced::Color::WHITE),
+            foreground_border_width: 0.0,
+            foreground_border_color: iced::Color::TRANSPARENT,
+        }
+    })
+}
+
+/// Generate slider style struct from StyleProperties
+fn generate_slider_style_struct(
+    props: &StyleProperties,
+) -> Result<TokenStream, super::CodegenError> {
+    let border_expr = props
+        .border
+        .as_ref()
+        .map(generate_border_expr)
+        .unwrap_or_else(|| quote! { iced::Border::default() });
+
+    Ok(quote! {
+        iced::widget::slider::Style {
+            rail: iced::widget::slider::Rail {
+                colors: (
+                    iced::Color::from_rgb(0.6, 0.6, 0.6),
+                    iced::Color::from_rgb(0.2, 0.6, 1.0),
+                ),
+                width: 4.0,
+                border: #border_expr,
+            },
+            handle: iced::widget::slider::Handle {
+                shape: iced::widget::slider::HandleShape::Circle { radius: 8.0 },
+                color: iced::Color::WHITE,
+                border_width: 1.0,
+                border_color: iced::Color::from_rgb(0.6, 0.6, 0.6),
+            },
+        }
+    })
+}
+
 /// Generate text widget
 fn generate_text(
     node: &crate::WidgetNode,
@@ -511,89 +884,8 @@ fn generate_text(
         }
     }
 
-    // Check if we need to wrap in container for layout/alignment/classes
-    let needs_container = node.layout.is_some()
-        || !node.classes.is_empty()
-        || node.attributes.contains_key("align_x")
-        || node.attributes.contains_key("align_y")
-        || node.attributes.contains_key("width")
-        || node.attributes.contains_key("height")
-        || node.attributes.contains_key("padding");
-
-    if needs_container {
-        let mut container = quote! {
-            iced::widget::container(#text_widget)
-        };
-
-        // Apply width
-        if let Some(width) = node.attributes.get("width").and_then(|attr| {
-            if let AttributeValue::Static(s) = attr {
-                Some(s.clone())
-            } else {
-                None
-            }
-        }) {
-            let width_expr = generate_length_expr(&width);
-            container = quote! { #container.width(#width_expr) };
-        }
-
-        // Apply height
-        if let Some(height) = node.attributes.get("height").and_then(|attr| {
-            if let AttributeValue::Static(s) = attr {
-                Some(s.clone())
-            } else {
-                None
-            }
-        }) {
-            let height_expr = generate_length_expr(&height);
-            container = quote! { #container.height(#height_expr) };
-        }
-
-        // Apply padding
-        if let Some(padding) = node.attributes.get("padding").and_then(|attr| {
-            if let AttributeValue::Static(s) = attr {
-                s.parse::<f32>().ok()
-            } else {
-                None
-            }
-        }) {
-            container = quote! { #container.padding(#padding) };
-        }
-
-        // Apply align_x
-        if let Some(align_x) = node.attributes.get("align_x").and_then(|attr| {
-            if let AttributeValue::Static(s) = attr {
-                Some(s.clone())
-            } else {
-                None
-            }
-        }) {
-            let align_expr = generate_horizontal_alignment_expr(&align_x);
-            container = quote! { #container.align_x(#align_expr) };
-        }
-
-        // Apply align_y
-        if let Some(align_y) = node.attributes.get("align_y").and_then(|attr| {
-            if let AttributeValue::Static(s) = attr {
-                Some(s.clone())
-            } else {
-                None
-            }
-        }) {
-            let align_expr = generate_vertical_alignment_expr(&align_y);
-            container = quote! { #container.align_y(#align_expr) };
-        }
-
-        // Apply class style if present (text classes become container styles)
-        if let Some(class_name) = node.classes.first() {
-            let style_fn_ident = format_ident!("style_{}", class_name.replace('-', "_"));
-            container = quote! { #container.style(#style_fn_ident) };
-        }
-
-        Ok(quote! { #container.into() })
-    } else {
-        Ok(quote! { #text_widget.into() })
-    }
+    // Use helper to wrap in container if layout attributes are present
+    Ok(maybe_wrap_in_container(text_widget, node))
 }
 
 /// Generate Length expression from string
@@ -656,12 +948,112 @@ fn generate_vertical_alignment_expr(s: &str) -> TokenStream {
     }
 }
 
+/// Wraps a widget in a container if layout attributes are present.
+///
+/// This helper provides consistent layout attribute support across all widgets
+/// by wrapping them in a container when needed.
+///
+/// # Arguments
+///
+/// * `widget` - The widget expression to potentially wrap
+/// * `node` - The widget node containing attributes
+///
+/// # Returns
+///
+/// Returns the widget wrapped in a container if layout attributes are present,
+/// otherwise returns the original widget.
+fn maybe_wrap_in_container(widget: TokenStream, node: &crate::WidgetNode) -> TokenStream {
+    // Check if we need to wrap in container for layout/alignment/classes
+    let needs_container = node.layout.is_some()
+        || !node.classes.is_empty()
+        || node.attributes.contains_key("align_x")
+        || node.attributes.contains_key("align_y")
+        || node.attributes.contains_key("width")
+        || node.attributes.contains_key("height")
+        || node.attributes.contains_key("padding");
+
+    if !needs_container {
+        return quote! { #widget.into() };
+    }
+
+    let mut container = quote! {
+        iced::widget::container(#widget)
+    };
+
+    // Apply width
+    if let Some(width) = node.attributes.get("width").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(s.clone())
+        } else {
+            None
+        }
+    }) {
+        let width_expr = generate_length_expr(&width);
+        container = quote! { #container.width(#width_expr) };
+    }
+
+    // Apply height
+    if let Some(height) = node.attributes.get("height").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(s.clone())
+        } else {
+            None
+        }
+    }) {
+        let height_expr = generate_length_expr(&height);
+        container = quote! { #container.height(#height_expr) };
+    }
+
+    // Apply padding
+    if let Some(padding) = node.attributes.get("padding").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    }) {
+        container = quote! { #container.padding(#padding) };
+    }
+
+    // Apply align_x
+    if let Some(align_x) = node.attributes.get("align_x").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(s.clone())
+        } else {
+            None
+        }
+    }) {
+        let align_expr = generate_horizontal_alignment_expr(&align_x);
+        container = quote! { #container.align_x(#align_expr) };
+    }
+
+    // Apply align_y
+    if let Some(align_y) = node.attributes.get("align_y").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(s.clone())
+        } else {
+            None
+        }
+    }) {
+        let align_expr = generate_vertical_alignment_expr(&align_y);
+        container = quote! { #container.align_y(#align_expr) };
+    }
+
+    // Apply class style if present
+    if let Some(class_name) = node.classes.first() {
+        let style_fn_ident = format_ident!("style_{}", class_name.replace('-', "_"));
+        container = quote! { #container.style(#style_fn_ident) };
+    }
+
+    quote! { #container.into() }
+}
+
 /// Generate button widget
 fn generate_button(
     node: &crate::WidgetNode,
     model_ident: &syn::Ident,
     message_ident: &syn::Ident,
-    _style_classes: &HashMap<String, StyleClass>,
+    style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
     let label_attr = node.attributes.get("label").ok_or_else(|| {
         super::CodegenError::InvalidWidget("button requires label attribute".to_string())
@@ -679,24 +1071,23 @@ fn generate_button(
     };
 
     // Handle enabled attribute
-    let enabled_condition = node.attributes.get("enabled").and_then(|attr| match attr {
+    let enabled_condition = node.attributes.get("enabled").map(|attr| match attr {
         AttributeValue::Static(s) => {
             // Static enabled values
             match s.to_lowercase().as_str() {
-                "true" | "1" | "yes" | "on" => Some(quote! { true }),
-                "false" | "0" | "no" | "off" => Some(quote! { false }),
-                _ => Some(quote! { true }), // Default to enabled
+                "true" | "1" | "yes" | "on" => quote! { true },
+                "false" | "0" | "no" | "off" => quote! { false },
+                _ => quote! { true }, // Default to enabled
             }
         }
         AttributeValue::Binding(binding_expr) => {
             // Dynamic binding expression - use generate_bool_expr for native boolean
-            let condition_tokens = super::bindings::generate_bool_expr(&binding_expr.expr);
-            Some(condition_tokens)
+            super::bindings::generate_bool_expr(&binding_expr.expr)
         }
         AttributeValue::Interpolated(_) => {
             // Interpolated strings treated as enabled if non-empty
             let expr_tokens = generate_attribute_value(attr, model_ident);
-            Some(quote! { !#expr_tokens.is_empty() && #expr_tokens != "false" && #expr_tokens != "0" })
+            quote! { !#expr_tokens.is_empty() && #expr_tokens != "false" && #expr_tokens != "0" }
         }
     });
 
@@ -735,7 +1126,7 @@ fn generate_button(
     }
 
     // Apply styles (inline or classes)
-    button = apply_widget_style(button, node, "button")?;
+    button = apply_widget_style(button, node, "button", style_classes)?;
 
     Ok(quote! { #button.into() })
 }
@@ -948,7 +1339,43 @@ fn generate_container(
 
     // Apply styles (only for container, not column/row/scrollable)
     if widget_type == "container" {
-        widget = apply_widget_style(widget, node, "container")?;
+        widget = apply_widget_style(widget, node, "container", style_classes)?;
+    }
+
+    // Check if Column/Row needs to be wrapped in a container for align_x/align_y
+    // These attributes position the Column/Row itself within its parent,
+    // which requires an outer container wrapper
+    if (widget_type == "column" || widget_type == "row")
+        && (node.attributes.contains_key("align_x") || node.attributes.contains_key("align_y"))
+    {
+        let mut container = quote! { iced::widget::container(#widget) };
+
+        if let Some(align_x) = node.attributes.get("align_x").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        }) {
+            let align_expr = generate_horizontal_alignment_expr(&align_x);
+            container = quote! { #container.align_x(#align_expr) };
+        }
+
+        if let Some(align_y) = node.attributes.get("align_y").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        }) {
+            let align_expr = generate_vertical_alignment_expr(&align_y);
+            container = quote! { #container.align_y(#align_expr) };
+        }
+
+        // Container needs explicit width/height to enable alignment
+        container = quote! { #container.width(iced::Length::Fill).height(iced::Length::Fill) };
+
+        return Ok(quote! { #container.into() });
     }
 
     Ok(quote! { #widget.into() })
@@ -1051,7 +1478,7 @@ fn generate_checkbox(
     node: &crate::WidgetNode,
     model_ident: &syn::Ident,
     message_ident: &syn::Ident,
-    _style_classes: &HashMap<String, StyleClass>,
+    style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
     let label = node
         .attributes
@@ -1090,8 +1517,8 @@ fn generate_checkbox(
         }
     };
 
-    // Apply styles (checkbox doesn't directly support styles in Iced 0.14, skip for now)
-    // checkbox = apply_widget_style(checkbox, node, "checkbox")?;
+    // Apply styles
+    let checkbox = apply_widget_style(checkbox, node, "checkbox", style_classes)?;
 
     Ok(quote! { #checkbox.into() })
 }
@@ -1101,7 +1528,7 @@ fn generate_toggler(
     node: &crate::WidgetNode,
     model_ident: &syn::Ident,
     message_ident: &syn::Ident,
-    _style_classes: &HashMap<String, StyleClass>,
+    style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
     let label = node
         .attributes
@@ -1127,20 +1554,23 @@ fn generate_toggler(
         .iter()
         .find(|e| e.event == crate::EventKind::Toggle);
 
-    if let Some(event) = on_toggle {
+    let toggler = if let Some(event) = on_toggle {
         let variant_name = to_upper_camel_case(&event.handler);
         let handler_ident = format_ident!("{}", variant_name);
-        Ok(quote! {
+        quote! {
             iced::widget::toggler(#label_expr, #is_toggled_expr, None)
                 .on_toggle(|_| #message_ident::#handler_ident)
-                .into()
-        })
+        }
     } else {
-        Ok(quote! {
+        quote! {
             iced::widget::toggler(#label_expr, #is_toggled_expr, None)
-                .into()
-        })
-    }
+        }
+    };
+
+    // Apply styles
+    let toggler = apply_widget_style(toggler, node, "toggler", style_classes)?;
+
+    Ok(quote! { #toggler.into() })
 }
 
 /// Generate slider widget
@@ -1148,7 +1578,7 @@ fn generate_slider(
     node: &crate::WidgetNode,
     model_ident: &syn::Ident,
     message_ident: &syn::Ident,
-    _style_classes: &HashMap<String, StyleClass>,
+    style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
     let min = node.attributes.get("min").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
@@ -1187,6 +1617,19 @@ fn generate_slider(
         slider = quote! { #slider.max(#m) };
     }
 
+    // Apply step attribute (increment size)
+    let step = node.attributes.get("step").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    });
+
+    if let Some(s) = step {
+        slider = quote! { #slider.step(#s) };
+    }
+
     if let Some(event) = on_change {
         let variant_name = to_upper_camel_case(&event.handler);
         let handler_ident = format_ident!("{}", variant_name);
@@ -1194,6 +1637,9 @@ fn generate_slider(
             iced::widget::slider(0.0..=100.0, #value_expr, |v| #message_ident::#handler_ident(v))
         };
     }
+
+    // Apply styles
+    slider = apply_widget_style(slider, node, "slider", style_classes)?;
 
     Ok(quote! { #slider.into() })
 }
@@ -1286,7 +1732,7 @@ fn generate_text_input(
     node: &crate::WidgetNode,
     model_ident: &syn::Ident,
     message_ident: &syn::Ident,
-    _style_classes: &HashMap<String, StyleClass>,
+    style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
     let value_expr = node
         .attributes
@@ -1327,8 +1773,26 @@ fn generate_text_input(
         };
     }
 
+    // Apply password/secure attribute (masks input)
+    let is_password = node
+        .attributes
+        .get("password")
+        .or_else(|| node.attributes.get("secure"))
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.to_lowercase() == "true" || s == "1")
+            } else {
+                None
+            }
+        })
+        .unwrap_or(false);
+
+    if is_password {
+        text_input = quote! { #text_input.password() };
+    }
+
     // Apply styles
-    text_input = apply_widget_style(text_input, node, "text_input")?;
+    text_input = apply_widget_style(text_input, node, "text_input", style_classes)?;
 
     Ok(quote! { #text_input.into() })
 }
@@ -1361,28 +1825,84 @@ fn generate_image(node: &crate::WidgetNode) -> Result<TokenStream, super::Codege
         }
     });
 
-    let image = quote! {
+    let mut image = quote! {
         iced::widget::image::Image::new(iced::widget::image::Handle::from_memory(std::fs::read(#src_lit).unwrap_or_default()))
     };
 
-    let image = if let (Some(w), Some(h)) = (width, height) {
-        quote! { #image.width(#w).height(#h) }
+    // Apply native width/height if specified with integer values
+    if let (Some(w), Some(h)) = (width, height) {
+        image = quote! { #image.width(#w).height(#h) };
     } else if let Some(w) = width {
-        quote! { #image.width(#w) }
+        image = quote! { #image.width(#w) };
     } else if let Some(h) = height {
-        quote! { #image.height(#h) }
-    } else {
-        image
-    };
+        image = quote! { #image.height(#h) };
+    }
 
-    Ok(quote! { #image.into() })
+    // Check if we need container for NON-native layout attributes
+    // (padding, alignment, classes - NOT width/height since those are native)
+    // For Image, only wrap if there are alignment/padding/classes
+    let needs_container = !node.classes.is_empty()
+        || node.attributes.contains_key("align_x")
+        || node.attributes.contains_key("align_y")
+        || node.attributes.contains_key("padding");
+
+    if needs_container {
+        // Wrap with container for layout attributes, but skip width/height (already applied)
+        let mut container = quote! { iced::widget::container(#image) };
+
+        if let Some(padding) = node.attributes.get("padding").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                s.parse::<f32>().ok()
+            } else {
+                None
+            }
+        }) {
+            container = quote! { #container.padding(#padding) };
+        }
+
+        if let Some(align_x) = node.attributes.get("align_x").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        }) {
+            let align_expr = generate_horizontal_alignment_expr(&align_x);
+            container = quote! { #container.align_x(#align_expr) };
+        }
+
+        if let Some(align_y) = node.attributes.get("align_y").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        }) {
+            let align_expr = generate_vertical_alignment_expr(&align_y);
+            container = quote! { #container.align_y(#align_expr) };
+        }
+
+        if let Some(class_name) = node.classes.first() {
+            let style_fn_ident = format_ident!("style_{}", class_name.replace('-', "_"));
+            container = quote! { #container.style(#style_fn_ident) };
+        }
+
+        Ok(quote! { #container.into() })
+    } else {
+        Ok(quote! { #image.into() })
+    }
 }
 
 /// Generate SVG widget
 fn generate_svg(node: &crate::WidgetNode) -> Result<TokenStream, super::CodegenError> {
-    let path_attr = node.attributes.get("path").ok_or_else(|| {
-        super::CodegenError::InvalidWidget("svg requires path attribute".to_string())
-    })?;
+    // Support both "src" (standard) and "path" (legacy) for backward compatibility
+    let path_attr = node
+        .attributes
+        .get("src")
+        .or_else(|| node.attributes.get("path"))
+        .ok_or_else(|| {
+            super::CodegenError::InvalidWidget("svg requires src attribute".to_string())
+        })?;
 
     let path = match path_attr {
         AttributeValue::Static(s) => s.clone(),
@@ -1406,21 +1926,72 @@ fn generate_svg(node: &crate::WidgetNode) -> Result<TokenStream, super::CodegenE
         }
     });
 
-    let svg = quote! {
+    let mut svg = quote! {
         iced::widget::svg::Svg::new(iced::widget::svg::Handle::from_path(#path_lit))
     };
 
-    let svg = if let (Some(w), Some(h)) = (width, height) {
-        quote! { #svg.width(#w).height(#h) }
+    // Apply native width/height if specified with integer values
+    if let (Some(w), Some(h)) = (width, height) {
+        svg = quote! { #svg.width(#w).height(#h) };
     } else if let Some(w) = width {
-        quote! { #svg.width(#w) }
+        svg = quote! { #svg.width(#w) };
     } else if let Some(h) = height {
-        quote! { #svg.height(#h) }
-    } else {
-        svg
-    };
+        svg = quote! { #svg.height(#h) };
+    }
 
-    Ok(quote! { #svg.into() })
+    // Check if we need container for NON-native layout attributes
+    // (padding, alignment, classes - NOT width/height since those are native)
+    // For SVG, only wrap if there are alignment/padding/classes
+    let needs_container = !node.classes.is_empty()
+        || node.attributes.contains_key("align_x")
+        || node.attributes.contains_key("align_y")
+        || node.attributes.contains_key("padding");
+
+    if needs_container {
+        // Wrap with container for layout attributes, but skip width/height (already applied)
+        let mut container = quote! { iced::widget::container(#svg) };
+
+        if let Some(padding) = node.attributes.get("padding").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                s.parse::<f32>().ok()
+            } else {
+                None
+            }
+        }) {
+            container = quote! { #container.padding(#padding) };
+        }
+
+        if let Some(align_x) = node.attributes.get("align_x").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        }) {
+            let align_expr = generate_horizontal_alignment_expr(&align_x);
+            container = quote! { #container.align_x(#align_expr) };
+        }
+
+        if let Some(align_y) = node.attributes.get("align_y").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        }) {
+            let align_expr = generate_vertical_alignment_expr(&align_y);
+            container = quote! { #container.align_y(#align_expr) };
+        }
+
+        if let Some(class_name) = node.classes.first() {
+            let style_fn_ident = format_ident!("style_{}", class_name.replace('-', "_"));
+            container = quote! { #container.style(#style_fn_ident) };
+        }
+
+        Ok(quote! { #container.into() })
+    } else {
+        Ok(quote! { #svg.into() })
+    }
 }
 
 /// Generate pick list widget

@@ -1,3 +1,4 @@
+pub mod attribute_standard;
 pub mod error;
 pub mod gradient;
 pub mod lexer;
@@ -711,6 +712,10 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         span: get_span(node, source),
         suggestion: None,
     })?;
+
+    // Normalize deprecated attributes to standard names (with warnings)
+    let _attr_warnings = attribute_standard::normalize_attributes(&kind, &mut attributes);
+    // TODO: Log warnings in verbose mode
 
     // Validate widget-specific required attributes
     validate_widget_attributes(&kind, &attributes, get_span(node, source))?;

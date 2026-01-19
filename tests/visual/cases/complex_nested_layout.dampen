@@ -1,0 +1,68 @@
+<dampen version="1.0">
+  <!-- Complex nested layout test case -->
+  <!-- Tests: columns inside rows, rows inside columns, mixed alignments, padding -->
+
+  <column spacing="10" padding="20">
+    <!-- Top section: row with aligned columns -->
+    <row spacing="15" padding="10">
+      <column spacing="5" align_x="start" padding="5">
+        <text>Left Column</text>
+        <text>Item 1</text>
+        <text>Item 2</text>
+      </column>
+
+      <column spacing="5" align_x="center" padding="5">
+        <text>Center Column</text>
+        <text>Item A</text>
+        <text>Item B</text>
+      </column>
+
+      <column spacing="5" align_x="end" padding="5">
+        <text>Right Column</text>
+        <text>Item X</text>
+        <text>Item Y</text>
+      </column>
+    </row>
+
+    <!-- Middle section: column with aligned rows -->
+    <column spacing="10" padding="10">
+      <row spacing="10" align_y="start" padding="5">
+        <text>Top Row</text>
+        <button text="Button 1" />
+        <button text="Button 2" />
+      </row>
+
+      <row spacing="10" align_y="center" padding="5">
+        <text>Center Row</text>
+        <button text="Button 3" />
+        <button text="Button 4" />
+      </row>
+
+      <row spacing="10" align_y="end" padding="5">
+        <text>Bottom Row</text>
+        <button text="Button 5" />
+        <button text="Button 6" />
+      </row>
+    </column>
+
+    <!-- Bottom section: Deeply nested with mixed alignments -->
+    <row spacing="10" padding="10">
+      <column spacing="5" width="200" height="150" align_x="center" align_y="center" padding="10">
+        <text>Nested Content</text>
+        <row spacing="5">
+          <button text="A" />
+          <button text="B" />
+        </row>
+        <text>Centered</text>
+      </column>
+
+      <column spacing="5" width="200" height="150" align_x="end" align_y="end" padding="10">
+        <text>Right Bottom</text>
+        <row spacing="5">
+          <button text="C" />
+          <button text="D" />
+        </row>
+      </column>
+    </row>
+  </column>
+</dampen>

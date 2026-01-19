@@ -6,6 +6,7 @@ members = [
     "crates/dampen-iced",
     "crates/dampen-dev",
     "crates/dampen-cli",
+    "crates/dampen-visual-tests",
     "examples/hello-world",
     "examples/counter",
     "examples/todo-app",

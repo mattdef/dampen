@@ -105,7 +105,7 @@ fn test_codegen_complex_layout() {
         <column padding="20" spacing="15">
             <text value="Todo App" size="32" weight="bold" />
             <row spacing="10">
-                <text_input 
+                <text_input
                     value="{new_item}"
                     on_input="update_new_item"
                     placeholder="Add todo..."
@@ -165,10 +165,10 @@ fn test_codegen_conditional_expressions() {
         <column>
             <text value="{if is_loading then 'Loading...' else 'Ready'}" />
             <text value="{if error then 'Error' else 'Success'}" />
-            <button 
-                label="Submit" 
-                on_click="submit" 
-                enabled="{count > 0}" 
+            <button
+                label="Submit"
+                on_click="submit"
+                enabled="{count > 0}"
             />
         </column>
     "#;
@@ -305,7 +305,7 @@ fn test_codegen_picklist() {
 
 #[test]
 fn test_codegen_toggler() {
-    let xml = r#"<toggler label="Enable Feature" is_toggled="{feature_enabled}" on_toggle="toggle_feature" />"#;
+    let xml = r#"<toggler label="Enable Feature" toggled="{feature_enabled}" on_toggle="toggle_feature" />"#;
     let doc = parse(xml).unwrap();
     let handlers = vec![HandlerSignature {
         name: "toggle_feature".to_string(),
@@ -336,7 +336,7 @@ fn test_codegen_image() {
 
 #[test]
 fn test_codegen_svg() {
-    let xml = r#"<svg path="assets/icon.svg" width="24" height="24" />"#;
+    let xml = r#"<svg src="assets/icon.svg" width="24" height="24" />"#;
     let doc = parse(xml).unwrap();
     let handlers = vec![];
     let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();

@@ -1,0 +1,26 @@
+[package]
+name = "dampen-visual-tests"
+version = "0.2.5"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Dampen Contributors"]
+description = "Visual regression testing infrastructure for Dampen UI framework"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/dampen-project/dampen"
+
+[dependencies]
+iced = { version = "0.14", features = ["wgpu", "tokio"] }
+iced_wgpu = "0.14"
+iced_renderer = "0.14"
+wgpu = "23.0"
+image = "0.25"
+tokio = { version = "1.0", features = ["rt", "macros"] }
+thiserror = "1.0"
+dampen-core = { path = "../dampen-core" }
+dampen-iced = { path = "../dampen-iced" }
+
+[dev-dependencies]
+insta = "1.0"
+
+[lints]
+workspace = true

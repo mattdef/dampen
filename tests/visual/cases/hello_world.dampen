@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window title="Hello World Test">
+    <Column spacing="20" padding="30">
+        <Text value="Hello, World!" size="24" />
+        <Text value="This is a visual test case" size="14" />
+    </Column>
+</Window>

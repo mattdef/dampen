@@ -2,9 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [main, develop, "001-framework-technical-specs"]
+    branches:
+      [
+        main,
+        develop,
+        master,
+        "001-framework-technical-specs",
+        "001-harmonize-modes",
+      ]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, master]
 
 env:
   CARGO_TERM_COLOR: always
@@ -72,6 +79,56 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           file: ./cobertura.xml
+
+  visual-tests:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvulkan1 mesa-vulkan-drivers vulkan-tools
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run visual test infrastructure tests
+        run: cargo test -p dampen-visual-tests --verbose
+
+      - name: Validate visual test cases exist
+        run: |
+          if [ ! -d "tests/visual/cases" ]; then
+            echo "Error: tests/visual/cases directory not found"
+            exit 1
+          fi
+
+          TEST_COUNT=$(find tests/visual/cases -name "*.dampen" -type f | wc -l)
+          echo "Found $TEST_COUNT visual test case(s)"
+
+          if [ "$TEST_COUNT" -eq 0 ]; then
+            echo "Error: No visual test cases found in tests/visual/cases/"
+            exit 1
+          fi
+
+          echo "Visual test cases:"
+          find tests/visual/cases -name "*.dampen" -type f -exec basename {} \;
+
+      - name: Verify baseline directory structure
+        run: |
+          mkdir -p tests/visual/baselines
+          echo "Baseline directory structure validated"
+
+      - name: Run visual test validation script
+        run: |
+          chmod +x scripts/generate_baselines.sh
+          ./scripts/generate_baselines.sh
 
   docs:
     name: Documentation

@@ -10,7 +10,7 @@ impl<'a> DampenWidgetBuilder<'a> {
     ///
     /// Supports the following attributes:
     /// - `label`: Text label displayed next to toggler
-    /// - `active`: Boolean binding for active state
+    /// - `toggled`: Boolean binding for toggled state (legacy: `active`)
     /// - `on_toggle`: Handler called on toggle with "true"/"false"
     ///
     /// Events: Toggle (sends HandlerMessage::Handler(name, Some("true"|"false")))
@@ -24,9 +24,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
 
+        // Support both 'toggled' (standard) and 'active' (legacy, normalized by parser)
         let active_str = node
             .attributes
-            .get("active")
+            .get("toggled")
+            .or_else(|| node.attributes.get("active"))
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_else(|| "false".to_string());
 

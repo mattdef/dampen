@@ -35,6 +35,7 @@ pub mod bindings;
 pub mod config;
 pub mod handlers;
 pub mod inventory;
+pub mod status_mapping;
 pub mod subscription;
 pub mod theme;
 pub mod update;

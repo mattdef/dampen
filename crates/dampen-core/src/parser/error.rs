@@ -22,6 +22,8 @@ pub enum ParseErrorKind {
     MissingAttribute,
     /// Schema version is newer than the framework supports
     UnsupportedVersion,
+    /// Attribute is deprecated in favor of a standardized alternative
+    DeprecatedAttribute,
 }
 
 impl std::fmt::Display for ParseError {

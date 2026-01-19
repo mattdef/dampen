@@ -467,10 +467,10 @@ fn test_parse_widget_specific_attributes() {
     assert!(pick_list.attributes.contains_key("options"));
     assert!(pick_list.attributes.contains_key("selected"));
 
-    // Toggler widget attributes
+    // Toggler widget attributes (active is normalized to toggled)
     let toggler = &doc.root.children[6];
     assert!(toggler.attributes.contains_key("label"));
-    assert!(toggler.attributes.contains_key("active"));
+    assert!(toggler.attributes.contains_key("toggled"));
 
     // Image widget attributes
     let image = &doc.root.children[7];
@@ -745,7 +745,7 @@ fn test_parse_id_attribute() {
 
 #[test]
 fn test_parse_mixed_attributes_and_events() {
-    let xml = r#"<button 
+    let xml = r#"<button
         id="submit_btn"
         label="Submit"
         enabled="{is_valid}"
