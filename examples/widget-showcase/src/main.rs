@@ -1,6 +1,9 @@
 //! Widget showcase demonstrating all Dampen UI widgets.
 //!
 //! This example shows all currently supported widgets in Dampen.
+//!
+//! **Note:** This example currently only supports interpreted mode (default).
+//! Codegen mode is not yet supported for multi-view applications.
 
 mod ui;
 

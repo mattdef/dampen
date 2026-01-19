@@ -1,4 +1,7 @@
 //! Todo App example using the #[dampen_app] macro for automatic view management.
+//!
+//! **Note:** This example currently only supports interpreted mode (default).
+//! Codegen mode is not yet supported for multi-view applications with shared state.
 
 mod shared;
 mod ui;

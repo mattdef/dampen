@@ -1,5 +1,14 @@
 //! Styling example using the #[dampen_app] macro for automatic view management.
 
+// Ensure codegen and interpreted are mutually exclusive
+#[cfg(all(feature = "codegen", feature = "interpreted"))]
+compile_error!(
+    "Features 'codegen' and 'interpreted' are mutually exclusive. Use --no-default-features with --features codegen for production builds."
+);
+
+// ============================================================================
+// INTERPRETED MODE (development with hot-reload)
+// ============================================================================
 #[cfg(feature = "interpreted")]
 mod ui;
 
@@ -11,7 +20,7 @@ use dampen_macros::dampen_app;
 #[cfg(all(feature = "interpreted", debug_assertions))]
 use dampen_dev::FileEvent;
 
-/// Application messages
+/// Application messages (interpreted mode)
 #[cfg(feature = "interpreted")]
 #[derive(Clone, Debug)]
 enum Message {
@@ -36,7 +45,8 @@ enum Message {
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
     system_theme_variant = "SystemThemeChanged",
-    exclude = ["theme/*"]
+    default_view = "window",
+    exclude = ["theme/*"],
 )]
 struct StylingApp;
 
@@ -53,50 +63,20 @@ pub fn main() -> iced::Result {
 
 // ============================================================================
 // CODEGEN MODE (production builds with pre-generated code)
-// Note: This mode requires fixing bugs in dampen-core/src/codegen/
-// For now, use interpreted mode with release builds instead.
 // ============================================================================
 #[cfg(all(feature = "codegen", not(feature = "interpreted")))]
 mod ui;
 
-// Include the generated code
+// Include the generated code (contains Message enum, update/view functions, etc.)
 #[cfg(all(feature = "codegen", not(feature = "interpreted")))]
 include!(concat!(env!("OUT_DIR"), "/ui_generated.rs"));
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-use ui::window::Model;
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_init() -> (Model, iced::Task<Message>) {
-    (Model::default(), iced::Task::none())
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_update(model: &mut Model, message: Message) -> iced::Task<Message> {
-    update_model(model, message)
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_view(model: &Model) -> iced::Element<'_, Message> {
-    view_model(model)
-}
 
 #[cfg(all(feature = "codegen", not(feature = "interpreted")))]
 pub fn main() -> iced::Result {
     println!("🚀 Running in codegen mode (production)");
 
-    iced::application(codegen_init, codegen_update, codegen_view)
-        .theme(codegen_theme)
-        .subscription(codegen_subscription)
+    iced::application(window::new_model, window::update_model, window::view_model)
+        .theme(window::theme)
+        .subscription(|_model| window::subscription_model())
         .run()
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_theme(_model: &Model) -> iced::Theme {
-    app_theme()
-}
-
-#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
-fn codegen_subscription(_model: &Model) -> iced::Subscription<Message> {
-    subscription_model()
 }

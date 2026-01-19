@@ -318,7 +318,7 @@ fn generate_border_radius_expr(radius: &BorderRadius) -> TokenStream {
     let bl = radius.bottom_left;
 
     quote! {
-        iced::border::Radius::new([#tl, #tr, #br, #bl])
+        iced::border::Radius::from(#tl).top_right(#tr).bottom_right(#br).bottom_left(#bl)
     }
 }
 
@@ -396,8 +396,11 @@ fn generate_container_style_struct(
     let text_color_expr = props
         .color
         .as_ref()
-        .map(generate_color_expr)
-        .unwrap_or_else(|| quote! { iced::Color::BLACK });
+        .map(|color| {
+            let color_expr = generate_color_expr(color);
+            quote! { Some(#color_expr) }
+        })
+        .unwrap_or_else(|| quote! { None });
 
     let border_expr = props
         .border
@@ -417,6 +420,7 @@ fn generate_container_style_struct(
             text_color: #text_color_expr,
             border: #border_expr,
             shadow: #shadow_expr,
+            snap: false,
         }
     })
 }
@@ -674,6 +678,28 @@ fn generate_button(
         iced::widget::button(iced::widget::text(#label_expr))
     };
 
+    // Handle enabled attribute
+    let enabled_condition = node.attributes.get("enabled").and_then(|attr| match attr {
+        AttributeValue::Static(s) => {
+            // Static enabled values
+            match s.to_lowercase().as_str() {
+                "true" | "1" | "yes" | "on" => Some(quote! { true }),
+                "false" | "0" | "no" | "off" => Some(quote! { false }),
+                _ => Some(quote! { true }), // Default to enabled
+            }
+        }
+        AttributeValue::Binding(binding_expr) => {
+            // Dynamic binding expression - use generate_bool_expr for native boolean
+            let condition_tokens = super::bindings::generate_bool_expr(&binding_expr.expr);
+            Some(condition_tokens)
+        }
+        AttributeValue::Interpolated(_) => {
+            // Interpolated strings treated as enabled if non-empty
+            let expr_tokens = generate_attribute_value(attr, model_ident);
+            Some(quote! { !#expr_tokens.is_empty() && #expr_tokens != "false" && #expr_tokens != "0" })
+        }
+    });
+
     if let Some(event) = on_click {
         let variant_name = to_upper_camel_case(&event.handler);
         let handler_ident = format_ident!("{}", variant_name);
@@ -685,8 +711,26 @@ fn generate_button(
             quote! {}
         };
 
-        button = quote! {
-            #button.on_press(#message_ident::#handler_ident #param_expr)
+        // Generate on_press call based on enabled condition
+        button = match enabled_condition {
+            None => {
+                // No enabled attribute - always enabled
+                quote! {
+                    #button.on_press(#message_ident::#handler_ident #param_expr)
+                }
+            }
+            Some(condition) => {
+                // Conditional enabled - use on_press_maybe
+                quote! {
+                    #button.on_press_maybe(
+                        if #condition {
+                            Some(#message_ident::#handler_ident #param_expr)
+                        } else {
+                            None
+                        }
+                    )
+                }
+            }
         };
     }
 
@@ -759,17 +803,53 @@ fn generate_container(
         .or_else(|| merged_layout.as_ref().and_then(|l| l.padding()));
 
     let mut widget = if widget_type == "container" {
-        if children.len() > 1 {
-            quote! {
-                iced::widget::container(iced::widget::column(vec![#(#children),*]))
-            }
-        } else if let Some(child) = children.first() {
-            quote! {
-                iced::widget::container(#child)
-            }
-        } else {
+        // Container in Iced can only have one child
+        // If multiple children provided, wrap them in a column automatically
+        // Use let binding with explicit type to help inference when child is a column/row
+        if children.is_empty() {
             quote! {
                 iced::widget::container(iced::widget::Space::new())
+            }
+        } else if children.len() == 1 {
+            let child = &children[0];
+            quote! {
+                {
+                    let content: iced::Element<'_, _, _> = #child;
+                    iced::widget::container(content)
+                }
+            }
+        } else {
+            // Multiple children - wrap in a column
+            quote! {
+                {
+                    let content: iced::Element<'_, _, _> = iced::widget::column(vec![#(#children),*]).into();
+                    iced::widget::container(content)
+                }
+            }
+        }
+    } else if widget_type == "scrollable" {
+        // Scrollable in Iced can only have one child
+        // If multiple children provided, wrap them in a column automatically
+        // Use let binding with explicit type to help inference when child is a column/row
+        if children.is_empty() {
+            quote! {
+                iced::widget::scrollable(iced::widget::Space::new())
+            }
+        } else if children.len() == 1 {
+            let child = &children[0];
+            quote! {
+                {
+                    let content: iced::Element<'_, _, _> = #child;
+                    iced::widget::scrollable(content)
+                }
+            }
+        } else {
+            // Multiple children - wrap in a column
+            quote! {
+                {
+                    let content: iced::Element<'_, _, _> = iced::widget::column(vec![#(#children),*]).into();
+                    iced::widget::scrollable(content)
+                }
             }
         }
     } else {

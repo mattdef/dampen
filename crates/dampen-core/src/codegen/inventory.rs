@@ -89,11 +89,9 @@ fn parse_handler_list_from_tokens(tokens: &proc_macro2::TokenStream) -> Vec<Stri
 
 /// Extract full handler metadata from a Rust file.
 ///
-/// This function looks for both the `inventory_handlers!` macro and the corresponding
-/// `_HANDLER_METADATA_*` constants to build complete HandlerInfo structures.
-///
-/// Note: This is a more complete but slower approach. For build scripts, prefer
-/// `extract_handler_names_from_file()` combined with the runtime metadata constants.
+/// This function looks for the `inventory_handlers!` macro to get handler names,
+/// then analyzes the function signatures marked with `#[ui_handler]` to determine
+/// their parameter and return types.
 ///
 /// # Arguments
 ///
@@ -103,20 +101,105 @@ fn parse_handler_list_from_tokens(tokens: &proc_macro2::TokenStream) -> Vec<Stri
 ///
 /// A vector of HandlerSignature objects with complete metadata
 pub fn extract_handler_signatures_from_file(rs_file_path: &Path) -> Vec<HandlerSignature> {
-    let handler_names = extract_handler_names_from_file(rs_file_path);
+    let content = match std::fs::read_to_string(rs_file_path) {
+        Ok(content) => content,
+        Err(_) => return vec![],
+    };
 
-    // For each handler name, we need to find its metadata constant
-    // This is a simplified implementation - full metadata extraction would require
-    // evaluating the const expressions, which is complex
+    let handler_names = extract_handler_names_from_source(&content);
 
+    // Parse the file to extract function signatures
+    let syntax = match syn::parse_file(&content) {
+        Ok(syntax) => syntax,
+        Err(_) => {
+            // Fallback to simple signatures if parsing fails
+            return handler_names
+                .into_iter()
+                .map(|name| HandlerSignature {
+                    name,
+                    param_type: None,
+                    returns_command: false,
+                })
+                .collect();
+        }
+    };
+
+    // Extract signatures for each handler by finding the corresponding function
     handler_names
         .into_iter()
-        .map(|name| HandlerSignature {
-            name,
-            param_type: None,
-            returns_command: false,
+        .map(|name| {
+            // Look for the function with this name and #[ui_handler] attribute
+            if let Some(signature) = find_handler_function_signature(&syntax, &name) {
+                signature
+            } else {
+                // Fallback to simple signature
+                HandlerSignature {
+                    name,
+                    param_type: None,
+                    returns_command: false,
+                }
+            }
         })
         .collect()
+}
+
+/// Find a function with the given name and extract its signature
+fn find_handler_function_signature(
+    syntax: &syn::File,
+    handler_name: &str,
+) -> Option<HandlerSignature> {
+    use syn::{FnArg, Item, ReturnType};
+
+    for item in &syntax.items {
+        if let Item::Fn(func) = item {
+            // Check if this is the function we're looking for
+            if func.sig.ident == handler_name {
+                // Check if it has #[ui_handler] attribute
+                let has_ui_handler_attr = func.attrs.iter().any(|attr| {
+                    attr.path().segments.last().map(|s| s.ident.to_string())
+                        == Some("ui_handler".to_string())
+                });
+
+                if !has_ui_handler_attr {
+                    continue;
+                }
+
+                // Analyze the signature
+                let mut param_type: Option<String> = None;
+                let mut param_count = 0;
+
+                for input in &func.sig.inputs {
+                    if let FnArg::Typed(pat_type) = input {
+                        param_count += 1;
+                        // If there's more than one parameter (first is always &mut Model)
+                        // then the second one is the value parameter
+                        if param_count > 1 {
+                            let ty = &pat_type.ty;
+                            let type_str = quote::quote!(#ty).to_string();
+                            // Clean up the type string (remove extra spaces)
+                            param_type = Some(type_str.replace(" ", ""));
+                        }
+                    }
+                }
+
+                // Check if it returns Command
+                let returns_command = if let ReturnType::Type(_, ty) = &func.sig.output {
+                    let return_str = quote::quote!(#ty).to_string();
+                    return_str.contains("Command")
+                } else {
+                    false
+                };
+
+                return Some(HandlerSignature {
+                    name: handler_name.to_string(),
+                    param_type,
+                    returns_command,
+                });
+            }
+        }
+    }
+
+    None
 }
 
 #[cfg(test)]

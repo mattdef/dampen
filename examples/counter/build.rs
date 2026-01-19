@@ -94,28 +94,16 @@ fn generate_ui_code() {
 
         println!("cargo:rerun-if-changed={}", rs_file.display());
 
-        // Extract handler names from the .rs file using inventory_handlers! macro
-        let handler_names = inventory::extract_handler_names_from_file(&rs_file);
+        // Extract handler signatures with full metadata from the .rs file
+        let handlers = inventory::extract_handler_signatures_from_file(&rs_file);
 
-        if handler_names.is_empty() {
+        if handlers.is_empty() {
             eprintln!(
                 "Warning: No handlers found in {}. Did you forget to add inventory_handlers! macro?",
                 rs_file.display()
             );
             // In strict mode, we continue but warn - handlers might be optional for this view
         }
-
-        // Convert handler names to HandlerSignature objects
-        // Note: For now, we create simple signatures. In the future, we could extract
-        // full metadata from the _HANDLER_METADATA_* constants
-        let handlers: Vec<_> = handler_names
-            .iter()
-            .map(|name| dampen_core::HandlerSignature {
-                name: name.clone(),
-                param_type: None,
-                returns_command: false,
-            })
-            .collect();
 
         // Read and parse the .dampen file
         let dampen_content = match fs::read_to_string(&dampen_file) {

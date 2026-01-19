@@ -62,7 +62,6 @@
                 border_color="#e0e0e0"
                 width="fill"
             />
-            <hover border_color="#3498db" shadow="0 4 12 #00000020" />
         </style>
 
         <!-- Container with gradient background -->
@@ -72,30 +71,6 @@
                 padding="30"
                 border_radius="12"
                 width="fill"
-            />
-        </style>
-
-        <style name="text">
-            <base
-                background="#c5c5c5"
-                color="black"
-                border_radius="5"
-                border_width="1"
-                border_color="#3498db"
-            />
-            <hover
-                background="b4b4b4"
-                color="black"
-                border_width="2"
-                border_color="#3498db"
-                border_radius="5"
-            />
-            <focus
-                background="4c4c4c"
-                color="white"
-                border_width="2"
-                border_color="lightgreen"
-                border_radius="5"
             />
         </style>
     </styles>
@@ -169,7 +144,6 @@
                 <text_input
                         value="{name}"
                         placeholder="Enter your name..."
-                        class="text"
                         on_input="update_name"
                     />
             </column>
@@ -530,8 +504,8 @@
                             size="12"
                             color="#495057"
                         />
-                    <text
-                            value="Bindings: dynamic values with {expression} syntax"
+                        <text
+                            value="Bindings: dynamic values with {count} syntax"
                             size="12"
                             color="#495057"
                         />

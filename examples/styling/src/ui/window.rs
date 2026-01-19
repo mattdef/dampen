@@ -1,4 +1,4 @@
-// Auto-loaded UI module for counter example.
+// Auto-loaded UI module for styling example.
 
 use dampen_core::{AppState, HandlerRegistry};
 use dampen_macros::{UiModel, dampen_ui, inventory_handlers, ui_handler};
@@ -13,30 +13,41 @@ pub struct Model {
     pub name: String,
 }
 
+// ========== HANDLERS ==========
+
 #[ui_handler]
-fn increment(model: &mut Model) {
+pub fn increment(model: &mut Model) {
     model.count += 1;
     println!("Incremented to: {}", model.count);
 }
 
 #[ui_handler]
-fn decrement(model: &mut Model) {
+pub fn decrement(model: &mut Model) {
     model.count -= 1;
     println!("Decremented to: {}", model.count);
 }
 
 #[ui_handler]
-fn reset(model: &mut Model) {
+pub fn reset(model: &mut Model) {
     model.count = 0;
     println!("Reset to: {}", model.count);
+}
+
+#[ui_handler]
+pub fn update_name(model: &mut Model, name: String) {
+    model.name = name;
+    println!("Name updated to: {}", model.name);
 }
 
 // Declare all handlers in this module for build-time code generation
 inventory_handlers! {
     increment,
     decrement,
-    reset
+    reset,
+    update_name
 }
+
+// ========== APP STATE & REGISTRY (Interpreted Mode) ==========
 
 pub fn create_app_state() -> AppState<Model> {
     let document = _app::document();
@@ -66,9 +77,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     });
 
     registry.register_with_value("update_name", |model: &mut dyn std::any::Any, value| {
-        let model = model.downcast_mut::<Model>().unwrap();
-        if let Ok(name) = value.downcast::<String>() {
-            model.name = *name;
+        if let Some(m) = model.downcast_mut::<Model>() {
+            if let Ok(name) = value.downcast::<String>() {
+                update_name(m, *name);
+            }
         }
     });
 

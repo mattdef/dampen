@@ -3,7 +3,7 @@
 // This file auto-loads the corresponding app.dampen XML file.
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{UiModel, dampen_ui};
+use dampen_macros::{UiModel, dampen_ui, inventory_handlers, ui_handler};
 use serde::{Deserialize, Serialize};
 
 #[dampen_ui("window.dampen")]
@@ -11,6 +11,17 @@ mod _app {}
 
 #[derive(Default, UiModel, Serialize, Deserialize, Clone, Debug)]
 pub struct Model;
+
+#[ui_handler]
+pub fn switch_to_settings() -> iced::Task<crate::Message> {
+    use crate::{CurrentView, Message};
+    println!("Switching to settings view");
+    iced::Task::done(Message::SwitchToView(CurrentView::Settings))
+}
+
+inventory_handlers! {
+    switch_to_settings
+}
 
 pub fn create_app_state() -> AppState<Model> {
     let document = _app::document();

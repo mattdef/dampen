@@ -64,6 +64,7 @@ pub fn main() -> iced::Result {
     iced::application(CounterApp::init, CounterApp::update, CounterApp::view)
         .window_size(iced::Size::new(400.0, 300.0))
         .centered()
+        .title("Dampen Counter")
         .subscription(CounterApp::subscription)
         .run()
 }

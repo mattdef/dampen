@@ -4,6 +4,13 @@
 //! Rust code from them for production builds using handler metadata from
 //! the `inventory_handlers!` macro.
 
+#[cfg(feature = "codegen")]
+use std::env;
+#[cfg(feature = "codegen")]
+use std::fs;
+#[cfg(feature = "codegen")]
+use std::path::{Path, PathBuf};
+
 fn main() {
     // Only generate code in codegen mode
     #[cfg(feature = "codegen")]
@@ -24,10 +31,6 @@ fn generate_ui_code() {
     use dampen_core::codegen::{generate_application_with_theme_and_subscriptions, inventory};
     use dampen_core::parser;
     use dampen_core::parser::theme_parser::parse_theme_document;
-    use dampen_core::parser::theme_parser::parse_theme_document;
-    use std::env;
-    use std::fs;
-    use std::path::{Path, PathBuf};
 
     // Get output directory for generated code
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR not set");
@@ -91,28 +94,16 @@ fn generate_ui_code() {
 
         println!("cargo:rerun-if-changed={}", rs_file.display());
 
-        // Extract handler names from the .rs file using inventory_handlers! macro
-        let handler_names = inventory::extract_handler_names_from_file(&rs_file);
+        // Extract handler signatures with full metadata from the .rs file
+        let handlers = inventory::extract_handler_signatures_from_file(&rs_file);
 
-        if handler_names.is_empty() {
+        if handlers.is_empty() {
             eprintln!(
                 "Warning: No handlers found in {}. Did you forget to add inventory_handlers! macro?",
                 rs_file.display()
             );
             // In strict mode, we continue but warn - handlers might be optional for this view
         }
-
-        // Convert handler names to HandlerSignature objects
-        // Note: For now, we create simple signatures. In the future, we could extract
-        // full metadata from the _HANDLER_METADATA_* constants
-        let handlers: Vec<_> = handler_names
-            .iter()
-            .map(|name| dampen_core::HandlerSignature {
-                name: name.clone(),
-                param_type: None,
-                returns_command: false,
-            })
-            .collect();
 
         // Read and parse the .dampen file
         let dampen_content = match fs::read_to_string(&dampen_file) {

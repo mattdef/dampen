@@ -33,6 +33,28 @@ pub fn generate_expr(expr: &Expr) -> TokenStream {
     }
 }
 
+/// Generate Rust code for a boolean expression
+///
+/// This function is like generate_expr but produces native boolean values
+/// instead of converting to String. Use for conditions like `enabled="{count > 0}"`.
+///
+/// # Arguments
+/// * `expr` - The expression to generate code for
+///
+/// # Returns
+/// Generated code as a TokenStream that produces a bool
+pub fn generate_bool_expr(expr: &Expr) -> TokenStream {
+    match expr {
+        Expr::FieldAccess(field_access) => generate_field_access_raw(field_access),
+        Expr::SharedFieldAccess(shared_access) => generate_shared_field_access_raw(shared_access),
+        Expr::MethodCall(method_call) => generate_method_call_raw(method_call),
+        Expr::BinaryOp(binary_op) => generate_binary_op_raw(binary_op),
+        Expr::UnaryOp(unary_op) => generate_unary_op_raw(unary_op),
+        Expr::Conditional(conditional) => generate_conditional_raw(conditional),
+        Expr::Literal(literal) => generate_literal_raw(literal),
+    }
+}
+
 /// Validate that an expression can be inlined
 ///
 /// Returns Err if the expression contains unsupported constructs for codegen
@@ -263,4 +285,107 @@ pub fn generate_interpolated(parts: &[String]) -> TokenStream {
     let lit = proc_macro2::Literal::string(&format_string);
 
     quote! { format!(#lit, #(#arg_exprs),*) }
+}
+
+// ============================================================================
+// Raw value generation (without .to_string() conversion)
+// Used for boolean expressions in conditions like enabled="{count > 0}"
+// ============================================================================
+
+/// Generate field access without .to_string() conversion
+fn generate_field_access_raw(expr: &FieldAccessExpr) -> TokenStream {
+    if expr.path.is_empty() {
+        return quote! { false };
+    }
+
+    let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
+    quote! { model.#(#field_access).* }
+}
+
+/// Generate shared field access without .to_string() conversion
+fn generate_shared_field_access_raw(expr: &SharedFieldAccessExpr) -> TokenStream {
+    if expr.path.is_empty() {
+        return quote! { false };
+    }
+
+    let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
+    quote! { shared.#(#field_access).* }
+}
+
+/// Generate method call without .to_string() conversion
+fn generate_method_call_raw(expr: &MethodCallExpr) -> TokenStream {
+    let receiver_tokens = generate_bool_expr(&expr.receiver);
+    let method_ident = format_ident!("{}", &expr.method);
+    let arg_tokens: Vec<_> = expr.args.iter().map(generate_bool_expr).collect();
+
+    quote! { #receiver_tokens.#method_ident(#(#arg_tokens),*) }
+}
+
+/// Generate binary operation without .to_string() conversion
+fn generate_binary_op_raw(expr: &BinaryOpExpr) -> TokenStream {
+    let left = generate_bool_expr(&expr.left);
+    let right = generate_bool_expr(&expr.right);
+    let op = match expr.op {
+        BinaryOp::Eq => quote! { == },
+        BinaryOp::Ne => quote! { != },
+        BinaryOp::Lt => quote! { < },
+        BinaryOp::Le => quote! { <= },
+        BinaryOp::Gt => quote! { > },
+        BinaryOp::Ge => quote! { >= },
+        BinaryOp::And => quote! { && },
+        BinaryOp::Or => quote! { || },
+        BinaryOp::Add => quote! { + },
+        BinaryOp::Sub => quote! { - },
+        BinaryOp::Mul => quote! { * },
+        BinaryOp::Div => quote! { / },
+    };
+
+    quote! { #left #op #right }
+}
+
+/// Generate unary operation without .to_string() conversion
+fn generate_unary_op_raw(expr: &UnaryOpExpr) -> TokenStream {
+    let operand = generate_bool_expr(&expr.operand);
+    let op = match expr.op {
+        UnaryOp::Not => quote! { ! },
+        UnaryOp::Neg => quote! { - },
+    };
+
+    quote! { #op #operand }
+}
+
+/// Generate conditional expression without .to_string() conversion
+fn generate_conditional_raw(expr: &ConditionalExpr) -> TokenStream {
+    let condition = generate_bool_expr(&expr.condition);
+    let then_branch = generate_bool_expr(&expr.then_branch);
+    let else_branch = generate_bool_expr(&expr.else_branch);
+
+    quote! {
+        if #condition {
+            #then_branch
+        } else {
+            #else_branch
+        }
+    }
+}
+
+/// Generate literal without .to_string() conversion
+fn generate_literal_raw(expr: &LiteralExpr) -> TokenStream {
+    match expr {
+        LiteralExpr::String(s) => {
+            let lit = proc_macro2::Literal::string(s);
+            quote! { #lit }
+        }
+        LiteralExpr::Integer(n) => {
+            let lit = proc_macro2::Literal::i64_unsuffixed(*n);
+            quote! { #lit }
+        }
+        LiteralExpr::Float(f) => {
+            let lit = proc_macro2::Literal::f64_unsuffixed(*f);
+            quote! { #lit }
+        }
+        LiteralExpr::Bool(b) => {
+            quote! { #b }
+        }
+    }
 }
