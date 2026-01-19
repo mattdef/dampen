@@ -232,7 +232,8 @@ Displays SVG content.
 |-----------|------|---------|-------------|
 | `label` | string/binding | - | Button text |
 | `on_click` | handler | - | Click handler name |
-| `on_press` | handler | - | Press handler |
+| `on_press` | handler | - | Press handler (mouse down / touch start) |
+| `on_release` | handler | - | Release handler (mouse up / touch end) |
 | `enabled` | bool/binding | true | Interactive state |
 | `style` | style-ref | default | Style reference |
 | `width` | length | auto | Width constraint |
@@ -255,6 +256,7 @@ Displays SVG content.
 | `placeholder` | string | "" | Placeholder text |
 | `on_input` | handler | - | Keystroke handler |
 | `on_submit` | handler | - | Enter key handler |
+| `on_release` | handler | - | Focus lost handler |
 | `password` | bool | false | Mask as password |
 | `enabled` | bool/binding | true | Editable state |
 | `width` | length | auto | Width constraint |
@@ -438,6 +440,113 @@ Render a list of items by iterating over a collection.
 
 ---
 
+## Advanced Widgets
+
+### `<combobox>` - Combo Box Selection
+
+Combines a text input with a dropdown list for selection.
+
+```xml
+<combobox
+    options="Option1,Option2,Option3"
+    selected="{current_option}"
+    placeholder="Choose an option..."
+    on_select="handle_select"
+/>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `options` | string | required | Comma-separated list of options |
+| `selected` | string/binding | - | Currently selected value |
+| `placeholder` | string | "" | Placeholder text |
+| `on_select` | handler | - | Selection handler (receives selected value) |
+| `enabled` | bool/binding | true | Interactive state |
+| `width` | length | auto | Width constraint |
+
+### `<grid>` - Grid Layout
+
+Arranges children in a grid with a specified number of columns.
+
+```xml
+<grid columns="3" spacing="10">
+    <text value="Cell 1" />
+    <text value="Cell 2" />
+    <text value="Cell 3" />
+    <text value="Cell 4" />
+    <text value="Cell 5" />
+    <text value="Cell 6" />
+</grid>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `columns` | number | required | Number of columns (1-20) |
+| `spacing` | number | 10 | Spacing between cells |
+| `width` | length | auto | Width constraint |
+| `height` | length | auto | Height constraint |
+
+### `<tooltip>` - Tooltip Overlay
+
+Displays a tooltip when hovering over its child element.
+
+```xml
+<tooltip message="Help text here" position="top">
+    <button label="Hover me" />
+</tooltip>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `message` | string | required | Tooltip text content |
+| `position` | position | follow_cursor | Tooltip position: `top`, `bottom`, `left`, `right`, `follow_cursor` |
+| `delay` | number | 300 | Delay in ms before tooltip appears |
+| `style` | style-ref | - | Style reference for tooltip |
+
+### `<float>` - Floating Container
+
+Positions a child element absolutely relative to its parent.
+
+```xml
+<container>
+    <text value="Main content" />
+    <float position="TopRight" offset_x="10" offset_y="10">
+        <button label="X" on_click="close" />
+    </float>
+</container>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `position` | position | TopLeft | Anchor position: `TopLeft`, `TopRight`, `BottomLeft`, `BottomRight` |
+| `offset_x` | number | 0 | Horizontal offset in pixels |
+| `offset_y` | number | 0 | Vertical offset in pixels |
+| `z_index` | number | 0 | Stacking order |
+
+### `<canvas>` - Canvas Drawing
+
+Renders custom graphics using a drawing program (experimental).
+
+```xml
+<canvas width="400" height="300" program="{drawing_program}" />
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | number | required | Canvas width (50-4000px) |
+| `height` | number | required | Canvas height (50-4000px) |
+| `program` | binding | required | Reference to a `CanvasProgram` |
+| `style` | style-ref | - | Style reference |
+
+**Note:** The canvas widget is experimental. Requires schema v1.1 or higher.
+
+---
+
 ## Binding Expression Syntax
 
 ### Basic Field Binding
@@ -586,6 +695,10 @@ Calls methods on bound values.
 | `<=` | Less or equal | `{score <= 100}` |
 | `>` | Greater than | `{items.len() > 0}` |
 | `>=` | Greater or equal | `{progress >= 100}` |
+| `+` | Addition | `{a + b}` |
+| `-` | Subtraction | `{price - discount}` |
+| `*` | Multiplication | `{quantity * unit_price}` |
+| `/` | Division | `{total / count}` |
 | `&&` | Logical AND | `{active && visible}` |
 | `\|\|` | Logical OR | `{error \|\| warning}` |
 | `!` | Logical NOT | `{!is_valid}` |
@@ -685,16 +798,15 @@ fn fetch_data(model: &mut Model) -> Command<Message> {
 
 ```xml
 <style_classes>
-    <style name="button_primary" 
+    <style name="button_primary"
         extends="button_base"
         background="#3498db"
         color="#ffffff"
         padding="12 24"
-        border_radius="6">
-        <hover background="#2980b9" />
-        <active background="#21618c" />
-        <disabled opacity="0.5" />
-    </style>
+        border_radius="6"
+        hover:background="#2980b9"
+        active:background="#21618c"
+        disabled:opacity="0.5" />
 </style_classes>
 ```
 
@@ -721,11 +833,11 @@ fn fetch_data(model: &mut Model) -> Command<Message> {
 - `opacity`: 0.0-1.0
 - `transform`: transform operations
 
-**State Variants (prefixed):**
-- `hover:*`: hover state (e.g., `hover:background`, `hover:color`)
-- `focus:*`: focus state (e.g., `focus:border_color`)
-- `active:*`: active state (e.g., `active:background`)
-- `disabled:*`: disabled state (e.g., `disabled:opacity`)
+**State Variants (prefixed with `:`):**
+- `hover:*`: hover state (e.g., `hover:background="#2980b9"`, `hover:color="#fff"`)
+- `focus:*`: focus state (e.g., `focus:border_color="#3498db"`)
+- `active:*`: active state (e.g., `active:background="#21618c"`)
+- `disabled:*`: disabled state (e.g., `disabled:opacity="0.5"`)
 
 **Responsive (prefixed):**
 - `mobile:*`: < 640px
@@ -752,17 +864,12 @@ fn fetch_data(model: &mut Model) -> Command<Message> {
 State variants can be defined using child elements or prefixed attributes:
 
 ```xml
-<!-- Child elements -->
-<style name="btn" background="#3498db">
-    <hover background="#2980b9" />
-    <active background="#21618c" />
-</style>
-
-<!-- Prefixed attributes -->
-<style name="btn" 
+<!-- Prefixed attributes (recommended) -->
+<style name="btn"
     background="#3498db"
-    hover_background="#2980b9"
-    active_background="#21618c" />
+    hover:background="#2980b9"
+    active:background="#21618c"
+    disabled:opacity="0.5" />
 ```
 
 ### Responsive Design
@@ -839,12 +946,13 @@ Version numbers follow the `major.minor` format:
 - Decorative: space, rule
 - Bindings: field access, method calls, conditionals, formatting
 - Events: click, input, change, toggle, submit, select
+- ComboBox widget for dropdown selection with text input
+- Grid layout widget for grid-based layouts
+- Tooltip widget for hover information overlays
+- Float widget for absolute positioning
 
-**Version 1.1** (Experimental): Additional features
-- Canvas widget for custom drawing (⚠️ experimental, not fully functional)
-- Grid layout widget (planned)
-- Tooltip widget (planned)
-- ComboBox widget (planned)
+**Version 1.1** (Available): Additional features
+- Canvas widget for custom drawing (still experimental)
 
 **Note**: Canvas widget is currently marked as v1.1 to indicate it's experimental. While parseable in v1.0 documents, it will produce a validation warning and may not render correctly.
 

@@ -660,40 +660,35 @@ Four states are supported:
 ### Format 2: Prefixed Attributes
 
 ```xml
-<style name="button_primary" 
+<style name="button_primary"
     background="#3498db"
     color="#ffffff"
     padding="12 24"
     border_radius="6"
-    hover_background="#2980b9"
-    active_background="#21618c"
-    disabled_opacity="0.5" />
+    hover:background="#2980b9"
+    active:background="#21618c"
+    disabled:opacity="0.5" />
 ```
 
 ### Using State Classes
 
 ```xml
 <style_classes>
-    <style name="btn" 
+    <style name="btn"
         background="#3498db"
-        hover_background="#2980b9"
-        active_background="#21618c"
-        disabled_opacity="0.5" />
+        hover:background="#2980b9"
+        active:background="#21618c"
+        disabled:opacity="0.5" />
 </style_classes>
-
-<column>
-    <button class="btn" label="Click Me" on_click="handler" />
-    <button class="btn" label="Disabled" disabled="true" />
-</column>
 ```
 
 ### Inline State Styles
 
 ```xml
-<button 
+<button
     background="#3498db"
-    hover_background="#2980b9"
-    active_background="#21618c"
+    hover:background="#2980b9"
+    active:background="#21618c"
     label="Interactive" />
 ```
 
@@ -882,14 +877,12 @@ If upgrading from before state-based styling:
 **After:**
 ```xml
 <style_classes>
-    <style name="btn" 
+    <style name="btn"
         background="#3498db"
-        hover_background="#2980b9">
+        hover:background="#2980b9">
         <active background="#21618c" />
     </style>
 </style_classes>
-
-<button class="btn" label="Click" on_click="handler" />
 ```
 
 ---
@@ -907,10 +900,10 @@ All theme attributes can be used in:
 
 All inline style attributes plus:
 - `extends` - inherit from another class
-- `hover_*` - hover state variants
-- `focus_*` - focus state variants
-- `active_*` - active state variants
-- `disabled_*` - disabled state variants
+- `hover:*` - hover state variants (e.g., `hover:background="#..."`)
+- `focus:*` - focus state variants (e.g., `focus:border_color="#..."`)
+- `active:*` - active state variants (e.g., `active:background="#..."`)
+- `disabled:*` - disabled state variants (e.g., `disabled:opacity="0.5"`)
 
 ### Widget Attributes
 
