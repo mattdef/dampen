@@ -24,7 +24,7 @@ members = [
 [workspace.package]
 version = "0.2.6"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 authors = ["Mattdef <mattdef@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/mattdef/dampen"

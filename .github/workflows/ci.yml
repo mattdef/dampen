@@ -50,7 +50,7 @@ jobs:
       - name: Install Rust (MSRV)
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: "1.85"
+          toolchain: "1.88"
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
