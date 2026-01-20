@@ -299,8 +299,8 @@ Dampen supports two compilation modes optimized for different use cases:
 # Development mode (automatic)
 dampen run
 
-# Explicit interpreted mode
-dampen run --features interpreted
+# Debug build (interpreted)
+dampen build
 ```
 
 **Hot-reload example:**
@@ -316,7 +316,7 @@ fn subscription(app: &App) -> Subscription<Message> {
 
 ### Codegen Mode (Production)
 
-**Enabled by default in release builds**
+**Enabled with --release flag**
 
 - ✅ **Zero runtime overhead**: All XML parsed at compile time
 - ✅ **Optimal performance**: Direct widget construction
@@ -324,11 +324,14 @@ fn subscription(app: &App) -> Subscription<Message> {
 - ✅ **Build-time validation**: Catch errors before deployment
 
 ```bash
-# Production build (automatic codegen)
-dampen release
+# Release run (codegen)
+dampen run --release
 
-# Debug build with codegen
-dampen build
+# Release build (codegen)
+dampen build --release
+
+# Alternative: release command (alias for build --release)
+dampen release
 ```
 
 **How it works:**
@@ -339,15 +342,17 @@ dampen build
 
 ### Mode Selection
 
-Mode selection is **automatic** based on build profile:
+Mode selection is **automatic** based on `--release` flag:
 
 | CLI Command | Mode | Use Case |
 |-------------|------|----------|
 | `dampen new` | - | Create new project |
 | `dampen add` | - | Scaffold new UI window |
 | `dampen run` | Interpreted | Development with hot-reload |
-| `dampen build` | Codegen | Debug builds with codegen |
-| `dampen release` | Codegen | Production deployments (optimized) |
+| `dampen run --release` | Codegen | Production testing |
+| `dampen build` | Interpreted | Debug builds |
+| `dampen build --release` | Codegen | Production builds (optimized) |
+| `dampen release` | Codegen | Alias for `build --release` |
 | `dampen test` | Interpreted | Fast test iteration |
 | `dampen check` | - | Validate XML syntax |
 
@@ -363,6 +368,9 @@ dampen test --release
 # Verbose output
 dampen build -v
 ```
+
+> **Note**: By default, `dampen run` and `dampen build` use interpreted mode for fast development.
+> Use `--release` flag to enable codegen mode for production builds.
 
 ### Migration Guide
 

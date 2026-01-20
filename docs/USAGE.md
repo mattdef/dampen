@@ -104,7 +104,7 @@ vim src/ui/window.dampen
 # 2. Validate XML syntax
 dampen check
 
-# 3. Run with hot-reload
+# 3. Run with hot-reload (interpreted mode)
 dampen run
 
 # 4. Make changes to XML - UI updates automatically!
@@ -112,7 +112,9 @@ dampen run
 # 5. Run tests
 dampen test
 
-# 6. Build for production
+# 6. Build for production (codegen)
+dampen build --release
+# or equivalently:
 dampen release
 ```
 
@@ -151,11 +153,14 @@ dampen new my-app
 
 ### `dampen run`
 
-Run your application in development mode with hot-reload.
+Run your application in interpreted mode with hot-reload (default) or codegen mode with --release.
 
 ```bash
-# Basic run
+# Debug mode (interpreted with hot-reload)
 dampen run
+
+# Release mode (codegen optimized)
+dampen run --release
 
 # Pass arguments to your application
 dampen run -- --my-arg value
@@ -171,21 +176,26 @@ dampen run -v
 - `-p, --package <PACKAGE>` - Package to run (workspace support)
 - `-v, --verbose` - Show detailed output
 - `-- <args>` - Pass arguments to the application
+- `--release` - Use codegen mode with release optimizations
 
 **Features:**
-- Hot-reload enabled (XML changes applied automatically)
-- Interpreted mode (fast startup, no rebuild)
+- Debug mode: Hot-reload enabled (XML changes applied automatically)
+- Debug mode: Interpreted mode (fast startup, no rebuild)
+- Release mode: Codegen mode (zero runtime overhead, optimized)
 - Development-optimized performance
 
 ---
 
 ### `dampen build`
 
-Build your application in debug mode with codegen.
+Build your application in interpreted mode (default) or codegen mode (with --release).
 
 ```bash
-# Basic build
+# Debug build (interpreted)
 dampen build
+
+# Release build (codegen)
+dampen build --release
 
 # Build specific package
 dampen build -p my-app
@@ -201,19 +211,23 @@ dampen build -v
 - `-p, --package <PACKAGE>` - Package to build
 - `--features <FEATURES>` - Additional features (comma-separated)
 - `-v, --verbose` - Show detailed output
+- `--release` - Use codegen mode with release optimizations
 
 **Output:**
-- Debug binary in `target/debug/`
-- Includes codegen (compile-time XML processing)
-- No optimizations (fast compilation)
+- Debug mode: Binary in `target/debug/`, interpreted mode (fast iteration)
+- Release mode: Binary in `target/release/`, codegen mode (zero overhead)
 
-**Use Case:** Testing production codegen behavior without optimization overhead.
+**Use Case:**
+- Debug: Fast development iteration
+- Release: Production builds with zero runtime overhead
+
+> **Note**: Use `dampen build --release` or `dampen release` for optimized production builds.
 
 ---
 
 ### `dampen release`
 
-Build optimized production binary.
+Build optimized production binary with codegen (alias for `dampen build --release`).
 
 ```bash
 # Basic release build
@@ -242,6 +256,41 @@ dampen release -v
 - Ready for deployment
 
 **Use Case:** Production builds, performance testing, deployment.
+
+> **Note**: This command is an alias for `dampen build --release` and produces
+> identical results. It provides a convenient shortcut for production builds.
+
+---
+
+### Framework Development vs Application Development
+
+**For Application Developers (using `dampen` CLI):**
+
+```bash
+# Development
+dampen run                    # Interpreted with hot-reload
+dampen build                  # Debug build
+
+# Production
+dampen build --release        # Codegen optimized
+dampen release                # Alias for build --release
+```
+
+**For Framework Developers (using `cargo` directly):**
+
+```bash
+# Development/testing interpreted mode
+cargo run -p counter
+cargo build -p hello-world
+
+# Development/testing codegen mode
+cargo build -p todo-app --release --no-default-features --features codegen
+cargo run -p widget-showcase --release --no-default-features --features codegen
+```
+
+> **Recommendation**:
+> - Use `dampen` CLI when building applications **with** Dampen
+> - Use `cargo` commands when contributing **to** Dampen framework
 
 ---
 

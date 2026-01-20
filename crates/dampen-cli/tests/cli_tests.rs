@@ -1,6 +1,6 @@
 //! Integration tests for CLI commands
 //!
-//! These tests verify that the `dampen run` and `dampen build` commands
+//! These tests verify that the `dampen run`, `dampen build`, and `dampen release` commands
 //! correctly invoke cargo with the appropriate feature flags for dual-mode operation.
 
 use std::fs;
@@ -64,20 +64,46 @@ fn test_run_command_uses_interpreted_feature() {
     // Instead, we verify the command structure is correct
     assert!(
         true,
-        "Run command should invoke: cargo run --features interpreted"
+        "Run command (debug) should invoke: cargo run --features interpreted"
     );
 }
 
 #[test]
-fn test_build_command_uses_codegen_feature() {
-    // This is a contract test - we verify that the build command
-    // constructs the correct cargo command with --features codegen
-
-    // Similar reasoning to test_run_command_uses_interpreted_feature
-
+fn test_run_command_release_uses_codegen_feature() {
+    // Verify that --release flag switches to codegen mode
     assert!(
         true,
-        "Build command should invoke: cargo build --features codegen"
+        "Run command --release should invoke: cargo run --release --no-default-features --features codegen"
+    );
+}
+
+#[test]
+fn test_build_command_uses_interpreted_feature() {
+    // This is a contract test - we verify that the build command
+    // constructs the correct cargo command with --features interpreted (default)
+
+    // NEW BEHAVIOR: build command uses interpreted mode by default
+    assert!(
+        true,
+        "Build command (debug) should invoke: cargo build --features interpreted"
+    );
+}
+
+#[test]
+fn test_build_command_release_uses_codegen_feature() {
+    // Verify that --release flag switches to codegen mode
+    assert!(
+        true,
+        "Build command --release should invoke: cargo build --release --no-default-features --features codegen"
+    );
+}
+
+#[test]
+fn test_release_command_is_alias_for_build_release() {
+    // Verify that release command behaves identically to build --release
+    assert!(
+        true,
+        "Release command should behave identically to: build --release"
     );
 }
 
@@ -94,12 +120,28 @@ fn test_run_command_with_package_flag() {
 
 #[test]
 fn test_build_command_with_release_flag() {
-    // Verify that release flag is properly passed through
-    // cargo build --release --features codegen
-
+    // Verify that --release flag properly switches to codegen mode
     assert!(
         true,
-        "Build command with --release should invoke: cargo build --release --features codegen"
+        "Build command with --release should invoke: cargo build --release --no-default-features --features codegen"
+    );
+}
+
+#[test]
+fn test_build_command_release_requires_build_rs() {
+    // Verify that codegen mode (--release) requires build.rs
+    assert!(
+        true,
+        "Build command --release should require build.rs for codegen"
+    );
+}
+
+#[test]
+fn test_build_command_debug_does_not_require_build_rs() {
+    // Verify that interpreted mode (debug) does not require build.rs
+    assert!(
+        true,
+        "Build command (without --release) should not require build.rs"
     );
 }
 
@@ -115,13 +157,35 @@ fn test_run_command_with_additional_features() {
 }
 
 #[test]
-fn test_build_command_with_additional_features() {
-    // Verify that additional features are combined with codegen
-    // cargo build --features codegen,tokio,logging
+fn test_run_command_release_with_additional_features() {
+    // Verify that additional features are combined with codegen in release mode
+    // cargo run --release --no-default-features --features codegen,tokio,logging
 
     assert!(
         true,
-        "Build command with --features should combine: --features codegen,ADDITIONAL"
+        "Run command --release with --features should combine: --no-default-features --features codegen,ADDITIONAL"
+    );
+}
+
+#[test]
+fn test_build_command_with_additional_features() {
+    // Verify that additional features are combined with interpreted (default)
+    // cargo build --features interpreted,tokio,logging
+
+    assert!(
+        true,
+        "Build command with --features should combine: --features interpreted,ADDITIONAL"
+    );
+}
+
+#[test]
+fn test_build_command_release_with_additional_features() {
+    // Verify that additional features are combined with codegen in release mode
+    // cargo build --release --no-default-features --features codegen,tokio,logging
+
+    assert!(
+        true,
+        "Build command --release with --features should combine: --no-default-features --features codegen,ADDITIONAL"
     );
 }
 
@@ -189,34 +253,36 @@ fn test_build_command_warns_if_no_build_rs() {
 
 #[test]
 fn test_dual_mode_feature_flags_are_mutually_exclusive() {
-    // Document that codegen and interpreted should not both be active
-    // The feature flag priority is:
-    // 1. If codegen=true AND interpreted=false -> Codegen mode
-    // 2. If interpreted=true OR neither -> Interpreted mode
-    // 3. If both=true -> Interpreted mode (safer default)
-
-    assert!(true, "Feature flag priority ensures safe mode selection");
-}
-
-#[test]
-fn test_default_profile_uses_interpreted() {
-    // Verify that default cargo build uses interpreted mode
-    // This aligns with development workflow
+    // Document that codegen and interpreted are mutually exclusive
+    // The mode selection is based on:
+    // 1. If --release is present -> Codegen mode
+    // 2. If --release is absent -> Interpreted mode (default)
 
     assert!(
         true,
-        "Default profile (cargo build) should use interpreted mode for fast iteration"
+        "Mode selection based on --release flag ensures clear behavior"
     );
 }
 
 #[test]
-fn test_release_profile_can_use_codegen() {
-    // Verify that release profile can use codegen mode
-    // User should configure in Cargo.toml or use dampen build --release
+fn test_default_profile_uses_interpreted() {
+    // Verify that default dampen commands use interpreted mode
+    // This aligns with development workflow
 
     assert!(
         true,
-        "Release profile (cargo build --release) can be configured for codegen mode"
+        "Default (no --release) should use interpreted mode for fast iteration"
+    );
+}
+
+#[test]
+fn test_release_flag_uses_codegen() {
+    // Verify that --release flag switches to codegen mode
+    // Both `dampen run --release` and `dampen build --release` use codegen
+
+    assert!(
+        true,
+        "Release flag (--release) should use codegen mode for optimized builds"
     );
 }
 

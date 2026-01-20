@@ -5,9 +5,6 @@
 //! This command wraps `cargo build --release` with the `codegen` feature flag,
 //! providing optimized production builds with zero runtime overhead.
 
-use std::path::Path;
-use std::process::Command;
-
 /// Release command arguments
 #[derive(clap::Args)]
 pub struct ReleaseArgs {
@@ -26,15 +23,12 @@ pub struct ReleaseArgs {
     /// Target directory for build artifacts
     #[arg(long)]
     target_dir: Option<String>,
-
-    /// Use interpreted mode instead of codegen (recommended until codegen is fully implemented)
-    #[arg(long)]
-    interpreted: bool,
 }
 
 /// Execute the release command
 ///
-/// Builds the application in production mode with full optimizations.
+/// This is an alias for `dampen build --release` that builds the application
+/// in production mode with codegen and full optimizations.
 ///
 /// # Mode Behavior
 ///
@@ -46,7 +40,7 @@ pub struct ReleaseArgs {
 /// # Examples
 ///
 /// ```bash
-/// # Basic release build
+/// # Basic release build (codegen)
 /// dampen release
 ///
 /// # Build specific package in workspace
@@ -57,92 +51,21 @@ pub struct ReleaseArgs {
 ///
 /// # Custom target directory
 /// dampen release --target-dir ./dist
+///
+/// # Note: This is equivalent to `dampen build --release`
 /// ```
 pub fn execute(args: &ReleaseArgs) -> Result<(), String> {
-    // Check if Cargo.toml exists
-    if !Path::new("Cargo.toml").exists() {
-        return Err("Cargo.toml not found. Are you in a Rust project directory?".to_string());
-    }
-
-    // Check if build.rs exists (only required for codegen mode)
-    if !args.interpreted && !Path::new("build.rs").exists() {
-        return Err(
-            "build.rs not found. This project may not be configured for codegen builds.\n\
-             Tip: Use --interpreted flag for release builds without codegen."
-                .to_string(),
-        );
-    }
-
-    let mode_name = if args.interpreted {
-        "interpreted"
-    } else {
-        "codegen"
-    };
+    // Note: This is an alias for dampen build --release
+    // Delegate to build module's release function
 
     if args.verbose {
-        eprintln!(
-            "Building for production (release mode with {})...",
-            mode_name
-        );
+        eprintln!("'dampen release' is an alias for 'dampen build --release'");
     }
 
-    // Build the cargo command
-    let mut cmd = Command::new("cargo");
-    cmd.arg("build");
-    cmd.arg("--release");
-
-    // Add package specification if provided
-    if let Some(ref package) = args.package {
-        cmd.arg("-p").arg(package);
-    }
-
-    // Add target directory if provided
-    if let Some(ref target_dir) = args.target_dir {
-        cmd.arg("--target-dir").arg(target_dir);
-    }
-
-    if args.verbose {
-        cmd.arg("--verbose");
-    }
-
-    // Build features list based on mode
-    let all_features = if args.interpreted {
-        // Interpreted mode: use default features (interpreted)
-        let mut features = vec!["interpreted".to_string()];
-        features.extend(args.features.clone());
-        features
-    } else {
-        // Codegen mode: disable defaults and enable codegen
-        cmd.arg("--no-default-features");
-        let mut features = vec!["codegen".to_string()];
-        features.extend(args.features.clone());
-        features
-    };
-
-    // Add features flag
-    cmd.arg("--features").arg(all_features.join(","));
-
-    // Execute cargo build --release
-    if args.verbose {
-        let features_str = all_features.join(",");
-        eprintln!(
-            "Executing: cargo build --release --features {}",
-            features_str
-        );
-    }
-
-    let status = cmd
-        .status()
-        .map_err(|e| format!("Failed to execute cargo: {}", e))?;
-
-    if !status.success() {
-        return Err("Release build failed".to_string());
-    }
-
-    if args.verbose {
-        eprintln!("Release build successful! Binary is in target/release/");
-    }
-
-    eprintln!("Production build completed successfully!");
-    Ok(())
+    crate::commands::build::execute_release_build(
+        args.package.clone(),
+        args.features.clone(),
+        args.verbose,
+        args.target_dir.clone(),
+    )
 }

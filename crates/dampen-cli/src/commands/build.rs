@@ -34,26 +34,33 @@ pub struct BuildArgs {
     /// Additional features to enable (beyond codegen)
     #[arg(long, value_delimiter = ',')]
     features: Vec<String>,
+
+    /// Build in release mode with codegen
+    #[arg(long)]
+    release: bool,
 }
 
 /// Execute the build command
 ///
-/// Builds the application in debug mode with codegen.
+/// Builds the application:
+/// - Debug mode (default): Interpreted mode with hot-reload support
+/// - Release mode (--release): Codegen mode with full optimizations
 ///
 /// # Mode Behavior
 ///
-/// - **Debug Mode with Codegen**: Compile-time code generation without optimizations
-/// - Faster compilation than release mode
-/// - Useful for debugging production codegen behavior
-/// - Use `dampen release` for optimized production builds
+/// - **Debug Mode** (default): Interpreted mode, fast iteration for development
+/// - **Release Mode** (--release): Codegen mode with zero runtime overhead
 ///
 /// # Examples
 ///
 /// ```bash
-/// # Basic debug build with codegen
+/// # Debug build (interpreted)
 /// dampen build
 ///
-/// # Build specific package in workspace
+/// # Release build (codegen optimized)
+/// dampen build --release
+///
+/// # Build specific package
 /// dampen build -p my-app
 ///
 /// # Enable additional features
@@ -66,13 +73,28 @@ pub fn execute(args: &BuildArgs) -> Result<(), String> {
 fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     use std::process::Command;
 
+    let mode = if args.release {
+        "codegen"
+    } else {
+        "interpreted"
+    };
+
     if args.verbose {
-        eprintln!("Running debug build with codegen...");
+        eprintln!("Running {} build...", mode);
     }
 
-    if !Path::new("build.rs").exists() {
+    // Check build.rs only for codegen mode
+    // If package is specified, also check in examples/ directory
+    let build_rs_exists = Path::new("build.rs").exists()
+        || args.package.as_ref().map_or(false, |pkg| {
+            Path::new("examples").join(pkg).join("build.rs").exists()
+        });
+
+    if args.release && !build_rs_exists {
         return Err(
-            "build.rs not found. This project may not be configured for codegen builds."
+            "build.rs not found. Codegen mode requires build.rs for code generation.\n\
+             Tip: Use 'dampen build' (without --release) for interpreted mode,\n\
+             or ensure you're in the correct project directory."
                 .to_string(),
         );
     }
@@ -92,17 +114,34 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
         cmd.arg("--verbose");
     }
 
-    // Disable default features to avoid conflict between codegen and interpreted
-    cmd.arg("--no-default-features");
-
-    let mut all_features = vec!["codegen".to_string()];
-    all_features.extend(args.features.clone());
+    // Build features list based on mode
+    let all_features = if args.release {
+        // Release mode: codegen with optimizations
+        cmd.arg("--release");
+        cmd.arg("--no-default-features");
+        let mut features = vec!["codegen".to_string()];
+        features.extend(args.features.clone());
+        features
+    } else {
+        // Debug mode: interpreted (NEW BEHAVIOR)
+        let mut features = vec!["interpreted".to_string()];
+        features.extend(args.features.clone());
+        features
+    };
 
     cmd.arg("--features").arg(all_features.join(","));
 
     if args.verbose {
         let features_str = all_features.join(",");
-        eprintln!("Executing: cargo build --features {}", features_str);
+        let cargo_cmd = if args.release {
+            format!(
+                "cargo build --release --no-default-features --features {}",
+                features_str
+            )
+        } else {
+            format!("cargo build --features {}", features_str)
+        };
+        eprintln!("Executing: {}", cargo_cmd);
     }
 
     let status = cmd
@@ -114,10 +153,105 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     }
 
     if args.verbose {
-        eprintln!("Build successful! Binary is in target/debug/");
+        let output_dir = if args.release {
+            "target/release/"
+        } else {
+            "target/debug/"
+        };
+        eprintln!("Build successful! Binary is in {}", output_dir);
     }
 
-    eprintln!("Debug build completed successfully!");
-    eprintln!("Use 'dampen release' for optimized production builds.");
+    if args.release {
+        eprintln!("Release build (codegen) completed successfully!");
+    } else {
+        eprintln!("Debug build (interpreted) completed successfully!");
+        eprintln!(
+            "Use 'dampen build --release' or 'dampen release' for optimized production builds."
+        );
+    }
+
+    Ok(())
+}
+
+/// Execute build command with release mode enabled
+/// This is a helper function for the release command
+pub fn execute_release_build(
+    package: Option<String>,
+    features: Vec<String>,
+    verbose: bool,
+    target_dir: Option<String>,
+) -> Result<(), String> {
+    use std::process::Command;
+
+    let mode = "codegen";
+
+    if verbose {
+        eprintln!("Running {} build...", mode);
+    }
+
+    // Check build.rs only for codegen mode
+    // If package is specified, also check in examples/ directory
+    let build_rs_exists = Path::new("build.rs").exists()
+        || package.as_ref().map_or(false, |pkg| {
+            Path::new("examples").join(pkg).join("build.rs").exists()
+        });
+
+    if !build_rs_exists {
+        return Err(
+            "build.rs not found. Codegen mode requires build.rs for code generation.\n\
+             Tip: Use 'dampen build' (without --release) for interpreted mode,\n\
+             or ensure you're in the correct project directory."
+                .to_string(),
+        );
+    }
+
+    if !Path::new("Cargo.toml").exists() {
+        return Err("Cargo.toml not found. Are you in a Rust project directory?".to_string());
+    }
+
+    let mut cmd = Command::new("cargo");
+    cmd.arg("build");
+    cmd.arg("--release");
+
+    if let Some(ref pkg) = package {
+        cmd.arg("-p").arg(pkg);
+    }
+
+    if let Some(ref dir) = target_dir {
+        cmd.arg("--target-dir").arg(dir);
+    }
+
+    if verbose {
+        cmd.arg("--verbose");
+    }
+
+    // Release mode: codegen with optimizations
+    cmd.arg("--no-default-features");
+    let mut all_features = vec!["codegen".to_string()];
+    all_features.extend(features);
+    cmd.arg("--features").arg(all_features.join(","));
+
+    if verbose {
+        let features_str = all_features.join(",");
+        eprintln!(
+            "Executing: cargo build --release --no-default-features --features {}",
+            features_str
+        );
+    }
+
+    let status = cmd
+        .status()
+        .map_err(|e| format!("Failed to execute cargo: {}", e))?;
+
+    if !status.success() {
+        return Err("Build failed".to_string());
+    }
+
+    if verbose {
+        eprintln!("Build successful! Binary is in target/release/");
+    }
+
+    eprintln!("Release build (codegen) completed successfully!");
+
     Ok(())
 }

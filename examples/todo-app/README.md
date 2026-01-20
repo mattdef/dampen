@@ -58,6 +58,45 @@ The application will open in a window. You can:
 6. See completion trends in the canvas chart
 7. Toggle dark mode using the toggler
 
+## Running in Different Modes
+
+### Development Mode (Interpreted with Hot-Reload)
+
+```bash
+cd examples/todo-app
+dampen run
+```
+
+The UI will reload automatically when you modify `.dampen` files.
+
+### Production Mode (Codegen)
+
+```bash
+# Debug build
+dampen build -p todo-app
+
+# Release build (optimized)
+dampen build --release -p todo-app
+# or equivalently:
+dampen release -p todo-app
+
+# Run
+./target/release/todo-app
+```
+
+### Framework Development (using cargo directly)
+
+If you're contributing to the Dampen framework, you can also use cargo:
+
+```bash
+# Interpreted mode
+cargo run -p todo-app
+
+# Codegen mode
+cargo build -p todo-app --release --no-default-features --features codegen
+./target/release/todo-app
+```
+
 ## Hot-Reload Development Workflow
 
 Dampen provides instant hot-reload capabilities for rapid UI iteration. Change your XML files and see updates in real-time without losing application state!
@@ -68,10 +107,10 @@ To enable hot-reload, run the application in debug mode:
 
 ```bash
 # Standard debug mode (hot-reload enabled by default)
-cargo run -p todo-app
+dampen run
 
 # With detailed logging
-RUST_LOG=debug cargo run -p todo-app
+RUST_LOG=debug dampen run
 ```
 
 When hot-reload is active, you'll see this message in the console:

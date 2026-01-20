@@ -92,6 +92,40 @@ dampen run
 
 The application will display examples of all implemented widgets.
 
+### Running in Different Modes
+
+**Development Mode (Interpreted with Hot-Reload):**
+```bash
+cd examples/widget-showcase
+dampen run
+```
+
+The UI will reload automatically when you modify `.dampen` files.
+
+**Production Mode (Codegen):**
+```bash
+# Debug build
+dampen build -p widget-showcase
+
+# Release build (optimized)
+dampen build --release -p widget-showcase
+# or equivalently:
+dampen release -p widget-showcase
+
+# Run
+./target/release/widget-showcase
+```
+
+**Framework Development (using cargo directly):**
+```bash
+# Interpreted mode
+cargo run -p widget-showcase
+
+# Codegen mode
+cargo build -p widget-showcase --release --no-default-features --features codegen
+./target/release/widget-showcase
+```
+
 ## File Structure
 
 ```

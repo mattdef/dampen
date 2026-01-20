@@ -12,13 +12,39 @@ This example demonstrates the complete Dampen theming system including:
 
 ## Running the Example
 
+### Development Mode (Interpreted with Hot-Reload)
+
 ```bash
-# Development mode with hot-reload
+cd examples/theming
+dampen run
+```
+
+The UI will reload automatically when you modify `.dampen` files.
+
+### Production Mode (Codegen)
+
+```bash
+# Debug build
+dampen build -p theming
+
+# Release build (optimized)
+dampen build --release -p theming
+# or equivalently:
+dampen release -p theming
+
+# Run
+./target/release/theming
+```
+
+### Framework Development (using cargo directly)
+
+```bash
+# Interpreted mode
 cargo run -p theming
 
-# Or using dampen CLI
-cd theming
-dampen run
+# Codegen mode
+cargo build -p theming --release --no-default-features --features codegen
+./target/release/theming
 ```
 
 ## Theme File

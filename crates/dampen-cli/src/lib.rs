@@ -23,7 +23,7 @@ pub enum Commands {
     /// Add UI windows or other components
     Add(commands::AddArgs),
 
-    /// Build production code with codegen mode
+    /// Build application (interpreted by default, use --release for codegen)
     Build(commands::BuildArgs),
 
     /// Validate .dampen files without building
@@ -35,10 +35,10 @@ pub enum Commands {
     /// Create a new Dampen project
     New(commands::NewArgs),
 
-    /// Build optimized production binary (release mode with codegen)
+    /// Build optimized production binary (alias for build --release)
     Release(commands::ReleaseArgs),
 
-    /// Run application in development mode with interpreted execution
+    /// Run application (interpreted by default, use --release for codegen)
     Run(commands::RunArgs),
 
     /// Run tests for the Dampen project

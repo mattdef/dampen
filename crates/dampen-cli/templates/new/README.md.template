@@ -10,6 +10,14 @@ Run the application in development mode (with hot-reload):
 dampen run
 ```
 
+Build for production (with codegen):
+
+```bash
+dampen build --release
+# or equivalently:
+dampen release
+```
+
 This will open a window with your UI. Click the button to see bindings in action!
 
 ## Project Structure
@@ -251,31 +259,43 @@ Dampen provides a comprehensive CLI for all development tasks:
 
 ```bash
 # Development
-dampen run              # Run in dev mode with hot-reload
-dampen run -- --arg     # Pass arguments to your application
+dampen run                    # Run in dev mode with hot-reload (interpreted)
+dampen build                  # Debug build (interpreted)
+dampen run -- --arg         # Pass arguments to your application
 
-# Building
-dampen build            # Debug build with codegen
-dampen release          # Production build (optimized)
+# Production
+dampen run --release          # Run in release mode (codegen)
+dampen build --release        # Release build (codegen)
+dampen release                # Alias for build --release
 
 # Validation & Inspection
-dampen check            # Validate .dampen XML files
-dampen inspect <file>   # Inspect IR and generated code
+dampen check                  # Validate .dampen XML files
+dampen inspect <file>         # Inspect IR and generated code
 
 # Testing
-dampen test             # Run all tests
-dampen test <name>      # Run specific test
+dampen test                   # Run all tests
+dampen test <name>            # Run specific test
 ```
+
+### Mode Selection
+
+- **Interpreted (default)**: Fast development with hot-reload
+- **Codegen (--release)**: Production builds with zero runtime overhead
 
 ## Building for Production
 
-Create an optimized release build:
+Create an optimized release build with codegen:
 
 ```bash
+dampen build --release
+# or equivalently:
 dampen release
 ```
 
 Your binary will be in `target/release/{{PROJECT_NAME}}`.
+
+> **Note**: Codegen mode requires a `build.rs` file in your project (automatically
+> included when creating projects with `dampen new`).
 
 ## Running Tests
 
