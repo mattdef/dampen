@@ -49,7 +49,9 @@ if [[ "$CURRENT_BRANCH" != "main" && "$CURRENT_BRANCH" != "master" ]]; then
 fi
 
 echo -e "${GREEN}Step 1: Running tests...${NC}"
-cargo test --workspace --all-features
+# Note: We don't use --all-features because 'codegen' and 'interpreted' 
+# are mutually exclusive in examples and would trigger a compile_error!
+cargo test --workspace
 echo ""
 
 echo -e "${GREEN}Step 2: Running clippy...${NC}"

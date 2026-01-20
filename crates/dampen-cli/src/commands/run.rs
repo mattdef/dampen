@@ -86,9 +86,10 @@ pub fn execute(args: &RunArgs) -> Result<(), String> {
         // Check build.rs exists for codegen mode
         // If package is specified, also check in examples/ directory
         let build_rs_exists = Path::new("build.rs").exists()
-            || args.package.as_ref().map_or(false, |pkg| {
-                Path::new("examples").join(pkg).join("build.rs").exists()
-            });
+            || args
+                .package
+                .as_ref()
+                .is_some_and(|pkg| Path::new("examples").join(pkg).join("build.rs").exists());
 
         if !build_rs_exists {
             return Err(

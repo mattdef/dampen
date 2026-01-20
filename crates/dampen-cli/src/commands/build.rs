@@ -86,9 +86,10 @@ fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     // Check build.rs only for codegen mode
     // If package is specified, also check in examples/ directory
     let build_rs_exists = Path::new("build.rs").exists()
-        || args.package.as_ref().map_or(false, |pkg| {
-            Path::new("examples").join(pkg).join("build.rs").exists()
-        });
+        || args
+            .package
+            .as_ref()
+            .is_some_and(|pkg| Path::new("examples").join(pkg).join("build.rs").exists());
 
     if args.release && !build_rs_exists {
         return Err(
@@ -192,9 +193,9 @@ pub fn execute_release_build(
     // Check build.rs only for codegen mode
     // If package is specified, also check in examples/ directory
     let build_rs_exists = Path::new("build.rs").exists()
-        || package.as_ref().map_or(false, |pkg| {
-            Path::new("examples").join(pkg).join("build.rs").exists()
-        });
+        || package
+            .as_ref()
+            .is_some_and(|pkg| Path::new("examples").join(pkg).join("build.rs").exists());
 
     if !build_rs_exists {
         return Err(

@@ -13,6 +13,7 @@ mod _app {}
 pub struct Model;
 
 #[ui_handler]
+#[allow(dead_code)]
 pub fn switch_to_settings() -> iced::Task<crate::Message> {
     use crate::{CurrentView, Message};
     println!("Switching to settings view");

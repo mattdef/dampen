@@ -13,6 +13,7 @@ mod _settings {}
 pub struct Model;
 
 #[ui_handler]
+#[allow(dead_code)]
 pub fn switch_to_main() -> iced::Task<crate::Message> {
     use crate::{CurrentView, Message};
     println!("Switching to main view");

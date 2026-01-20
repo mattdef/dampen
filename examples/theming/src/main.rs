@@ -40,6 +40,7 @@ enum Message {
     /// System theme change
     SystemThemeChanged(String),
     /// Set theme explicitly
+    #[allow(dead_code)]
     SetTheme(String),
 }
 

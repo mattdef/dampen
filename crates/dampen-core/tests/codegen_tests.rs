@@ -165,11 +165,17 @@ fn test_missing_handler_validation() {
 fn test_constant_folding() {
     use dampen_core::codegen::constant_folding;
 
+    // Input without trailing newline
     let input = "let x = 1 + 1; let y = 2 * 3;";
     let output = constant_folding(input);
 
-    // For now, just verify it doesn't break
-    assert_eq!(output, input);
+    // The function normalizes trailing whitespace and adds a trailing newline
+    // so output will have a newline at the end
+    let expected = "let x = 1 + 1; let y = 2 * 3;\n";
+    assert_eq!(
+        output, expected,
+        "constant_folding should normalize trailing whitespace"
+    );
 }
 
 #[test]

@@ -11,6 +11,7 @@ pub struct Model {
 }
 
 #[ui_handler]
+#[allow(dead_code)]
 pub fn set_theme(model: &mut Model, theme: String) {
     model.message = format!("Switched to theme: {}", theme);
 
