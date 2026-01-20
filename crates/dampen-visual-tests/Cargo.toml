@@ -1,12 +1,12 @@
 [package]
 name = "dampen-visual-tests"
-version = "0.2.5"
-edition = "2024"
-rust-version = "1.85"
-authors = ["Dampen Contributors"]
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
 description = "Visual regression testing infrastructure for Dampen UI framework"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/dampen-project/dampen"
+repository = { workspace = true }
 
 [dependencies]
 iced = { version = "0.14", features = ["wgpu", "tokio"] }
