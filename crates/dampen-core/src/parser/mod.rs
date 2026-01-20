@@ -7,9 +7,11 @@ pub mod theme_parser;
 
 use crate::expr::tokenize_binding_expr;
 use crate::expr::{BindingExpr, Expr, LiteralExpr};
+use crate::ir::style::StyleProperties;
+use crate::ir::theme::WidgetState;
 use crate::ir::{
-    AttributeValue, DampenDocument, EventBinding, EventKind, InterpolatedPart, SchemaVersion, Span,
-    WidgetKind, WidgetNode,
+    AttributeValue, Breakpoint, DampenDocument, EventBinding, EventKind, InterpolatedPart,
+    SchemaVersion, Span, WidgetKind, WidgetNode,
 };
 use crate::parser::error::{ParseError, ParseErrorKind};
 use roxmltree::{Document, Node, NodeType};
@@ -325,155 +327,153 @@ fn validate_widget_attributes(
 ) -> Result<(), ParseError> {
     match kind {
         WidgetKind::ComboBox | WidgetKind::PickList => {
-            // Check for required 'options' attribute
-            if let Some(AttributeValue::Static(options_value)) = attributes.get("options") {
-                if options_value.trim().is_empty() {
-                    return Err(ParseError {
-                        kind: ParseErrorKind::MissingAttribute,
-                        message: format!(
-                            "{:?} widget requires 'options' attribute to be non-empty",
-                            kind
-                        ),
-                        span,
-                        suggestion: Some(
-                            "Add a comma-separated list: options=\"Option1,Option2\"".to_string(),
-                        ),
-                    });
-                }
-            } else {
-                return Err(ParseError {
-                    kind: ParseErrorKind::MissingAttribute,
-                    message: format!("{:?} widget requires 'options' attribute", kind),
-                    span,
-                    suggestion: Some(
-                        "Add options attribute: options=\"Option1,Option2\"".to_string(),
-                    ),
-                });
-            }
+            require_non_empty_attribute(
+                kind,
+                "options",
+                attributes,
+                span,
+                "Add a comma-separated list: options=\"Option1,Option2\"",
+            )?;
         }
         WidgetKind::Canvas => {
-            // Check for required 'width' attribute
-            if !attributes.contains_key("width") {
-                return Err(ParseError {
-                    kind: ParseErrorKind::MissingAttribute,
-                    message: format!("{:?} widget requires 'width' attribute", kind),
-                    span,
-                    suggestion: Some("Add width attribute: width=\"400\"".to_string()),
-                });
-            }
-            // Check for required 'height' attribute
-            if !attributes.contains_key("height") {
-                return Err(ParseError {
-                    kind: ParseErrorKind::MissingAttribute,
-                    message: format!("{:?} widget requires 'height' attribute", kind),
-                    span,
-                    suggestion: Some("Add height attribute: height=\"200\"".to_string()),
-                });
-            }
-            // Check for required 'program' attribute
-            if !attributes.contains_key("program") {
-                return Err(ParseError {
-                    kind: ParseErrorKind::MissingAttribute,
-                    message: format!("{:?} widget requires 'program' attribute", kind),
-                    span,
-                    suggestion: Some("Add program attribute: program=\"{{chart}}\"".to_string()),
-                });
-            }
+            require_attribute(
+                kind,
+                "width",
+                attributes,
+                span,
+                "Add width attribute: width=\"400\"",
+            )?;
+            require_attribute(
+                kind,
+                "height",
+                attributes,
+                span,
+                "Add height attribute: height=\"200\"",
+            )?;
+            require_attribute(
+                kind,
+                "program",
+                attributes,
+                span,
+                "Add program attribute: program=\"{{chart}}\"",
+            )?;
 
-            // Validate width size range [50, 4000]
-            if let Some(AttributeValue::Static(width_str)) = attributes.get("width") {
-                if let Ok(width) = width_str.parse::<u32>() {
-                    if !(50..=4000).contains(&width) {
-                        return Err(ParseError {
-                            kind: ParseErrorKind::InvalidValue,
-                            message: format!(
-                                "Canvas width must be between 50 and 4000 pixels, found {}",
-                                width
-                            ),
-                            span,
-                            suggestion: Some("Use width value between 50 and 4000".to_string()),
-                        });
-                    }
-                }
-            }
-
-            // Validate height size range [50, 4000]
-            if let Some(AttributeValue::Static(height_str)) = attributes.get("height") {
-                if let Ok(height) = height_str.parse::<u32>() {
-                    if !(50..=4000).contains(&height) {
-                        return Err(ParseError {
-                            kind: ParseErrorKind::InvalidValue,
-                            message: format!(
-                                "Canvas height must be between 50 and 4000 pixels, found {}",
-                                height
-                            ),
-                            span,
-                            suggestion: Some("Use height value between 50 and 4000".to_string()),
-                        });
-                    }
-                }
-            }
+            validate_numeric_range(kind, "width", attributes, span, 50..=4000)?;
+            validate_numeric_range(kind, "height", attributes, span, 50..=4000)?;
         }
         WidgetKind::Grid => {
-            // Check for required 'columns' attribute
-            if !attributes.contains_key("columns") {
-                return Err(ParseError {
-                    kind: ParseErrorKind::MissingAttribute,
-                    message: format!("{:?} widget requires 'columns' attribute", kind),
-                    span,
-                    suggestion: Some("Add columns attribute: columns=\"5\"".to_string()),
-                });
-            }
-            // Validate columns value range [1, 20]
-            if let Some(AttributeValue::Static(cols)) = attributes.get("columns") {
-                if let Ok(cols_num) = cols.parse::<u32>() {
-                    if !(1..=20).contains(&cols_num) {
-                        return Err(ParseError {
-                            kind: ParseErrorKind::InvalidValue,
-                            message: format!(
-                                "Grid columns must be between 1 and 20, found {}",
-                                cols_num
-                            ),
-                            span,
-                            suggestion: Some("Use columns value between 1 and 20".to_string()),
-                        });
-                    }
-                }
-            }
+            require_attribute(
+                kind,
+                "columns",
+                attributes,
+                span,
+                "Add columns attribute: columns=\"5\"",
+            )?;
+            validate_numeric_range(kind, "columns", attributes, span, 1..=20)?;
         }
         WidgetKind::Tooltip => {
-            // Check for required 'message' attribute
-            if !attributes.contains_key("message") {
-                return Err(ParseError {
-                    kind: ParseErrorKind::MissingAttribute,
-                    message: format!("{:?} widget requires 'message' attribute", kind),
-                    span,
-                    suggestion: Some("Add message attribute: message=\"Help text\"".to_string()),
-                });
-            }
+            require_attribute(
+                kind,
+                "message",
+                attributes,
+                span,
+                "Add message attribute: message=\"Help text\"",
+            )?;
         }
         WidgetKind::For => {
-            // Check for required 'each' attribute
-            if !attributes.contains_key("each") {
+            require_attribute(
+                kind,
+                "each",
+                attributes,
+                span,
+                "Add each attribute: each=\"item\"",
+            )?;
+            require_attribute(
+                kind,
+                "in",
+                attributes,
+                span,
+                "Add in attribute: in=\"{items}\"",
+            )?;
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+/// Helper to require an attribute exists
+fn require_attribute(
+    kind: &WidgetKind,
+    attr_name: &str,
+    attributes: &HashMap<String, AttributeValue>,
+    span: Span,
+    suggestion: &str,
+) -> Result<(), ParseError> {
+    if !attributes.contains_key(attr_name) {
+        return Err(ParseError {
+            kind: ParseErrorKind::MissingAttribute,
+            message: format!("{:?} widget requires '{}' attribute", kind, attr_name),
+            span,
+            suggestion: Some(suggestion.to_string()),
+        });
+    }
+    Ok(())
+}
+
+/// Helper to require a non-empty attribute
+fn require_non_empty_attribute(
+    kind: &WidgetKind,
+    attr_name: &str,
+    attributes: &HashMap<String, AttributeValue>,
+    span: Span,
+    suggestion: &str,
+) -> Result<(), ParseError> {
+    match attributes.get(attr_name) {
+        Some(AttributeValue::Static(value)) if !value.trim().is_empty() => Ok(()),
+        _ => Err(ParseError {
+            kind: ParseErrorKind::MissingAttribute,
+            message: format!(
+                "{:?} widget requires '{}' attribute to be non-empty",
+                kind, attr_name
+            ),
+            span,
+            suggestion: Some(suggestion.to_string()),
+        }),
+    }
+}
+
+/// Helper to validate numeric range
+fn validate_numeric_range<T: PartialOrd + std::fmt::Display + std::str::FromStr>(
+    kind: &WidgetKind,
+    attr_name: &str,
+    attributes: &HashMap<String, AttributeValue>,
+    span: Span,
+    range: std::ops::RangeInclusive<T>,
+) -> Result<(), ParseError> {
+    if let Some(AttributeValue::Static(value_str)) = attributes.get(attr_name) {
+        if let Ok(value) = value_str.parse::<T>() {
+            if !range.contains(&value) {
                 return Err(ParseError {
-                    kind: ParseErrorKind::MissingAttribute,
-                    message: "For loop requires 'each' attribute to name the loop variable"
-                        .to_string(),
+                    kind: ParseErrorKind::InvalidValue,
+                    message: format!(
+                        "{} for {:?} {} must be between {} and {}, found {}",
+                        attr_name,
+                        kind,
+                        attr_name,
+                        range.start(),
+                        range.end(),
+                        value
+                    ),
                     span,
-                    suggestion: Some("Add each attribute: each=\"item\"".to_string()),
-                });
-            }
-            // Check for required 'in' attribute
-            if !attributes.contains_key("in") {
-                return Err(ParseError {
-                    kind: ParseErrorKind::MissingAttribute,
-                    message: "For loop requires 'in' attribute with collection binding".to_string(),
-                    span,
-                    suggestion: Some("Add in attribute: in=\"{items}\"".to_string()),
+                    suggestion: Some(format!(
+                        "Use {} value between {} and {}",
+                        attr_name,
+                        range.start(),
+                        range.end()
+                    )),
                 });
             }
         }
-        _ => {}
     }
     Ok(())
 }
@@ -567,14 +567,33 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         }
     };
 
-    // Parse attributes - separate breakpoint-prefixed from regular
+    // Parse attributes - separate breakpoint-prefixed and state-prefixed from regular
     let mut attributes = std::collections::HashMap::new();
-    let mut breakpoint_attributes = std::collections::HashMap::new();
+    let mut breakpoint_attributes: HashMap<Breakpoint, HashMap<String, AttributeValue>> =
+        HashMap::new();
+    let mut inline_state_variants: HashMap<WidgetState, HashMap<String, AttributeValue>> =
+        HashMap::new();
     let mut events = Vec::new();
     let mut id = None;
 
     for attr in node.attributes() {
-        let name = attr.name();
+        // Get full attribute name (including namespace prefix if present)
+        let name = if let Some(ns) = attr.namespace() {
+            // If attribute has a Dampen state namespace, find the prefix
+            if ns.starts_with("urn:dampen:state") {
+                // Find the namespace prefix by iterating through namespace declarations
+                let prefix = node
+                    .namespaces()
+                    .find(|n| n.uri() == ns)
+                    .and_then(|n| n.name())
+                    .unwrap_or("");
+                format!("{}:{}", prefix, attr.name())
+            } else {
+                attr.name().to_string()
+            }
+        } else {
+            attr.name().to_string()
+        };
         let value = attr.value();
 
         // Check for id attribute
@@ -585,7 +604,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
 
         // Check for event attributes (on_click, on_change, etc.)
         if name.starts_with("on_") {
-            let event_kind = match name {
+            let event_kind = match name.as_str() {
                 "on_click" => Some(EventKind::Click),
                 "on_press" => Some(EventKind::Press),
                 "on_release" => Some(EventKind::Release),
@@ -653,14 +672,26 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         // Note: We use hyphen instead of colon to avoid XML namespace issues
         if let Some((prefix, attr_name)) = name.split_once('-') {
             if let Ok(breakpoint) = crate::ir::layout::Breakpoint::parse(prefix) {
-                // Store in breakpoint_attributes map
                 let attr_value = parse_attribute_value(value, get_span(node, source))?;
                 breakpoint_attributes
                     .entry(breakpoint)
-                    .or_insert_with(HashMap::new)
+                    .or_default()
                     .insert(attr_name.to_string(), attr_value);
                 continue;
             }
+        }
+
+        if let Some((state_prefix, attr_name)) = name.split_once(':') {
+            if let Some(state) = WidgetState::from_prefix(state_prefix) {
+                let attr_value = parse_attribute_value(value, get_span(node, source))?;
+                inline_state_variants
+                    .entry(state)
+                    .or_default()
+                    .insert(attr_name.to_string(), attr_value);
+                continue;
+            }
+            // If state prefix is invalid, log warning and treat as regular attribute
+            // TODO: Add proper logging when verbose mode is implemented
         }
 
         // Parse attribute value (check for bindings)
@@ -720,6 +751,20 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     // Validate widget-specific required attributes
     validate_widget_attributes(&kind, &attributes, get_span(node, source))?;
 
+    // Convert inline_state_variants from HashMap<WidgetState, HashMap<String, AttributeValue>>
+    // to HashMap<WidgetState, StyleProperties>
+    let mut final_state_variants: HashMap<WidgetState, StyleProperties> = HashMap::new();
+    for (state, state_attrs) in inline_state_variants {
+        if let Some(state_style) = parse_style_attributes(&state_attrs).map_err(|e| ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!("Invalid style in {:?} state: {}", state, e),
+            span: get_span(node, source),
+            suggestion: None,
+        })? {
+            final_state_variants.insert(state, state_style);
+        }
+    }
+
     Ok(WidgetNode {
         kind,
         id,
@@ -732,6 +777,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         theme_ref,
         classes,
         breakpoint_attributes,
+        inline_state_variants: final_state_variants,
     })
 }
 
@@ -956,11 +1002,17 @@ fn get_span(node: Node, source: &str) -> Span {
 }
 
 /// Calculate line and column from byte offset
+///
+/// Optimized to stop early once the target offset is reached.
 fn calculate_line_col(source: &str, offset: usize) -> (u32, u32) {
+    if offset == 0 {
+        return (1, 1);
+    }
+
     let mut line = 1;
     let mut col = 1;
 
-    for (i, c) in source.chars().enumerate() {
+    for (i, c) in source.char_indices().take(offset.saturating_add(1)) {
         if i >= offset {
             break;
         }
@@ -1207,42 +1259,22 @@ fn parse_style_attributes(
     }
 }
 
-/// Validates that there are no circular dependencies in UI file includes
+/// Validates that there are no circular dependencies in UI file includes.
 ///
-/// **T125**: Currently, Dampen does not support file includes/imports in XML,
-/// so circular dependencies are not possible. This function is a placeholder
-/// for future validation when UI file composition is added.
+/// **Feature T125 - Not Yet Implemented**
 ///
-/// # Future Implementation
-///
-/// When UI file includes are added (e.g., `<include src="header.dampen" />`),
-/// this function should:
-/// 1. Build a dependency graph of all included files
-/// 2. Detect cycles using depth-first search or topological sort
-/// 3. Return ParseError with the cycle path if detected
-///
-/// # Arguments
-///
-/// * `file_path` - The root UI file being parsed
-/// * `visited` - Set of already visited files (for cycle detection)
+/// Currently, Dampen does not support file includes/imports in XML.
+/// This function is a placeholder that will be implemented when UI file
+/// composition is added.
 ///
 /// # Returns
 ///
-/// `Ok(())` if no circular dependencies exist, or `Err(ParseError)` with
-/// the dependency cycle information.
-///
-/// # Example Error Message
-///
-/// ```text
-/// Circular UI file dependency detected:
-///   app.dampen -> header.dampen -> nav.dampen -> app.dampen
-/// ```
-#[allow(dead_code)]
+/// Currently returns `Ok(())` since includes are not supported.
+/// Once implemented, returns `Err(ParseError)` for circular dependencies.
 pub fn validate_no_circular_dependencies(
     _file_path: &std::path::Path,
     _visited: &mut std::collections::HashSet<std::path::PathBuf>,
 ) -> Result<(), ParseError> {
-    // Placeholder: No includes supported yet, so no circular dependencies possible
     Ok(())
 }
 
@@ -1270,4 +1302,155 @@ mod circular_dependency_tests {
     // - test_detect_complex_circular_dependency: A -> B -> C -> D -> B
     // - test_allow_diamond_dependencies: A->B, A->C, B->D, C->D (this is OK, not circular)
     // - test_self_include_rejected: A -> A
+}
+
+#[cfg(test)]
+mod inline_state_styles_tests {
+    use super::*;
+    use crate::ir::theme::WidgetState;
+
+    #[test]
+    fn test_parse_single_state_attribute() {
+        // T011: Parse button with single hover:background state attribute
+        // Note: XML requires namespace declaration for colons in attribute names
+        let xml = r##"
+            <dampen version="1.0" xmlns:hover="urn:dampen:state:hover">
+                <button label="Click" hover:background="#ff0000" />
+            </dampen>
+        "##;
+
+        let result = parse(xml);
+        assert!(result.is_ok(), "Should parse valid XML with hover state");
+
+        let doc = result.unwrap();
+        let button = &doc.root;
+
+        // Verify inline_state_variants contains hover state
+        assert!(
+            button
+                .inline_state_variants
+                .contains_key(&WidgetState::Hover),
+            "Should have hover state variant"
+        );
+
+        let hover_style = button
+            .inline_state_variants
+            .get(&WidgetState::Hover)
+            .unwrap();
+
+        // Verify hover background color is red
+        assert!(
+            hover_style.background.is_some(),
+            "Hover state should have background"
+        );
+    }
+
+    #[test]
+    fn test_parse_multiple_state_attributes() {
+        // T012: Parse button with multiple state attributes
+        // Note: Each state needs its own unique namespace URI to avoid attribute conflicts
+        let xml = r##"
+            <dampen version="1.0"
+                xmlns:hover="urn:dampen:state:hover"
+                xmlns:active="urn:dampen:state:active"
+                xmlns:disabled="urn:dampen:state:disabled">
+                <button
+                    label="Click"
+                    hover:background="#ff0000"
+                    active:background="#00ff00"
+                    disabled:opacity="0.5"
+                />
+            </dampen>
+        "##;
+
+        let result = parse(xml);
+        assert!(
+            result.is_ok(),
+            "Should parse valid XML with multiple states"
+        );
+
+        let doc = result.unwrap();
+        let button = &doc.root;
+
+        // Verify all three state variants exist
+        assert!(
+            button
+                .inline_state_variants
+                .contains_key(&WidgetState::Hover),
+            "Should have hover state"
+        );
+        assert!(
+            button
+                .inline_state_variants
+                .contains_key(&WidgetState::Active),
+            "Should have active state"
+        );
+        assert!(
+            button
+                .inline_state_variants
+                .contains_key(&WidgetState::Disabled),
+            "Should have disabled state"
+        );
+
+        // Verify hover has background
+        let hover_style = button
+            .inline_state_variants
+            .get(&WidgetState::Hover)
+            .unwrap();
+        assert!(
+            hover_style.background.is_some(),
+            "Hover state should have background"
+        );
+
+        // Verify active has background
+        let active_style = button
+            .inline_state_variants
+            .get(&WidgetState::Active)
+            .unwrap();
+        assert!(
+            active_style.background.is_some(),
+            "Active state should have background"
+        );
+
+        // Verify disabled has opacity
+        let disabled_style = button
+            .inline_state_variants
+            .get(&WidgetState::Disabled)
+            .unwrap();
+        assert!(
+            disabled_style.opacity.is_some(),
+            "Disabled state should have opacity"
+        );
+    }
+
+    #[test]
+    fn test_parse_invalid_state_prefix() {
+        // T013: Parse button with invalid state prefix should treat as regular attribute
+        let xml = r##"
+            <dampen version="1.0" xmlns:unknown="urn:dampen:state:unknown">
+                <button label="Click" unknown:background="#ff0000" />
+            </dampen>
+        "##;
+
+        let result = parse(xml);
+        assert!(
+            result.is_ok(),
+            "Should parse with warning for invalid state"
+        );
+
+        let doc = result.unwrap();
+        let button = &doc.root;
+
+        // Verify inline_state_variants is empty (invalid prefix ignored)
+        assert!(
+            button.inline_state_variants.is_empty(),
+            "Should have no state variants for invalid prefix"
+        );
+
+        // Verify unknown:background is treated as regular attribute
+        assert!(
+            button.attributes.contains_key("unknown:background"),
+            "Invalid state prefix should be treated as regular attribute"
+        );
+    }
 }

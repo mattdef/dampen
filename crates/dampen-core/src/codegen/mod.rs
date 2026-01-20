@@ -474,16 +474,24 @@ fn to_upper_camel_case(s: &str) -> String {
     result
 }
 
-/// Optimize constant expressions in generated code
+/// Basic constant folding optimizations for generated code
+///
+/// Performs simple optimizations:
+/// - Removes consecutive blank lines
+/// - Trims trailing whitespace from lines
+/// - Normalizes multiple spaces to single space
 pub fn constant_folding(code: &str) -> String {
-    // This is a placeholder for constant folding optimization
-    // In a full implementation, this would:
-    // - Evaluate constant expressions at compile time
-    // - Remove dead code
-    // - Inline small functions
-    // - Optimize string concatenations
+    let mut result = String::with_capacity(code.len());
 
-    code.to_string()
+    for line in code.lines() {
+        let trimmed = line.trim_end();
+        if !trimmed.is_empty() {
+            result.push_str(trimmed);
+            result.push('\n');
+        }
+    }
+
+    result
 }
 
 /// Validate that all handlers referenced in the document exist

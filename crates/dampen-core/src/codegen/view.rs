@@ -2433,6 +2433,7 @@ mod tests {
             theme_ref: None,
             classes: vec![],
             breakpoint_attributes: HashMap::new(),
+            inline_state_variants: HashMap::new(),
         };
 
         let model_ident = syn::Ident::new("model", proc_macro2::Span::call_site());
@@ -2477,6 +2478,7 @@ mod tests {
             theme_ref: None,
             classes: vec!["primary-button".to_string()],
             breakpoint_attributes: HashMap::new(),
+            inline_state_variants: HashMap::new(),
         };
 
         let model_ident = syn::Ident::new("model", proc_macro2::Span::call_site());
@@ -2530,6 +2532,7 @@ mod tests {
             theme_ref: None,
             classes: vec![],
             breakpoint_attributes: HashMap::new(),
+            inline_state_variants: HashMap::new(),
         };
 
         let model_ident = syn::Ident::new("model", proc_macro2::Span::call_site());

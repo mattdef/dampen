@@ -431,6 +431,27 @@ pub struct HandlerSignature {
 }
 
 /// Build-time analysis structure for circular dependency detection
+///
+/// **Feature T130 - Not Yet Integrated**
+///
+/// This structure is used for static analysis of handler dependencies to detect
+/// circular call chains at compile time. It is not yet integrated into the
+/// handler registration or dispatch system.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use dampen_core::handler::HandlerCallGraph;
+///
+/// let mut graph = HandlerCallGraph::new();
+/// graph.add_dependency("handler_a", "handler_b");
+/// graph.add_dependency("handler_b", "handler_c");
+///
+/// if let Some(cycle) = graph.detect_cycles() {
+///     println!("Circular dependency detected: {:?}", cycle);
+/// }
+/// ```
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct HandlerCallGraph {
     /// Map of handler name to its dependencies

@@ -943,3 +943,60 @@ impl ThemeDocument {
         "light"
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_widget_state_from_prefix_hover() {
+        assert_eq!(WidgetState::from_prefix("hover"), Some(WidgetState::Hover));
+    }
+
+    #[test]
+    fn test_widget_state_from_prefix_focus() {
+        assert_eq!(WidgetState::from_prefix("focus"), Some(WidgetState::Focus));
+    }
+
+    #[test]
+    fn test_widget_state_from_prefix_active() {
+        assert_eq!(
+            WidgetState::from_prefix("active"),
+            Some(WidgetState::Active)
+        );
+    }
+
+    #[test]
+    fn test_widget_state_from_prefix_disabled() {
+        assert_eq!(
+            WidgetState::from_prefix("disabled"),
+            Some(WidgetState::Disabled)
+        );
+    }
+
+    #[test]
+    fn test_widget_state_from_prefix_case_insensitive() {
+        assert_eq!(WidgetState::from_prefix("HOVER"), Some(WidgetState::Hover));
+        assert_eq!(WidgetState::from_prefix("Focus"), Some(WidgetState::Focus));
+        assert_eq!(
+            WidgetState::from_prefix("AcTiVe"),
+            Some(WidgetState::Active)
+        );
+    }
+
+    #[test]
+    fn test_widget_state_from_prefix_invalid() {
+        assert_eq!(WidgetState::from_prefix("unknown"), None);
+        assert_eq!(WidgetState::from_prefix("pressed"), None);
+        assert_eq!(WidgetState::from_prefix(""), None);
+    }
+
+    #[test]
+    fn test_widget_state_from_prefix_with_whitespace() {
+        // from_prefix uses trim() so whitespace should be handled
+        assert_eq!(
+            WidgetState::from_prefix("  hover  "),
+            Some(WidgetState::Hover)
+        );
+    }
+}

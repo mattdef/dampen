@@ -1,6 +1,7 @@
 use crate::ir::layout::{Breakpoint, LayoutConstraints};
 use crate::ir::span::Span;
 use crate::ir::style::StyleProperties;
+use crate::ir::theme::WidgetState;
 use std::collections::HashMap;
 
 /// A node in the widget tree
@@ -19,6 +20,9 @@ pub struct WidgetNode {
     pub theme_ref: Option<AttributeValue>,
     pub classes: Vec<String>,
     pub breakpoint_attributes: HashMap<Breakpoint, HashMap<String, AttributeValue>>,
+    /// State-specific styles from inline attributes (e.g., hover:background="#ff0000")
+    #[serde(default)]
+    pub inline_state_variants: HashMap<WidgetState, StyleProperties>,
 }
 
 /// Enumeration of all supported widget types
@@ -219,5 +223,97 @@ impl WidgetKind {
             WidgetKind::Canvas => crate::ir::SchemaVersion { major: 1, minor: 1 },
             _ => crate::ir::SchemaVersion { major: 1, minor: 0 },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ir::style::StyleProperties;
+    use crate::ir::theme::WidgetState;
+
+    #[test]
+    fn test_widget_node_default_has_empty_inline_state_variants() {
+        let node = WidgetNode::default();
+        assert!(node.inline_state_variants.is_empty());
+    }
+
+    #[test]
+    fn test_widget_node_inline_state_variants_serialization() {
+        let mut node = WidgetNode {
+            kind: WidgetKind::Button,
+            id: Some("test-button".to_string()),
+            attributes: Default::default(),
+            events: Default::default(),
+            children: Default::default(),
+            span: Default::default(),
+            style: Default::default(),
+            layout: Default::default(),
+            theme_ref: Default::default(),
+            classes: Default::default(),
+            breakpoint_attributes: Default::default(),
+            inline_state_variants: Default::default(),
+        };
+
+        // Add state variant
+        node.inline_state_variants.insert(
+            WidgetState::Hover,
+            StyleProperties {
+                opacity: Some(0.8),
+                ..Default::default()
+            },
+        );
+
+        // Serialize and deserialize
+        let json = serde_json::to_string(&node).expect("Should serialize");
+        let deserialized: WidgetNode = serde_json::from_str(&json).expect("Should deserialize");
+
+        // Verify field preserved
+        assert_eq!(deserialized.inline_state_variants.len(), 1);
+        assert!(
+            deserialized
+                .inline_state_variants
+                .contains_key(&WidgetState::Hover)
+        );
+    }
+
+    #[test]
+    fn test_widget_node_inline_state_variants_multiple_states() {
+        let mut node = WidgetNode::default();
+
+        node.inline_state_variants.insert(
+            WidgetState::Hover,
+            StyleProperties {
+                opacity: Some(0.9),
+                ..Default::default()
+            },
+        );
+
+        node.inline_state_variants.insert(
+            WidgetState::Active,
+            StyleProperties {
+                opacity: Some(0.7),
+                ..Default::default()
+            },
+        );
+
+        node.inline_state_variants.insert(
+            WidgetState::Disabled,
+            StyleProperties {
+                opacity: Some(0.5),
+                ..Default::default()
+            },
+        );
+
+        assert_eq!(node.inline_state_variants.len(), 3);
+        assert!(node.inline_state_variants.contains_key(&WidgetState::Hover));
+        assert!(
+            node.inline_state_variants
+                .contains_key(&WidgetState::Active)
+        );
+        assert!(
+            node.inline_state_variants
+                .contains_key(&WidgetState::Disabled)
+        );
     }
 }
