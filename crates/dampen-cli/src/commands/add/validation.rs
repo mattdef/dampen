@@ -395,7 +395,9 @@ some-other-crate = "1.0"
     #[test]
     fn test_detect_valid_dampen_project() {
         let temp = create_test_project(true);
-        let _guard = std::env::set_current_dir(temp.path());
+        let deep_dir = temp.path().join("a/b/c");
+        fs::create_dir_all(&deep_dir).unwrap();
+        let _guard = std::env::set_current_dir(&deep_dir);
 
         let result = ProjectInfo::detect();
 
@@ -409,7 +411,9 @@ some-other-crate = "1.0"
     #[test]
     fn test_detect_non_dampen_project() {
         let temp = create_test_project(false);
-        let _guard = std::env::set_current_dir(temp.path());
+        let deep_dir = temp.path().join("a/b/c");
+        fs::create_dir_all(&deep_dir).unwrap();
+        let _guard = std::env::set_current_dir(&deep_dir);
 
         let result = ProjectInfo::detect();
 
