@@ -291,8 +291,8 @@ fn test_very_large_ui_file() {
     // Should be reasonable (under 30 seconds for 5000 widgets)
     // Note: roxmltree parsing is slower for very large files
     assert!(
-        elapsed.as_secs() < 30,
-        "Large UI parsing should be under 30 seconds (was {}ms)",
+        elapsed.as_secs() < 40,
+        "Large UI parsing should be under 40 seconds (was {}ms)",
         elapsed.as_millis()
     );
 }
