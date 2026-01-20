@@ -12,7 +12,7 @@ use dampen_core::parser;
 use dampen_core::parser::error::{ParseError, ParseErrorKind};
 use dampen_core::state::AppState;
 use dampen_dev::overlay::ErrorOverlay;
-use dampen_dev::reload::{HotReloadContext, ReloadResult, attempt_hot_reload};
+use dampen_dev::reload::{attempt_hot_reload, HotReloadContext, ReloadResult};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
