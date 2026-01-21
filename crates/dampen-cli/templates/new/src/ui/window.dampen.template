@@ -35,7 +35,7 @@
                 align_y="start"
             />
             <rule direction="horizontal" />
-            <space width="fill" />
+            <space height="20" />
             <button label="Click me!" class="btn_sample" on_click="greet" />
             <text
                 class="tx_center"

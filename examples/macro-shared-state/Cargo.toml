@@ -2,7 +2,7 @@
 name = "macro-shared-state"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 publish = false
 build = "build.rs"
 
