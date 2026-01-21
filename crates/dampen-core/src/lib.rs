@@ -144,7 +144,7 @@ pub use state::ThemeContext;
 
 /// Shared state container for inter-window communication.
 ///
-/// This module provides the [`SharedContext`](shared::SharedContext) struct for
+/// This module provides the [`SharedContext`] struct for
 /// sharing state across multiple views in a Dampen application.
 pub use shared::SharedContext;
 
