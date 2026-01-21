@@ -148,12 +148,11 @@ impl ThemeContext {
         self.follow_system = follow;
 
         // If enabling, immediately apply system preference if available
-        if follow {
-            if let Some(ref pref) = self.system_preference {
-                if self.themes.contains_key(pref) {
-                    self.active_theme = pref.clone();
-                }
-            }
+        if follow
+            && let Some(ref pref) = self.system_preference
+            && self.themes.contains_key(pref)
+        {
+            self.active_theme = pref.clone();
         }
     }
 

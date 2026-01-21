@@ -450,30 +450,29 @@ fn validate_numeric_range<T: PartialOrd + std::fmt::Display + std::str::FromStr>
     span: Span,
     range: std::ops::RangeInclusive<T>,
 ) -> Result<(), ParseError> {
-    if let Some(AttributeValue::Static(value_str)) = attributes.get(attr_name) {
-        if let Ok(value) = value_str.parse::<T>() {
-            if !range.contains(&value) {
-                return Err(ParseError {
-                    kind: ParseErrorKind::InvalidValue,
-                    message: format!(
-                        "{} for {:?} {} must be between {} and {}, found {}",
-                        attr_name,
-                        kind,
-                        attr_name,
-                        range.start(),
-                        range.end(),
-                        value
-                    ),
-                    span,
-                    suggestion: Some(format!(
-                        "Use {} value between {} and {}",
-                        attr_name,
-                        range.start(),
-                        range.end()
-                    )),
-                });
-            }
-        }
+    if let Some(AttributeValue::Static(value_str)) = attributes.get(attr_name)
+        && let Ok(value) = value_str.parse::<T>()
+        && !range.contains(&value)
+    {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!(
+                "{} for {:?} {} must be between {} and {}, found {}",
+                attr_name,
+                kind,
+                attr_name,
+                range.start(),
+                range.end(),
+                value
+            ),
+            span,
+            suggestion: Some(format!(
+                "Use {} value between {} and {}",
+                attr_name,
+                range.start(),
+                range.end()
+            )),
+        });
     }
     Ok(())
 }
@@ -670,29 +669,29 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
 
         // Check for breakpoint-prefixed attributes (e.g., "mobile-spacing", "tablet-width")
         // Note: We use hyphen instead of colon to avoid XML namespace issues
-        if let Some((prefix, attr_name)) = name.split_once('-') {
-            if let Ok(breakpoint) = crate::ir::layout::Breakpoint::parse(prefix) {
-                let attr_value = parse_attribute_value(value, get_span(node, source))?;
-                breakpoint_attributes
-                    .entry(breakpoint)
-                    .or_default()
-                    .insert(attr_name.to_string(), attr_value);
-                continue;
-            }
+        if let Some((prefix, attr_name)) = name.split_once('-')
+            && let Ok(breakpoint) = crate::ir::layout::Breakpoint::parse(prefix)
+        {
+            let attr_value = parse_attribute_value(value, get_span(node, source))?;
+            breakpoint_attributes
+                .entry(breakpoint)
+                .or_default()
+                .insert(attr_name.to_string(), attr_value);
+            continue;
         }
 
-        if let Some((state_prefix, attr_name)) = name.split_once(':') {
-            if let Some(state) = WidgetState::from_prefix(state_prefix) {
-                let attr_value = parse_attribute_value(value, get_span(node, source))?;
-                inline_state_variants
-                    .entry(state)
-                    .or_default()
-                    .insert(attr_name.to_string(), attr_value);
-                continue;
-            }
-            // If state prefix is invalid, log warning and treat as regular attribute
-            // TODO: Add proper logging when verbose mode is implemented
+        if let Some((state_prefix, attr_name)) = name.split_once(':')
+            && let Some(state) = WidgetState::from_prefix(state_prefix)
+        {
+            let attr_value = parse_attribute_value(value, get_span(node, source))?;
+            inline_state_variants
+                .entry(state)
+                .or_default()
+                .insert(attr_name.to_string(), attr_value);
+            continue;
         }
+        // If state prefix is invalid, log warning and treat as regular attribute
+        // TODO: Add proper logging when verbose mode is implemented
 
         // Parse attribute value (check for bindings)
         let attr_value = parse_attribute_value(value, get_span(node, source))?;
@@ -1133,11 +1132,11 @@ fn parse_layout_attributes(
     }
 
     // Parse position (skip for Tooltip - it has its own position attribute)
-    if !matches!(kind, WidgetKind::Tooltip) {
-        if let Some(AttributeValue::Static(value)) = attributes.get("position") {
-            layout.position = Some(crate::ir::layout::Position::parse(value)?);
-            has_any = true;
-        }
+    if !matches!(kind, WidgetKind::Tooltip)
+        && let Some(AttributeValue::Static(value)) = attributes.get("position")
+    {
+        layout.position = Some(crate::ir::layout::Position::parse(value)?);
+        has_any = true;
     }
 
     // Parse position offsets

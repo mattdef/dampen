@@ -312,17 +312,17 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
 
     // Resolve optional files
     let handlers_path = resolve_optional_file(args.handlers.as_deref(), "handlers.json");
-    if args.verbose {
-        if let Some(ref path) = handlers_path {
-            eprintln!("Using handler registry: {}", path.display());
-        }
+    if args.verbose
+        && let Some(ref path) = handlers_path
+    {
+        eprintln!("Using handler registry: {}", path.display());
     }
 
     let model_path = resolve_optional_file(args.model.as_deref(), "model.json");
-    if args.verbose {
-        if let Some(ref path) = model_path {
-            eprintln!("Using model info: {}", path.display());
-        }
+    if args.verbose
+        && let Some(ref path) = model_path
+    {
+        eprintln!("Using model info: {}", path.display());
     }
 
     // Load handler registry if provided or auto-discovered (US2: Handler Registry Validation)
@@ -948,15 +948,15 @@ fn validate_references(
     errors: &mut Vec<CheckError>,
 ) {
     // Validate global theme reference
-    if let Some(global_theme) = &document.global_theme {
-        if !document.themes.contains_key(global_theme) {
-            errors.push(CheckError::UnknownTheme {
-                theme: global_theme.clone(),
-                file: file_path.to_path_buf(),
-                line: 1,
-                col: 1,
-            });
-        }
+    if let Some(global_theme) = &document.global_theme
+        && !document.themes.contains_key(global_theme)
+    {
+        errors.push(CheckError::UnknownTheme {
+            theme: global_theme.clone(),
+            file: file_path.to_path_buf(),
+            line: 1,
+            col: 1,
+        });
     }
 
     // Validate each theme definition (US5: Theme Property Validation)
@@ -1014,28 +1014,28 @@ fn validate_widget_with_styles(
     errors: &mut Vec<CheckError>,
 ) {
     // Validate structured style properties
-    if let Some(style) = &node.style {
-        if let Err(msg) = style.validate() {
-            errors.push(CheckError::InvalidStyleValue {
-                attr: "structured style".to_string(),
-                file: file_path.to_path_buf(),
-                line: node.span.line,
-                col: node.span.column,
-                message: msg,
-            });
-        }
+    if let Some(style) = &node.style
+        && let Err(msg) = style.validate()
+    {
+        errors.push(CheckError::InvalidStyleValue {
+            attr: "structured style".to_string(),
+            file: file_path.to_path_buf(),
+            line: node.span.line,
+            col: node.span.column,
+            message: msg,
+        });
     }
 
     // Validate structured layout constraints
-    if let Some(layout) = &node.layout {
-        if let Err(msg) = layout.validate() {
-            errors.push(CheckError::InvalidLayoutConstraint {
-                file: file_path.to_path_buf(),
-                line: node.span.line,
-                col: node.span.column,
-                message: msg,
-            });
-        }
+    if let Some(layout) = &node.layout
+        && let Err(msg) = layout.validate()
+    {
+        errors.push(CheckError::InvalidLayoutConstraint {
+            file: file_path.to_path_buf(),
+            line: node.span.line,
+            col: node.span.column,
+            message: msg,
+        });
     }
 
     // Validate style class references
@@ -1097,94 +1097,94 @@ fn validate_style_attributes(
     for (attr_name, attr_value) in &node.attributes {
         match attr_name.as_str() {
             "background" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_background_attr(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_background_attr(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "color" | "border_color" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_color_attr(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_color_attr(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "border_width" | "opacity" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_float_attr(value, attr_name) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_float_attr(value, attr_name)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "border_radius" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_border_radius(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_border_radius(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "border_style" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_border_style(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_border_style(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "shadow" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_shadow_attr(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_shadow_attr(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "transform" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_transform(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_transform(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             _ => {} // Autres attributs gérés ailleurs
@@ -1201,121 +1201,121 @@ fn validate_layout_attributes(
     for (attr_name, attr_value) in &node.attributes {
         match attr_name.as_str() {
             "width" | "height" | "min_width" | "max_width" | "min_height" | "max_height" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_length_attr(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_length_attr(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "padding" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_padding_attr(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_padding_attr(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "spacing" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_spacing(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_spacing(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "align_items" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_alignment(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_alignment(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "justify_content" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_justification(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_justification(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "direction" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = Direction::parse(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = Direction::parse(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "position" => {
-                if matches!(node.kind, WidgetKind::Tooltip) {
-                } else if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = Position::parse(value) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if !matches!(node.kind, WidgetKind::Tooltip)
+                    && let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = Position::parse(value)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "top" | "right" | "bottom" | "left" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_float_attr(value, attr_name) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_float_attr(value, attr_name)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             "z_index" => {
-                if let AttributeValue::Static(value) = attr_value {
-                    if let Err(msg) = style_parser::parse_int_attr(value, attr_name) {
-                        errors.push(CheckError::InvalidStyleValue {
-                            attr: attr_name.clone(),
-                            file: file_path.to_path_buf(),
-                            line: node.span.line,
-                            col: node.span.column,
-                            message: msg,
-                        });
-                    }
+                if let AttributeValue::Static(value) = attr_value
+                    && let Err(msg) = style_parser::parse_int_attr(value, attr_name)
+                {
+                    errors.push(CheckError::InvalidStyleValue {
+                        attr: attr_name.clone(),
+                        file: file_path.to_path_buf(),
+                        line: node.span.line,
+                        col: node.span.column,
+                        message: msg,
+                    });
                 }
             }
             _ => {} // Autres attributs gérés ailleurs

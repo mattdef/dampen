@@ -77,10 +77,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     });
 
     registry.register_with_value("update_name", |model: &mut dyn std::any::Any, value| {
-        if let Some(m) = model.downcast_mut::<Model>() {
-            if let Ok(name) = value.downcast::<String>() {
-                update_name(m, *name);
-            }
+        if let Some(m) = model.downcast_mut::<Model>()
+            && let Ok(name) = value.downcast::<String>()
+        {
+            update_name(m, *name);
         }
     });
 

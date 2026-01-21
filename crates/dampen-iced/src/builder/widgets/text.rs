@@ -55,17 +55,16 @@ impl<'a> DampenWidgetBuilder<'a> {
         let resolved_style = self.resolve_complete_styles(node);
 
         // Apply color from styles (only if not already applied from theme)
-        if let Some(style_props) = resolved_style {
-            if let Some(ref color) = style_props.color {
-                if !theme_color_applied {
-                    text_widget = text_widget.color(iced::Color {
-                        r: color.r,
-                        g: color.g,
-                        b: color.b,
-                        a: color.a,
-                    });
-                }
-            }
+        if let Some(style_props) = resolved_style
+            && let Some(ref color) = style_props.color
+            && !theme_color_applied
+        {
+            text_widget = text_widget.color(iced::Color {
+                r: color.r,
+                g: color.g,
+                b: color.b,
+                a: color.a,
+            });
         }
 
         // Check for direct attributes (size, weight, color) that override styles

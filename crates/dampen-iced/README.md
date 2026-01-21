@@ -13,7 +13,8 @@ Dampen Iced provides automatic interpretation of parsed Dampen markup into Iced 
 - ✅ **Event Handling**: Connect handlers via `on_click`, `on_input`, etc.
 - ✅ **Style & Layout**: Apply padding, spacing, colors, borders automatically
 - ✅ **Recursive Processing**: Handles nested widget trees automatically
-- ✅ **Verbose Logging**: Debug mode for development
+- ✅ **State-Aware Styling**: Hover, focus, active, and disabled states for interactive widgets
+- ✅ **Compile-Time Logging**: Debug output only in debug builds (no runtime overhead)
 
 ## Quick Start
 
@@ -128,9 +129,6 @@ where F: Fn(&str) -> Message + 'a
 #### Configuration
 
 ```rust
-// Enable verbose logging for debugging
-builder.with_verbose(true)
-
 // Add style classes for theme support
 builder.with_style_classes(&style_classes_map)
 
@@ -256,24 +254,27 @@ crates/dampen-iced/
 1. **Reuse builders**: Builder instances are single-use, but cheap to create
 2. **Minimize bindings**: Each binding adds ~700ns overhead
 3. **Use style classes**: Reuse styles instead of inline attributes
-4. **Profile with verbose**: Use `with_verbose(true)` to identify bottlenecks
+4. **Debug in debug builds**: Verbose logging is automatically stripped from release builds
 
 ## Error Handling
 
-### Verbose Mode
+### Debug Mode
+
+Debug logging is automatically enabled in debug builds:
 
 ```rust
+// Debug builds: see detailed logging
+// Release builds: no logging overhead
 let widget = DampenWidgetBuilder::new(&node, &model, Some(®istry))
-    .with_verbose(true)  // Enable debug logging
     .build();
 ```
 
 ### Common Errors
 
-1. **Missing handler**: Logs warning if verbose enabled, event ignored
-2. **Binding error**: Returns empty string, logs error if verbose
-3. **Invalid attribute**: Uses default value, logs warning if verbose
-4. **Unsupported widget**: Returns empty placeholder, logs error
+1. **Missing handler**: Event is silently ignored (debug build logs warning)
+2. **Binding error**: Returns empty string (debug build logs error)
+3. **Invalid attribute**: Uses default value (debug build logs warning)
+4. **Unsupported widget**: Returns empty placeholder (debug build logs error)
 
 ## Integration
 
@@ -353,7 +354,7 @@ registry.register_with_value("update", |m, v| /* ... */);
 
 - Check field names match exactly (case-sensitive)
 - Verify model implements `UiBindable`
-- Enable verbose mode to see evaluation errors
+- Debug builds show evaluation errors automatically
 
 ### Events not firing
 
@@ -376,7 +377,25 @@ at your option.
 
 ## Status
 
-**Current Version**: 0.1.0 (MVP)  
-**Phase**: Phase 6 - Polish & Documentation  
-**All Tests**: ✅ Passing (28/28)  
+**Current Version**: 0.2.7  
+**Phase**: Phase 9 - Complete (All refactoring complete)  
+**All Tests**: ✅ Passing  
 **Examples**: ✅ Working (hello-world, counter, todo-app, styling)
+
+## v0.2.7 Changelog
+
+### Added
+- Helper functions for boolean attribute parsing (`resolve_boolean_attribute`)
+- Handler resolution helper with rich error context (`resolve_handler_param`)
+- Generic state-aware styling helper (`create_state_aware_style_fn`)
+- State-aware styling support for slider widget
+
+### Changed
+- Deprecated `IcedBackend` (removal in v0.3.0)
+- Verbose logging now compile-time gated (no runtime overhead)
+- Improved error messages with suggestions
+
+### Performance
+- Reduced code duplication by ~370+ lines
+- Rc-wrapped StyleClass for efficient cloning in closures
+- No verbose logging overhead in release builds

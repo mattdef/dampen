@@ -567,10 +567,10 @@ pub fn parse_theme_from_node(
             for attr in child.attributes() {
                 typography_attrs.insert(attr.name().to_string(), attr.value().to_string());
             }
-        } else if tag == "spacing" {
-            if let Some(unit) = child.attribute("unit") {
-                spacing_unit = unit.parse::<f32>().ok();
-            }
+        } else if tag == "spacing"
+            && let Some(unit) = child.attribute("unit")
+        {
+            spacing_unit = unit.parse::<f32>().ok();
         }
     }
 

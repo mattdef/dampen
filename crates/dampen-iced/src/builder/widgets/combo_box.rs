@@ -44,12 +44,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             options.iter().find(|o| *o == &selected_str).cloned()
         };
 
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Building combo_box: options={:?}, selected={:?}",
-                options, selected
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] Building combo_box: options={:?}, selected={:?}",
+            options, selected
+        );
 
         // Get handler from events
         let on_select = node
@@ -58,35 +57,32 @@ impl<'a> DampenWidgetBuilder<'a> {
             .find(|e| e.event == dampen_core::EventKind::Select)
             .map(|e| e.handler.clone());
 
-        if self.verbose {
-            if let Some(handler) = &on_select {
-                eprintln!(
-                    "[DampenWidgetBuilder] ComboBox has select event: handler={}",
-                    handler
-                );
-            } else {
-                eprintln!("[DampenWidgetBuilder] ComboBox has no select event");
-            }
+        #[cfg(debug_assertions)]
+        if let Some(handler) = &on_select {
+            eprintln!(
+                "[DampenWidgetBuilder] ComboBox has select event: handler={}",
+                handler
+            );
+        } else {
+            eprintln!("[DampenWidgetBuilder] ComboBox has no select event");
         }
 
         // Use pick_list as combobox implementation
         let combo_box = if let Some(handler_name) = on_select {
             if self.handler_registry.is_some() {
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] ComboBox: Attaching on_select with handler '{}'",
-                        handler_name
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] ComboBox: Attaching on_select with handler '{}'",
+                    handler_name
+                );
                 iced::widget::pick_list(options, selected, move |selected_value| {
                     HandlerMessage::Handler(handler_name.clone(), Some(selected_value))
                 })
             } else {
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] ComboBox: No handler_registry, cannot attach on_select"
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] ComboBox: No handler_registry, cannot attach on_select"
+                );
                 iced::widget::pick_list(options, selected, |_| {
                     HandlerMessage::Handler("dummy".to_string(), None)
                 })

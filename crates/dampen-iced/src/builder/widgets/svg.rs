@@ -22,9 +22,8 @@ impl<'a> DampenWidgetBuilder<'a> {
             .unwrap_or_default();
 
         if src.is_empty() {
-            if self.verbose {
-                eprintln!("[DampenWidgetBuilder] SVG src is empty");
-            }
+            #[cfg(debug_assertions)]
+            eprintln!("[DampenWidgetBuilder] SVG src is empty");
             return iced::widget::text("[SVG: no src]").into();
         }
 
@@ -32,17 +31,17 @@ impl<'a> DampenWidgetBuilder<'a> {
         let mut svg = iced::widget::svg(handle);
 
         // Parse optional width
-        if let Some(width_attr) = node.attributes.get("width") {
-            if let Ok(width) = self.evaluate_attribute(width_attr).parse::<f32>() {
-                svg = svg.width(width);
-            }
+        if let Some(width_attr) = node.attributes.get("width")
+            && let Ok(width) = self.evaluate_attribute(width_attr).parse::<f32>()
+        {
+            svg = svg.width(width);
         }
 
         // Parse optional height
-        if let Some(height_attr) = node.attributes.get("height") {
-            if let Ok(height) = self.evaluate_attribute(height_attr).parse::<f32>() {
-                svg = svg.height(height);
-            }
+        if let Some(height_attr) = node.attributes.get("height")
+            && let Ok(height) = self.evaluate_attribute(height_attr).parse::<f32>()
+        {
+            svg = svg.height(height);
         }
 
         svg.into()

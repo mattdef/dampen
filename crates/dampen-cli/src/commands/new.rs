@@ -100,10 +100,11 @@ fn validate_project_name(name: &str) -> Result<(), String> {
     }
 
     // Check first character
-    if let Some(first) = name.chars().next() {
-        if !first.is_alphabetic() && first != '_' {
-            return Err("Project name must start with a letter or underscore".to_string());
-        }
+    if let Some(first) = name.chars().next()
+        && !first.is_alphabetic()
+        && first != '_'
+    {
+        return Err("Project name must start with a letter or underscore".to_string());
     }
 
     // Check all characters

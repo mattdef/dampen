@@ -43,12 +43,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             options.iter().find(|o| *o == &selected_str).cloned()
         };
 
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Building pick_list: options={:?}, selected={:?}",
-                options, selected
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] Building pick_list: options={:?}, selected={:?}",
+            options, selected
+        );
 
         // Get handler from events
         let on_select = node
@@ -57,34 +56,31 @@ impl<'a> DampenWidgetBuilder<'a> {
             .find(|e| e.event == dampen_core::EventKind::Select)
             .map(|e| e.handler.clone());
 
-        if self.verbose {
-            if let Some(handler) = &on_select {
-                eprintln!(
-                    "[DampenWidgetBuilder] PickList has select event: handler={}",
-                    handler
-                );
-            } else {
-                eprintln!("[DampenWidgetBuilder] PickList has no select event");
-            }
+        #[cfg(debug_assertions)]
+        if let Some(handler) = &on_select {
+            eprintln!(
+                "[DampenWidgetBuilder] PickList has select event: handler={}",
+                handler
+            );
+        } else {
+            eprintln!("[DampenWidgetBuilder] PickList has no select event");
         }
 
         let pick_list = if let Some(handler_name) = on_select {
             if self.handler_registry.is_some() {
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] PickList: Attaching on_select with handler '{}'",
-                        handler_name
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] PickList: Attaching on_select with handler '{}'",
+                    handler_name
+                );
                 iced::widget::pick_list(options, selected, move |selected_value| {
                     HandlerMessage::Handler(handler_name.clone(), Some(selected_value))
                 })
             } else {
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] PickList: No handler_registry, cannot attach on_select"
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] PickList: No handler_registry, cannot attach on_select"
+                );
                 iced::widget::pick_list(options, selected, |_| {
                     HandlerMessage::Handler("dummy".to_string(), None)
                 })
@@ -96,8 +92,8 @@ impl<'a> DampenWidgetBuilder<'a> {
             })
         };
 
-        // TODO: State-aware styling available via map_picklist_status() - see style_mapping.rs
-        // Note: Status::Opened is a struct variant with is_hovered field
+        // Note: PickList state-aware styling is not yet implemented in Iced 0.14
+        // The Style type has private fields that can't be constructed directly
 
         pick_list.into()
     }

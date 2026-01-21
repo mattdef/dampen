@@ -24,10 +24,36 @@ pub enum HandlerMessage {
 pub use builder::DampenWidgetBuilder;
 
 /// Iced backend implementation
+///
+/// **DEPRECATED**: This backend is deprecated and will be removed in v0.3.0.
+///
+/// Use [`DampenWidgetBuilder`] instead, which provides:
+/// - XML-based UI definitions
+/// - State-aware styling with hover/focus/active states
+/// - Handler parameter binding with context resolution
+/// - Hot-reload support during development
+///
+/// # Migration
+///
+/// ```rust,ignore
+/// // Old (deprecated):
+/// let backend = IcedBackend::new(|name, param| {
+///     Message::Handler(name, param)
+/// });
+///
+/// // New (recommended):
+/// let builder = DampenWidgetBuilder::from_document(&document)
+///     .with_handler_registry(handlers);
+/// ```
+#[deprecated(
+    since = "0.2.7",
+    note = "Use DampenWidgetBuilder instead. See migration guide in docs/MIGRATION.md"
+)]
 pub struct IcedBackend {
     message_handler: Box<dyn Fn(String, Option<String>) -> Box<dyn CloneableMessage> + 'static>,
 }
 
+#[allow(deprecated)]
 impl IcedBackend {
     /// Create a new Iced backend with a message handler
     pub fn new<F>(handler: F) -> Self
@@ -60,6 +86,7 @@ impl Clone for Box<dyn CloneableMessage> {
     }
 }
 
+#[allow(deprecated)]
 impl Backend for IcedBackend {
     type Widget<'a> = Element<'a, Box<dyn CloneableMessage>, Theme, Renderer>;
     type Message = Box<dyn CloneableMessage>;
@@ -194,6 +221,7 @@ impl Backend for IcedBackend {
 /// Note: This is a simplified version. In a full implementation, this would receive
 /// a model and evaluate bindings. For now, it handles static values.
 /// Render a widget tree with layout and style support
+#[allow(deprecated)]
 pub fn render_with_layout<'a>(
     node: &WidgetNode,
     backend: &IcedBackend,
@@ -244,6 +272,7 @@ pub fn render_with_layout<'a>(
     }
 }
 
+#[allow(deprecated)]
 pub fn render<'a>(
     node: &WidgetNode,
     backend: &IcedBackend,

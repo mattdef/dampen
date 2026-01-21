@@ -31,9 +31,8 @@ impl<'a> DampenWidgetBuilder<'a> {
         let var_name = match node.attributes.get("each") {
             Some(AttributeValue::Static(name)) => name.clone(),
             _ => {
-                if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] For loop missing 'each' attribute");
-                }
+                #[cfg(debug_assertions)]
+                eprintln!("[DampenWidgetBuilder] For loop missing 'each' attribute");
                 return iced::widget::column(vec![]).into();
             }
         };
@@ -51,37 +50,33 @@ impl<'a> DampenWidgetBuilder<'a> {
                 match binding_result {
                     Ok(BindingValue::List(items)) => items,
                     Ok(other) => {
-                        if self.verbose {
-                            eprintln!(
-                                "[DampenWidgetBuilder] For loop 'in' is not a list: {:?}",
-                                other
-                            );
-                        }
+                        #[cfg(debug_assertions)]
+                        eprintln!(
+                            "[DampenWidgetBuilder] For loop 'in' is not a list: {:?}",
+                            other
+                        );
                         return iced::widget::column(vec![]).into();
                     }
                     Err(e) => {
-                        if self.verbose {
-                            eprintln!("[DampenWidgetBuilder] For loop evaluation error: {}", e);
-                        }
+                        #[cfg(debug_assertions)]
+                        eprintln!("[DampenWidgetBuilder] For loop evaluation error: {}", e);
                         return iced::widget::column(vec![]).into();
                     }
                 }
             }
             _ => {
-                if self.verbose {
-                    eprintln!("[DampenWidgetBuilder] For loop missing 'in' binding");
-                }
+                #[cfg(debug_assertions)]
+                eprintln!("[DampenWidgetBuilder] For loop missing 'in' binding");
                 return iced::widget::column(vec![]).into();
             }
         };
 
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] For loop rendering {} items as '{}'",
-                collection_values.len(),
-                var_name
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] For loop rendering {} items as '{}'",
+            collection_values.len(),
+            var_name
+        );
 
         // Render children for each item
         let mut rendered_children = Vec::new();

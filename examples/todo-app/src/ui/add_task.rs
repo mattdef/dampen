@@ -69,10 +69,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "update_new_item",
         |model: &mut dyn Any, value: Box<dyn Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(text) = value.downcast::<String>() {
-                    m.new_item_text = (*text).clone();
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(text) = value.downcast::<String>()
+            {
+                m.new_item_text = (*text).clone();
             }
         },
     );
@@ -81,10 +81,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "update_description",
         |model: &mut dyn Any, value: Box<dyn Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(text) = value.downcast::<String>() {
-                    m.description = (*text).clone();
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(text) = value.downcast::<String>()
+            {
+                m.description = (*text).clone();
             }
         },
     );
@@ -93,10 +93,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "update_category",
         |model: &mut dyn Any, value: Box<dyn Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(category) = value.downcast::<String>() {
-                    m.selected_category = (*category).clone();
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(category) = value.downcast::<String>()
+            {
+                m.selected_category = (*category).clone();
             }
         },
     );
@@ -105,17 +105,17 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "select_priority",
         |model: &mut dyn Any, value: Box<dyn Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(priority_str) = value.downcast::<String>() {
-                    let priority_str = (*priority_str).clone();
-                    m.selected_priority = match priority_str.as_str() {
-                        "High" => Priority::High,
-                        "Medium" => Priority::Medium,
-                        "Low" => Priority::Low,
-                        _ => Priority::Medium,
-                    };
-                    m.selected_priority_display = priority_str;
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(priority_str) = value.downcast::<String>()
+            {
+                let priority_str = (*priority_str).clone();
+                m.selected_priority = match priority_str.as_str() {
+                    "High" => Priority::High,
+                    "Medium" => Priority::Medium,
+                    "Low" => Priority::Low,
+                    _ => Priority::Medium,
+                };
+                m.selected_priority_display = priority_str;
             }
         },
     );

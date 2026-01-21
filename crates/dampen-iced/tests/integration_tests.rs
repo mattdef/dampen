@@ -1,14 +1,18 @@
 //! Integration tests for widget rendering with IR nodes
 
+#[allow(deprecated)]
 use dampen_core::{AttributeValue, EventBinding, EventKind, WidgetKind, WidgetNode, parse};
+#[allow(deprecated)]
 use dampen_iced::{IcedBackend, render};
 
 /// Helper to create a test backend
+#[allow(deprecated)]
 fn create_backend() -> IcedBackend {
     IcedBackend::new(|handler_name, _value| Box::new(handler_name.to_string()))
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_render_text_static() {
     let backend = create_backend();
     let xml = r#"<text value="Hello World" />"#;

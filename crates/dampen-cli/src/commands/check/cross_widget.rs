@@ -61,10 +61,10 @@ impl RadioGroup {
             let mut has_inconsistency = false;
 
             for button in &self.buttons {
-                if let Some(ref h) = button.handler {
-                    if !handler_list.contains(h) {
-                        handler_list.push(h.clone());
-                    }
+                if let Some(ref h) = button.handler
+                    && !handler_list.contains(h)
+                {
+                    handler_list.push(h.clone());
                 }
                 if &button.handler != first_handler {
                     has_inconsistency = true;

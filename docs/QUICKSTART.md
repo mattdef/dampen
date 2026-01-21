@@ -32,7 +32,7 @@ Dampen is a declarative UI framework for Rust that lets you define user interfac
 
 ## Prerequisites
 
-- Rust 1.75 or later
+- Rust 1.88 or later
 - Cargo installed
 
 ---
@@ -63,12 +63,12 @@ Edit `Cargo.toml`:
 [package]
 name = "my-counter-app"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-dampen-core = "0.1"
-dampen-macros = "0.1"
-dampen-iced = "0.1"
+dampen-core = "0.2.6"
+dampen-macros = "0.2.6"
+dampen-iced = "0.2.6"
 iced = "0.14"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -78,7 +78,7 @@ serde_json = "1.0"
 
 ## Your First App: Counter
 
-This example creates a simple counter with increment, decrement, and reset buttons.
+This example creates a simple hello-world app.
 
 ### Step 1: Create the UI File
 

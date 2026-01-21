@@ -26,12 +26,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             _ => 300.0,
         };
 
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Building Canvas widget: {}x{}",
-                width, height
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] Building Canvas widget: {}x{}",
+            width, height
+        );
 
         // Note: Canvas requires a custom Program implementation
         // For now, we create a placeholder container with a message
@@ -39,9 +38,8 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         // Get program binding attribute for logging
         if let Some(AttributeValue::Binding(expr)) = node.attributes.get("program") {
-            if self.verbose {
-                eprintln!("[DampenWidgetBuilder] Canvas program binding: {:?}", expr);
-            }
+            #[cfg(debug_assertions)]
+            eprintln!("[DampenWidgetBuilder] Canvas program binding: {:?}", expr);
         }
 
         // Create a placeholder: container with text explaining Canvas limitation

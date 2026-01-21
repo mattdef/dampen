@@ -877,11 +877,11 @@ fn generate_text(
     }
 
     // Apply inline style color if present
-    if let Some(ref style_props) = node.style {
-        if let Some(ref color) = style_props.color {
-            let color_expr = generate_color_expr(color);
-            text_widget = quote! { #text_widget.color(#color_expr) };
-        }
+    if let Some(ref style_props) = node.style
+        && let Some(ref color) = style_props.color
+    {
+        let color_expr = generate_color_expr(color);
+        text_widget = quote! { #text_widget.color(#color_expr) };
     }
 
     // Use helper to wrap in container if layout attributes are present
@@ -1320,21 +1320,21 @@ fn generate_container(
     }
 
     // Apply align_items for column/row (vertical alignment of children)
-    if widget_type == "column" || widget_type == "row" {
-        if let Some(align) = node.attributes.get("align_items").and_then(|attr| {
+    if (widget_type == "column" || widget_type == "row")
+        && let Some(align) = node.attributes.get("align_items").and_then(|attr| {
             if let AttributeValue::Static(s) = attr {
                 Some(s.clone())
             } else {
                 None
             }
-        }) {
-            let align_expr = match align.to_lowercase().as_str() {
-                "center" => quote! { iced::Alignment::Center },
-                "end" => quote! { iced::Alignment::End },
-                _ => quote! { iced::Alignment::Start },
-            };
-            widget = quote! { #widget.align_items(#align_expr) };
-        }
+        })
+    {
+        let align_expr = match align.to_lowercase().as_str() {
+            "center" => quote! { iced::Alignment::Center },
+            "end" => quote! { iced::Alignment::End },
+            _ => quote! { iced::Alignment::Start },
+        };
+        widget = quote! { #widget.align_items(#align_expr) };
     }
 
     // Apply styles (only for container, not column/row/scrollable)

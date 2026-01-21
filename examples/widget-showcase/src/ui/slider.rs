@@ -33,10 +33,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
         "update_slider",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
             let model = model.downcast_mut::<Model>().unwrap();
-            if let Ok(val) = value.downcast::<String>() {
-                if let Ok(new_value) = val.parse::<f32>() {
-                    model.slider_value = new_value;
-                }
+            if let Ok(val) = value.downcast::<String>()
+                && let Ok(new_value) = val.parse::<f32>()
+            {
+                model.slider_value = new_value;
             }
         },
     );
@@ -45,10 +45,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
         "update_volume",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
             let model = model.downcast_mut::<Model>().unwrap();
-            if let Ok(val) = value.downcast::<String>() {
-                if let Ok(new_value) = val.parse::<f32>() {
-                    model.volume = new_value;
-                }
+            if let Ok(val) = value.downcast::<String>()
+                && let Ok(new_value) = val.parse::<f32>()
+            {
+                model.volume = new_value;
             }
         },
     );
@@ -57,10 +57,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
         "update_temperature",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
             let model = model.downcast_mut::<Model>().unwrap();
-            if let Ok(val) = value.downcast::<String>() {
-                if let Ok(new_value) = val.parse::<f32>() {
-                    model.temperature = new_value;
-                }
+            if let Ok(val) = value.downcast::<String>()
+                && let Ok(new_value) = val.parse::<f32>()
+            {
+                model.temperature = new_value;
             }
         },
     );
@@ -69,10 +69,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
         "update_red",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
             let model = model.downcast_mut::<Model>().unwrap();
-            if let Ok(val) = value.downcast::<String>() {
-                if let Ok(new_value) = val.parse::<f32>() {
-                    model.red = new_value;
-                }
+            if let Ok(val) = value.downcast::<String>()
+                && let Ok(new_value) = val.parse::<f32>()
+            {
+                model.red = new_value;
             }
         },
     );
@@ -81,10 +81,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
         "update_green",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
             let model = model.downcast_mut::<Model>().unwrap();
-            if let Ok(val) = value.downcast::<String>() {
-                if let Ok(new_value) = val.parse::<f32>() {
-                    model.green = new_value;
-                }
+            if let Ok(val) = value.downcast::<String>()
+                && let Ok(new_value) = val.parse::<f32>()
+            {
+                model.green = new_value;
             }
         },
     );
@@ -93,10 +93,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
         "update_blue",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
             let model = model.downcast_mut::<Model>().unwrap();
-            if let Ok(val) = value.downcast::<String>() {
-                if let Ok(new_value) = val.parse::<f32>() {
-                    model.blue = new_value;
-                }
+            if let Ok(val) = value.downcast::<String>()
+                && let Ok(new_value) = val.parse::<f32>()
+            {
+                model.blue = new_value;
             }
         },
     );

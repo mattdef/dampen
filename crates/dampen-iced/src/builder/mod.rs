@@ -145,9 +145,6 @@ pub struct DampenWidgetBuilder<'a> {
     /// Optional theme context for theming support
     pub(super) theme_context: Option<&'a ThemeContext>,
 
-    /// Enable verbose logging for debugging
-    pub(super) verbose: bool,
-
     /// Factory function to create messages from handler names
     pub(super) message_factory: Box<dyn Fn(&str, Option<String>) -> HandlerMessage + 'a>,
 
@@ -199,7 +196,6 @@ impl<'a> DampenWidgetBuilder<'a> {
             handler_registry,
             style_classes: Some(&document.style_classes),
             theme_context: None,
-            verbose: false,
             message_factory: Box::new(|name, value| {
                 HandlerMessage::Handler(name.to_string(), value)
             }),
@@ -357,7 +353,6 @@ impl<'a> DampenWidgetBuilder<'a> {
             handler_registry,
             style_classes: None,
             theme_context: None,
-            verbose: false,
             message_factory: Box::new(message_factory),
             binding_context: RefCell::new(Vec::new()),
         }
@@ -386,22 +381,6 @@ impl<'a> DampenWidgetBuilder<'a> {
     /// ```
     pub fn with_style_classes(mut self, style_classes: &'a HashMap<String, StyleClass>) -> Self {
         self.style_classes = Some(style_classes);
-        self
-    }
-
-    /// Enable verbose logging for debugging
-    ///
-    /// This prints detailed information about widget building,
-    /// event handler attachment, and parameter evaluation.
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// let builder = DampenWidgetBuilder::new(/* ... */)
-    ///     .verbose(true);
-    /// ```
-    pub fn with_verbose(mut self, verbose: bool) -> Self {
-        self.verbose = verbose;
         self
     }
 
@@ -503,9 +482,8 @@ impl<'a> DampenWidgetBuilder<'a> {
     where
         HandlerMessage: Clone + 'static,
     {
-        if self.verbose {
-            eprintln!("[DampenWidgetBuilder] Building widget: {:?}", node.kind);
-        }
+        #[cfg(debug_assertions)]
+        eprintln!("[DampenWidgetBuilder] Building widget: {:?}", node.kind);
         match node.kind {
             WidgetKind::Text => self.build_text(node),
             WidgetKind::Button => self.build_button(node),

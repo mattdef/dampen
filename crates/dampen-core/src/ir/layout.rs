@@ -56,56 +56,55 @@ impl LayoutConstraints {
     /// - fill_portion is not 1-255
     /// - percentage is not 0.0-100.0
     pub fn validate(&self) -> Result<(), String> {
-        if let (Some(min), Some(max)) = (self.min_width, self.max_width) {
-            if min > max {
-                return Err(format!("min_width ({}) > max_width ({})", min, max));
-            }
+        if let (Some(min), Some(max)) = (self.min_width, self.max_width)
+            && min > max
+        {
+            return Err(format!("min_width ({}) > max_width ({})", min, max));
         }
 
-        if let (Some(min), Some(max)) = (self.min_height, self.max_height) {
-            if min > max {
-                return Err(format!("min_height ({}) > max_height ({})", min, max));
-            }
+        if let (Some(min), Some(max)) = (self.min_height, self.max_height)
+            && min > max
+        {
+            return Err(format!("min_height ({}) > max_height ({})", min, max));
         }
 
-        if let Some(spacing) = self.spacing {
-            if spacing < 0.0 {
-                return Err(format!("spacing must be non-negative, got {}", spacing));
-            }
+        if let Some(spacing) = self.spacing
+            && spacing < 0.0
+        {
+            return Err(format!("spacing must be non-negative, got {}", spacing));
         }
 
-        if let Some(padding) = &self.padding {
-            if padding.top < 0.0
+        if let Some(padding) = &self.padding
+            && (padding.top < 0.0
                 || padding.right < 0.0
                 || padding.bottom < 0.0
-                || padding.left < 0.0
-            {
-                return Err("padding values must be non-negative".to_string());
-            }
+                || padding.left < 0.0)
+        {
+            return Err("padding values must be non-negative".to_string());
         }
 
-        if let Some(Length::FillPortion(n)) = self.width {
-            if n == 0 {
-                return Err(format!("fill_portion must be 1-255, got {}", n));
-            }
+        if let Some(Length::FillPortion(n)) = self.width
+            && n == 0
+        {
+            return Err(format!("fill_portion must be 1-255, got {}", n));
         }
 
-        if let Some(Length::FillPortion(n)) = self.height {
-            if n == 0 {
-                return Err(format!("fill_portion must be 1-255, got {}", n));
-            }
+        if let Some(Length::FillPortion(n)) = self.height
+            && n == 0
+        {
+            return Err(format!("fill_portion must be 1-255, got {}", n));
         }
 
-        if let Some(Length::Percentage(p)) = self.width {
-            if !(0.0..=100.0).contains(&p) {
-                return Err(format!("percentage must be 0.0-100.0, got {}", p));
-            }
+        if let Some(Length::Percentage(p)) = self.width
+            && !(0.0..=100.0).contains(&p)
+        {
+            return Err(format!("percentage must be 0.0-100.0, got {}", p));
         }
 
-        if let Some(Length::Percentage(p)) = self.height {
-            if !(0.0..=100.0).contains(&p) {
-                return Err(format!("percentage must be 0.0-100.0, got {}", p));
-            }
+        if let Some(Length::Percentage(p)) = self.height
+            && !(0.0..=100.0).contains(&p)
+        {
+            return Err(format!("percentage must be 0.0-100.0, got {}", p));
         }
 
         // Position-related validation

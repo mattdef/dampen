@@ -291,7 +291,7 @@
                             background="#ffffff"
                             padding="15"
                             border_radius="8"
-                            shadow="2 4 12 #00000030"
+                            shadow="2 4 12 #00000090"
                             width="fill"
                         >
                         <text value="With Shadow" size="12" color="#2c3e50" />

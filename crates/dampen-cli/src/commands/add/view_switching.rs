@@ -192,55 +192,55 @@ fn add_switch_variant_to_macro(content: &str) -> Result<String, ViewSwitchError>
 
     // Not found, need to add it
     // Find the #[dampen_app(...)] macro and add it before the closing )]
-    if let Some(macro_start) = content.find("#[dampen_app(") {
-        if let Some(macro_end) = content[macro_start..].find(")]") {
-            let absolute_macro_end = macro_start + macro_end;
+    if let Some(macro_start) = content.find("#[dampen_app(")
+        && let Some(macro_end) = content[macro_start..].find(")]")
+    {
+        let absolute_macro_end = macro_start + macro_end;
 
-            // Get the content before )]
-            let before_close = &content[..absolute_macro_end];
+        // Get the content before )]
+        let before_close = &content[..absolute_macro_end];
 
-            // Find the last line before )] that's not just whitespace
-            let lines: Vec<&str> = before_close.lines().collect();
-            let last_non_empty_idx = lines.iter().rposition(|line| !line.trim().is_empty());
+        // Find the last line before )] that's not just whitespace
+        let lines: Vec<&str> = before_close.lines().collect();
+        let last_non_empty_idx = lines.iter().rposition(|line| !line.trim().is_empty());
 
-            if let Some(idx) = last_non_empty_idx {
-                // Rebuild with comma added if needed
-                let mut result = String::with_capacity(content.len() + 100);
+        if let Some(idx) = last_non_empty_idx {
+            // Rebuild with comma added if needed
+            let mut result = String::with_capacity(content.len() + 100);
 
-                // Add all lines up to the last non-empty line
-                for (i, line) in lines.iter().enumerate() {
-                    result.push_str(line);
-                    result.push('\n');
+            // Add all lines up to the last non-empty line
+            for (i, line) in lines.iter().enumerate() {
+                result.push_str(line);
+                result.push('\n');
 
-                    if i == idx {
-                        // This is the last non-empty line
-                        // Add comma if it doesn't have one
-                        if !line.trim_end().ends_with(',') {
-                            // Go back and add comma before the newline
-                            result.pop(); // Remove the \n we just added
-                            result.push(',');
-                            result.push('\n');
-                        }
-
-                        // Add the switch_view_variant line
-                        result.push_str(r#"    switch_view_variant = "SwitchToView","#);
+                if i == idx {
+                    // This is the last non-empty line
+                    // Add comma if it doesn't have one
+                    if !line.trim_end().ends_with(',') {
+                        // Go back and add comma before the newline
+                        result.pop(); // Remove the \n we just added
+                        result.push(',');
                         result.push('\n');
                     }
-                }
 
-                // Add the rest of the content (from )] onwards)
-                result.push_str(&content[absolute_macro_end..]);
-                return Ok(result);
+                    // Add the switch_view_variant line
+                    result.push_str(r#"    switch_view_variant = "SwitchToView","#);
+                    result.push('\n');
+                }
             }
 
-            // Fallback: just insert before )]
-            let mut result = String::with_capacity(content.len() + 100);
-            result.push_str(&content[..absolute_macro_end]);
-            result.push_str(r#"    switch_view_variant = "SwitchToView","#);
-            result.push('\n');
+            // Add the rest of the content (from )] onwards)
             result.push_str(&content[absolute_macro_end..]);
             return Ok(result);
         }
+
+        // Fallback: just insert before )]
+        let mut result = String::with_capacity(content.len() + 100);
+        result.push_str(&content[..absolute_macro_end]);
+        result.push_str(r#"    switch_view_variant = "SwitchToView","#);
+        result.push('\n');
+        result.push_str(&content[absolute_macro_end..]);
+        return Ok(result);
     }
 
     Err(ViewSwitchError::DampenAppMacroNotFound)

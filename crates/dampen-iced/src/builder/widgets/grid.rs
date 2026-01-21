@@ -39,12 +39,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             None => 10.0,
         };
 
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Building Grid: {} columns, spacing {}",
-                columns, spacing
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] Building Grid: {} columns, spacing {}",
+            columns, spacing
+        );
 
         // Group child nodes into rows and build widgets
         let mut rows = Vec::new();

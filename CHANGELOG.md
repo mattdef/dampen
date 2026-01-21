@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+
+- **IcedBackend struct**: The `IcedBackend` struct in `dampen-iced` is now deprecated and will be removed in v0.3.0. Use `DampenWidgetBuilder` instead. See the migration guide in `docs/MIGRATION.md` for instructions on updating your code.
+
 ## [0.2.4] - 2026-01-14
 
 ### Added

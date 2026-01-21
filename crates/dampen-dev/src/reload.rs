@@ -92,15 +92,14 @@ impl<M: UiBindable> HotReloadContext<M> {
         use std::hash::{Hash, Hasher};
 
         // Evict oldest entry if cache is full
-        if self.parse_cache.len() >= self.max_cache_size {
-            if let Some(oldest_key) = self
+        if self.parse_cache.len() >= self.max_cache_size
+            && let Some(oldest_key) = self
                 .parse_cache
                 .iter()
                 .min_by_key(|(_, entry)| entry.cached_at)
                 .map(|(key, _)| *key)
-            {
-                self.parse_cache.remove(&oldest_key);
-            }
+        {
+            self.parse_cache.remove(&oldest_key);
         }
 
         let mut hasher = DefaultHasher::new();

@@ -22,9 +22,8 @@ impl<'a> DampenWidgetBuilder<'a> {
             .unwrap_or_default();
 
         if src.is_empty() {
-            if self.verbose {
-                eprintln!("[DampenWidgetBuilder] Image src is empty");
-            }
+            #[cfg(debug_assertions)]
+            eprintln!("[DampenWidgetBuilder] Image src is empty");
             return iced::widget::text("[Image: no src]").into();
         }
 
@@ -32,16 +31,16 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         let mut image = iced::widget::image(handle);
 
-        if let Some(width_attr) = node.attributes.get("width") {
-            if let Ok(width) = self.evaluate_attribute(width_attr).parse::<f32>() {
-                image = image.width(width);
-            }
+        if let Some(width_attr) = node.attributes.get("width")
+            && let Ok(width) = self.evaluate_attribute(width_attr).parse::<f32>()
+        {
+            image = image.width(width);
         }
 
-        if let Some(height_attr) = node.attributes.get("height") {
-            if let Ok(height) = self.evaluate_attribute(height_attr).parse::<f32>() {
-                image = image.height(height);
-            }
+        if let Some(height_attr) = node.attributes.get("height")
+            && let Ok(height) = self.evaluate_attribute(height_attr).parse::<f32>()
+        {
+            image = image.height(height);
         }
 
         image.into()

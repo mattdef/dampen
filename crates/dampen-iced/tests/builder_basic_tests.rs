@@ -93,7 +93,7 @@ fn test_verbose_logging() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = DampenWidgetBuilder::new(&doc, &model, Some(&registry)).with_verbose(true);
+    let builder = DampenWidgetBuilder::new(&doc, &model, Some(&registry));
 
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }
@@ -202,6 +202,6 @@ fn test_button_enabled_with_verbose() {
     let model = create_model();
     let registry = create_registry();
 
-    let builder = DampenWidgetBuilder::new(&doc, &model, Some(&registry)).with_verbose(true);
+    let builder = DampenWidgetBuilder::new(&doc, &model, Some(&registry));
     let _element: Element<'_, HandlerMessage, Theme, Renderer> = builder.build();
 }

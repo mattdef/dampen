@@ -3,7 +3,67 @@
 use crate::HandlerMessage;
 use crate::builder::DampenWidgetBuilder;
 use dampen_core::ir::node::WidgetNode;
+use dampen_core::ir::style::StyleProperties;
 use iced::{Element, Renderer, Theme};
+
+/// Convert Dampen StyleProperties to Iced toggler Style
+fn apply_toggler_style(props: &StyleProperties) -> iced::widget::toggler::Style {
+    use iced::widget::toggler;
+    use iced::{Background, Color};
+
+    let mut style = toggler::Style {
+        background: Background::Color(Color::from_rgb(0.7, 0.7, 0.7)),
+        background_border_width: 1.0,
+        background_border_color: Color::TRANSPARENT,
+        foreground: Background::Color(Color::WHITE),
+        foreground_border_width: 0.0,
+        foreground_border_color: Color::TRANSPARENT,
+        border_radius: None,
+        padding_ratio: 0.2,
+        text_color: None,
+    };
+
+    if let Some(ref bg) = props.background
+        && let dampen_core::ir::style::Background::Color(color) = bg
+    {
+        style.background = Background::Color(Color {
+            r: color.r,
+            g: color.g,
+            b: color.b,
+            a: color.a,
+        });
+    }
+
+    if let Some(ref fg_color) = props.color {
+        style.foreground = Background::Color(Color {
+            r: fg_color.r,
+            g: fg_color.g,
+            b: fg_color.b,
+            a: fg_color.a,
+        });
+    }
+
+    if let Some(ref text_color) = props.color {
+        style.text_color = Some(Color {
+            r: text_color.r,
+            g: text_color.g,
+            b: text_color.b,
+            a: text_color.a,
+        });
+    }
+
+    if let Some(ref border) = props.border {
+        style.background_border_color = Color {
+            r: border.color.r,
+            g: border.color.g,
+            b: border.color.b,
+            a: border.color.a,
+        };
+        style.background_border_width = border.width;
+    }
+
+    style
+}
 
 impl<'a> DampenWidgetBuilder<'a> {
     /// Build a toggler widget from Dampen XML definition
@@ -34,12 +94,11 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         let is_active = active_str == "true" || active_str == "1";
 
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Building toggler: label='{}', active={}",
-                label, is_active
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] Building toggler: label='{}', active={}",
+            label, is_active
+        );
 
         // Get handler from events
         let on_toggle = node
@@ -48,15 +107,14 @@ impl<'a> DampenWidgetBuilder<'a> {
             .find(|e| e.event == dampen_core::EventKind::Toggle)
             .map(|e| e.handler.clone());
 
-        if self.verbose {
-            if let Some(handler) = &on_toggle {
-                eprintln!(
-                    "[DampenWidgetBuilder] Toggler has toggle event: handler={}",
-                    handler
-                );
-            } else {
-                eprintln!("[DampenWidgetBuilder] Toggler has no toggle event");
-            }
+        #[cfg(debug_assertions)]
+        if let Some(handler) = &on_toggle {
+            eprintln!(
+                "[DampenWidgetBuilder] Toggler has toggle event: handler={}",
+                handler
+            );
+        } else {
+            eprintln!("[DampenWidgetBuilder] Toggler has no toggle event");
         }
 
         let mut toggler = iced::widget::toggler(is_active);
@@ -65,114 +123,44 @@ impl<'a> DampenWidgetBuilder<'a> {
         // Use complete style resolution: theme → class → inline
         let resolved_base_style = self.resolve_complete_styles(node);
 
-        // Get the StyleClass for state variant resolution
+        // Get the StyleClass for state variant resolution, wrapped in Rc for efficient cloning
         let style_class = if !node.classes.is_empty() {
             self.style_classes
                 .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
+                .cloned()
+                .map(std::rc::Rc::new)
         } else {
             None
         };
 
+        // Apply state-aware styling using generic helper
         if let Some(base_style_props) = resolved_base_style {
-            // Clone for move into closure
+            use crate::builder::helpers::create_state_aware_style_fn;
+            use crate::style_mapping::map_toggler_status;
+
             let base_style_props = base_style_props.clone();
-            let style_class = style_class.cloned();
 
-            toggler = toggler.style(move |_theme, status| {
-                use crate::style_mapping::{
-                    map_toggler_status, merge_style_properties, resolve_state_style,
-                };
-                use iced::widget::toggler;
-                use iced::{Background, Color};
-
-                // Map Iced toggler status to WidgetState
-                let widget_state = map_toggler_status(status);
-
-                // Resolve state-specific style if available
-                let final_style_props =
-                    if let (Some(class), Some(state)) = (&style_class, widget_state) {
-                        // Try to get state-specific style
-                        if let Some(state_style) = resolve_state_style(class, state) {
-                            // Merge state style with base style
-                            merge_style_properties(&base_style_props, state_style)
-                        } else {
-                            // No state variant defined, use base style
-                            base_style_props.clone()
-                        }
-                    } else {
-                        // No style class or no state, use base style
-                        base_style_props.clone()
-                    };
-
-                // Create toggler style with defaults
-                let mut style = toggler::Style {
-                    background: Background::Color(Color::from_rgb(0.7, 0.7, 0.7)),
-                    background_border_width: 1.0,
-                    background_border_color: Color::TRANSPARENT,
-                    foreground: Background::Color(Color::WHITE),
-                    foreground_border_width: 0.0,
-                    foreground_border_color: Color::TRANSPARENT,
-                    border_radius: None,
-                    padding_ratio: 0.2,
-                    text_color: None,
-                };
-
-                // Apply background color
-                if let Some(ref bg) = final_style_props.background {
-                    if let dampen_core::ir::style::Background::Color(color) = bg {
-                        style.background = Background::Color(Color {
-                            r: color.r,
-                            g: color.g,
-                            b: color.b,
-                            a: color.a,
-                        });
-                    }
-                }
-
-                // Apply foreground color (the toggle indicator)
-                if let Some(ref fg_color) = final_style_props.color {
-                    style.foreground = Background::Color(Color {
-                        r: fg_color.r,
-                        g: fg_color.g,
-                        b: fg_color.b,
-                        a: fg_color.a,
-                    });
-                }
-
-                // Apply text color if specified
-                if let Some(ref text_color) = final_style_props.color {
-                    style.text_color = Some(Color {
-                        r: text_color.r,
-                        g: text_color.g,
-                        b: text_color.b,
-                        a: text_color.a,
-                    });
-                }
-
-                // Apply border
-                if let Some(ref border) = final_style_props.border {
-                    style.background_border_color = Color {
-                        r: border.color.r,
-                        g: border.color.g,
-                        b: border.color.b,
-                        a: border.color.a,
-                    };
-                    style.background_border_width = border.width;
-                }
-
-                style
-            });
+            if let Some(style_fn) = create_state_aware_style_fn(
+                self,
+                node,
+                dampen_core::ir::WidgetKind::Toggler,
+                style_class,
+                base_style_props,
+                map_toggler_status,
+                apply_toggler_style,
+            ) {
+                toggler = toggler.style(style_fn);
+            }
         }
 
         // Connect event if handler exists
         if let Some(handler_name) = on_toggle {
             if self.handler_registry.is_some() {
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] Toggler: Attaching on_toggle with handler '{}'",
-                        handler_name
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] Toggler: Attaching on_toggle with handler '{}'",
+                    handler_name
+                );
                 toggler = toggler.on_toggle(move |new_active| {
                     HandlerMessage::Handler(
                         handler_name.clone(),
@@ -184,11 +172,10 @@ impl<'a> DampenWidgetBuilder<'a> {
                     )
                 });
             } else {
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] Toggler: No handler_registry, cannot attach on_toggle"
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] Toggler: No handler_registry, cannot attach on_toggle"
+                );
             }
         }
 

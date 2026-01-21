@@ -1,9 +1,12 @@
 //! Tests for radio widget rendering
 
+#[allow(deprecated)]
 use dampen_core::{WidgetKind, parse};
+#[allow(deprecated)]
 use dampen_iced::{IcedBackend, render};
 
 #[test]
+#[allow(deprecated)]
 fn test_render_single_radio() {
     let xml = r#"<radio label="Option A" value="a" />"#;
     let doc = parse(xml).unwrap();

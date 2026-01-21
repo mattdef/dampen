@@ -46,14 +46,14 @@ impl Theme {
             .validate_with_inheritance(&self.name, parent_name)?;
 
         // Validate spacing
-        if let Some(ref unit) = self.spacing.unit {
-            if *unit <= 0.0 {
-                return Err(format!(
-                    "Theme '{}': spacing unit must be positive, got {}\n\
-                     Hint: Use a positive value like unit=\"8\" or unit=\"4\"",
-                    self.name, unit
-                ));
-            }
+        if let Some(ref unit) = self.spacing.unit
+            && *unit <= 0.0
+        {
+            return Err(format!(
+                "Theme '{}': spacing unit must be positive, got {}\n\
+                 Hint: Use a positive value like unit=\"8\" or unit=\"4\"",
+                self.name, unit
+            ));
         }
 
         // Validate base styles
@@ -232,10 +232,10 @@ impl ThemePalette {
                 _ => unreachable!(),
             };
 
-            if let Some(color_val) = value {
-                if let Err(e) = color_val.validate() {
-                    invalid.push((*color, e));
-                }
+            if let Some(color_val) = value
+                && let Err(e) = color_val.validate()
+            {
+                invalid.push((*color, e));
             }
         }
 
@@ -842,18 +842,18 @@ impl ThemeDocument {
             });
         }
 
-        if let Some(ref default) = self.default_theme {
-            if !self.themes.contains_key(default) {
-                let available: Vec<_> = self.themes.keys().cloned().collect();
-                return Err(ThemeError {
-                    kind: ThemeErrorKind::InvalidDefaultTheme,
-                    message: format!(
-                        "THEME_002: Default theme '{}' not found. Available: {}",
-                        default,
-                        available.join(", ")
-                    ),
-                });
-            }
+        if let Some(ref default) = self.default_theme
+            && !self.themes.contains_key(default)
+        {
+            let available: Vec<_> = self.themes.keys().cloned().collect();
+            return Err(ThemeError {
+                kind: ThemeErrorKind::InvalidDefaultTheme,
+                message: format!(
+                    "THEME_002: Default theme '{}' not found. Available: {}",
+                    default,
+                    available.join(", ")
+                ),
+            });
         }
 
         for (name, theme) in &self.themes {
@@ -924,21 +924,14 @@ impl ThemeDocument {
     ///
     /// Priority: user_preference > default_theme > system_preference > "light"
     pub fn effective_default<'a>(&'a self, system_preference: Option<&'a str>) -> &'a str {
+        if self.follow_system
+            && let Some(sys) = system_preference
+            && self.themes.contains_key(sys)
+        {
+            return sys;
+        }
         if let Some(ref default) = self.default_theme {
-            if self.follow_system {
-                if let Some(sys) = system_preference {
-                    if self.themes.contains_key(sys) {
-                        return sys;
-                    }
-                }
-            }
             return default;
-        } else if self.follow_system {
-            if let Some(sys) = system_preference {
-                if self.themes.contains_key(sys) {
-                    return sys;
-                }
-            }
         }
         "light"
     }

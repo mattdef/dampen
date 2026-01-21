@@ -13,9 +13,8 @@ impl<'a> DampenWidgetBuilder<'a> {
     where
         HandlerMessage: Clone + 'static,
     {
-        if self.verbose {
-            eprintln!("[DampenWidgetBuilder] Building float widget (placeholder)");
-        }
+        #[cfg(debug_assertions)]
+        eprintln!("[DampenWidgetBuilder] Building float widget (placeholder)");
 
         // For now, render children in a column as a placeholder
         // In a full implementation, this would use absolute positioning

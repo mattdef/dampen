@@ -1,9 +1,12 @@
 //! Unit tests for IcedBackend trait implementations
 
+#[allow(deprecated)]
 use dampen_core::Backend;
+#[allow(deprecated)]
 use dampen_iced::IcedBackend;
 
 /// Create a test backend instance
+#[allow(deprecated)]
 fn create_test_backend() -> IcedBackend {
     IcedBackend::new(|handler_name, _value| {
         // Return a simple message for testing
@@ -12,6 +15,8 @@ fn create_test_backend() -> IcedBackend {
 }
 
 #[test]
+#[allow(deprecated)]
+#[allow(deprecated)]
 fn test_text_widget() {
     let backend = create_test_backend();
     let widget = backend.text("Hello, World!");
@@ -23,6 +28,7 @@ fn test_text_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_button_widget() {
     let backend = create_test_backend();
     let label = backend.text("Click Me");
@@ -34,6 +40,7 @@ fn test_button_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_button_without_handler() {
     let backend = create_test_backend();
     let label = backend.text("Click Me");
@@ -44,6 +51,7 @@ fn test_button_without_handler() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_column_layout() {
     let backend = create_test_backend();
     let children = vec![
@@ -58,6 +66,7 @@ fn test_column_layout() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_row_layout() {
     let backend = create_test_backend();
     let children = vec![backend.text("Left"), backend.text("Right")];
@@ -68,6 +77,7 @@ fn test_row_layout() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_container_widget() {
     let backend = create_test_backend();
     let content = backend.text("Content");
@@ -78,6 +88,7 @@ fn test_container_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_scrollable_widget() {
     let backend = create_test_backend();
     let content = backend.text("Scrollable content");
@@ -88,6 +99,7 @@ fn test_scrollable_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_stack_widget() {
     let backend = create_test_backend();
     let children = vec![backend.text("Layer 1"), backend.text("Layer 2")];
@@ -98,6 +110,7 @@ fn test_stack_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_text_input_widget() {
     let backend = create_test_backend();
     let msg = Box::new("input_handler".to_string());
@@ -108,6 +121,7 @@ fn test_text_input_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_text_input_without_handler() {
     let backend = create_test_backend();
     let widget = backend.text_input("Placeholder", "Initial value", None);
@@ -117,6 +131,7 @@ fn test_text_input_without_handler() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_checkbox_widget() {
     let backend = create_test_backend();
     let msg = Box::new("toggle_handler".to_string());
@@ -127,6 +142,7 @@ fn test_checkbox_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_checkbox_unchecked() {
     let backend = create_test_backend();
     let widget = backend.checkbox("Enable feature", false, None);
@@ -136,6 +152,7 @@ fn test_checkbox_unchecked() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_slider_widget() {
     let backend = create_test_backend();
     let msg = Box::new("change_handler".to_string());
@@ -146,6 +163,7 @@ fn test_slider_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_slider_without_handler() {
     let backend = create_test_backend();
     let widget = backend.slider(0.0, 100.0, 50.0, None);
@@ -155,6 +173,7 @@ fn test_slider_without_handler() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_pick_list_widget() {
     let backend = create_test_backend();
     let msg = Box::new("select_handler".to_string());
@@ -166,6 +185,7 @@ fn test_pick_list_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_pick_list_without_selection() {
     let backend = create_test_backend();
     let options = vec!["Option 1", "Option 2"];
@@ -176,6 +196,7 @@ fn test_pick_list_without_selection() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_toggler_widget() {
     let backend = create_test_backend();
     let msg = Box::new("toggle_handler".to_string());
@@ -186,6 +207,7 @@ fn test_toggler_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_toggler_inactive() {
     let backend = create_test_backend();
     let widget = backend.toggler("Dark Mode", false, None);
@@ -195,6 +217,7 @@ fn test_toggler_inactive() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_image_widget() {
     let backend = create_test_backend();
     let widget = backend.image("path/to/image.png");
@@ -204,6 +227,7 @@ fn test_image_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_svg_widget() {
     let backend = create_test_backend();
     let widget = backend.svg("path/to/image.svg");
@@ -213,6 +237,7 @@ fn test_svg_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_space_widget() {
     let backend = create_test_backend();
     let widget = backend.space();
@@ -222,6 +247,7 @@ fn test_space_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_rule_widget() {
     let backend = create_test_backend();
     let widget = backend.rule();
@@ -231,6 +257,7 @@ fn test_rule_widget() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_nested_layouts() {
     let backend = create_test_backend();
 
@@ -247,6 +274,7 @@ fn test_nested_layouts() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_message_handler_invocation() {
     // Test that the backend can be created with a handler
     let backend = IcedBackend::new(|name, _value| Box::new(name.to_string()));
@@ -260,6 +288,7 @@ fn test_message_handler_invocation() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_layout_with_alignment() {
     use dampen_core::ir::layout::{Alignment, Justification, LayoutConstraints};
     use dampen_iced::style_mapping::map_layout_constraints;
@@ -276,6 +305,7 @@ fn test_layout_with_alignment() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_layout_with_position() {
     use dampen_core::ir::layout::{LayoutConstraints, Position};
     use dampen_iced::style_mapping::map_layout_constraints;
@@ -300,6 +330,7 @@ fn test_layout_with_position() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_position_helper_functions() {
     use dampen_core::ir::layout::Position;
     use dampen_iced::style_mapping::{IcedLayout, get_z_index, has_positioning};
@@ -329,6 +360,7 @@ fn test_position_helper_functions() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_layout_with_combined_attributes() {
     use dampen_core::ir::layout::{Alignment, Justification, LayoutConstraints, Position};
     use dampen_iced::style_mapping::map_layout_constraints;

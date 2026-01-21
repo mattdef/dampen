@@ -40,10 +40,10 @@ fn discover_dampen_files(manifest_dir: &PathBuf) {
         let path: &PathBuf = &entry.path().to_path_buf();
 
         // Check if it's a .dampen file (not .dampen.rs)
-        if let Some(ext) = path.extension() {
-            if ext == "dampen" {
-                println!("cargo:rerun-if-changed={}", path.display());
-            }
+        if let Some(ext) = path.extension()
+            && ext == "dampen"
+        {
+            println!("cargo:rerun-if-changed={}", path.display());
         }
     }
 }

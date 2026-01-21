@@ -525,12 +525,11 @@ impl HandlerCallGraph {
         let mut path = Vec::new();
 
         for handler in self.dependencies.keys() {
-            if !visited.contains(handler) {
-                if let Some(cycle) =
+            if !visited.contains(handler)
+                && let Some(cycle) =
                     self.dfs_detect_cycle(handler, &mut visited, &mut recursion_stack, &mut path)
-                {
-                    return Some(cycle);
-                }
+            {
+                return Some(cycle);
             }
         }
 

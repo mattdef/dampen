@@ -294,13 +294,14 @@ fn validate_rust_identifier(name: &str) -> Result<(), String> {
     }
 
     // Safe: we checked above that name is not empty
-    if let Some(first_char) = name.chars().next() {
-        if !first_char.is_alphabetic() && first_char != '_' {
-            return Err(format!(
-                "Invalid view name '{}'\nhelp: View names must start with a letter or underscore",
-                name
-            ));
-        }
+    if let Some(first_char) = name.chars().next()
+        && !first_char.is_alphabetic()
+        && first_char != '_'
+    {
+        return Err(format!(
+            "Invalid view name '{}'\nhelp: View names must start with a letter or underscore",
+            name
+        ));
     }
 
     if !name.chars().all(|c| c.is_alphanumeric() || c == '_') {

@@ -504,10 +504,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "update_new_item",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(s) = value.downcast::<String>() {
-                    update_new_item(m, *s);
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(s) = value.downcast::<String>()
+            {
+                update_new_item(m, *s);
             }
         },
     );
@@ -515,10 +515,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "update_category",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(s) = value.downcast::<String>() {
-                    update_category(m, *s);
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(s) = value.downcast::<String>()
+            {
+                update_category(m, *s);
             }
         },
     );
@@ -526,10 +526,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "update_priority",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(s) = value.downcast::<String>() {
-                    update_priority(m, *s);
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(s) = value.downcast::<String>()
+            {
+                update_priority(m, *s);
             }
         },
     );
@@ -537,10 +537,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "apply_filter",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(s) = value.downcast::<String>() {
-                    apply_filter(m, *s);
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(s) = value.downcast::<String>()
+            {
+                apply_filter(m, *s);
             }
         },
     );
@@ -548,10 +548,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "update_search",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(s) = value.downcast::<String>() {
-                    update_search(m, *s);
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(s) = value.downcast::<String>()
+            {
+                update_search(m, *s);
             }
         },
     );
@@ -559,10 +559,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "update_edit_text",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(s) = value.downcast::<String>() {
-                    update_edit_text(m, *s);
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(s) = value.downcast::<String>()
+            {
+                update_edit_text(m, *s);
             }
         },
     );
@@ -579,10 +579,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
                     if let Ok(id) = value.downcast::<usize>() {
                         toggle_item_with_shared(m, *id, s);
                     }
-                } else if let Ok(str_val) = value.downcast::<String>() {
-                    if let Ok(id) = str_val.parse() {
-                        toggle_item_with_shared(m, id, s);
-                    }
+                } else if let Ok(str_val) = value.downcast::<String>()
+                    && let Ok(id) = str_val.parse()
+                {
+                    toggle_item_with_shared(m, id, s);
                 }
             }
         },
@@ -600,10 +600,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
                     if let Ok(id) = value.downcast::<usize>() {
                         delete_item_with_shared(m, *id, s);
                     }
-                } else if let Ok(str_val) = value.downcast::<String>() {
-                    if let Ok(id) = str_val.parse() {
-                        delete_item_with_shared(m, id, s);
-                    }
+                } else if let Ok(str_val) = value.downcast::<String>()
+                    && let Ok(id) = str_val.parse()
+                {
+                    delete_item_with_shared(m, id, s);
                 }
             }
         },
@@ -617,10 +617,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
                     if let Ok(id) = value.downcast::<usize>() {
                         start_edit(m, *id);
                     }
-                } else if let Ok(s) = value.downcast::<String>() {
-                    if let Ok(id) = s.parse() {
-                        start_edit(m, id);
-                    }
+                } else if let Ok(s) = value.downcast::<String>()
+                    && let Ok(id) = s.parse()
+                {
+                    start_edit(m, id);
                 }
             }
         },
@@ -731,18 +731,18 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "filter",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(filter) = value.downcast::<String>() {
-                    m.current_filter = match filter.as_str() {
-                        "all" => TodoFilter::All,
-                        "today" => TodoFilter::Active,
-                        "upcoming" => TodoFilter::Active,
-                        _ => TodoFilter::All,
-                    };
-                    m.current_filter_display = filter.to_string();
-                    update_computed_fields(m);
-                    println!("🔍 Filter changed to: {}", filter);
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(filter) = value.downcast::<String>()
+            {
+                m.current_filter = match filter.as_str() {
+                    "all" => TodoFilter::All,
+                    "today" => TodoFilter::Active,
+                    "upcoming" => TodoFilter::Active,
+                    _ => TodoFilter::All,
+                };
+                m.current_filter_display = filter.to_string();
+                update_computed_fields(m);
+                println!("🔍 Filter changed to: {}", filter);
             }
         },
     );
@@ -750,13 +750,13 @@ pub fn create_handler_registry() -> HandlerRegistry {
     registry.register_with_value(
         "filter_by_category",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
-            if let Some(m) = model.downcast_mut::<Model>() {
-                if let Ok(category) = value.downcast::<String>() {
-                    m.selected_category = (*category).clone();
-                    // Filter to show only tasks from this category
-                    update_computed_fields(m);
-                    println!("📁 Filtering by category: {}", category);
-                }
+            if let Some(m) = model.downcast_mut::<Model>()
+                && let Ok(category) = value.downcast::<String>()
+            {
+                m.selected_category = (*category).clone();
+                // Filter to show only tasks from this category
+                update_computed_fields(m);
+                println!("📁 Filtering by category: {}", category);
             }
         },
     );
