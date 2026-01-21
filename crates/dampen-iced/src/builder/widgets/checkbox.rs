@@ -2,9 +2,72 @@
 
 use crate::HandlerMessage;
 use crate::builder::DampenWidgetBuilder;
-use dampen_core::expr::evaluate_binding_expr_with_shared;
+use crate::builder::helpers::{resolve_boolean_attribute, resolve_handler_param};
 use dampen_core::ir::node::WidgetNode;
+use dampen_core::ir::style::StyleProperties;
 use iced::{Element, Renderer, Theme};
+
+/// Convert Dampen StyleProperties to Iced checkbox Style
+fn apply_checkbox_style(props: &StyleProperties) -> iced::widget::checkbox::Style {
+    use iced::widget::checkbox;
+    use iced::{Background, Border, Color};
+
+    let mut style = checkbox::Style {
+        background: Background::Color(Color::WHITE),
+        icon_color: Color::BLACK,
+        border: Border::default(),
+        text_color: None,
+    };
+
+    if let Some(ref bg) = props.background
+        && let dampen_core::ir::style::Background::Color(color) = bg
+    {
+        style.background = Background::Color(Color {
+            r: color.r,
+            g: color.g,
+            b: color.b,
+            a: color.a,
+        });
+    }
+
+    if let Some(ref text_color) = props.color {
+        style.text_color = Some(Color {
+            r: text_color.r,
+            g: text_color.g,
+            b: text_color.b,
+            a: text_color.a,
+        });
+    }
+
+    if let Some(ref border) = props.border {
+        style.border = Border {
+            color: Color {
+                r: border.color.r,
+                g: border.color.g,
+                b: border.color.b,
+                a: border.color.a,
+            },
+            width: border.width,
+            radius: iced::border::Radius {
+                top_left: border.radius.top_left,
+                top_right: border.radius.top_right,
+                bottom_right: border.radius.bottom_right,
+                bottom_left: border.radius.bottom_left,
+            },
+        };
+    }
+
+    if let Some(ref icon_color) = props.color {
+        style.icon_color = Color {
+            r: icon_color.r,
+            g: icon_color.g,
+            b: icon_color.b,
+            a: icon_color.a,
+        };
+    }
+
+    style
+}
 
 impl<'a> DampenWidgetBuilder<'a> {
     /// Build a checkbox widget from Dampen XML definition
@@ -25,35 +88,27 @@ impl<'a> DampenWidgetBuilder<'a> {
             .map(|attr| self.evaluate_attribute(attr))
             .unwrap_or_default();
 
-        let checked_str = node
-            .attributes
-            .get("checked")
-            .map(|attr| self.evaluate_attribute(attr))
-            .unwrap_or_else(|| "false".to_string());
+        let is_checked = resolve_boolean_attribute(self, node, "checked", false);
 
-        let is_checked = checked_str == "true" || checked_str == "1";
-
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Building checkbox: label='{}', checked={}",
-                label, is_checked
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] Building checkbox: label='{}', checked={}",
+            label, is_checked
+        );
 
         // Get handler from events (accept both on_toggle and on_change)
         let on_toggle_event = node.events.iter().find(|e| {
             e.event == dampen_core::EventKind::Toggle || e.event == dampen_core::EventKind::Change
         });
 
-        if self.verbose {
-            if let Some(event) = &on_toggle_event {
-                eprintln!(
-                    "[DampenWidgetBuilder] Checkbox has toggle/change event: handler={}, param={:?}",
-                    event.handler, event.param
-                );
-            } else {
-                eprintln!("[DampenWidgetBuilder] Checkbox has no toggle/change event");
-            }
+        #[cfg(debug_assertions)]
+        if let Some(event) = &on_toggle_event {
+            eprintln!(
+                "[DampenWidgetBuilder] Checkbox has toggle/change event: handler={}, param={:?}",
+                event.handler, event.param
+            );
+        } else {
+            eprintln!("[DampenWidgetBuilder] Checkbox has no toggle/change event");
         }
 
         let mut checkbox = iced::widget::checkbox(is_checked);
@@ -62,106 +117,34 @@ impl<'a> DampenWidgetBuilder<'a> {
         // Use complete style resolution: theme → class → inline
         let resolved_base_style = self.resolve_complete_styles(node);
 
-        // Get the StyleClass for state variant resolution
+        // Get the StyleClass for state variant resolution, wrapped in Rc for efficient cloning
         let style_class = if !node.classes.is_empty() {
             self.style_classes
                 .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
+                .cloned()
+                .map(std::rc::Rc::new)
         } else {
             None
         };
 
+        // Apply state-aware styling using generic helper
         if let Some(base_style_props) = resolved_base_style {
-            // Clone for move into closure
+            use crate::builder::helpers::create_state_aware_style_fn;
+            use crate::style_mapping::map_checkbox_status;
+
             let base_style_props = base_style_props.clone();
-            let style_class = style_class.cloned();
 
-            checkbox = checkbox.style(move |_theme, status| {
-                use crate::style_mapping::{
-                    map_checkbox_status, merge_style_properties, resolve_state_style,
-                };
-                use iced::widget::checkbox;
-                use iced::{Background, Border, Color};
-
-                // Map Iced checkbox status to WidgetState
-                let widget_state = map_checkbox_status(status);
-
-                // Resolve state-specific style if available
-                let final_style_props =
-                    if let (Some(class), Some(state)) = (&style_class, widget_state) {
-                        // Try to get state-specific style
-                        if let Some(state_style) = resolve_state_style(class, state) {
-                            // Merge state style with base style
-                            merge_style_properties(&base_style_props, state_style)
-                        } else {
-                            // No state variant defined, use base style
-                            base_style_props.clone()
-                        }
-                    } else {
-                        // No style class or no state, use base style
-                        base_style_props.clone()
-                    };
-
-                // Create checkbox style with defaults
-                let mut style = checkbox::Style {
-                    background: Background::Color(Color::WHITE),
-                    icon_color: Color::BLACK,
-                    border: Border::default(),
-                    text_color: None,
-                };
-
-                // Apply background color
-                if let Some(ref bg) = final_style_props.background {
-                    if let dampen_core::ir::style::Background::Color(color) = bg {
-                        style.background = Background::Color(Color {
-                            r: color.r,
-                            g: color.g,
-                            b: color.b,
-                            a: color.a,
-                        });
-                    }
-                }
-
-                // Apply text color
-                if let Some(ref text_color) = final_style_props.color {
-                    style.text_color = Some(Color {
-                        r: text_color.r,
-                        g: text_color.g,
-                        b: text_color.b,
-                        a: text_color.a,
-                    });
-                }
-
-                // Apply border
-                if let Some(ref border) = final_style_props.border {
-                    style.border = Border {
-                        color: Color {
-                            r: border.color.r,
-                            g: border.color.g,
-                            b: border.color.b,
-                            a: border.color.a,
-                        },
-                        width: border.width,
-                        radius: iced::border::Radius {
-                            top_left: border.radius.top_left,
-                            top_right: border.radius.top_right,
-                            bottom_right: border.radius.bottom_right,
-                            bottom_left: border.radius.bottom_left,
-                        },
-                    };
-                }
-
-                // Apply icon color if specified
-                if let Some(ref icon_color) = final_style_props.color {
-                    style.icon_color = Color {
-                        r: icon_color.r,
-                        g: icon_color.g,
-                        b: icon_color.b,
-                        a: icon_color.a,
-                    };
-                }
-
-                style
-            });
+            if let Some(style_fn) = create_state_aware_style_fn(
+                self,
+                node,
+                dampen_core::ir::WidgetKind::Checkbox,
+                style_class,
+                base_style_props,
+                map_checkbox_status,
+                apply_checkbox_style,
+            ) {
+                checkbox = checkbox.style(style_fn);
+            }
         }
 
         // Connect event if handler exists
@@ -171,53 +154,33 @@ impl<'a> DampenWidgetBuilder<'a> {
 
                 // Evaluate parameter if present, otherwise use toggle state
                 let param_value = if let Some(param_expr) = &event_binding.param {
-                    // Evaluate the parameter expression with context
-                    if let Some(value) = self.resolve_from_context(param_expr) {
-                        if self.verbose {
+                    match resolve_handler_param(self, param_expr) {
+                        Ok(value) => {
+                            #[cfg(debug_assertions)]
                             eprintln!(
-                                "[DampenWidgetBuilder] Checkbox param from context: {:?} -> {}",
+                                "[DampenWidgetBuilder] Checkbox param resolved: {:?} -> {}",
                                 param_expr,
                                 value.to_display_string()
                             );
+                            Some(value.to_display_string())
                         }
-                        Some(value.to_display_string())
-                    } else {
-                        match evaluate_binding_expr_with_shared(
-                            param_expr,
-                            self.model,
-                            self.shared_context,
-                        ) {
-                            Ok(value) => {
-                                if self.verbose {
-                                    eprintln!(
-                                        "[DampenWidgetBuilder] Checkbox param from model: {:?} -> {}",
-                                        param_expr,
-                                        value.to_display_string()
-                                    );
-                                }
-                                Some(value.to_display_string())
-                            }
-                            Err(e) => {
-                                if self.verbose {
-                                    eprintln!("[DampenWidgetBuilder] Checkbox param error: {}", e);
-                                }
-                                None
-                            }
+                        Err(e) => {
+                            #[cfg(debug_assertions)]
+                            eprintln!("[DampenWidgetBuilder] Checkbox param error: {}", e);
+                            None
                         }
                     }
                 } else {
-                    if self.verbose {
-                        eprintln!("[DampenWidgetBuilder] Checkbox has no param");
-                    }
+                    #[cfg(debug_assertions)]
+                    eprintln!("[DampenWidgetBuilder] Checkbox has no param");
                     None
                 };
 
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] Checkbox: Attaching on_toggle with handler '{}', param: {:?}",
-                        handler_name, param_value
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] Checkbox: Attaching on_toggle with handler '{}', param: {:?}",
+                    handler_name, param_value
+                );
 
                 checkbox = checkbox.on_toggle(move |new_checked| {
                     HandlerMessage::Handler(
@@ -232,11 +195,10 @@ impl<'a> DampenWidgetBuilder<'a> {
                     )
                 });
             } else {
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] Checkbox: No handler_registry, cannot attach on_toggle"
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] Checkbox: No handler_registry, cannot attach on_toggle"
+                );
             }
         }
 

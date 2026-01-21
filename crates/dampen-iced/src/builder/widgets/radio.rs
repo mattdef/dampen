@@ -2,9 +2,65 @@
 
 use crate::HandlerMessage;
 use crate::builder::DampenWidgetBuilder;
-use dampen_core::expr::evaluate_binding_expr_with_shared;
-use dampen_core::ir::node::{AttributeValue, WidgetNode};
+use crate::builder::helpers::resolve_boolean_attribute;
+use dampen_core::ir::node::WidgetNode;
+use dampen_core::ir::style::StyleProperties;
 use iced::{Element, Renderer, Theme};
+
+/// Convert Dampen StyleProperties to Iced radio Style
+fn apply_radio_style(props: &StyleProperties) -> iced::widget::radio::Style {
+    use iced::widget::radio;
+    use iced::{Background, Color};
+
+    let mut style = radio::Style {
+        background: Background::Color(Color::WHITE),
+        dot_color: Color::BLACK,
+        border_width: 1.0,
+        border_color: Color::from_rgb(0.5, 0.5, 0.5),
+        text_color: None,
+    };
+
+    if let Some(ref bg) = props.background
+        && let dampen_core::ir::style::Background::Color(color) = bg
+    {
+        style.background = Background::Color(Color {
+            r: color.r,
+            g: color.g,
+            b: color.b,
+            a: color.a,
+        });
+    }
+
+    if let Some(ref text_color) = props.color {
+        style.text_color = Some(Color {
+            r: text_color.r,
+            g: text_color.g,
+            b: text_color.b,
+            a: text_color.a,
+        });
+    }
+
+    if let Some(ref border) = props.border {
+        style.border_color = Color {
+            r: border.color.r,
+            g: border.color.g,
+            b: border.color.b,
+            a: border.color.a,
+        };
+        style.border_width = border.width;
+    }
+
+    if let Some(ref dot_color) = props.color {
+        style.dot_color = Color {
+            r: dot_color.r,
+            g: dot_color.g,
+            b: dot_color.b,
+            a: dot_color.a,
+        };
+    }
+
+    style
+}
 
 impl<'a> DampenWidgetBuilder<'a> {
     /// Build a radio button widget (placeholder implementation)
@@ -30,12 +86,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             .get("selected")
             .map(|attr| self.evaluate_attribute(attr));
 
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Building radio: label='{}', value='{}', selected={:?}",
-                label, value, selected
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] Building radio: label='{}', value='{}', selected={:?}",
+            label, value, selected
+        );
 
         // Get handler from events
         let on_select_event = node
@@ -43,57 +98,27 @@ impl<'a> DampenWidgetBuilder<'a> {
             .iter()
             .find(|e| e.event == dampen_core::EventKind::Select);
 
-        if self.verbose {
-            if let Some(event) = &on_select_event {
-                eprintln!(
-                    "[DampenWidgetBuilder] Radio has select event: handler={}, param={:?}",
-                    event.handler, event.param
-                );
-            } else {
-                eprintln!("[DampenWidgetBuilder] Radio has no select event");
-            }
+        #[cfg(debug_assertions)]
+        if let Some(event) = &on_select_event {
+            eprintln!(
+                "[DampenWidgetBuilder] Radio has select event: handler={}, param={:?}",
+                event.handler, event.param
+            );
+        } else {
+            eprintln!("[DampenWidgetBuilder] Radio has no select event");
         }
 
         // Determine if this radio is currently selected
         let is_selected = selected.as_ref().map(|s| s == &value).unwrap_or(false);
 
         // Evaluate disabled attribute (default: false)
-        let is_disabled = match node.attributes.get("disabled") {
-            None => false,
-            Some(AttributeValue::Static(s)) => match s.to_lowercase().as_str() {
-                "true" | "1" | "yes" | "on" => true,
-                "false" | "0" | "no" | "off" => false,
-                _ => false, // Default to enabled for unknown values
-            },
-            Some(AttributeValue::Binding(expr)) => {
-                match evaluate_binding_expr_with_shared(expr, self.model, self.shared_context) {
-                    Ok(value) => value.to_bool(),
-                    Err(e) => {
-                        if self.verbose {
-                            eprintln!("[DampenWidgetBuilder] Radio disabled binding error: {}", e);
-                        }
-                        false // Default to enabled on error
-                    }
-                }
-            }
-            Some(AttributeValue::Interpolated(_)) => {
-                // Interpolated strings in boolean context - check if result is "true"
-                let disabled_attr = node.attributes.get("disabled");
-                let result = if let Some(attr) = disabled_attr {
-                    self.evaluate_attribute(attr)
-                } else {
-                    String::new()
-                };
-                result == "true" || result == "1"
-            }
-        };
+        let is_disabled = resolve_boolean_attribute(self, node, "disabled", false);
 
-        if self.verbose {
-            eprintln!(
-                "[DampenWidgetBuilder] Radio '{}' disabled: {}",
-                label, is_disabled
-            );
-        }
+        #[cfg(debug_assertions)]
+        eprintln!(
+            "[DampenWidgetBuilder] Radio '{}' disabled: {}",
+            label, is_disabled
+        );
 
         // Create the radio widget using Iced's radio API
         // Note: Iced radio requires Copy types, so we use a unique ID as the value
@@ -119,28 +144,26 @@ impl<'a> DampenWidgetBuilder<'a> {
                 let handler_name = event_binding.handler.clone();
                 let value_clone = value.clone();
 
-                if self.verbose {
-                    eprintln!(
-                        "[DampenWidgetBuilder] Radio: Attaching on_select with handler '{}', value='{}' (id={})",
-                        handler_name, value_clone, value_id
-                    );
-                }
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[DampenWidgetBuilder] Radio: Attaching on_select with handler '{}', value='{}' (id={})",
+                    handler_name, value_clone, value_id
+                );
 
                 // Create radio with handler - sends the string value when selected
                 iced::widget::radio(label, value_id, selected_id, move |_selected_id| {
                     HandlerMessage::Handler(handler_name.clone(), Some(value_clone.clone()))
                 })
             } else {
-                if self.verbose {
-                    if is_disabled {
-                        eprintln!(
-                            "[DampenWidgetBuilder] Radio: Disabled, creating non-interactive radio"
-                        );
-                    } else {
-                        eprintln!(
-                            "[DampenWidgetBuilder] Radio: No handler_registry, creating read-only radio"
-                        );
-                    }
+                #[cfg(debug_assertions)]
+                if is_disabled {
+                    eprintln!(
+                        "[DampenWidgetBuilder] Radio: Disabled, creating non-interactive radio"
+                    );
+                } else {
+                    eprintln!(
+                        "[DampenWidgetBuilder] Radio: No handler_registry, creating read-only radio"
+                    );
                 }
                 // Disabled or no handler registry - create read-only radio
                 iced::widget::radio(label, value_id, selected_id, |_| {
@@ -148,11 +171,8 @@ impl<'a> DampenWidgetBuilder<'a> {
                 })
             }
         } else {
-            if self.verbose {
-                eprintln!(
-                    "[DampenWidgetBuilder] Radio: No on_select event, creating read-only radio"
-                );
-            }
+            #[cfg(debug_assertions)]
+            eprintln!("[DampenWidgetBuilder] Radio: No on_select event, creating read-only radio");
             // No event handler - create read-only radio
             iced::widget::radio(label, value_id, selected_id, |_| {
                 HandlerMessage::Handler(String::new(), None)
@@ -163,106 +183,46 @@ impl<'a> DampenWidgetBuilder<'a> {
         // Use complete style resolution: theme → class → inline
         let resolved_base_style = self.resolve_complete_styles(node);
 
-        // Get the StyleClass for state variant resolution
+        // Get the StyleClass for state variant resolution, wrapped in Rc for efficient cloning
         let style_class = if !node.classes.is_empty() {
             self.style_classes
                 .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
+                .cloned()
+                .map(std::rc::Rc::new)
         } else {
             None
         };
 
+        // Apply state-aware styling using generic helper
+        // Note: Radio doesn't have Status::Disabled in Iced 0.14, so we handle it manually
         let radio_widget = if let Some(base_style_props) = resolved_base_style {
-            // Clone for move into closure
+            use crate::builder::helpers::create_state_aware_style_fn;
+            use crate::style_mapping::map_radio_status;
+            use dampen_core::ir::WidgetState;
+
             let base_style_props = base_style_props.clone();
-            let style_class = style_class.cloned();
 
-            radio_widget.style(move |_theme, status| {
-                use crate::style_mapping::{
-                    map_radio_status, merge_style_properties, resolve_state_style,
-                };
-                use dampen_core::ir::WidgetState;
-                use iced::widget::radio;
-                use iced::{Background, Color};
-
-                // Map Iced radio status to WidgetState
-                // Note: Radio doesn't have Status::Disabled in Iced 0.14,
-                // so we need to manually check the disabled attribute
-                let widget_state = if is_disabled {
+            let status_mapper = move |status: iced::widget::radio::Status| {
+                if is_disabled {
                     Some(WidgetState::Disabled)
                 } else {
                     map_radio_status(status)
-                };
-
-                // Resolve state-specific style if available
-                let final_style_props =
-                    if let (Some(class), Some(state)) = (&style_class, widget_state) {
-                        // Try to get state-specific style
-                        if let Some(state_style) = resolve_state_style(class, state) {
-                            // Merge state style with base style
-                            merge_style_properties(&base_style_props, state_style)
-                        } else {
-                            // No state variant defined, use base style
-                            base_style_props.clone()
-                        }
-                    } else {
-                        // No style class or no state, use base style
-                        base_style_props.clone()
-                    };
-
-                // Create radio style with defaults
-                let mut style = radio::Style {
-                    background: Background::Color(Color::WHITE),
-                    dot_color: Color::BLACK,
-                    border_width: 1.0,
-                    border_color: Color::from_rgb(0.5, 0.5, 0.5),
-                    text_color: None,
-                };
-
-                // Apply background color
-                if let Some(ref bg) = final_style_props.background {
-                    if let dampen_core::ir::style::Background::Color(color) = bg {
-                        style.background = Background::Color(Color {
-                            r: color.r,
-                            g: color.g,
-                            b: color.b,
-                            a: color.a,
-                        });
-                    }
                 }
+            };
 
-                // Apply text color
-                if let Some(ref text_color) = final_style_props.color {
-                    style.text_color = Some(Color {
-                        r: text_color.r,
-                        g: text_color.g,
-                        b: text_color.b,
-                        a: text_color.a,
-                    });
-                }
-
-                // Apply border
-                if let Some(ref border) = final_style_props.border {
-                    style.border_color = Color {
-                        r: border.color.r,
-                        g: border.color.g,
-                        b: border.color.b,
-                        a: border.color.a,
-                    };
-                    style.border_width = border.width;
-                }
-
-                // Apply dot color if specified
-                if let Some(ref dot_color) = final_style_props.color {
-                    style.dot_color = Color {
-                        r: dot_color.r,
-                        g: dot_color.g,
-                        b: dot_color.b,
-                        a: dot_color.a,
-                    };
-                }
-
-                style
-            })
+            if let Some(style_fn) = create_state_aware_style_fn(
+                self,
+                node,
+                dampen_core::ir::WidgetKind::Radio,
+                style_class,
+                base_style_props,
+                status_mapper,
+                apply_radio_style,
+            ) {
+                radio_widget.style(style_fn)
+            } else {
+                radio_widget
+            }
         } else {
             radio_widget
         };
