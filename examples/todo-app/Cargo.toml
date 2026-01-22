@@ -13,6 +13,9 @@ dampen-dev = { workspace = true, optional = true }
 iced = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+tokio = { workspace = true, features = ["fs"] }
+uuid = { workspace = true }
+directories = { workspace = true }
 
 [build-dependencies]
 dampen-core = { workspace = true }
