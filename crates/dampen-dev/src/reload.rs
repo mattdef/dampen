@@ -9,6 +9,8 @@ use dampen_core::state::AppState;
 use serde::{Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use std::marker::PhantomData;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 
 /// Cache entry for parsed XML documents
@@ -42,6 +44,12 @@ pub struct HotReloadContext<M> {
     /// Maximum number of cached documents
     max_cache_size: usize,
 
+    /// Count of cache hits for hit rate calculation
+    cache_hits: AtomicUsize,
+
+    /// Count of cache misses for hit rate calculation
+    cache_misses: AtomicUsize,
+
     _marker: PhantomData<M>,
 }
 
@@ -55,6 +63,8 @@ impl<M: UiBindable> HotReloadContext<M> {
             error: None,
             parse_cache: HashMap::new(),
             max_cache_size: 10,
+            cache_hits: AtomicUsize::new(0),
+            cache_misses: AtomicUsize::new(0),
             _marker: PhantomData,
         }
     }
@@ -68,29 +78,40 @@ impl<M: UiBindable> HotReloadContext<M> {
             error: None,
             parse_cache: HashMap::new(),
             max_cache_size: cache_size,
+            cache_hits: AtomicUsize::new(0),
+            cache_misses: AtomicUsize::new(0),
             _marker: PhantomData,
         }
     }
 
-    /// Try to get a parsed document from cache
-    fn get_cached_document(&self, xml_source: &str) -> Option<dampen_core::ir::DampenDocument> {
+    /// Compute content hash for caching
+    fn compute_content_hash(xml_source: &str) -> u64 {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
 
         let mut hasher = DefaultHasher::new();
         xml_source.hash(&mut hasher);
-        let content_hash = hasher.finish();
+        hasher.finish()
+    }
+
+    /// Try to get a parsed document from cache
+    fn get_cached_document(&self, xml_source: &str) -> Option<dampen_core::ir::DampenDocument> {
+        let content_hash = Self::compute_content_hash(xml_source);
 
         self.parse_cache
             .get(&content_hash)
             .map(|entry| entry.document.clone())
+            .inspect(|_| {
+                self.cache_hits.fetch_add(1, Ordering::Relaxed);
+            })
+            .or_else(|| {
+                self.cache_misses.fetch_add(1, Ordering::Relaxed);
+                None
+            })
     }
 
     /// Cache a parsed document
     fn cache_document(&mut self, xml_source: &str, document: dampen_core::ir::DampenDocument) {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-
         // Evict oldest entry if cache is full
         if self.parse_cache.len() >= self.max_cache_size
             && let Some(oldest_key) = self
@@ -102,9 +123,7 @@ impl<M: UiBindable> HotReloadContext<M> {
             self.parse_cache.remove(&oldest_key);
         }
 
-        let mut hasher = DefaultHasher::new();
-        xml_source.hash(&mut hasher);
-        let content_hash = hasher.finish();
+        let content_hash = Self::compute_content_hash(xml_source);
 
         self.parse_cache.insert(
             content_hash,
@@ -135,11 +154,17 @@ impl<M: UiBindable> HotReloadContext<M> {
         }
     }
 
-    /// Calculate cache hit rate (placeholder - would need to track hits/misses)
+    /// Calculate cache hit rate (0.0 to 1.0)
     fn calculate_cache_hit_rate(&self) -> f64 {
-        // For now, return 0.0 as we'd need to add hit/miss tracking
-        // This is a placeholder for future enhancement
-        0.0
+        let hits = self.cache_hits.load(Ordering::Relaxed);
+        let misses = self.cache_misses.load(Ordering::Relaxed);
+        let total = hits.saturating_add(misses);
+
+        if total == 0 {
+            0.0
+        } else {
+            hits as f64 / total as f64
+        }
     }
 
     /// Snapshot the current model state to JSON
@@ -432,6 +457,7 @@ where
 /// ```no_run
 /// use dampen_dev::reload::{attempt_hot_reload_async, HotReloadContext};
 /// use dampen_core::{AppState, handler::HandlerRegistry};
+/// use std::sync::Arc;
 /// # use dampen_core::binding::UiBindable;
 /// # #[derive(Default, serde::Serialize, serde::Deserialize)]
 /// # struct Model;
@@ -446,7 +472,7 @@ where
 ///     mut context: HotReloadContext<Model>,
 /// ) {
 ///     let result = attempt_hot_reload_async(
-///         new_xml,
+///         Arc::new(new_xml),
 ///         &app_state,
 ///         &mut context,
 ///         || create_handler_registry(),
@@ -467,7 +493,7 @@ where
 /// }
 /// ```
 pub async fn attempt_hot_reload_async<M, F>(
-    xml_source: String,
+    xml_source: Arc<String>,
     current_state: &AppState<M>,
     context: &mut HotReloadContext<M>,
     create_handlers: F,
@@ -492,7 +518,7 @@ where
         cached_doc
     } else {
         // Cache miss - parse asynchronously and cache
-        let xml_for_parse = xml_source.clone();
+        let xml_for_parse = Arc::clone(&xml_source);
         let parse_result =
             tokio::task::spawn_blocking(move || dampen_core::parser::parse(&xml_for_parse)).await;
 
@@ -885,6 +911,50 @@ mod tests {
         context.record_reload(true);
         assert_eq!(context.reload_count, 3);
         assert!(context.error.is_none());
+    }
+
+    #[test]
+    fn test_cache_hit_rate_calculated_correctly() {
+        use std::sync::atomic::Ordering;
+
+        let mut context = HotReloadContext::<TestModel>::new();
+
+        // Initially: 0 hits, 0 misses
+        assert_eq!(context.calculate_cache_hit_rate(), 0.0);
+
+        // Simulate 3 hits, 2 misses
+        context.cache_hits.store(3, Ordering::Relaxed);
+        context.cache_misses.store(2, Ordering::Relaxed);
+
+        // Hit rate = 3 / (3 + 2) = 0.6
+        assert_eq!(context.calculate_cache_hit_rate(), 0.6);
+    }
+
+    #[test]
+    fn test_cache_hit_rate_zero_division() {
+        let context = HotReloadContext::<TestModel>::new();
+        // Should not panic on division by zero
+        assert_eq!(context.calculate_cache_hit_rate(), 0.0);
+    }
+
+    #[test]
+    fn test_cache_hit_rate_full_misses() {
+        use std::sync::atomic::Ordering;
+
+        let mut context = HotReloadContext::<TestModel>::new();
+        context.cache_hits.store(0, Ordering::Relaxed);
+        context.cache_misses.store(5, Ordering::Relaxed);
+        assert_eq!(context.calculate_cache_hit_rate(), 0.0);
+    }
+
+    #[test]
+    fn test_cache_hit_rate_full_hits() {
+        use std::sync::atomic::Ordering;
+
+        let mut context = HotReloadContext::<TestModel>::new();
+        context.cache_hits.store(5, Ordering::Relaxed);
+        context.cache_misses.store(0, Ordering::Relaxed);
+        assert_eq!(context.calculate_cache_hit_rate(), 1.0);
     }
 
     #[test]

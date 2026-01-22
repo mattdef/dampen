@@ -36,7 +36,61 @@ impl Default for FileWatcherConfig {
     }
 }
 
-/// Runtime state of file watcher
+/// Runtime state of the file watcher
+///
+/// # State Machine
+///
+/// ```text
+///     ┌─────┐
+///     │ Idle │
+///     └──┬──┘
+///        │ watch() succeeds
+///        ▼
+///    ┌─────────┐
+///    │ Watching │
+///    └────┬────┘
+///         │ fatal error
+///         ▼
+///    ┌─────────┐
+///    │ Failed  │────┐
+///    └─────────┘    │
+///         │          │ recover (unwatch + re-watch)
+///         │          └─────────────────────┐
+///         ▼                                ▼
+///    (exit application)                ┌─────┐
+///                                     │ Idle │
+///                                     └─────┘
+/// ```
+///
+/// # States
+///
+/// - **Idle**: Initial state after `FileWatcher::new()`. The watcher is
+///   created but not watching any paths yet.
+///
+/// - **Watching**: Active state after successful `watch()` call. The watcher
+///   monitors the configured paths and emits file change events.
+///
+/// - **Failed**: Error state if watcher initialization fails. This is typically
+///   due to OS limitations (e.g., reached maximum file descriptor limit).
+///   Recovery requires creating a new `FileWatcher` instance.
+///
+/// # Example
+///
+/// ```no_run
+/// use dampen_dev::watcher::{FileWatcher, FileWatcherConfig};
+/// use std::path::PathBuf;
+///
+/// let config = FileWatcherConfig::default();
+/// let mut watcher = FileWatcher::new(config).expect("Failed to create watcher");
+/// // State is now Idle
+///
+/// let path = PathBuf::from("src/ui");
+/// watcher.watch(path).expect("Failed to watch");
+/// // State is now Watching
+///
+/// // If fatal error occurs, state becomes Failed
+/// // Recovery requires creating new watcher
+/// ```
 #[derive(Debug)]
 pub enum FileWatcherState {
     /// Watcher is initialized but not started
@@ -332,8 +386,4 @@ pub enum FileWatcherError {
     /// Permission denied
     #[error("Permission denied for path: {0}")]
     PermissionDenied(PathBuf),
-
-    /// File was deleted during watch
-    #[error("File was deleted: {0}")]
-    FileDeleted(PathBuf),
 }

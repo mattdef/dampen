@@ -156,8 +156,29 @@ impl Recipe for FileWatcherRecipe {
         let recursive = self.recursive;
 
         // Create async channel for bridging sync→async
-        // Buffer size of 100 should handle burst file changes
-        let (tx, rx) = mpsc::channel(100);
+        // Buffer size of 1000 handles burst file changes better than 100
+        let (tx, rx) = mpsc::channel(1000);
+
+        // Spawn channel health monitoring task
+        let tx_monitor = tx.clone();
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(30));
+            loop {
+                interval.tick().await;
+                let capacity = tx_monitor.max_capacity();
+                let available = tx_monitor.capacity();
+                let fill_percent = ((capacity - available) as f64 / capacity as f64) * 100.0;
+
+                if fill_percent > 80.0 {
+                    eprintln!(
+                        "[dampen-dev] Warning: File event channel {:.0}% full ({} of {} slots used)",
+                        fill_percent,
+                        capacity - available,
+                        capacity
+                    );
+                }
+            }
+        });
 
         // Spawn blocking task to run the synchronous file watcher
         // This bridges the sync crossbeam_channel to async tokio channel

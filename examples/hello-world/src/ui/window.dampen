@@ -27,13 +27,7 @@
     </styles>
     <column padding="20" spacing="20">
         <container class="ctr_sample">
-            <text
-                value="Hello, Dampen!"
-                size="32"
-                weight="bold"
-                padding="10"
-                align_y="start"
-            />
+            <text value="Hello, Dampen!" size="32" weight="bold" padding="10" />
             <rule direction="horizontal" />
             <space height="20" />
             <button label="Click me!" class="btn_sample" on_click="greet" />

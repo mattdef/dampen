@@ -22,10 +22,10 @@
 
 **Purpose**: Verify branch and ensure clean build state before implementing fixes
 
-- [ ] T001 Verify branch `001-fix-code-quality-issues` is checked out
-- [ ] T002 Run `cargo build -p dampen-dev` to ensure clean build state
-- [ ] T003 Run `cargo test -p dampen-dev` to verify current test state
-- [ ] T004 Search codebase for any existing references to `FileDeleted` error variant
+- [x] T001 Verify branch `001-fix-code-quality-issues` is checked out
+- [x] T002 Run `cargo build -p dampen-dev` to ensure clean build state
+- [x] T003 Run `cargo test -p dampen-dev` to verify current test state
+- [x] T004 Search codebase for any existing references to `FileDeleted` error variant
 
 **Checkpoint**: Environment verified - ready to implement fixes
 
@@ -49,14 +49,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 Add `TestTiming` struct with configurable debounce duration, wait multiplier, test timeout, and poll interval in crates/dampen-dev/tests/watcher_tests.rs
-- [ ] T006 Implement `Default` trait for `TestTiming` with default values (100ms debounce, 1.5x multiplier, 500ms timeout, 5ms poll interval) in crates/dampen-dev/tests/watcher_tests.rs
-- [ ] T007 [P] Implement `wait_for_debounce()` method on `TestTiming` that returns `debounce_duration * wait_multiplier` in crates/dampen-dev/tests/watcher_tests.rs
-- [ ] T008 [P] Add `wait_for_events<T>()` helper function that uses `try_recv()` loop with timeout for active event polling in crates/dampen-dev/tests/watcher_tests.rs
-- [ ] T009 Replace hardcoded `thread::sleep(Duration::from_millis(150))` in `wait_for_debounce()` with `thread::sleep(TestTiming::default().wait_for_debounce())` in crates/dampen-dev/tests/watcher_tests.rs
-- [ ] T010 Update assertion in `test_debouncing_behavior` to use >= 20% threshold instead of >= 30% with improved error message explaining debouncing variability in crates/dampen-dev/tests/watcher_tests.rs
-- [ ] T011 Use `wait_for_events()` helper to collect events with timeout in `test_debouncing_behavior` in crates/dampen-dev/tests/watcher_tests.rs
-- [ ] T012 Run `test_debouncing_behavior` 10 times consecutively to verify it no longer fails intermittently
+- [x] T005 Add `TestTiming` struct with configurable debounce duration, wait multiplier, test timeout, and poll interval in crates/dampen-dev/tests/watcher_tests.rs
+- [x] T006 Implement `Default` trait for `TestTiming` with default values (100ms debounce, 1.5x multiplier, 500ms timeout, 5ms poll interval) in crates/dampen-dev/tests/watcher_tests.rs
+- [x] T007 [P] Implement `wait_for_debounce()` method on `TestTiming` that returns `debounce_duration * wait_multiplier` in crates/dampen-dev/tests/watcher_tests.rs
+- [x] T008 [P] Add `wait_for_events<T>()` helper function that uses `try_recv()` loop with timeout for active event polling in crates/dampen-dev/tests/watcher_tests.rs
+- [x] T009 Replace hardcoded `thread::sleep(Duration::from_millis(150))` in `wait_for_debounce()` with `thread::sleep(TestTiming::default().wait_for_debounce())` in crates/dampen-dev/tests/watcher_tests.rs
+- [x] T010 Update assertion in `test_debouncing_behavior` to use >= 20% threshold instead of >= 30% with improved error message explaining debouncing variability in crates/dampen-dev/tests/watcher_tests.rs
+- [x] T011 Use `wait_for_events()` helper to collect events with timeout in `test_debouncing_behavior` in crates/dampen-dev/tests/watcher_tests.rs
+- [x] T012 Run `test_debouncing_behavior` 10 times consecutively to verify it no longer fails intermittently
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -70,21 +70,21 @@
 
 ### Implementation for User Story 2
 
-- [ ] T013 Add `use std::sync::atomic::{AtomicUsize, Ordering}` import at top of crates/dampen-dev/src/reload.rs
-- [ ] T014 Add `cache_hits: AtomicUsize` field to `HotReloadContext<M>` struct in crates/dampen-dev/src/reload.rs
-- [ ] T015 Add `cache_misses: AtomicUsize` field to `HotReloadContext<M>` struct in crates/dampen-dev/src/reload.rs
-- [ ] T016 Initialize `cache_hits` to `AtomicUsize::new(0)` in `HotReloadContext::new()` constructor in crates/dampen-dev/src/reload.rs
-- [ ] T017 Initialize `cache_misses` to `AtomicUsize::new(0)` in `HotReloadContext::new()` constructor in crates/dampen-dev/src/reload.rs
-- [ ] T018 [P] Add `compute_content_hash(xml_source: &str) -> u64` helper function that computes hash using `DefaultHasher` in crates/dampen-dev/src/reload.rs
-- [ ] T019 Update `get_cached_document()` to call `compute_content_hash(xml_source)` instead of inline hash computation in crates/dampen-dev/src/reload.rs
-- [ ] T020 Add `self.cache_hits.fetch_add(1, Ordering::Relaxed)` when cache hit occurs in `get_cached_document()` in crates/dampen-dev/src/reload.rs
-- [ ] T021 Add `self.cache_misses.fetch_add(1, Ordering::Relaxed)` when cache miss occurs in `get_cached_document()` in crates/dampen-dev/src/reload.rs
-- [ ] T022 [P] Update `cache_document()` to call `compute_content_hash(xml_source)` instead of inline hash computation in crates/dampen-dev/src/reload.rs
-- [ ] T023 Implement `calculate_cache_hit_rate()` method that loads hits and misses, calculates `hits / (hits + misses)` with zero-division handling (return 0.0 if total == 0) in crates/dampen-dev/src/reload.rs
-- [ ] T024 Update `ReloadPerformanceMetrics::cache_hit_rate()` to delegate to `calculate_cache_hit_rate()` in crates/dampen-dev/src/reload.rs
-- [ ] T025 Add unit test `test_cache_hit_rate_calculated_correctly()` that simulates hits/misses and verifies correct rate calculation in crates/dampen-dev/src/reload.rs
-- [ ] T026 Add unit test `test_cache_hit_rate_zero_division()` that verifies return value is 0.0 when no reloads have occurred in crates/dampen-dev/src/reload.rs
-- [ ] T027 Run `cargo test -p dampen-dev` to verify all cache metrics tests pass
+- [x] T013 Add `use std::sync::atomic::{AtomicUsize, Ordering}` import at top of crates/dampen-dev/src/reload.rs
+- [x] T014 Add `cache_hits: AtomicUsize` field to `HotReloadContext<M>` struct in crates/dampen-dev/src/reload.rs
+- [x] T015 Add `cache_misses: AtomicUsize` field to `HotReloadContext<M>` struct in crates/dampen-dev/src/reload.rs
+- [x] T016 Initialize `cache_hits` to `AtomicUsize::new(0)` in `HotReloadContext::new()` constructor in crates/dampen-dev/src/reload.rs
+- [x] T017 Initialize `cache_misses` to `AtomicUsize::new(0)` in `HotReloadContext::new()` constructor in crates/dampen-dev/src/reload.rs
+- [x] T018 [P] Add `compute_content_hash(xml_source: &str) -> u64` helper function that computes hash using `DefaultHasher` in crates/dampen-dev/src/reload.rs
+- [x] T019 Update `get_cached_document()` to call `compute_content_hash(xml_source)` instead of inline hash computation in crates/dampen-dev/src/reload.rs
+- [x] T020 Add `self.cache_hits.fetch_add(1, Ordering::Relaxed)` when cache hit occurs in `get_cached_document()` in crates/dampen-dev/src/reload.rs
+- [x] T021 Add `self.cache_misses.fetch_add(1, Ordering::Relaxed)` when cache miss occurs in `get_cached_document()` in crates/dampen-dev/src/reload.rs
+- [x] T022 [P] Update `cache_document()` to call `compute_content_hash(xml_source)` instead of inline hash computation in crates/dampen-dev/src/reload.rs
+- [x] T023 Implement `calculate_cache_hit_rate()` method that loads hits and misses, calculates `hits / (hits + misses)` with zero-division handling (return 0.0 if total == 0) in crates/dampen-dev/src/reload.rs
+- [x] T024 Update `ReloadPerformanceMetrics::cache_hit_rate()` to delegate to `calculate_cache_hit_rate()` in crates/dampen-dev/src/reload.rs
+- [x] T025 Add unit test `test_cache_hit_rate_calculated_correctly()` that simulates hits/misses and verifies correct rate calculation in crates/dampen-dev/src/reload.rs
+- [x] T026 Add unit test `test_cache_hit_rate_zero_division()` that verifies return value is 0.0 when no reloads have occurred in crates/dampen-dev/src/reload.rs
+- [x] T027 Run `cargo test -p dampen-dev` to verify all cache metrics tests pass
 
 **Checkpoint**: At this point, User Story 2 should be fully functional and testable independently
 
@@ -98,11 +98,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T028 Find `mpsc::channel(100)` in crates/dampen-dev/src/subscription.rs (around line 160)
-- [ ] T029 Replace `mpsc::channel(100)` with `mpsc::channel(1000)` to increase buffer capacity to 1000 events in crates/dampen-dev/src/subscription.rs
-- [ ] T030 [P] Add optional channel health monitoring task that logs warning when channel is >80% full in crates/dampen-dev/src/subscription.rs
-- [ ] T031 Run `cargo build -p dampen-dev` to verify channel buffer change compiles
-- [ ] T032 Run `cargo test -p dampen-dev` to verify all tests pass after channel buffer change
+- [x] T028 Find `mpsc::channel(100)` in crates/dampen-dev/src/subscription.rs (around line 160)
+- [x] T029 Replace `mpsc::channel(100)` with `mpsc::channel(1000)` to increase buffer capacity to 1000 events in crates/dampen-dev/src/subscription.rs
+- [x] T030 [P] Add optional channel health monitoring task that logs warning when channel is >80% full in crates/dampen-dev/src/subscription.rs
+- [x] T031 Run `cargo build -p dampen-dev` to verify channel buffer change compiles
+- [x] T032 Run `cargo test -p dampen-dev` to verify all tests pass after channel buffer change
 
 **Checkpoint**: At this point, User Story 3 should be fully functional and testable independently
 
@@ -116,14 +116,14 @@
 
 ### Implementation for User Story 4
 
-- [ ] T033 Add `use std::sync::Arc` import at top of crates/dampen-dev/src/reload.rs
-- [ ] T034 Change `attempt_hot_reload_async()` function signature from `xml_source: String` to `xml_source: Arc<String>` in crates/dampen-dev/src/reload.rs
-- [ ] T035 Replace `xml_source.clone()` with `Arc::clone(&xml_source)` in `attempt_hot_reload_async()` before passing to `spawn_blocking` in crates/dampen-dev/src/reload.rs
-- [ ] T036 Update `get_cached_document(&xml_source)` call (Arc<String> automatically derefs to &str) in crates/dampen-dev/src/reload.rs
-- [ ] T037 Update `cache_document(&xml_source, doc.clone())` call (Arc<String> automatically derefs to &str) in crates/dampen-dev/src/reload.rs
-- [ ] T038 [P] Add optional `get_or_cache_document<F>()` method using Entry API pattern that computes hash once and returns cached or newly computed document in crates/dampen-dev/src/reload.rs
-- [ ] T039 Run `cargo build -p dampen-dev` to verify Arc refactor and hash optimizations compile
-- [ ] T040 Run `cargo test -p dampen-dev` to verify all tests pass after performance optimizations
+- [x] T033 Add `use std::sync::Arc` import at top of crates/dampen-dev/src/reload.rs
+- [x] T034 Change `attempt_hot_reload_async()` function signature from `xml_source: String` to `xml_source: Arc<String>` in crates/dampen-dev/src/reload.rs
+- [x] T035 Replace `xml_source.clone()` with `Arc::clone(&xml_source)` in `attempt_hot_reload_async()` before passing to `spawn_blocking` in crates/dampen-dev/src/reload.rs
+- [x] T036 Update `get_cached_document(&xml_source)` call (Arc<String> automatically derefs to &str) in crates/dampen-dev/src/reload.rs
+- [x] T037 Update `cache_document(&xml_source, doc.clone())` call (Arc<String> automatically derefs to &str) in crates/dampen-dev/src/reload.rs
+- [x] T038 [P] Add optional `get_or_cache_document<F>()` method using Entry API pattern that computes hash once and returns cached or newly computed document in crates/dampen-dev/src/reload.rs
+- [x] T039 Run `cargo build -p dampen-dev` to verify Arc refactor and hash optimizations compile
+- [x] T040 Run `cargo test -p dampen-dev` to verify all tests pass after performance optimizations
 
 **Checkpoint**: At this point, User Story 4 should be fully functional and testable independently
 
@@ -137,14 +137,14 @@
 
 ### Implementation for User Story 5
 
-- [ ] T041 Find `FileWatcherError` enum in crates/dampen-dev/src/watcher.rs (around line 336)
-- [ ] T042 Remove `FileDeleted(PathBuf)` variant from `FileWatcherError` enum in crates/dampen-dev/src/watcher.rs
-- [ ] T043 Search codebase for `FileDeleted` usage to confirm it was never used: run `rg "FileDeleted" crates/dampen-dev/`
-- [ ] T044 [P] Find `FileWatcherState` enum in crates/dampen-dev/src/watcher.rs (around line 39)
-- [ ] T045 Replace `FileWatcherState` enum documentation with comprehensive state machine diagram and detailed state descriptions in crates/dampen-dev/src/watcher.rs
-- [ ] T046 [P] Add example usage code to `FileWatcherState` documentation showing Idle → Watching → Failed transitions in crates/dampen-dev/src/watcher.rs
-- [ ] T047 Run `cargo build -p dampen-dev` to verify documentation changes compile
-- [ ] T048 Run `cargo doc -p dampen-dev --open` to verify updated documentation renders correctly
+- [x] T041 Find `FileWatcherError` enum in crates/dampen-dev/src/watcher.rs (around line 336)
+- [x] T042 Remove `FileDeleted(PathBuf)` variant from `FileWatcherError` enum in crates/dampen-dev/src/watcher.rs
+- [x] T043 Search codebase for `FileDeleted` usage to confirm it was never used: run `rg "FileDeleted" crates/dampen-dev/`
+- [x] T044 [P] Find `FileWatcherState` enum in crates/dampen-dev/src/watcher.rs (around line 39)
+- [x] T045 Replace `FileWatcherState` enum documentation with comprehensive state machine diagram and detailed state descriptions in crates/dampen-dev/src/watcher.rs
+- [x] T046 [P] Add example usage code to `FileWatcherState` documentation showing Idle → Watching → Failed transitions in crates/dampen-dev/src/watcher.rs
+- [x] T047 Run `cargo build -p dampen-dev` to verify documentation changes compile
+- [x] T048 Run `cargo doc -p dampen-dev --open` to verify updated documentation renders correctly
 
 **Checkpoint**: At this point, User Story 5 should be fully functional and testable independently
 
@@ -154,12 +154,12 @@
 
 **Purpose**: Final validation and quality checks across all implemented fixes
 
-- [ ] T049 Run `cargo build -p dampen-dev` to ensure clean build across all fixes
-- [ ] T050 Run `cargo test -p dampen-dev` 10 times consecutively to verify no test flakiness remains
-- [ ] T051 Run `cargo clippy -p dampen-dev -- -D warnings` to verify zero clippy warnings
-- [ ] T052 Run `cargo fmt -p dampen-dev -- --check` to verify proper code formatting
-- [ ] T053 Run `cargo doc -p dampen-dev --open` to verify all public documentation renders correctly
-- [ ] T054 Review all 10 fixes against quickstart.md checklist to ensure completeness
+- [x] T049 Run `cargo build -p dampen-dev` to ensure clean build across all fixes
+- [x] T050 Run `cargo test -p dampen-dev` 10 times consecutively to verify no test flakiness remains
+- [x] T051 Run `cargo clippy -p dampen-dev -- -D warnings` to verify zero clippy warnings
+- [x] T052 Run `cargo fmt -p dampen-dev -- --check` to verify proper code formatting
+- [x] T053 Run `cargo doc -p dampen-dev --open` to verify all public documentation renders correctly
+- [x] T054 Review all 10 fixes against quickstart.md checklist to ensure completeness
 
 ---
 
