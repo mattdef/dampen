@@ -509,6 +509,7 @@ impl<'a> DampenWidgetBuilder<'a> {
             WidgetKind::Canvas => self.build_canvas(node),
             WidgetKind::Float => self.build_float(node),
             WidgetKind::For => self.build_for(node),
+            WidgetKind::If => self.build_if(node),
             WidgetKind::Radio => self.build_radio(node),
         }
     }

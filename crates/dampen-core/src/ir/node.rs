@@ -55,6 +55,7 @@ pub enum WidgetKind {
     Float,
     // Control flow
     For,
+    If,
     Custom(String),
 }
 

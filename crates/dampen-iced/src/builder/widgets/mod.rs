@@ -13,6 +13,7 @@ mod custom;
 mod float;
 mod for_loop;
 mod grid;
+mod if_widget;
 mod image;
 mod pick_list;
 mod progress_bar;

@@ -192,6 +192,7 @@ fn widget_kind_name(kind: &WidgetKind) -> String {
         WidgetKind::Canvas => "canvas".to_string(),
         WidgetKind::Float => "float".to_string(),
         WidgetKind::For => "for".to_string(),
+        WidgetKind::If => "if".to_string(),
         WidgetKind::Custom(name) => name.clone(),
     }
 }
@@ -556,14 +557,8 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "canvas" => WidgetKind::Canvas,
         "float" => WidgetKind::Float,
         "for" => WidgetKind::For,
-        _ => {
-            return Err(ParseError {
-                kind: ParseErrorKind::UnknownWidget,
-                message: format!("Unknown widget: <{}>", tag_name),
-                span: get_span(node, source),
-                suggestion: Some("Did you mean one of the standard widgets?".to_string()),
-            });
-        }
+        "if" => WidgetKind::If,
+        custom => WidgetKind::Custom(custom.to_string()),
     };
 
     // Parse attributes - separate breakpoint-prefixed and state-prefixed from regular

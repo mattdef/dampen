@@ -509,6 +509,7 @@ pub fn render<'a>(
         WidgetKind::Canvas => backend.column(Vec::new()),
         WidgetKind::Float => backend.column(Vec::new()),
         WidgetKind::For => backend.column(Vec::new()), // For loop requires model context, not supported in this legacy function
+        WidgetKind::If => backend.column(Vec::new()),
     }
 }
 

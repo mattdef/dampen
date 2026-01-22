@@ -52,11 +52,11 @@ impl<'a> ExprParser<'a> {
             self.skip_whitespace();
             self.consume_keyword("then")?;
             self.skip_whitespace();
-            let then_branch = self.parse_or()?;
+            let then_branch = self.parse()?;
             self.skip_whitespace();
             self.consume_keyword("else")?;
             self.skip_whitespace();
-            let else_branch = self.parse_or()?;
+            let else_branch = self.parse()?;
 
             return Ok(Expr::Conditional(ConditionalExpr {
                 condition: Box::new(condition),

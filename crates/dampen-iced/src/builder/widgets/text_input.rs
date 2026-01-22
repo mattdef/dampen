@@ -108,14 +108,29 @@ impl<'a> DampenWidgetBuilder<'a> {
             .find(|e| e.event == dampen_core::EventKind::Input)
             .map(|e| e.handler.clone());
 
+        let on_submit = node
+            .events
+            .iter()
+            .find(|e| e.event == dampen_core::EventKind::Submit)
+            .map(|e| e.handler.clone());
+
         #[cfg(debug_assertions)]
-        if let Some(handler) = &on_input {
-            eprintln!(
-                "[DampenWidgetBuilder] TextInput has input event: handler={}",
-                handler
-            );
-        } else {
-            eprintln!("[DampenWidgetBuilder] TextInput has no input event");
+        {
+            if let Some(handler) = &on_input {
+                eprintln!(
+                    "[DampenWidgetBuilder] TextInput has input event: handler={}",
+                    handler
+                );
+            } else {
+                eprintln!("[DampenWidgetBuilder] TextInput has no input event");
+            }
+
+            if let Some(handler) = &on_submit {
+                eprintln!(
+                    "[DampenWidgetBuilder] TextInput has submit event: handler={}",
+                    handler
+                );
+            }
         }
 
         let mut text_input = iced::widget::text_input(&placeholder, &value);
@@ -160,7 +175,7 @@ impl<'a> DampenWidgetBuilder<'a> {
         // Note: Password masking with dots is not available in Iced 0.14's public API
         // The input still works but text is visible
 
-        // Connect event if handler exists
+        // Connect events if handlers exist
         if let Some(handler_name) = on_input {
             if self.handler_registry.is_some() {
                 #[cfg(debug_assertions)]
@@ -171,11 +186,17 @@ impl<'a> DampenWidgetBuilder<'a> {
                 text_input = text_input.on_input(move |input_value| {
                     HandlerMessage::Handler(handler_name.clone(), Some(input_value))
                 });
-            } else {
+            }
+        }
+
+        if let Some(handler_name) = on_submit {
+            if self.handler_registry.is_some() {
                 #[cfg(debug_assertions)]
                 eprintln!(
-                    "[DampenWidgetBuilder] TextInput: No handler_registry, cannot attach on_input"
+                    "[DampenWidgetBuilder] TextInput: Attaching on_submit with handler '{}'",
+                    handler_name
                 );
+                text_input = text_input.on_submit(HandlerMessage::Handler(handler_name, None));
             }
         }
 

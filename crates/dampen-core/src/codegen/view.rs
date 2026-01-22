@@ -141,6 +141,7 @@ fn generate_widget(
         WidgetKind::Canvas => generate_canvas(node, model_ident, message_ident, style_classes),
         WidgetKind::Float => generate_float(node, model_ident, message_ident, style_classes),
         WidgetKind::For => generate_for(node, model_ident, message_ident, style_classes),
+        WidgetKind::If => generate_if(node, model_ident, message_ident, style_classes),
         WidgetKind::Custom(ref name) => {
             generate_custom_widget(node, name, model_ident, message_ident, style_classes)
         }
@@ -1753,6 +1754,11 @@ fn generate_text_input(
         .iter()
         .find(|e| e.event == crate::EventKind::Input);
 
+    let on_submit = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Submit);
+
     let mut text_input = match placeholder {
         Some(ph) => {
             let ph_lit = proc_macro2::Literal::string(&ph);
@@ -1770,6 +1776,14 @@ fn generate_text_input(
         let handler_ident = format_ident!("{}", variant_name);
         text_input = quote! {
             #text_input.on_input(|v| #message_ident::#handler_ident(v))
+        };
+    }
+
+    if let Some(event) = on_submit {
+        let variant_name = to_upper_camel_case(&event.handler);
+        let handler_ident = format_ident!("{}", variant_name);
+        text_input = quote! {
+            #text_input.on_submit(#message_ident::#handler_ident)
         };
     }
 
@@ -2287,6 +2301,34 @@ fn generate_for(
     Ok(quote! {
         {
             let _items = _items_expr;
+            iced::widget::column(vec![]).into()
+        }
+    })
+}
+
+/// Generate if widget
+fn generate_if(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    let condition_attr = node.attributes.get("condition").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("if requires condition attribute".to_string())
+    })?;
+
+    let children: Vec<TokenStream> = node
+        .children
+        .iter()
+        .map(|child| generate_widget(child, model_ident, message_ident, style_classes))
+        .collect::<Result<_, _>>()?;
+
+    let condition_expr = generate_attribute_value(condition_attr, model_ident);
+
+    Ok(quote! {
+        if #condition_expr.parse::<bool>().unwrap_or(false) {
+            iced::widget::column(vec![#(#children),*]).into()
+        } else {
             iced::widget::column(vec![]).into()
         }
     })
