@@ -90,10 +90,17 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         let is_checked = resolve_boolean_attribute(self, node, "checked", false);
 
+        // Parse size attribute
+        let size = node
+            .attributes
+            .get("size")
+            .map(|attr| self.evaluate_attribute(attr))
+            .and_then(|s| s.parse::<f32>().ok());
+
         #[cfg(debug_assertions)]
         eprintln!(
-            "[DampenWidgetBuilder] Building checkbox: label='{}', checked={}",
-            label, is_checked
+            "[DampenWidgetBuilder] Building checkbox: label='{}', checked={}, size={:?}",
+            label, is_checked, size
         );
 
         // Get handler from events (accept both on_toggle and on_change)
@@ -113,14 +120,19 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         let mut checkbox = iced::widget::checkbox(is_checked);
 
+        if let Some(s) = size {
+            checkbox = checkbox.size(s);
+        }
+
         // Resolve and apply checkbox styles with state-aware styling
         // Use complete style resolution: theme → class → inline
         let resolved_base_style = self.resolve_complete_styles(node);
 
         // Get the StyleClass for state variant resolution, wrapped in Rc for efficient cloning
-        let style_class = if !node.classes.is_empty() {
+        let classes = self.resolve_active_classes(node);
+        let style_class = if !classes.is_empty() {
             self.style_classes
-                .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
+                .and_then(|cls| classes.first().and_then(|name| cls.get(name)))
                 .cloned()
                 .map(std::rc::Rc::new)
         } else {

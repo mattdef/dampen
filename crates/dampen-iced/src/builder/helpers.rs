@@ -414,7 +414,64 @@ where
     })
 }
 
+// ... imports ...
+use dampen_core::UiBindable;
+
+/// A wrapper model that looks up fields in the binding context first, then the actual model.
+struct ContextAwareModel<'a, 'b> {
+    builder: &'b DampenWidgetBuilder<'a>,
+    model: &'b dyn UiBindable,
+}
+
+impl<'a, 'b> UiBindable for ContextAwareModel<'a, 'b> {
+    fn get_field(&self, path: &[&str]) -> Option<BindingValue> {
+        // 1. Try to resolve from context manually (simulating resolve_from_context logic)
+        // We can't use resolve_from_context directly easily because it takes a BindingExpr,
+        // but we can access the context stack directly.
+
+        if let Some(first_segment) = path.first() {
+            // Search context stack in reverse (innermost first)
+            for context in self.builder.binding_context.borrow().iter().rev() {
+                if let Some(value) = context.get(*first_segment) {
+                    // Handle nested access like item.text
+                    if path.len() == 1 {
+                        return Some(value.clone());
+                    } else {
+                        // Resolve nested path on the context value
+                        // We need to convert &[&str] to Vec<String> for resolve_nested_field
+                        let nested_path: Vec<String> =
+                            path[1..].iter().map(|s| s.to_string()).collect();
+                        return self.builder.resolve_nested_field(value, &nested_path);
+                    }
+                }
+            }
+        }
+
+        // 2. Fallback to model
+        self.model.get_field(path)
+    }
+
+    fn available_fields() -> Vec<String> {
+        // We can't easily list all context fields dynamically without iterating everything,
+        // so we'll just return the model's fields for now.
+        Vec::new()
+    }
+}
+
 impl<'a> DampenWidgetBuilder<'a> {
+    /// Evaluate a binding expression using both context variables and the model.
+    pub(crate) fn evaluate_binding_with_context(
+        &self,
+        expr: &dampen_core::expr::BindingExpr,
+    ) -> Result<BindingValue, BindingError> {
+        let context_model = ContextAwareModel {
+            builder: self,
+            model: self.model,
+        };
+
+        evaluate_binding_expr_with_shared(expr, &context_model, self.shared_context)
+    }
+
     /// Evaluate an attribute value (handles static, binding, and interpolated)
     ///
     /// # Attribute Types
@@ -443,24 +500,19 @@ impl<'a> DampenWidgetBuilder<'a> {
                     eprintln!("    Hint: Use .with_shared(&shared_state) when building widgets");
                 }
 
-                // Try context first, then model
-                if let Some(value) = self.resolve_from_context(expr) {
-                    value.to_display_string()
-                } else {
-                    match evaluate_binding_expr_with_shared(expr, self.model, self.shared_context) {
-                        Ok(value) => {
-                            #[cfg(debug_assertions)]
-                            eprintln!(
-                                "[DampenWidgetBuilder] Binding evaluated to: {}",
-                                value.to_display_string()
-                            );
+                match self.evaluate_binding_with_context(expr) {
+                    Ok(value) => {
+                        #[cfg(debug_assertions)]
+                        eprintln!(
+                            "[DampenWidgetBuilder] Binding evaluated to: {}",
                             value.to_display_string()
-                        }
-                        Err(e) => {
-                            #[cfg(debug_assertions)]
-                            eprintln!("[DampenWidgetBuilder] Binding error: {}", e);
-                            String::new()
-                        }
+                        );
+                        value.to_display_string()
+                    }
+                    Err(e) => {
+                        #[cfg(debug_assertions)]
+                        eprintln!("[DampenWidgetBuilder] Binding error: {}", e);
+                        String::new()
                     }
                 }
             }
@@ -481,22 +533,14 @@ impl<'a> DampenWidgetBuilder<'a> {
                                 );
                             }
 
-                            if let Some(value) = self.resolve_from_context(expr) {
-                                result.push_str(&value.to_display_string());
-                            } else {
-                                match evaluate_binding_expr_with_shared(
-                                    expr,
-                                    self.model,
-                                    self.shared_context,
-                                ) {
-                                    Ok(value) => result.push_str(&value.to_display_string()),
-                                    Err(e) => {
-                                        #[cfg(debug_assertions)]
-                                        eprintln!(
-                                            "[DampenWidgetBuilder] Interpolated binding error: {}",
-                                            e
-                                        );
-                                    }
+                            match self.evaluate_binding_with_context(expr) {
+                                Ok(value) => result.push_str(&value.to_display_string()),
+                                Err(e) => {
+                                    #[cfg(debug_assertions)]
+                                    eprintln!(
+                                        "[DampenWidgetBuilder] Interpolated binding error: {}",
+                                        e
+                                    );
                                 }
                             }
                         }
@@ -652,12 +696,25 @@ impl<'a> DampenWidgetBuilder<'a> {
         }
     }
 
+    /// Resolve active classes, handling dynamic bindings
+    pub(crate) fn resolve_active_classes(&self, node: &WidgetNode) -> Vec<String> {
+        if let Some(attr) = node.attributes.get("class") {
+            self.evaluate_attribute(attr)
+                .split_whitespace()
+                .map(|s| s.to_string())
+                .collect()
+        } else {
+            node.classes.clone()
+        }
+    }
+
     /// Resolve styles from class names
     pub(super) fn resolve_class_styles(
         &self,
         node: &WidgetNode,
     ) -> Option<dampen_core::ir::style::StyleProperties> {
-        if node.classes.is_empty() {
+        let classes = self.resolve_active_classes(node);
+        if classes.is_empty() {
             return None;
         }
 
@@ -666,8 +723,8 @@ impl<'a> DampenWidgetBuilder<'a> {
         // Merge styles from all classes (in order)
         let mut merged_style = dampen_core::ir::style::StyleProperties::default();
 
-        for class_name in &node.classes {
-            if let Some(style_class) = style_classes.get(class_name) {
+        for class_name in classes {
+            if let Some(style_class) = style_classes.get(&class_name) {
                 // Merge the base style from this class
                 merged_style = merge_styles(merged_style, &style_class.style);
 
@@ -774,17 +831,14 @@ impl<'a> DampenWidgetBuilder<'a> {
     ) -> Option<
         impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style + 'a,
     > {
-        let theme_context = self.theme_context?;
+        let theme_context = self.theme_context;
         let widget_kind = node.kind.clone();
 
-        // Get class styles (these are static, not from theme)
-        let class_styles = if !node.classes.is_empty() {
-            self.style_classes.and_then(|classes| {
-                node.classes
-                    .first()
-                    .and_then(|name| classes.get(name))
-                    .cloned()
-            })
+        // Get class styles (these are static/resolved at build time, not from theme)
+        let classes = self.resolve_active_classes(node);
+        let class_styles = if !classes.is_empty() {
+            self.style_classes
+                .and_then(|cls| classes.first().and_then(|name| cls.get(name)).cloned())
         } else {
             None
         };
@@ -800,37 +854,38 @@ impl<'a> DampenWidgetBuilder<'a> {
                 use iced::widget::button;
                 use iced::{Background, Border, Color};
 
-                // Get the active theme at RUNTIME (not build time!)
-                let active_theme = theme_context.active();
-                let palette = &active_theme.palette;
-
                 // Resolve theme colors for this widget type at render time
                 let mut theme_style = dampen_core::ir::style::StyleProperties::default();
 
-                match widget_kind {
-                    WidgetKind::Container => {
-                        if let Some(ref surface) = palette.surface {
-                            theme_style.background =
-                                Some(dampen_core::ir::style::Background::Color(*surface));
+                if let Some(ctx) = theme_context {
+                    let active_theme = ctx.active();
+                    let palette = &active_theme.palette;
+
+                    match widget_kind {
+                        WidgetKind::Container => {
+                            if let Some(ref surface) = palette.surface {
+                                theme_style.background =
+                                    Some(dampen_core::ir::style::Background::Color(*surface));
+                            }
                         }
-                    }
-                    WidgetKind::Button => {
-                        if let Some(ref primary) = palette.primary {
-                            theme_style.background =
-                                Some(dampen_core::ir::style::Background::Color(*primary));
+                        WidgetKind::Button => {
+                            if let Some(ref primary) = palette.primary {
+                                theme_style.background =
+                                    Some(dampen_core::ir::style::Background::Color(*primary));
+                            }
+                            if let Some(ref text) = palette.text {
+                                theme_style.color = Some(*text);
+                            }
                         }
-                        if let Some(ref text) = palette.text {
-                            theme_style.color = Some(*text);
+                        WidgetKind::Text => {
+                            if let Some(ref text) = palette.text {
+                                theme_style.color = Some(*text);
+                            }
                         }
-                    }
-                    WidgetKind::Text => {
-                        if let Some(ref text) = palette.text {
-                            theme_style.color = Some(*text);
-                        }
-                    }
-                    _ => {
-                        if let Some(ref text) = palette.text {
-                            theme_style.color = Some(*text);
+                        _ => {
+                            if let Some(ref text) = palette.text {
+                                theme_style.color = Some(*text);
+                            }
                         }
                     }
                 }
@@ -940,7 +995,8 @@ impl<'a> DampenWidgetBuilder<'a> {
         node: &WidgetNode,
     ) -> Option<dampen_core::ir::style::StyleProperties> {
         // Layer 1: Theme styles (base)
-        let theme_styles = self.resolve_theme_styles(node.kind.clone())?;
+        // Note: Don't use ? here, as we want to continue even if theme has no styles
+        let theme_styles = self.resolve_theme_styles(node.kind.clone());
 
         // Layer 2: Class styles (override theme)
         let class_styles = self.resolve_class_styles(node);
@@ -948,23 +1004,21 @@ impl<'a> DampenWidgetBuilder<'a> {
         // Layer 3: Inline styles (override class)
         let inline_style = &node.style;
 
+        // If no styles at all, return None
+        if theme_styles.is_none() && class_styles.is_none() && inline_style.is_none() {
+            return None;
+        }
+
         // Merge all layers: theme → class → inline
-        let merged = match (class_styles, inline_style) {
-            (Some(class_style), Some(inline_style)) => {
-                // Merge class on top of theme, then inline on top of class
-                let theme_then_class = merge_styles(theme_styles, &class_style);
-                merge_styles(theme_then_class, inline_style)
-            }
-            (Some(class_style), None) => {
-                // Only theme + class
-                merge_styles(theme_styles, &class_style)
-            }
-            (None, Some(inline_style)) => {
-                // Only theme + inline
-                merge_styles(theme_styles, inline_style)
-            }
-            (None, None) => theme_styles,
-        };
+        let mut merged = theme_styles.unwrap_or_default();
+
+        if let Some(class_style) = class_styles {
+            merged = merge_styles(merged, &class_style);
+        }
+
+        if let Some(inline_style) = inline_style {
+            merged = merge_styles(merged, inline_style);
+        }
 
         Some(merged)
     }
@@ -974,7 +1028,8 @@ impl<'a> DampenWidgetBuilder<'a> {
         &self,
         node: &WidgetNode,
     ) -> Option<dampen_core::ir::layout::LayoutConstraints> {
-        if node.classes.is_empty() {
+        let classes = self.resolve_active_classes(node);
+        if classes.is_empty() {
             return None;
         }
 
@@ -983,8 +1038,8 @@ impl<'a> DampenWidgetBuilder<'a> {
         // Merge layouts from all classes (in order)
         let mut merged_layout: Option<dampen_core::ir::layout::LayoutConstraints> = None;
 
-        for class_name in &node.classes {
-            if let Some(style_class) = style_classes.get(class_name)
+        for class_name in classes {
+            if let Some(style_class) = style_classes.get(&class_name)
                 && let Some(class_layout) = &style_class.layout
             {
                 merged_layout = Some(match merged_layout {

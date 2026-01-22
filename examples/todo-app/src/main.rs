@@ -1,22 +1,38 @@
 //! Todo App example using the #[dampen_app] macro for automatic view management.
 //!
-//! **Note:** This example currently only supports interpreted mode (default).
-//! Codegen mode is not yet supported for multi-view applications with shared state.
+//! This example shows:
+//! - Task management (create, edit, delete, complete)
+//! - Task filtering (All, Active, Completed)
+//! - Inline task editing
+//! - Dual-mode support (interpreted + codegen)
+//!
+//! - In **interpreted mode** (default): Uses `#[dampen_app]` macro with hot-reload
+//! - In **codegen mode**: Uses pre-generated code for production builds
 
-mod shared;
+// Ensure codegen and interpreted are mutually exclusive
+#[cfg(all(feature = "codegen", feature = "interpreted"))]
+compile_error!(
+    "Features 'codegen' and 'interpreted' are mutually exclusive. Use --no-default-features with --features codegen for production builds."
+);
+
+// ============================================================================
+// INTERPRETED MODE (development with hot-reload)
+// ============================================================================
+#[cfg(feature = "interpreted")]
 mod ui;
 
+#[cfg(feature = "interpreted")]
 use dampen_iced::HandlerMessage;
+#[cfg(feature = "interpreted")]
 use dampen_macros::dampen_app;
 
-#[cfg(debug_assertions)]
+#[cfg(all(feature = "interpreted", debug_assertions))]
 use dampen_dev::FileEvent;
 
-/// Application messages
+/// Application messages (interpreted mode)
+#[cfg(feature = "interpreted")]
 #[derive(Clone, Debug)]
 enum Message {
-    /// Switch between views (window ↔ statistics)
-    SwitchToView(CurrentView),
     /// Handler invocation from UI widgets
     Handler(HandlerMessage),
     /// Hot-reload event (development mode only)
@@ -27,29 +43,52 @@ enum Message {
     DismissError,
 }
 
-/// Main application structure with auto-generated view management
+/// Main application structure with auto-generated view management (interpreted mode)
+#[cfg(feature = "interpreted")]
 #[dampen_app(
     ui_dir = "src/ui",
     message_type = "Message",
     handler_variant = "Handler",
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
-    switch_view_variant = "SwitchToView",
-    shared_model = "SharedState",
     default_view = "window"
 )]
 struct TodoApp;
 
+#[cfg(feature = "interpreted")]
 pub fn main() -> iced::Result {
     #[cfg(debug_assertions)]
     println!("🔥 Hot-reload enabled! Edit src/ui/window.dampen to see live updates.");
 
-    println!("📊 Multi-view enabled: Main window ↔ Statistics");
-    println!("   Click '📊 Statistics' to view real-time task analytics!");
+    #[cfg(not(debug_assertions))]
+    println!("🚀 Running in interpreted release mode.");
 
     iced::application(TodoApp::init, TodoApp::update, TodoApp::view)
-        .window_size(iced::Size::new(1280.0, 800.0))
+        .window_size(iced::Size::new(500.0, 800.0))
         .centered()
+        .title("Dampen Todo App")
         .subscription(TodoApp::subscription)
+        .run()
+}
+
+// ============================================================================
+// CODEGEN MODE (production builds with pre-generated code)
+// ============================================================================
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+mod ui;
+
+// Include generated code (contains Message enum, update/view functions, etc.)
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+include!(concat!(env!("OUT_DIR"), "/ui_generated.rs"));
+
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+pub fn main() -> iced::Result {
+    println!("🚀 Running in codegen mode (production)");
+
+    iced::application(window::new_model, window::update_model, window::view_model)
+        .window_size(iced::Size::new(500.0, 800.0))
+        .centered()
+        .title("Dampen Todo App")
+        .subscription(|_model| window::subscription_model())
         .run()
 }

@@ -1,319 +1,226 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dampen version="1.0">
-    <!-- Modern Dark Glassmorphism Design -->
-
     <styles>
-        <!-- Layout & Backgrounds -->
-        <style name="main_background">
-            <base background="#1a1b1e" width="fill" height="fill" />
-        </style>
-
-        <style name="glass_panel">
-            <base
-                background="#25262b"
-                border_radius="20"
-                border_width="1"
-                border_color="#2c2e33"
-                padding="24"
-            />
-        </style>
-
-        <!-- Header -->
-        <style name="header_container">
-            <base
-                background="#25262b"
-                padding="16 32"
-                width="fill"
-                border_color="#2c2e33"
-                border_width="1"
-            />
-        </style>
-
-        <style name="search_bar">
-            <base
-                background="#1a1b1e"
-                padding="10 16"
-                border_radius="12"
-                width="400"
-                border_width="1"
-                border_color="#2c2e33"
-            />
-            <active border_color="#5c7cfa" />
-        </style>
-
-        <!-- Navigation / Sidebar -->
-        <style name="sidebar_container">
-            <base
-                width="280"
-                padding="32 20"
-                background="#1a1b1e"
-                border_width="1"
-                border_color="#2c2e33"
-            />
-        </style>
-
-        <style name="nav_button">
+        <style name="btn_filter">
             <base
                 background="transparent"
-                color="#909296"
-                padding="12 16"
-                border_radius="12"
-                width="fill"
-                size="14"
-            />
-            <hover background="#2c2e33" color="#e9ecef" />
-            <active background="#373a40" />
-        </style>
-
-        <style name="nav_button_active">
-            <base
-                background="rgba(92, 124, 250, 0.15)"
-                color="#748ffc"
-                padding="12 16"
-                border_radius="12"
-                width="fill"
-                size="14"
-                weight="bold"
-            />
-        </style>
-
-        <style name="nav_section_title">
-            <base
-                color="#5c5f66"
-                size="12"
-                weight="bold"
-                padding="24 16 8 16"
-            />
-        </style>
-
-        <!-- Task List -->
-        <style name="content_container">
-            <base padding="32 40" width="fill" background="#141517" />
-        </style>
-
-        <style name="task_card">
-            <base
-                background="#25262b"
-                padding="16 20"
-                border_radius="16"
-                width="fill"
-                border_width="1"
-                border_color="#2c2e33"
-            />
-            <hover
-                background="#2c2e33"
-                border_color="#373a40"
-                shadow="0 4 20 rgba(0,0,0,0.2)"
-            />
-        </style>
-
-        <!-- Typography & Badges -->
-        <style name="page_title">
-            <base size="32" weight="bold" color="#e9ecef" />
-        </style>
-
-        <style name="date_subtitle">
-            <base size="14" color="#909296" />
-        </style>
-
-        <style name="task_text">
-            <base size="16" color="#c1c2c5" />
-        </style>
-
-        <style name="badge">
-            <base padding="4 12" border_radius="100" size="12" weight="medium" />
-        </style>
-
-        <!-- Priority Badges -->
-        <style name="badge_high">
-            <base
-                background="rgba(255, 107, 107, 0.15)"
-                color="#ff6b6b"
-                padding="4 12"
-                border_radius="100"
-            />
-        </style>
-
-        <style name="badge_medium">
-            <base
-                background="rgba(252, 196, 25, 0.15)"
-                color="#fcc419"
-                padding="4 12"
-                border_radius="100"
-            />
-        </style>
-
-        <style name="badge_low">
-            <base
-                background="rgba(81, 207, 102, 0.15)"
-                color="#51cf66"
-                padding="4 12"
-                border_radius="100"
-            />
-        </style>
-
-        <style name="badge_category">
-            <base
-                background="#373a40"
-                color="#adb5bd"
-                padding="4 12"
-                border_radius="100"
-            />
-        </style>
-
-        <!-- Action Buttons -->
-        <style name="icon_button">
-            <base
-                background="transparent"
-                color="#909296"
-                padding="8"
-                border_radius="8"
-            />
-            <hover background="#373a40" color="#e9ecef" />
-        </style>
-
-        <style name="primary_button">
-            <base
-                background="#339af0"
                 color="#ffffff"
-                padding="10 20"
-                border_radius="10"
-                weight="medium"
+                padding="12 24"
+                border_radius="6"
+                border_width="0"
             />
-            <hover background="#228be6" shadow="0 4 12 rgba(51, 154, 240, 0.3)" />
-            <active background="#1c7ed6" />
+            <disabled opacity="0.5" />
         </style>
-        
-        <style name="danger_button">
+        <style name="btn_primary">
             <base
-                background="rgba(255, 107, 107, 0.1)"
-                color="#ff6b6b"
-                padding="10 20"
-                border_radius="10"
-                weight="medium"
+                background="#3498db"
+                color="#ffffff"
+                padding="12 24"
+                border_radius="6"
+                border_width="0"
             />
-            <hover background="rgba(255, 107, 107, 0.2)" />
+            <hover background="#5dade2" shadow="2 4 12 #00000090" />
+            <active background="#2874a6" shadow="2 4 12 #00000090" />
+            <disabled opacity="0.5" />
+        </style>
+        <style name="btn_success">
+            <base
+                background="#27ae60"
+                color="#ffffff"
+                padding="12 24"
+                border_radius="6"
+                border_width="0"
+            />
+            <hover background="#52be80" shadow="2 4 12 #00000090" />
+            <active background="#1e8449" shadow="2 4 12 #00000090" />
+            <disabled opacity="0.5" />
+        </style>
+        <style name="btn_danger">
+            <base
+                background="#e74c3c"
+                color="#ffffff"
+                padding="12 24"
+                border_radius="6"
+                border_width="0"
+            />
+            <hover background="#ec7063" shadow="2 4 12 #00000090" />
+            <active background="#c0392b" shadow="2 4 12 #00000090" />
+            <disabled opacity="0.5" />
+        </style>
+        <style name="btn_edit">
+            <base background="transparent" color="#4a90e2" border_radius="14" />
+            <hover
+                background="#3498db"
+                color="white"
+                shadow="2 4 12 #00000090"
+            />
+            <active
+                background="#45a9ec"
+                color="white"
+                shadow="2 4 12 #00000090"
+            />
+        </style>
+        <style name="btn_delete">
+            <base
+                background="#e74c3c"
+                color="#ffffff"
+                padding="12 24"
+                border_radius="6"
+                border_width="0"
+            />
+            <hover background="#ec7063" shadow="2 4 12 #00000090" />
+            <active background="#c0392b" shadow="2 4 12 #00000090" />
+            <disabled opacity="0.5" />
+        </style>
+        <style name="checkbox_style">
+            <base
+                background="#ffffff"
+                color="#27ae60"
+                border_width="1"
+                border_color="#e6e6e6"
+                border_radius="6"
+            />
+            <hover border_radius="6" border_color="#27ae60" border_width="1" />
+            <!-- Note: 'active' here means pressed/mouse-down, not checked state -->
+            <active color="red" />
         </style>
     </styles>
 
-    <!-- App Layout -->
-    <column width="fill" height="fill" class="main_background">
-        
-        <!-- Top Header -->
-        <container class="header_container">
-            <row align="center" spacing="20">
-                <row align="center" spacing="12">
-                     <text value="⚡" size="24" />
-                     <text value="Dampen Tasks" size="18" weight="bold" color="#e9ecef" />
-                </row>
 
-                <container width="fill" />
+    <container
+        width="fill"
+        height="fill"
+        align_x="center"
+        align_y="start"
+        padding="40"
+        style="background: #f5f5f5"
+    >
+        <column width="600" spacing="20">
+            <!-- Title -->
+            <text
+                value="todos"
+                size="100"
+                style="color: #ead7d7"
+                width="fill"
+                align_x="center"
+            />
 
-                <container class="search_bar">
-                    <row align="center" spacing="10">
-                        <text value="🔍" size="14" color="#5c5f66" />
-                        <text value="Search tasks..." size="14" color="#5c5f66" />
+            <!-- Main card -->
+            <container style="background: #ffffff; border_radius: 4">
+                <column>
+                    <!-- Input section -->
+                    <text_input
+                        id="new-task"
+                        value="{input_value}"
+                        on_input="input_changed"
+                        on_submit="create_task"
+                        placeholder="What needs to be done?"
+                        size="24"
+                        padding="16"
+                        width="fill"
+                    />
+
+                    <!-- Filters and counter -->
+                    <row
+                        width="fill"
+                        padding="16"
+                        align_y="center"
+                        spacing="20"
+                        style="border_top: 1 solid #e6e6e6"
+                    >
+                        <text
+                            value="{tasks_left_text}"
+                            size="14"
+                            width="fill"
+                            style="color: #777777"
+                        />
+                        <row spacing="8">
+                            <button
+                                label="All"
+                                on_click="filter:'All'"
+                                class="{if filter == 'All' then 'btn_primary' else 'btn_filter'}"
+                            />
+                            <button
+                                label="Active"
+                                on_click="filter:'Active'"
+                                class="{if filter == 'Active' then 'btn_success' else 'btn_filter'}"
+                            />
+                            <button
+                                label="Completed"
+                                on_click="filter:'Completed'"
+                                class="{if filter == 'Completed' then 'btn_danger' else 'btn_filter'}"
+                            />
+                        </row>
                     </row>
-                </container>
 
-                <container width="fill" />
+                    <!-- Tasks list -->
+                    <column>
+                        <scrollable>
+                            <for each="task" in="{filtered_tasks}">
+                                <if condition="{task.state == 'Idle'}">
+                                    <row
+                                        width="fill"
+                                        align_y="center"
+                                        spacing="12"
+                                        padding="16"
+                                        style="border_top: 1 solid #ededed"
+                                    >
+                                        <checkbox
+                                            checked="{task.completed}"
+                                            on_change="toggle_task:{task.id}"
+                                            class="checkbox_style"
+                                            size="22"
+                                        />
+                                        <text
+                                            value="{task.description}"
+                                            width="fill"
+                                            size="24"
+                                        />
+                                        <button
+                                            label="✏️"
+                                            on_click="edit_task:{task.id}"
+                                            class="btn_edit"
+                                        />
+                                    </row>
+                                </if>
 
-                <button label="➕ New Task" on_click="open_add_task" class="primary_button" />
-                
-                <row spacing="4">
-                    <button label="📊" on_click="open_statistics" class="icon_button" size="18" />
-                    <button label="🌙" on_click="toggle_dark_mode" class="icon_button" size="18" />
-                    <button label="👤" on_click="toggle_menu" class="icon_button" size="18" />
-                </row>
-            </row>
-        </container>
-
-        <!-- Main Body -->
-        <row width="fill" height="fill">
-            
-            <!-- Sidebar -->
-            <container class="sidebar_container" height="fill">
-                <column spacing="4" width="fill">
-                    <text value="OVERVIEW" class="nav_section_title" />
-                    
-                    <button label="📥  Inbox" on_click="filter:all" class="nav_button" />
-                    <button label="📅  Today" on_click="filter:today" class="nav_button_active" />
-                    <button label="📆  Upcoming" on_click="filter:upcoming" class="nav_button" />
-                    
-                    <text value="PROJECTS" class="nav_section_title" />
-                    
-                    <button label="🔵  Work" on_click="filter_by_category:Work" class="nav_button" />
-                    <button label="🟢  Personal" on_click="filter_by_category:Personal" class="nav_button" />
-                    <button label="🟠  Shopping" on_click="filter_by_category:Shopping" class="nav_button" />
-                    <button label="🟣  Health" on_click="filter_by_category:Health" class="nav_button" />
-                    
-                    <container height="fill" />
-                    
-                    <!-- Mini Stats Widget -->
-                    <container background="#25262b" padding="16" border_radius="12">
-                        <column spacing="8">
-                            <text value="Progress" size="12" weight="bold" color="#909296" />
-                            <row align="center" spacing="8">
-                                <text value="{completion_percentage}%" size="24" weight="bold" color="#339af0" />
-                                <column>
-                                    <text value="{completed_count} done" size="11" color="#5c5f66" />
-                                    <text value="{pending_count} left" size="11" color="#5c5f66" />
-                                </column>
-                            </row>
-                        </column>
-                    </container>
+                                <if condition="{task.state == 'Editing'}">
+                                    <row
+                                        width="fill"
+                                        align_y="center"
+                                        spacing="12"
+                                        padding="16"
+                                        style="border_top: 1 solid #ededed"
+                                    >
+                                        <text_input
+                                            value="{edit_text}"
+                                            on_input="update_edit_text"
+                                            on_submit="save_edit"
+                                            width="fill"
+                                            size="24"
+                                            padding="12"
+                                        />
+                                        <button
+                                            label="Remove"
+                                            on_click="delete_task:{task.id}"
+                                            class="btn_danger"
+                                        />
+                                    </row>
+                                </if>
+                            </for>
+                        </scrollable>
+                    </column>
                 </column>
             </container>
 
-            <!-- Content Area -->
-            <scrollable width="fill" height="fill">
-                <container class="content_container">
-                    <column spacing="32" max_width="800">
-                        
-                        <!-- View Header -->
-                        <row align="center">
-                            <column spacing="4">
-                                <text value="Today's Tasks" class="page_title" />
-                                <text value="Thursday, April 22" class="date_subtitle" />
-                            </column>
-                            <container width="fill" />
-                            <button label="Sort ↕️" on_click="toggle_sort" class="icon_button" />
-                        </row>
-
-                        <!-- Tasks List -->
-                        <column spacing="16">
-                            <for each="item" in="{filtered_items_cache}">
-                                <container class="task_card">
-                                    <row align="center" spacing="16">
-                                        <!-- Checkbox (Custom style via button logic often used if native checkbox styling is limited, using standard checkbox here) -->
-                                        <checkbox checked="{item.completed}" on_change="toggle_item:{item.id}" />
-                                        
-                                        <column width="fill" spacing="6">
-                                            <text value="{item.text}" class="task_text" />
-                                            <row spacing="8">
-                                                <text value="{item.category}" class="badge_category" size="11" />
-                                                <text value="{item.priority}" class="badge_medium" size="11" />
-                                            </row>
-                                        </column>
-
-                                        <row spacing="4">
-                                            <button label="✏️" on_click="edit_item:{item.id}" class="icon_button" />
-                                            <button label="🗑️" on_click="delete_item:{item.id}" class="icon_button" />
-                                        </row>
-                                    </row>
-                                </container>
-                            </for>
-                        </column>
-                        
-                        <!-- Empty State Spacer or Message if needed -->
-                        <container padding="20 0" align_x="center">
-                            <button label="Clear Completed Tasks" on_click="clear_completed" class="danger_button" />
-                        </container>
-
-                    </column>
-                </container>
-            </scrollable>
-            
-        </row>
-    </column>
+            <!-- Hint text -->
+            <text
+                value="Click ✏️ to edit a todo"
+                size="11"
+                style="color: #bfbfbf"
+                width="fill"
+                align_x="center"
+            />
+        </column>
+    </container>
 </dampen>

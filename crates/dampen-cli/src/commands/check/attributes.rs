@@ -179,6 +179,13 @@ impl WidgetAttributeSchema {
                 style_attributes: STYLE_COMMON.clone(),
                 layout_attributes: LAYOUT_COMMON.clone(),
             },
+            WidgetKind::If => Self {
+                required: hashset!["condition"],
+                optional: hashset![],
+                events: hashset![],
+                style_attributes: STYLE_COMMON.clone(),
+                layout_attributes: LAYOUT_COMMON.clone(),
+            },
             WidgetKind::Custom(_) => Self {
                 // Custom widgets will be validated separately via custom widget config
                 required: hashset![],

@@ -173,9 +173,10 @@ impl<'a> DampenWidgetBuilder<'a> {
         let resolved_base_style = self.resolve_complete_styles(node);
 
         // Get the StyleClass for state variant resolution, wrapped in Rc for efficient cloning
-        let style_class = if !node.classes.is_empty() {
+        let classes = self.resolve_active_classes(node);
+        let style_class = if !classes.is_empty() {
             self.style_classes
-                .and_then(|classes| node.classes.first().and_then(|name| classes.get(name)))
+                .and_then(|cls| classes.first().and_then(|name| cls.get(name)))
                 .cloned()
                 .map(std::rc::Rc::new)
         } else {

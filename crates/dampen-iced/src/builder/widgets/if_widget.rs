@@ -20,17 +20,14 @@ impl<'a> DampenWidgetBuilder<'a> {
 
         // Evaluate condition
         let condition = match node.attributes.get("condition") {
-            Some(AttributeValue::Binding(expr)) => {
-                // Try context first, then model
-                if let Some(ctx_value) = self.resolve_from_context(expr) {
-                    ctx_value.to_bool()
-                } else {
-                    use dampen_core::expr::evaluate_binding_expr_with_shared;
-                    evaluate_binding_expr_with_shared(expr, self.model, self.shared_context)
-                        .map(|v| v.to_bool())
-                        .unwrap_or(false)
+            Some(AttributeValue::Binding(expr)) => match self.evaluate_binding_with_context(expr) {
+                Ok(value) => value.to_bool(),
+                Err(e) => {
+                    #[cfg(debug_assertions)]
+                    eprintln!("[DampenWidgetBuilder] If condition binding error: {}", e);
+                    false
                 }
-            }
+            },
             Some(AttributeValue::Static(s)) => s == "true" || s == "1",
             _ => {
                 #[cfg(debug_assertions)]

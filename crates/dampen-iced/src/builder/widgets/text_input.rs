@@ -140,11 +140,12 @@ impl<'a> DampenWidgetBuilder<'a> {
         let resolved_base_style = self.resolve_complete_styles(node);
 
         // Get the StyleClass for state variant resolution, wrapped in Rc for efficient cloning
-        let style_class = if !node.classes.is_empty() {
+        let classes = self.resolve_active_classes(node);
+        let style_class = if !classes.is_empty() {
             self.style_classes
-                .and_then(|classes| {
+                .and_then(|cls| {
                     // Get the first class for state variant resolution
-                    node.classes.first().and_then(|name| classes.get(name))
+                    classes.first().and_then(|name| cls.get(name))
                 })
                 .cloned()
                 .map(std::rc::Rc::new)
@@ -176,28 +177,28 @@ impl<'a> DampenWidgetBuilder<'a> {
         // The input still works but text is visible
 
         // Connect events if handlers exist
-        if let Some(handler_name) = on_input {
-            if self.handler_registry.is_some() {
-                #[cfg(debug_assertions)]
-                eprintln!(
-                    "[DampenWidgetBuilder] TextInput: Attaching on_input with handler '{}'",
-                    handler_name
-                );
-                text_input = text_input.on_input(move |input_value| {
-                    HandlerMessage::Handler(handler_name.clone(), Some(input_value))
-                });
-            }
+        if let Some(handler_name) = on_input
+            && self.handler_registry.is_some()
+        {
+            #[cfg(debug_assertions)]
+            eprintln!(
+                "[DampenWidgetBuilder] TextInput: Attaching on_input with handler '{}'",
+                handler_name
+            );
+            text_input = text_input.on_input(move |input_value| {
+                HandlerMessage::Handler(handler_name.clone(), Some(input_value))
+            });
         }
 
-        if let Some(handler_name) = on_submit {
-            if self.handler_registry.is_some() {
-                #[cfg(debug_assertions)]
-                eprintln!(
-                    "[DampenWidgetBuilder] TextInput: Attaching on_submit with handler '{}'",
-                    handler_name
-                );
-                text_input = text_input.on_submit(HandlerMessage::Handler(handler_name, None));
-            }
+        if let Some(handler_name) = on_submit
+            && self.handler_registry.is_some()
+        {
+            #[cfg(debug_assertions)]
+            eprintln!(
+                "[DampenWidgetBuilder] TextInput: Attaching on_submit with handler '{}'",
+                handler_name
+            );
+            text_input = text_input.on_submit(HandlerMessage::Handler(handler_name, None));
         }
 
         text_input.into()
