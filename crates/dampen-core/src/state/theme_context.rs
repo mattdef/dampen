@@ -91,7 +91,7 @@ impl ThemeContext {
     ///
     /// # Returns
     ///
-    /// Reference to the active [`Theme`](crate::ir::Theme).
+    /// Reference to the active [`Theme`].
     #[allow(clippy::unwrap_used)]
     pub fn active(&self) -> &Theme {
         self.themes.get(&self.active_theme).unwrap()
