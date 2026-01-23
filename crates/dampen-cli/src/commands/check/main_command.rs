@@ -386,7 +386,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         }
 
         // Special handling for theme.dampen files
-        if file_path.file_name().map_or(false, |n| n == "theme.dampen") {
+        if file_path.file_name().is_some_and(|n| n == "theme.dampen") {
             if let Err(theme_error) =
                 dampen_core::parser::theme_parser::parse_theme_document(&content)
             {
