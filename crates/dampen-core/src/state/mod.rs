@@ -6,8 +6,8 @@
 //! # Overview
 //!
 //! `AppState<M, S>` is a generic container where:
-//! - `document`: The parsed [`DampenDocument`](crate::ir::DampenDocument) (mandatory)
-//! - `model`: Application state model implementing [`UiBindable`](crate::binding::UiBindable) (optional, defaults to `()`)
+//! - `document`: The parsed [`DampenDocument`] (mandatory)
+//! - `model`: Application state model implementing [`UiBindable`] (optional, defaults to `()`)
 //! - `handler_registry`: Event handler registry (optional, defaults to empty)
 //! - `shared_context`: Optional reference to shared state across views (defaults to `None`)
 //!
@@ -59,10 +59,10 @@
 //!
 //! # See Also
 //!
-//! - [`DampenDocument`](crate::ir::DampenDocument) - The parsed UI document
-//! - [`HandlerRegistry`](crate::handler::HandlerRegistry) - Event handler registry
-//! - [`UiBindable`](crate::binding::UiBindable) - Trait for bindable models
-//! - [`SharedContext`](crate::shared::SharedContext) - Shared state container
+//! - [`DampenDocument`] - The parsed UI document
+//! - [`HandlerRegistry`] - Event handler registry
+//! - [`UiBindable`] - Trait for bindable models
+//! - [`SharedContext`] - Shared state container
 
 mod theme_context;
 
@@ -81,8 +81,8 @@ use crate::{binding::UiBindable, handler::HandlerRegistry, ir::DampenDocument};
 ///
 /// # Type Parameters
 ///
-/// * `M` - The local model type implementing [`UiBindable`](crate::binding::UiBindable). Defaults to unit type `()`.
-/// * `S` - The shared state type implementing [`UiBindable`](crate::binding::UiBindable) + `Send + Sync`. Defaults to unit type `()`.
+/// * `M` - The local model type implementing [`UiBindable`]. Defaults to unit type `()`.
+/// * `S` - The shared state type implementing [`UiBindable`] + `Send + Sync`. Defaults to unit type `()`.
 ///
 /// # Backward Compatibility
 ///

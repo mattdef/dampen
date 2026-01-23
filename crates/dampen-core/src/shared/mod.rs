@@ -57,7 +57,7 @@
 //! # See Also
 //!
 //! - [`AppState`](crate::state::AppState) - Per-view state container that can hold a `SharedContext`
-//! - [`UiBindable`](crate::binding::UiBindable) - Trait required for shared state types
+//! - [`UiBindable`] - Trait required for shared state types
 
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 

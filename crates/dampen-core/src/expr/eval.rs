@@ -13,7 +13,7 @@ use crate::expr::{
 /// Evaluate an expression against a model
 ///
 /// For expressions that use shared state (`{shared.field}`), use
-/// [`evaluate_expr_with_shared`](evaluate_expr_with_shared) instead.
+/// [`evaluate_expr_with_shared`] instead.
 pub fn evaluate_expr(expr: &Expr, model: &dyn UiBindable) -> Result<BindingValue, BindingError> {
     evaluate_expr_with_shared(expr, model, None)
 }

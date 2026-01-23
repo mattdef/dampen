@@ -1,14 +1,14 @@
 //! Shared state model for the macro-shared-state example.
 //!
 //! This module defines the SharedState struct that will be automatically
-//! wrapped in SharedContext by the #[dampen_app] macro.
+//! wrapped in SharedContext by the `#[dampen_app]` macro.
 
 use dampen_macros::UiModel;
 
 /// Shared state accessible across all views.
 ///
-/// This state is automatically wrapped in SharedContext<SharedState>
-/// by the #[dampen_app] macro when shared_model = "SharedState" is specified.
+/// This state is automatically wrapped in `SharedContext<SharedState>`
+/// by the `#[dampen_app]` macro when shared_model = "SharedState" is specified.
 #[derive(Clone, Debug, UiModel)]
 pub struct SharedState {
     /// Current theme name (e.g., "Light", "Dark", "Solarized")

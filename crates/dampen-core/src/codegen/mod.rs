@@ -59,12 +59,12 @@ pub enum HandlerSignatureType {
     /// Handler that receives a value from the UI element
     WithValue,
 
-    /// fn(&mut Model) -> Command<Message>
+    /// fn(&mut Model) -> `Command<Message>`
     /// Handler that returns a command for side effects
     WithCommand,
 }
 
-/// Metadata structure emitted by #[ui_handler] macro for build-time registration
+/// Metadata structure emitted by `#[ui_handler]` macro for build-time registration
 #[derive(Debug, Clone)]
 pub struct HandlerInfo {
     /// Unique handler name referenced in XML
@@ -89,7 +89,7 @@ pub struct HandlerInfo {
 impl HandlerInfo {
     /// Convert HandlerInfo to HandlerSignature for code generation.
     ///
-    /// This bridges the metadata emitted by #[ui_handler] with the signature
+    /// This bridges the metadata emitted by `#[ui_handler]` with the signature
     /// format expected by the code generator.
     ///
     /// # Returns

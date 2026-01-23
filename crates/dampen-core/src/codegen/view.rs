@@ -2,6 +2,8 @@
 //!
 //! This module generates static Rust code for widget trees with inlined bindings.
 
+#![allow(dead_code)]
+
 use crate::DampenDocument;
 use crate::codegen::bindings::generate_expr;
 use crate::ir::layout::{LayoutConstraints, Length as LayoutLength};
@@ -963,7 +965,9 @@ fn generate_text_input_style_struct(
             let expr = generate_background_expr(bg);
             quote! { #expr }
         })
-        .unwrap_or_else(|| quote! { iced::Background::Color(_theme.extended_palette().background.base.color) });
+        .unwrap_or_else(
+            || quote! { iced::Background::Color(_theme.extended_palette().background.base.color) },
+        );
 
     let border_expr = props
         .border
@@ -1004,7 +1008,9 @@ fn generate_checkbox_style_struct(
             let expr = generate_background_expr(bg);
             quote! { #expr }
         })
-        .unwrap_or_else(|| quote! { iced::Background::Color(_theme.extended_palette().background.base.color) });
+        .unwrap_or_else(
+            || quote! { iced::Background::Color(_theme.extended_palette().background.base.color) },
+        );
 
     let border_expr = props
         .border
@@ -2852,49 +2858,81 @@ fn generate_container_with_locals(
         }
     };
 
+    // Get merged layout from node.layout and style classes
+    let merged_layout = get_merged_layout(node, style_classes);
+
+    // Get spacing from attributes or merged layout
+    let spacing = node
+        .attributes
+        .get("spacing")
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                s.parse::<f32>().ok()
+            } else {
+                None
+            }
+        })
+        .or_else(|| merged_layout.as_ref().and_then(|l| l.spacing()));
+
     // Apply spacing for column/row
-    if let Some(spacing) = node.attributes.get("spacing").and_then(|attr| {
-        if let AttributeValue::Static(s) = attr {
-            s.parse::<f32>().ok()
-        } else {
-            None
-        }
-    }) {
-        if widget_type == "column" || widget_type == "row" {
-            container = quote! { #container.spacing(#spacing) };
-        }
+    if let Some(s) = spacing
+        && (widget_type == "column" || widget_type == "row")
+    {
+        container = quote! { #container.spacing(#s) };
     }
+
+    // Get padding from attributes or merged layout
+    let padding = node
+        .attributes
+        .get("padding")
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                s.parse::<f32>().ok()
+            } else {
+                None
+            }
+        })
+        .or_else(|| merged_layout.as_ref().and_then(|l| l.padding()));
 
     // Apply padding
-    if let Some(padding) = node.attributes.get("padding").and_then(|attr| {
-        if let AttributeValue::Static(s) = attr {
-            s.parse::<f32>().ok()
-        } else {
-            None
-        }
-    }) {
-        container = quote! { #container.padding(#padding) };
+    if let Some(p) = padding {
+        container = quote! { #container.padding(#p) };
     }
 
-    // Apply width/height
-    if let Some(width) = node.attributes.get("width").and_then(|attr| {
+    // Apply width from attributes or merged layout
+    let width_from_attr = node.attributes.get("width").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
-            Some(generate_length_expr(s))
+            Some(s.clone())
         } else {
             None
         }
-    }) {
-        container = quote! { #container.width(#width) };
+    });
+    let width_from_layout = merged_layout.as_ref().and_then(|l| l.width());
+
+    if let Some(width) = width_from_attr {
+        let width_expr = generate_length_expr(&width);
+        container = quote! { #container.width(#width_expr) };
+    } else if let Some(layout_width) = width_from_layout {
+        let width_expr = generate_layout_length_expr(layout_width);
+        container = quote! { #container.width(#width_expr) };
     }
 
-    if let Some(height) = node.attributes.get("height").and_then(|attr| {
+    // Apply height from attributes or merged layout
+    let height_from_attr = node.attributes.get("height").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
-            Some(generate_length_expr(s))
+            Some(s.clone())
         } else {
             None
         }
-    }) {
-        container = quote! { #container.height(#height) };
+    });
+    let height_from_layout = merged_layout.as_ref().and_then(|l| l.height());
+
+    if let Some(height) = height_from_attr {
+        let height_expr = generate_length_expr(&height);
+        container = quote! { #container.height(#height_expr) };
+    } else if let Some(layout_height) = height_from_layout {
+        let height_expr = generate_layout_length_expr(layout_height);
+        container = quote! { #container.height(#height_expr) };
     }
 
     // Apply alignment for row/column

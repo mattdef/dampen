@@ -88,12 +88,11 @@ use std::collections::HashMap;
 /// # Configuration
 ///
 /// After construction, chain configuration methods:
-/// - [`with_verbose()`] - Enable debug logging
-/// - [`with_style_classes()`] - Add theme classes
+/// - [`with_style_classes()`](Self::with_style_classes) - Add theme classes
 ///
 /// # Execution
 ///
-/// Call [`build()`] to render the widget tree.
+/// Call [`build()`](Self::build) to render the widget tree.
 ///
 /// # Example
 ///
@@ -148,7 +147,7 @@ pub struct DampenWidgetBuilder<'a> {
     /// Factory function to create messages from handler names
     pub(super) message_factory: Box<dyn Fn(&str, Option<String>) -> HandlerMessage + 'a>,
 
-    /// Binding context stack for <for> loop variables
+    /// Binding context stack for `<for>` loop variables
     /// Each context maps variable names to their BindingValues
     pub(super) binding_context: RefCell<Vec<HashMap<String, BindingValue>>>,
 }

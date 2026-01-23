@@ -3,7 +3,7 @@
 //! When a second UI window is added to a project, this module handles:
 //! 1. Detecting if there are 2+ UI modules in src/ui/
 //! 2. Uncommenting or adding `SwitchToView(CurrentView)` to Message enum
-//! 3. Adding `switch_view_variant = "SwitchToView"` to #[dampen_app] macro
+//! 3. Adding `switch_view_variant = "SwitchToView"` to `#[dampen_app]` macro
 
 use std::fs;
 use std::io;
@@ -89,7 +89,7 @@ pub fn detect_second_window(project_root: &Path) -> Result<bool, ViewSwitchError
 ///
 /// This function modifies main.rs to enable multi-view support by:
 /// 1. Uncommenting or adding `SwitchToView(CurrentView)` in Message enum
-/// 2. Adding `switch_view_variant = "SwitchToView"` to #[dampen_app] macro
+/// 2. Adding `switch_view_variant = "SwitchToView"` to `#[dampen_app]` macro
 ///
 /// # Arguments
 ///

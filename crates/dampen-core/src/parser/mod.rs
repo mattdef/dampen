@@ -870,7 +870,7 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
     })
 }
 
-/// Parse comma-separated list into Vec<String>
+/// Parse comma-separated list into `Vec<String>`
 pub fn parse_comma_separated(value: &str) -> Vec<String> {
     value
         .split(',')
