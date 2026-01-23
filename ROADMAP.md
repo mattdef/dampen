@@ -118,7 +118,15 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 |-----------|--------|-------------|
 | Window Layouts | ✅ | Predefined window arrangements |
 
-### v0.2.7 - Enhanced multi-windows application (planned)
+### v0.2.7 - Add Widgets schema system (Completed ✓)
+
+**Objective**: Introduce a new schema module et expose it as API
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
+| Widgets Schema | ✅ | Expose get_widget_schema(kind) and a WidgetKind.schema() helper |
+
+### v0.2.8 - Enhanced multi-windows application (planned)
 
 **Objective**: Improve user experience and functionality
 
