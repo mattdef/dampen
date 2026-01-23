@@ -106,47 +106,6 @@ pub mod settings;
 
 See `dampen add --help` for more options.
 
-## Project Structure
-
-The `dampen new` command creates a complete project structure:
-
-```
-my-app/
-├── Cargo.toml              # Project dependencies
-├── README.md               # Getting started guide
-├── build.rs                # Code generation (XML → Rust)
-├── src/
-│   ├── main.rs             # Application entry point
-│   └── ui/
-│       ├── mod.rs          # UI module exports
-│       ├── window.rs       # Model and handlers with #[dampen_ui]
-│       └── window.dampen   # Declarative UI definition (XML)
-└── tests/
-    └── integration.rs      # Integration tests
-```
-
-**Key Files:**
-
-| File | Description |
-|------|-------------|
-| `src/ui/window.dampen` | XML UI definition with widgets, bindings, handlers |
-| `src/ui/window.rs` | Model with `#[derive(UiModel)]`, handler registry |
-| `src/main.rs` | Application orchestration (view, update) |
-| `build.rs` | Compiles `.dampen` files to Rust code |
-
-**Generated UI Example:**
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<dampen>
-    <column padding="40" spacing="20">
-        <text value="Hello, Dampen!" size="32" weight="bold" />
-        <button label="Click me!" on_click="greet" />
-        <text value="{message}" size="24" />
-    </column>
-</dampen>
-```
-
 ### Project Validation
 
 ```bash
@@ -263,24 +222,24 @@ See [STYLING.md](docs/STYLING.md) for complete documentation.
 
 ### Available Widgets
 
-| Widget | Description | Main Attributes |
-|--------|-------------|----------------|
-| `text` | Text display | value, size, weight, color |
-| `button` | Interactive button | label, on_click, enabled, class |
-| `text_input` | Text input field | value, on_input, placeholder |
-| `checkbox` | Checkbox | checked, on_toggle |
-| `toggler` | Toggle switch | active, on_toggle, label |
-| `pick_list` | Dropdown list | options, selected, on_select |
-| `radio` | Radio button | label, value, selected, on_select |
-| `column` | Vertical layout | spacing, padding, align |
-| `row` | Horizontal layout | spacing, padding, align |
-| `scrollable` | Scrollable area | width, height |
-| `container` | Container | padding, width, height |
-| `for` | Dynamic loop | each, in |
-| `grid` | Grid layout | columns, spacing |
-| `progress_bar` | Progress bar | min, max, value |
-| `svg` | SVG image | path, width, height |
-| `tooltip` | Tooltip | message, position |
+| Widget | Description |
+|--------|-------------|
+| `text` | Text display |
+| `button` | Interactive button |
+| `text_input` | Text input field |
+| `checkbox` | Checkbox |
+| `toggler` | Toggle switch |
+| `pick_list` | Dropdown list |
+| `radio` | Radio button |
+| `column` | Vertical layout |
+| `row` | Horizontal layout |
+| `scrollable` | Scrollable area |
+| `container` | Container |
+| `for` | Dynamic loop |
+| `grid` | Grid layout |
+| `progress_bar` | Progress bar |
+| `svg` | SVG image |
+| `tooltip` | Tooltip |
 
 ## Dual-Mode Architecture
 
@@ -371,10 +330,6 @@ dampen build -v
 
 > **Note**: By default, `dampen run` and `dampen build` use interpreted mode for fast development.
 > Use `--release` flag to enable codegen mode for production builds.
-
-### Migration Guide
-
-Migrating existing projects to dual-mode architecture? See our [Migration Guide](docs/migration/dual-mode.md) for step-by-step instructions.
 
 ## Architecture
 

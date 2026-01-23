@@ -40,6 +40,8 @@ enum Message {
     /// Dismiss error overlay
     #[cfg(debug_assertions)]
     DismissError,
+    /// System theme change
+    SystemThemeChanged(String),
 }
 
 /// Main application structure with auto-generated view management (interpreted mode)
@@ -49,7 +51,10 @@ enum Message {
     message_type = "Message",
     handler_variant = "Handler",
     hot_reload_variant = "HotReload",
-    dismiss_error_variant = "DismissError"
+    dismiss_error_variant = "DismissError",
+    system_theme_variant = "SystemThemeChanged",
+    default_view = "window",
+    exclude = ["theme/*"],
 )]
 struct CounterApp;
 

@@ -13,7 +13,6 @@ members = [
     "examples/styling",
     "examples/theming",
     "examples/widget-showcase",
-    "examples/settings",
     "examples/macro-shared-state",
     "benchmarks",
     "tests/hot-reload-integration",

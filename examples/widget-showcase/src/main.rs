@@ -26,6 +26,8 @@ enum Message {
     /// Dismiss error overlay
     #[cfg(debug_assertions)]
     DismissError,
+    /// System theme change
+    SystemThemeChanged(String),
 }
 
 /// Main application structure with auto-generated view management
@@ -36,7 +38,9 @@ enum Message {
     switch_view_variant = "SwitchToView",
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
-    default_view = "window"
+    system_theme_variant = "SystemThemeChanged",
+    default_view = "window",
+    exclude = ["theme/*"],
 )]
 struct ShowcaseApp;
 
