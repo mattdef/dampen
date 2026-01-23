@@ -104,9 +104,14 @@ impl ProjectInfo {
     /// Walks up directory tree looking for Cargo.toml.
     /// Validates if it's a Dampen project by checking for dampen-core dependency.
     pub fn detect() -> Result<Self, ProjectError> {
-        // 1. Find Cargo.toml (walk up from current dir)
         let current = std::env::current_dir().map_err(ProjectError::IoError)?;
-        let root = Self::find_cargo_toml(&current).ok_or(ProjectError::CargoTomlNotFound)?;
+        Self::detect_from(&current)
+    }
+
+    /// Detect project information from a specific directory
+    pub fn detect_from(path: &Path) -> Result<Self, ProjectError> {
+        // 1. Find Cargo.toml (walk up from path)
+        let root = Self::find_cargo_toml(path).ok_or(ProjectError::CargoTomlNotFound)?;
 
         // 2. Parse Cargo.toml
         let cargo_path = root.join("Cargo.toml");
@@ -403,9 +408,8 @@ some-other-crate = "1.0"
         let temp = create_test_project(true);
         let deep_dir = temp.path().join("a/b/c");
         fs::create_dir_all(&deep_dir).unwrap();
-        let _guard = std::env::set_current_dir(&deep_dir);
 
-        let result = ProjectInfo::detect();
+        let result = ProjectInfo::detect_from(&deep_dir);
 
         assert!(result.is_ok());
         let info = result.unwrap();
@@ -419,9 +423,8 @@ some-other-crate = "1.0"
         let temp = create_test_project(false);
         let deep_dir = temp.path().join("a/b/c");
         fs::create_dir_all(&deep_dir).unwrap();
-        let _guard = std::env::set_current_dir(&deep_dir);
 
-        let result = ProjectInfo::detect();
+        let result = ProjectInfo::detect_from(&deep_dir);
 
         assert!(result.is_ok());
         let info = result.unwrap();
@@ -436,9 +439,7 @@ some-other-crate = "1.0"
         let deep_dir = temp.path().join("a/b/c");
         fs::create_dir_all(&deep_dir).unwrap();
 
-        let _guard = std::env::set_current_dir(&deep_dir);
-
-        let result = ProjectInfo::detect();
+        let result = ProjectInfo::detect_from(&deep_dir);
 
         assert!(result.is_err());
         match result {

@@ -79,9 +79,13 @@ fn test_parse_dampen_multiple_widgets_error() {
 }
 
 #[test]
-fn test_parse_dampen_no_root_widget_error() {
+fn test_parse_dampen_theme_only_success() {
     let xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<dampen>\n    <themes>\n        <theme name=\"custom\">\n            <palette primary=\"#3498db\" secondary=\"#2ecc71\" success=\"#27ae60\" warning=\"#f39c12\" danger=\"#e74c3c\" background=\"#ecf0f1\" surface=\"#ffffff\" text=\"#2c3e50\" text_secondary=\"#7f8c8d\" />\n        </theme>\n    </themes>\n</dampen>";
 
     let result = parse(xml);
-    assert!(result.is_err(), "Should fail with no root widget");
+    assert!(result.is_ok(), "Should parse theme-only file successfully");
+    let doc = result.unwrap();
+    assert_eq!(doc.themes.len(), 1);
+    // Should have a default empty root widget
+    assert_eq!(doc.root.kind, dampen_core::WidgetKind::Column);
 }

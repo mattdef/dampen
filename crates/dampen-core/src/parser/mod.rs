@@ -559,7 +559,17 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "float" => WidgetKind::Float,
         "for" => WidgetKind::For,
         "if" => WidgetKind::If,
-        custom => WidgetKind::Custom(custom.to_string()),
+        unknown => {
+            return Err(ParseError {
+                kind: ParseErrorKind::UnknownWidget,
+                message: format!("Unknown widget: {}", unknown),
+                span: get_span(node, source),
+                suggestion: Some(format!(
+                    "Valid widgets are: {}",
+                    WidgetKind::all_standard().join(", ")
+                )),
+            });
+        }
     };
 
     // Parse attributes - separate breakpoint-prefixed and state-prefixed from regular

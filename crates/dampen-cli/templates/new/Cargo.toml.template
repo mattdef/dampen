@@ -12,6 +12,7 @@ dampen-iced = "{{DAMPEN_VERSION}}"
 dampen-dev = { version = "{{DAMPEN_VERSION}}", optional = true }
 iced = "{{ICED_VERSION}}"
 serde = { version = "{{SERDE_VERSION}}", features = ["derive"] }
+serde_json = "{{SERDE_JSON_VERSION}}"
 
 [build-dependencies]
 dampen-core = "{{DAMPEN_VERSION}}"

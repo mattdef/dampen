@@ -1,0 +1,12 @@
+//! Integration tests for {{PROJECT_NAME}}
+
+use dampen_core::parse;
+
+#[test]
+fn test_ui_compilation() {
+    // This test ensures the UI XML is valid
+    let xml = include_str!("../src/ui/window.dampen");
+    let result = parse(xml);
+    
+    assert!(result.is_ok(), "UI XML should be valid: {:?}", result.err());
+}

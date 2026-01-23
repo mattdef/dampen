@@ -193,6 +193,42 @@ pub enum EventKind {
 }
 
 impl WidgetKind {
+    /// Returns a list of all standard widget tag names.
+    pub fn all_standard() -> &'static [&'static str] {
+        &[
+            "column",
+            "row",
+            "container",
+            "scrollable",
+            "stack",
+            "text",
+            "image",
+            "svg",
+            "button",
+            "text_input",
+            "checkbox",
+            "slider",
+            "pick_list",
+            "toggler",
+            "space",
+            "rule",
+            "radio",
+            "combobox",
+            "progress_bar",
+            "tooltip",
+            "grid",
+            "canvas",
+            "float",
+            "for",
+            "if",
+        ]
+    }
+
+    /// Returns true if this is a custom widget.
+    pub fn is_custom(&self) -> bool {
+        matches!(self, WidgetKind::Custom(_))
+    }
+
     /// Returns the minimum schema version required for this widget type.
     ///
     /// This method provides infrastructure for version-gating widgets in future releases.
