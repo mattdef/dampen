@@ -385,6 +385,21 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
             continue;
         }
 
+        // Special handling for theme.dampen files
+        if file_path.file_name().map_or(false, |n| n == "theme.dampen") {
+            if let Err(theme_error) =
+                dampen_core::parser::theme_parser::parse_theme_document(&content)
+            {
+                errors.push(CheckError::XmlValidationError {
+                    file: file_path.to_path_buf(),
+                    line: 1, // theme_parser doesn't always provide spans yet
+                    col: 1,
+                    message: format!("Theme validation error: {}", theme_error),
+                });
+            }
+            continue;
+        }
+
         match parser::parse(&content) {
             Ok(document) => {
                 // Validate the document structure
@@ -937,6 +952,7 @@ impl WidgetKindExt for WidgetKind {
             WidgetKind::Canvas,
             WidgetKind::Float,
             WidgetKind::For,
+            WidgetKind::If,
         ]
     }
 }

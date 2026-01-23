@@ -51,6 +51,9 @@ pub struct DampenDocument {
 
     /// Global theme name
     pub global_theme: Option<String>,
+
+    /// Whether to follow system theme (light/dark mode)
+    pub follow_system: bool,
 }
 
 impl Default for DampenDocument {
@@ -62,6 +65,7 @@ impl Default for DampenDocument {
             themes: HashMap::new(),
             style_classes: HashMap::new(),
             global_theme: None,
+            follow_system: true,
         }
     }
 }

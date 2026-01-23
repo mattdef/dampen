@@ -316,6 +316,7 @@ pub fn parse(xml: &str) -> Result<DampenDocument, ParseError> {
             themes: HashMap::new(),
             style_classes: HashMap::new(),
             global_theme: None,
+            follow_system: true,
         })
     }
 }
@@ -781,6 +782,7 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
     let mut style_classes = HashMap::new();
     let mut root_widget = None;
     let mut global_theme = None;
+    let mut follow_system = true;
 
     // Parse version attribute from <dampen> root element
     let span = get_span(root, source);
@@ -832,10 +834,15 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
                     }
                 }
             }
-            "global_theme" => {
+            "global_theme" | "default_theme" => {
                 // Set global theme reference
                 if let Some(theme_name) = child.attribute("name") {
                     global_theme = Some(theme_name.to_string());
+                }
+            }
+            "follow_system" => {
+                if let Some(enabled) = child.attribute("enabled") {
+                    follow_system = enabled.parse::<bool>().unwrap_or(true);
                 }
             }
             _ => {
@@ -853,13 +860,20 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
         }
     }
 
-    // Ensure we have a root widget
-    let root_widget = root_widget.ok_or_else(|| ParseError {
-        kind: ParseErrorKind::XmlSyntax,
-        message: "No root widget found in <dampen>".to_string(),
-        span: get_span(root, source),
-        suggestion: Some("Add a widget like <column> or <row> inside <dampen>".to_string()),
-    })?;
+    // Ensure we have a root widget, or provide a default if themes are present
+    let root_widget = if let Some(w) = root_widget {
+        w
+    } else if !themes.is_empty() || !style_classes.is_empty() {
+        // Create an empty default container if this is a theme/style-only file
+        WidgetNode::default()
+    } else {
+        return Err(ParseError {
+            kind: ParseErrorKind::XmlSyntax,
+            message: "No root widget found in <dampen>".to_string(),
+            span: get_span(root, source),
+            suggestion: Some("Add a widget like <column> or <row> inside <dampen>".to_string()),
+        });
+    };
 
     Ok(DampenDocument {
         version,
@@ -867,6 +881,7 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
         themes,
         style_classes,
         global_theme,
+        follow_system,
     })
 }
 
