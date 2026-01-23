@@ -162,7 +162,7 @@ fn update_computed_fields(model: &mut Model) {
     let active_count = tasks.iter().filter(|t| !t.completed).count();
     model.tasks_left = active_count as i64;
     model.tasks_left_text = format!(
-        "{} item{} left",
+        "{} task{} left",
         active_count,
         if active_count == 1 { "" } else { "s" }
     );

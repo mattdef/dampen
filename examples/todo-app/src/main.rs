@@ -41,6 +41,8 @@ enum Message {
     /// Dismiss error overlay
     #[cfg(debug_assertions)]
     DismissError,
+    /// System theme change
+    SystemThemeChanged(String),
 }
 
 /// Main application structure with auto-generated view management (interpreted mode)
@@ -51,7 +53,9 @@ enum Message {
     handler_variant = "Handler",
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
-    default_view = "window"
+    default_view = "window",
+    system_theme_variant = "SystemThemeChanged",
+    exclude = ["theme/*"],
 )]
 struct TodoApp;
 
@@ -67,6 +71,7 @@ pub fn main() -> iced::Result {
         .window_size(iced::Size::new(500.0, 800.0))
         .centered()
         .title("Dampen Todo App")
+        .theme(TodoApp::theme)
         .subscription(TodoApp::subscription)
         .run()
 }
@@ -89,6 +94,7 @@ pub fn main() -> iced::Result {
         .window_size(iced::Size::new(500.0, 800.0))
         .centered()
         .title("Dampen Todo App")
+        .theme(TodoApp::theme)
         .subscription(|_model| window::subscription_model())
         .run()
 }

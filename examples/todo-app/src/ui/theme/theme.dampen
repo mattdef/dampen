@@ -48,6 +48,6 @@
         </theme>
     </themes>
 
-    <default_theme name="dark" />
+    <default_theme name="light" />
     <follow_system enabled="true" />
 </dampen>

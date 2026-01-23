@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dampen version="1.0">
     <styles>
+        <style name="txt_item">
+            <base background="transparent" border_width="0" />
+        </style>
         <style name="btn_filter">
             <base
                 background="transparent"
-                color="#ffffff"
                 padding="12 24"
                 border_radius="6"
                 border_width="0"
@@ -14,7 +16,7 @@
         <style name="btn_primary">
             <base
                 background="#3498db"
-                color="#ffffff"
+                color="white"
                 padding="12 24"
                 border_radius="6"
                 border_width="0"
@@ -26,7 +28,7 @@
         <style name="btn_success">
             <base
                 background="#27ae60"
-                color="#ffffff"
+                color="white"
                 padding="12 24"
                 border_radius="6"
                 border_width="0"
@@ -38,7 +40,7 @@
         <style name="btn_danger">
             <base
                 background="#e74c3c"
-                color="#ffffff"
+                color="white"
                 padding="12 24"
                 border_radius="6"
                 border_width="0"
@@ -106,19 +108,23 @@
             />
 
             <!-- Main card -->
-            <container style="background: #ffffff; border_radius: 4">
+            <container background="transparent">
                 <column>
-                    <!-- Input section -->
-                    <text_input
-                        id="new-task"
-                        value="{input_value}"
-                        on_input="input_changed"
-                        on_submit="create_task"
-                        placeholder="What needs to be done?"
-                        size="24"
-                        padding="16"
-                        width="fill"
-                    />
+
+                    <container padding="3">
+                        <!-- Input section -->
+                        <text_input
+                            id="new-task"
+                            value="{input_value}"
+                            on_input="input_changed"
+                            on_submit="create_task"
+                            placeholder="What needs to be done?"
+                            class="txt_item"
+                            size="24"
+                            padding="16"
+                            width="fill"
+                        />
+                    </container>
 
                     <!-- Filters and counter -->
                     <row
