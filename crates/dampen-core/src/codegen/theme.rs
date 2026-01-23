@@ -151,7 +151,7 @@ fn generate_button_style_struct(style: &StyleProperties) -> TokenStream {
     let text_color_expr = if let Some(ref color) = style.color {
         generate_color_expr(color)
     } else {
-        quote! { iced::Color::BLACK }
+        quote! { _theme.extended_palette().background.base.text }
     };
 
     let border_expr = if let Some(ref border) = style.border {

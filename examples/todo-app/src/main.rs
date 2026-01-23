@@ -93,8 +93,8 @@ pub fn main() -> iced::Result {
     iced::application(window::new_model, window::update_model, window::view_model)
         .window_size(iced::Size::new(500.0, 800.0))
         .centered()
+        .theme(window::theme)
         .title("Dampen Todo App")
-        .theme(TodoApp::theme)
         .subscription(|_model| window::subscription_model())
         .run()
 }

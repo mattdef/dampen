@@ -554,10 +554,12 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
             #shared_init
 
             // Load theme context from theme.dampen if present
-            // Try CARGO_MANIFEST_DIR first, then fall back to current dir
-            let project_dir = std::env::var("CARGO_MANIFEST_DIR")
-                .map(std::path::PathBuf::from)
-                .unwrap_or_else(|_| std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(".")));
+            // Use find_project_root() which searches:
+            // 1. CARGO_MANIFEST_DIR (cargo run)
+            // 2. Executable ancestors (target/release)
+            // 3. Current directory ancestors
+            let project_dir = dampen_dev::theme_loader::find_project_root()
+                .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(".")));
 
             let theme_context_result = dampen_dev::theme_loader::load_theme_context(&project_dir);
             let theme_context = theme_context_result.ok().flatten();

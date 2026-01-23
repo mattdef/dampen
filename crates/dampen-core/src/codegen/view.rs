@@ -102,36 +102,81 @@ fn generate_widget(
     message_ident: &syn::Ident,
     style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
+    generate_widget_with_locals(
+        node,
+        model_ident,
+        message_ident,
+        style_classes,
+        &std::collections::HashSet::new(),
+    )
+}
+
+/// Generate code for a widget node with local variable context
+fn generate_widget_with_locals(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
     match node.kind {
-        WidgetKind::Text => generate_text(node, model_ident, style_classes),
-        WidgetKind::Button => generate_button(node, model_ident, message_ident, style_classes),
-        WidgetKind::Column => {
-            generate_container(node, "column", model_ident, message_ident, style_classes)
+        WidgetKind::Text => generate_text_with_locals(node, model_ident, style_classes, local_vars),
+        WidgetKind::Button => {
+            generate_button_with_locals(node, model_ident, message_ident, style_classes, local_vars)
         }
-        WidgetKind::Row => {
-            generate_container(node, "row", model_ident, message_ident, style_classes)
-        }
-        WidgetKind::Container => {
-            generate_container(node, "container", model_ident, message_ident, style_classes)
-        }
-        WidgetKind::Scrollable => generate_container(
+        WidgetKind::Column => generate_container_with_locals(
+            node,
+            "column",
+            model_ident,
+            message_ident,
+            style_classes,
+            local_vars,
+        ),
+        WidgetKind::Row => generate_container_with_locals(
+            node,
+            "row",
+            model_ident,
+            message_ident,
+            style_classes,
+            local_vars,
+        ),
+        WidgetKind::Container => generate_container_with_locals(
+            node,
+            "container",
+            model_ident,
+            message_ident,
+            style_classes,
+            local_vars,
+        ),
+        WidgetKind::Scrollable => generate_container_with_locals(
             node,
             "scrollable",
             model_ident,
             message_ident,
             style_classes,
+            local_vars,
         ),
         WidgetKind::Stack => generate_stack(node, model_ident, message_ident, style_classes),
         WidgetKind::Space => generate_space(node),
         WidgetKind::Rule => generate_rule(node),
-        WidgetKind::Checkbox => generate_checkbox(node, model_ident, message_ident, style_classes),
+        WidgetKind::Checkbox => generate_checkbox_with_locals(
+            node,
+            model_ident,
+            message_ident,
+            style_classes,
+            local_vars,
+        ),
         WidgetKind::Toggler => generate_toggler(node, model_ident, message_ident, style_classes),
         WidgetKind::Slider => generate_slider(node, model_ident, message_ident, style_classes),
         WidgetKind::Radio => generate_radio(node, model_ident, message_ident, style_classes),
         WidgetKind::ProgressBar => generate_progress_bar(node, model_ident, style_classes),
-        WidgetKind::TextInput => {
-            generate_text_input(node, model_ident, message_ident, style_classes)
-        }
+        WidgetKind::TextInput => generate_text_input_with_locals(
+            node,
+            model_ident,
+            message_ident,
+            style_classes,
+            local_vars,
+        ),
         WidgetKind::Image => generate_image(node),
         WidgetKind::Svg => generate_svg(node),
         WidgetKind::PickList => generate_pick_list(node, model_ident, message_ident, style_classes),
@@ -140,8 +185,12 @@ fn generate_widget(
         WidgetKind::Grid => generate_grid(node, model_ident, message_ident, style_classes),
         WidgetKind::Canvas => generate_canvas(node, model_ident, message_ident, style_classes),
         WidgetKind::Float => generate_float(node, model_ident, message_ident, style_classes),
-        WidgetKind::For => generate_for(node, model_ident, message_ident, style_classes),
-        WidgetKind::If => generate_if(node, model_ident, message_ident, style_classes),
+        WidgetKind::For => {
+            generate_for_with_locals(node, model_ident, message_ident, style_classes, local_vars)
+        }
+        WidgetKind::If => {
+            generate_if_with_locals(node, model_ident, message_ident, style_classes, local_vars)
+        }
         WidgetKind::Custom(ref name) => {
             generate_custom_widget(node, name, model_ident, message_ident, style_classes)
         }
@@ -168,7 +217,14 @@ fn apply_widget_style(
     let has_inline_style = node.style.is_some();
     let has_classes = !node.classes.is_empty();
 
-    if !has_inline_style && !has_classes {
+    // Check for dynamic class binding (e.g., class="{if filter == 'All' then 'btn_primary' else 'btn_filter'}")
+    let class_binding = node.attributes.get("class").and_then(|attr| match attr {
+        AttributeValue::Binding(expr) => Some(expr),
+        _ => None,
+    });
+    let has_class_binding = class_binding.is_some();
+
+    if !has_inline_style && !has_classes && !has_class_binding {
         // No styling needed, return widget as-is
         return Ok(widget);
     }
@@ -190,12 +246,194 @@ fn apply_widget_style(
         })
     } else if let Some(class_name) = node.classes.first() {
         // Priority 2: CSS class (use first class for now)
+        // Generate a wrapper closure that matches the widget's expected signature
         let style_fn_ident = format_ident!("style_{}", class_name.replace('-', "_"));
-        Ok(quote! {
-            #widget.style(#style_fn_ident)
-        })
+
+        match widget_type {
+            "text_input" => {
+                // text_input.style() expects fn(theme, status) -> text_input::Style
+                // Style class functions return container::Style, so we need to convert
+                Ok(quote! {
+                    #widget.style(|theme: &iced::Theme, _status: iced::widget::text_input::Status| {
+                        let container_style = #style_fn_ident(theme);
+                        iced::widget::text_input::Style {
+                            background: container_style.background.unwrap_or(iced::Background::Color(theme.extended_palette().background.base.color)),
+                            border: container_style.border,
+                            icon: theme.extended_palette().background.base.text,
+                            placeholder: theme.extended_palette().background.weak.text,
+                            value: container_style.text_color.unwrap_or(theme.extended_palette().background.base.text),
+                            selection: theme.extended_palette().primary.weak.color,
+                        }
+                    })
+                })
+            }
+            "checkbox" => {
+                // checkbox.style() expects fn(theme, status) -> checkbox::Style
+                // Check if the style class has state variants (needs 2-arg call with button::Status)
+                let has_state_variants = style_class
+                    .map(|sc| !sc.state_variants.is_empty())
+                    .unwrap_or(false);
+
+                if has_state_variants {
+                    // Style function expects (theme, button::Status), map checkbox status to button status
+                    Ok(quote! {
+                        #widget.style(|theme: &iced::Theme, status: iced::widget::checkbox::Status| {
+                            // Map checkbox status to button status for the style function
+                            let button_status = match status {
+                                iced::widget::checkbox::Status::Active { .. } => iced::widget::button::Status::Active,
+                                iced::widget::checkbox::Status::Hovered { .. } => iced::widget::button::Status::Hovered,
+                                iced::widget::checkbox::Status::Disabled { .. } => iced::widget::button::Status::Disabled,
+                            };
+                            let button_style = #style_fn_ident(theme, button_status);
+                            iced::widget::checkbox::Style {
+                                background: button_style.background.unwrap_or(iced::Background::Color(iced::Color::WHITE)),
+                                icon_color: button_style.text_color,
+                                border: button_style.border,
+                                text_color: None,
+                            }
+                        })
+                    })
+                } else {
+                    // Style function expects only theme (container style)
+                    Ok(quote! {
+                        #widget.style(|theme: &iced::Theme, _status: iced::widget::checkbox::Status| {
+                            let container_style = #style_fn_ident(theme);
+                            iced::widget::checkbox::Style {
+                                background: container_style.background.unwrap_or(iced::Background::Color(iced::Color::WHITE)),
+                                icon_color: container_style.text_color,
+                                border: container_style.border,
+                                text_color: None,
+                            }
+                        })
+                    })
+                }
+            }
+            "button" => {
+                // button.style() expects fn(theme, status) -> button::Style
+                // Style class functions for buttons already have the correct signature
+                Ok(quote! {
+                    #widget.style(#style_fn_ident)
+                })
+            }
+            _ => {
+                // Default: container-style widgets (container, row, column, etc.)
+                Ok(quote! {
+                    #widget.style(#style_fn_ident)
+                })
+            }
+        }
+    } else if let Some(binding_expr) = class_binding {
+        // Priority 3: Dynamic class binding
+        generate_dynamic_class_style(widget, binding_expr, widget_type, style_classes)
     } else {
         Ok(widget)
+    }
+}
+
+/// Generate style application for dynamic class bindings
+///
+/// Generates code that evaluates the binding at runtime and dispatches
+/// to the appropriate style function based on the class name.
+fn generate_dynamic_class_style(
+    widget: TokenStream,
+    binding_expr: &crate::expr::BindingExpr,
+    widget_type: &str,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    // Generate code to evaluate the binding
+    let class_expr = super::bindings::generate_expr(&binding_expr.expr);
+
+    match widget_type {
+        "button" => {
+            // Generate match arms only for button-compatible style classes
+            // (those with state variants, which generate fn(theme, status) -> button::Style)
+            let mut match_arms = Vec::new();
+            for (class_name, style_class) in style_classes.iter() {
+                // Only include classes that have state variants (button styles)
+                if !style_class.state_variants.is_empty() {
+                    let style_fn = format_ident!("style_{}", class_name.replace('-', "_"));
+                    let class_lit = proc_macro2::Literal::string(class_name);
+                    match_arms.push(quote! {
+                        #class_lit => #style_fn(_theme, status),
+                    });
+                }
+            }
+
+            Ok(quote! {
+                #widget.style({
+                    let __class_name = #class_expr;
+                    move |_theme: &iced::Theme, status: iced::widget::button::Status| {
+                        match __class_name.as_str() {
+                            #(#match_arms)*
+                            _ => iced::widget::button::Style::default(),
+                        }
+                    }
+                })
+            })
+        }
+        "checkbox" => {
+            // For checkboxes, map checkbox status to button status
+            // Only use style classes with state variants
+            let mut checkbox_match_arms = Vec::new();
+            for (class_name, style_class) in style_classes.iter() {
+                if !style_class.state_variants.is_empty() {
+                    let style_fn = format_ident!("style_{}", class_name.replace('-', "_"));
+                    let class_lit = proc_macro2::Literal::string(class_name);
+                    checkbox_match_arms.push(quote! {
+                        #class_lit => {
+                            let button_style = #style_fn(_theme, button_status);
+                            iced::widget::checkbox::Style {
+                                background: button_style.background.unwrap_or(iced::Background::Color(iced::Color::WHITE)),
+                                icon_color: button_style.text_color,
+                                border: button_style.border,
+                                text_color: None,
+                            }
+                        }
+                    });
+                }
+            }
+            Ok(quote! {
+                #widget.style({
+                    let __class_name = #class_expr;
+                    move |_theme: &iced::Theme, status: iced::widget::checkbox::Status| {
+                        let button_status = match status {
+                            iced::widget::checkbox::Status::Active { .. } => iced::widget::button::Status::Active,
+                            iced::widget::checkbox::Status::Hovered { .. } => iced::widget::button::Status::Hovered,
+                            iced::widget::checkbox::Status::Disabled { .. } => iced::widget::button::Status::Disabled,
+                        };
+                        match __class_name.as_str() {
+                            #(#checkbox_match_arms)*
+                            _ => iced::widget::checkbox::Style::default(),
+                        }
+                    }
+                })
+            })
+        }
+        _ => {
+            // For other widgets (container, etc.), use container style functions
+            // Only include classes without state variants (container styles)
+            let mut container_match_arms = Vec::new();
+            for (class_name, style_class) in style_classes.iter() {
+                if style_class.state_variants.is_empty() {
+                    let style_fn = format_ident!("style_{}", class_name.replace('-', "_"));
+                    let class_lit = proc_macro2::Literal::string(class_name);
+                    container_match_arms.push(quote! {
+                        #class_lit => #style_fn(_theme),
+                    });
+                }
+            }
+            Ok(quote! {
+                #widget.style({
+                    let __class_name = #class_expr;
+                    move |_theme: &iced::Theme| {
+                        match __class_name.as_str() {
+                            #(#container_match_arms)*
+                            _ => iced::widget::container::Style::default(),
+                        }
+                    }
+                })
+            })
+        }
     }
 }
 
@@ -621,6 +859,9 @@ fn generate_shadow_expr(shadow: &Shadow) -> TokenStream {
 }
 
 /// Generate iced::widget::button::Style struct from StyleProperties
+///
+/// When no explicit color is set, uses theme text color via _theme parameter
+/// that's available in the style closure scope.
 fn generate_button_style_struct(
     props: &StyleProperties,
 ) -> Result<TokenStream, super::CodegenError> {
@@ -633,11 +874,12 @@ fn generate_button_style_struct(
         })
         .unwrap_or_else(|| quote! { None });
 
+    // Use theme text color as fallback instead of hardcoded BLACK
     let text_color_expr = props
         .color
         .as_ref()
         .map(generate_color_expr)
-        .unwrap_or_else(|| quote! { iced::Color::BLACK });
+        .unwrap_or_else(|| quote! { _theme.extended_palette().background.base.text });
 
     let border_expr = props
         .border
@@ -708,6 +950,9 @@ fn generate_container_style_struct(
 }
 
 /// Generate iced::widget::text_input::Style struct from StyleProperties
+///
+/// When no explicit colors are set, uses theme text colors via _theme parameter
+/// that's available in the style closure scope.
 fn generate_text_input_style_struct(
     props: &StyleProperties,
 ) -> Result<TokenStream, super::CodegenError> {
@@ -718,7 +963,7 @@ fn generate_text_input_style_struct(
             let expr = generate_background_expr(bg);
             quote! { #expr }
         })
-        .unwrap_or_else(|| quote! { iced::Background::Color(iced::Color::WHITE) });
+        .unwrap_or_else(|| quote! { iced::Background::Color(_theme.extended_palette().background.base.color) });
 
     let border_expr = props
         .border
@@ -726,19 +971,29 @@ fn generate_text_input_style_struct(
         .map(generate_border_expr)
         .unwrap_or_else(|| quote! { iced::Border::default() });
 
+    // Use theme colors as fallback instead of hardcoded colors
+    let value_color = props
+        .color
+        .as_ref()
+        .map(generate_color_expr)
+        .unwrap_or_else(|| quote! { _theme.extended_palette().background.base.text });
+
     Ok(quote! {
         iced::widget::text_input::Style {
             background: #background_expr,
             border: #border_expr,
-            icon: iced::Color::BLACK,
-            placeholder: iced::Color::from_rgb(0.4, 0.4, 0.4),
-            value: iced::Color::BLACK,
-            selection: iced::Color::from_rgb(0.8, 0.8, 1.0),
+            icon: _theme.extended_palette().background.base.text,
+            placeholder: _theme.extended_palette().background.weak.text,
+            value: #value_color,
+            selection: _theme.extended_palette().primary.weak.color,
         }
     })
 }
 
 /// Generate checkbox style struct from StyleProperties
+///
+/// When no explicit colors are set, uses theme colors via _theme parameter
+/// that's available in the style closure scope.
 fn generate_checkbox_style_struct(
     props: &StyleProperties,
 ) -> Result<TokenStream, super::CodegenError> {
@@ -749,7 +1004,7 @@ fn generate_checkbox_style_struct(
             let expr = generate_background_expr(bg);
             quote! { #expr }
         })
-        .unwrap_or_else(|| quote! { iced::Background::Color(iced::Color::WHITE) });
+        .unwrap_or_else(|| quote! { iced::Background::Color(_theme.extended_palette().background.base.color) });
 
     let border_expr = props
         .border
@@ -757,11 +1012,12 @@ fn generate_checkbox_style_struct(
         .map(generate_border_expr)
         .unwrap_or_else(|| quote! { iced::Border::default() });
 
+    // Use theme text color as fallback instead of hardcoded BLACK
     let text_color = props
         .color
         .as_ref()
         .map(generate_color_expr)
-        .unwrap_or_else(|| quote! { iced::Color::BLACK });
+        .unwrap_or_else(|| quote! { _theme.extended_palette().primary.base.color });
 
     Ok(quote! {
         iced::widget::checkbox::Style {
@@ -2267,19 +2523,25 @@ fn generate_float(
 }
 
 /// Generate for loop widget (iterates over collection)
+///
+/// Expects attributes:
+/// - `each`: variable name for each item (e.g., "task")
+/// - `in`: binding expression for the collection (e.g., "{filtered_tasks}")
 fn generate_for(
     node: &crate::WidgetNode,
     model_ident: &syn::Ident,
     message_ident: &syn::Ident,
     style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
-    let items_attr = node.attributes.get("items").ok_or_else(|| {
-        super::CodegenError::InvalidWidget("for requires items attribute".to_string())
+    // Get the 'in' attribute (collection to iterate)
+    let in_attr = node.attributes.get("in").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("for requires 'in' attribute".to_string())
     })?;
 
-    let item_name = node
+    // Get the 'each' attribute (loop variable name)
+    let var_name = node
         .attributes
-        .get("item")
+        .get("each")
         .and_then(|attr| {
             if let AttributeValue::Static(s) = attr {
                 Some(s.clone())
@@ -2289,19 +2551,31 @@ fn generate_for(
         })
         .unwrap_or_else(|| "item".to_string());
 
-    let _children: Vec<TokenStream> = node
+    let var_ident = format_ident!("{}", var_name);
+
+    // Generate the collection expression (raw, without .to_string())
+    let collection_expr = generate_attribute_value_raw(in_attr, model_ident);
+
+    // Generate children widgets
+    let children: Vec<TokenStream> = node
         .children
         .iter()
         .map(|child| generate_widget(child, model_ident, message_ident, style_classes))
         .collect::<Result<_, _>>()?;
 
-    let _items_expr = generate_attribute_value(items_attr, model_ident);
-    let _item_ident = format_ident!("{}", item_name);
-
+    // Generate the for loop that builds widgets
     Ok(quote! {
         {
-            let _items = _items_expr;
-            iced::widget::column(vec![]).into()
+            let items: Vec<_> = #collection_expr;
+            let widgets: Vec<iced::Element<'_, #message_ident>> = items
+                .iter()
+                .enumerate()
+                .flat_map(|(index, #var_ident)| {
+                    let _ = index; // Suppress unused warning if not used
+                    vec![#(#children),*]
+                })
+                .collect();
+            iced::widget::column(widgets).into()
         }
     })
 }
@@ -2375,6 +2649,616 @@ fn generate_attribute_value(attr: &AttributeValue, _model_ident: &syn::Ident) ->
                 .filter_map(|part| {
                     if let InterpolatedPart::Binding(expr) = part {
                         Some(generate_expr(&expr.expr))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let format_string = parts_str.join("");
+            let lit = proc_macro2::Literal::string(&format_string);
+
+            quote! { format!(#lit, #(#binding_exprs),*) }
+        }
+    }
+}
+
+/// Generate attribute value without `.to_string()` conversion
+/// Used for collections in for loops where we need the raw value
+fn generate_attribute_value_raw(attr: &AttributeValue, _model_ident: &syn::Ident) -> TokenStream {
+    match attr {
+        AttributeValue::Static(s) => {
+            let lit = proc_macro2::Literal::string(s);
+            quote! { #lit }
+        }
+        AttributeValue::Binding(expr) => super::bindings::generate_bool_expr(&expr.expr),
+        AttributeValue::Interpolated(parts) => {
+            // For interpolated, we still need to generate a string
+            let parts_str: Vec<String> = parts
+                .iter()
+                .map(|part| match part {
+                    InterpolatedPart::Literal(s) => s.clone(),
+                    InterpolatedPart::Binding(_) => "{}".to_string(),
+                })
+                .collect();
+            let binding_exprs: Vec<TokenStream> = parts
+                .iter()
+                .filter_map(|part| {
+                    if let InterpolatedPart::Binding(expr) = part {
+                        Some(generate_expr(&expr.expr))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let format_string = parts_str.join("");
+            let lit = proc_macro2::Literal::string(&format_string);
+
+            quote! { format!(#lit, #(#binding_exprs),*) }
+        }
+    }
+}
+
+// ============================================================================
+// Functions with local variable context support (for loops)
+// ============================================================================
+
+/// Generate text widget with local variable context
+fn generate_text_with_locals(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    _style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    let value_attr = node.attributes.get("value").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("text requires value attribute".to_string())
+    })?;
+
+    let value_expr = generate_attribute_value_with_locals(value_attr, model_ident, local_vars);
+
+    let mut text_widget = quote! {
+        iced::widget::text(#value_expr)
+    };
+
+    // Apply size attribute
+    if let Some(size) = node.attributes.get("size").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    }) {
+        text_widget = quote! { #text_widget.size(#size) };
+    }
+
+    // Apply weight attribute
+    if let Some(weight) = node.attributes.get("weight").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(s.clone())
+        } else {
+            None
+        }
+    }) {
+        let weight_expr = match weight.to_lowercase().as_str() {
+            "bold" => quote! { iced::font::Weight::Bold },
+            "semibold" => quote! { iced::font::Weight::Semibold },
+            "medium" => quote! { iced::font::Weight::Medium },
+            "light" => quote! { iced::font::Weight::Light },
+            _ => quote! { iced::font::Weight::Normal },
+        };
+        text_widget = quote! {
+            #text_widget.font(iced::Font { weight: #weight_expr, ..Default::default() })
+        };
+    }
+
+    // Apply inline style color if present
+    if let Some(ref style_props) = node.style
+        && let Some(ref color) = style_props.color
+    {
+        let color_expr = generate_color_expr(color);
+        text_widget = quote! { #text_widget.color(#color_expr) };
+    }
+
+    Ok(maybe_wrap_in_container(text_widget, node))
+}
+
+/// Generate button widget with local variable context
+fn generate_button_with_locals(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    let label_attr = node.attributes.get("label").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("button requires label attribute".to_string())
+    })?;
+
+    let label_expr = generate_attribute_value_with_locals(label_attr, model_ident, local_vars);
+
+    let on_click = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Click);
+
+    let mut button = quote! {
+        iced::widget::button(iced::widget::text(#label_expr))
+    };
+
+    if let Some(event) = on_click {
+        let variant_name = to_upper_camel_case(&event.handler);
+        let handler_ident = format_ident!("{}", variant_name);
+
+        let param_expr = if let Some(ref param) = event.param {
+            let param_tokens = super::bindings::generate_expr_with_locals(&param.expr, local_vars);
+            quote! { (#param_tokens) }
+        } else {
+            quote! {}
+        };
+
+        button = quote! {
+            #button.on_press(#message_ident::#handler_ident #param_expr)
+        };
+    }
+
+    // Apply styles
+    button = apply_widget_style(button, node, "button", style_classes)?;
+
+    Ok(quote! { Into::<Element<'_, #message_ident>>::into(#button) })
+}
+
+/// Generate container widget with local variable context
+fn generate_container_with_locals(
+    node: &crate::WidgetNode,
+    widget_type: &str,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    let children: Vec<TokenStream> = node
+        .children
+        .iter()
+        .map(|child| {
+            generate_widget_with_locals(
+                child,
+                model_ident,
+                message_ident,
+                style_classes,
+                local_vars,
+            )
+        })
+        .collect::<Result<_, _>>()?;
+
+    let mut container = match widget_type {
+        "column" => {
+            quote! { iced::widget::column({ let children: Vec<Element<'_, #message_ident>> = vec![#(#children),*]; children }) }
+        }
+        "row" => {
+            quote! { iced::widget::row({ let children: Vec<Element<'_, #message_ident>> = vec![#(#children),*]; children }) }
+        }
+        "scrollable" => {
+            quote! { iced::widget::scrollable(iced::widget::column({ let children: Vec<Element<'_, #message_ident>> = vec![#(#children),*]; children })) }
+        }
+        _ => {
+            // container wraps a single child
+            if children.len() == 1 {
+                let child = &children[0];
+                quote! { iced::widget::container(#child) }
+            } else {
+                quote! { iced::widget::container(iced::widget::column({ let children: Vec<Element<'_, #message_ident>> = vec![#(#children),*]; children })) }
+            }
+        }
+    };
+
+    // Apply spacing for column/row
+    if let Some(spacing) = node.attributes.get("spacing").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    }) {
+        if widget_type == "column" || widget_type == "row" {
+            container = quote! { #container.spacing(#spacing) };
+        }
+    }
+
+    // Apply padding
+    if let Some(padding) = node.attributes.get("padding").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    }) {
+        container = quote! { #container.padding(#padding) };
+    }
+
+    // Apply width/height
+    if let Some(width) = node.attributes.get("width").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(generate_length_expr(s))
+        } else {
+            None
+        }
+    }) {
+        container = quote! { #container.width(#width) };
+    }
+
+    if let Some(height) = node.attributes.get("height").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(generate_length_expr(s))
+        } else {
+            None
+        }
+    }) {
+        container = quote! { #container.height(#height) };
+    }
+
+    // Apply alignment for row/column
+    if let Some(align_y) = node.attributes.get("align_y").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(s.clone())
+        } else {
+            None
+        }
+    }) {
+        if widget_type == "row" {
+            let alignment_expr = match align_y.to_lowercase().as_str() {
+                "top" | "start" => quote! { iced::alignment::Vertical::Top },
+                "bottom" | "end" => quote! { iced::alignment::Vertical::Bottom },
+                _ => quote! { iced::alignment::Vertical::Center },
+            };
+            container = quote! { #container.align_y(#alignment_expr) };
+        }
+    }
+
+    // Apply styles
+    if widget_type == "container" {
+        container = apply_widget_style(container, node, "container", style_classes)?;
+    }
+
+    // Use explicit into() conversion to help type inference with nested containers
+    Ok(quote! { Into::<Element<'_, #message_ident>>::into(#container) })
+}
+
+/// Generate for loop widget with local variable context
+fn generate_for_with_locals(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    // Get the 'in' attribute (collection to iterate)
+    let in_attr = node.attributes.get("in").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("for requires 'in' attribute".to_string())
+    })?;
+
+    // Get the 'each' attribute (loop variable name)
+    let var_name = node
+        .attributes
+        .get("each")
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(|| "item".to_string());
+
+    let var_ident = format_ident!("{}", var_name);
+
+    // Generate the collection expression (raw, without .to_string())
+    let collection_expr =
+        generate_attribute_value_raw_with_locals(in_attr, model_ident, local_vars);
+
+    // Create new local vars set including the loop variable
+    let mut new_local_vars = local_vars.clone();
+    new_local_vars.insert(var_name.clone());
+    new_local_vars.insert("index".to_string());
+
+    // Generate children widgets with the new local context
+    let children: Vec<TokenStream> = node
+        .children
+        .iter()
+        .map(|child| {
+            generate_widget_with_locals(
+                child,
+                model_ident,
+                message_ident,
+                style_classes,
+                &new_local_vars,
+            )
+        })
+        .collect::<Result<_, _>>()?;
+
+    // Generate the for loop that builds widgets
+    // Use explicit type annotations to help Rust's type inference
+    Ok(quote! {
+        {
+            let mut widgets: Vec<Element<'_, #message_ident>> = Vec::new();
+            for (index, #var_ident) in (#collection_expr).iter().enumerate() {
+                let _ = index;
+                #(
+                    let child_widget: Element<'_, #message_ident> = #children;
+                    widgets.push(child_widget);
+                )*
+            }
+            Into::<Element<'_, #message_ident>>::into(iced::widget::column(widgets))
+        }
+    })
+}
+
+/// Generate if widget with local variable context
+fn generate_if_with_locals(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    let condition_attr = node.attributes.get("condition").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("if requires condition attribute".to_string())
+    })?;
+
+    let children: Vec<TokenStream> = node
+        .children
+        .iter()
+        .map(|child| {
+            generate_widget_with_locals(
+                child,
+                model_ident,
+                message_ident,
+                style_classes,
+                local_vars,
+            )
+        })
+        .collect::<Result<_, _>>()?;
+
+    let condition_expr =
+        generate_attribute_value_with_locals(condition_attr, model_ident, local_vars);
+
+    Ok(quote! {
+        if #condition_expr.parse::<bool>().unwrap_or(false) {
+            Into::<Element<'_, #message_ident>>::into(iced::widget::column({ let children: Vec<Element<'_, #message_ident>> = vec![#(#children),*]; children }))
+        } else {
+            Into::<Element<'_, #message_ident>>::into(iced::widget::column({ let children: Vec<Element<'_, #message_ident>> = vec![]; children }))
+        }
+    })
+}
+
+/// Generate checkbox widget with local variable context
+fn generate_checkbox_with_locals(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    // Get checked attribute
+    let checked_attr = node.attributes.get("checked");
+    let checked_expr = if let Some(attr) = checked_attr {
+        generate_attribute_value_raw_with_locals(attr, model_ident, local_vars)
+    } else {
+        quote! { false }
+    };
+
+    // Get on_change event
+    let on_change = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Change);
+
+    let mut checkbox = quote! {
+        iced::widget::checkbox(#checked_expr)
+    };
+
+    if let Some(event) = on_change {
+        let variant_name = to_upper_camel_case(&event.handler);
+        let handler_ident = format_ident!("{}", variant_name);
+
+        let param_expr = if let Some(ref param) = event.param {
+            let param_tokens = super::bindings::generate_expr_with_locals(&param.expr, local_vars);
+            quote! { (#param_tokens) }
+        } else {
+            quote! {}
+        };
+
+        checkbox = quote! {
+            #checkbox.on_toggle(move |_| #message_ident::#handler_ident #param_expr)
+        };
+    }
+
+    // Apply size
+    if let Some(size) = node.attributes.get("size").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    }) {
+        checkbox = quote! { #checkbox.size(#size) };
+    }
+
+    // Apply styles
+    checkbox = apply_widget_style(checkbox, node, "checkbox", style_classes)?;
+
+    Ok(quote! { Into::<Element<'_, #message_ident>>::into(#checkbox) })
+}
+
+/// Generate text_input widget with local variable context
+fn generate_text_input_with_locals(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    // Get placeholder
+    let placeholder = node
+        .attributes
+        .get("placeholder")
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_default();
+    let placeholder_lit = proc_macro2::Literal::string(&placeholder);
+
+    // Get value attribute
+    let value_attr = node.attributes.get("value");
+    let value_expr = if let Some(attr) = value_attr {
+        generate_attribute_value_with_locals(attr, model_ident, local_vars)
+    } else {
+        quote! { String::new() }
+    };
+
+    let on_input = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Input);
+
+    let on_submit = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Submit);
+
+    let mut text_input = quote! {
+        iced::widget::text_input(#placeholder_lit, &#value_expr)
+    };
+
+    // Apply on_input
+    if let Some(event) = on_input {
+        let variant_name = to_upper_camel_case(&event.handler);
+        let handler_ident = format_ident!("{}", variant_name);
+        text_input = quote! { #text_input.on_input(|v| #message_ident::#handler_ident(v)) };
+    }
+
+    // Apply on_submit
+    if let Some(event) = on_submit {
+        let variant_name = to_upper_camel_case(&event.handler);
+        let handler_ident = format_ident!("{}", variant_name);
+        text_input = quote! { #text_input.on_submit(#message_ident::#handler_ident) };
+    }
+
+    // Apply size
+    if let Some(size) = node.attributes.get("size").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    }) {
+        text_input = quote! { #text_input.size(#size) };
+    }
+
+    // Apply padding
+    if let Some(padding) = node.attributes.get("padding").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    }) {
+        text_input = quote! { #text_input.padding(#padding) };
+    }
+
+    // Apply width
+    if let Some(width) = node.attributes.get("width").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(generate_length_expr(s))
+        } else {
+            None
+        }
+    }) {
+        text_input = quote! { #text_input.width(#width) };
+    }
+
+    // Apply styles
+    text_input = apply_widget_style(text_input, node, "text_input", style_classes)?;
+
+    Ok(quote! { Into::<Element<'_, #message_ident>>::into(#text_input) })
+}
+
+/// Generate attribute value expression with local variable context
+fn generate_attribute_value_with_locals(
+    attr: &AttributeValue,
+    _model_ident: &syn::Ident,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    match attr {
+        AttributeValue::Static(s) => {
+            let lit = proc_macro2::Literal::string(s);
+            quote! { #lit.to_string() }
+        }
+        AttributeValue::Binding(expr) => {
+            super::bindings::generate_expr_with_locals(&expr.expr, local_vars)
+        }
+        AttributeValue::Interpolated(parts) => {
+            let parts_str: Vec<String> = parts
+                .iter()
+                .map(|part| match part {
+                    InterpolatedPart::Literal(s) => s.clone(),
+                    InterpolatedPart::Binding(_) => "{}".to_string(),
+                })
+                .collect();
+            let binding_exprs: Vec<TokenStream> = parts
+                .iter()
+                .filter_map(|part| {
+                    if let InterpolatedPart::Binding(expr) = part {
+                        Some(super::bindings::generate_expr_with_locals(
+                            &expr.expr, local_vars,
+                        ))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let format_string = parts_str.join("");
+            let lit = proc_macro2::Literal::string(&format_string);
+
+            quote! { format!(#lit, #(#binding_exprs),*) }
+        }
+    }
+}
+
+/// Generate attribute value without `.to_string()` conversion with local variable context
+fn generate_attribute_value_raw_with_locals(
+    attr: &AttributeValue,
+    _model_ident: &syn::Ident,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    match attr {
+        AttributeValue::Static(s) => {
+            let lit = proc_macro2::Literal::string(s);
+            quote! { #lit }
+        }
+        AttributeValue::Binding(expr) => {
+            super::bindings::generate_bool_expr_with_locals(&expr.expr, local_vars)
+        }
+        AttributeValue::Interpolated(parts) => {
+            let parts_str: Vec<String> = parts
+                .iter()
+                .map(|part| match part {
+                    InterpolatedPart::Literal(s) => s.clone(),
+                    InterpolatedPart::Binding(_) => "{}".to_string(),
+                })
+                .collect();
+            let binding_exprs: Vec<TokenStream> = parts
+                .iter()
+                .filter_map(|part| {
+                    if let InterpolatedPart::Binding(expr) = part {
+                        Some(super::bindings::generate_expr_with_locals(
+                            &expr.expr, local_vars,
+                        ))
                     } else {
                         None
                     }

@@ -113,6 +113,75 @@ pub fn find_theme_file_path(project_dir: &Path) -> Option<PathBuf> {
     paths.into_iter().find(|path| path.exists())
 }
 
+/// Find the project root by searching for theme.dampen in multiple locations.
+///
+/// This function implements a robust search strategy for finding the project root
+/// when the application is run from various locations (e.g., target/release).
+///
+/// Search order:
+/// 1. `CARGO_MANIFEST_DIR` environment variable (available during `cargo run`)
+/// 2. Ancestors of the executable location (for binaries in target/release)
+/// 3. Workspace examples directory (for examples in a workspace)
+/// 4. Ancestors of the current working directory
+///
+/// # Returns
+///
+/// The project root path if found, None otherwise
+pub fn find_project_root() -> Option<PathBuf> {
+    // 1. Try CARGO_MANIFEST_DIR (available during cargo run)
+    if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+        let path = PathBuf::from(&manifest_dir);
+        if path.join("src/ui/theme/theme.dampen").exists() {
+            return Some(path);
+        }
+    }
+
+    // 2. Try relative to the executable location
+    // This handles the case where the binary is in target/release or target/debug
+    if let Ok(exe_path) = std::env::current_exe() {
+        // Get the executable name (e.g., "todo-app")
+        let exe_name = exe_path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .map(|s| s.to_string());
+
+        if let Some(exe_dir) = exe_path.parent() {
+            // Walk up the directory tree
+            for ancestor in exe_dir.ancestors() {
+                // Direct check: src/ui/theme/theme.dampen
+                let theme_path = ancestor.join("src/ui/theme/theme.dampen");
+                if theme_path.exists() {
+                    return Some(ancestor.to_path_buf());
+                }
+
+                // Workspace check: Look for the project in examples/ directory
+                // This handles cases where the exe is in workspace/target/release
+                // but the project is in workspace/examples/project-name/
+                if let Some(ref name) = exe_name {
+                    let examples_path = ancestor.join("examples").join(name);
+                    let theme_in_examples =
+                        examples_path.join("src/ui/theme/theme.dampen");
+                    if theme_in_examples.exists() {
+                        return Some(examples_path);
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Try from current directory upwards
+    if let Ok(cwd) = std::env::current_dir() {
+        for ancestor in cwd.ancestors() {
+            let theme_path = ancestor.join("src/ui/theme/theme.dampen");
+            if theme_path.exists() {
+                return Some(ancestor.to_path_buf());
+            }
+        }
+    }
+
+    None
+}
+
 /// Create a minimal Dampen application structure for testing.
 ///
 /// This helper function creates the basic directory structure of a

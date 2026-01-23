@@ -294,12 +294,238 @@ pub fn generate_interpolated(parts: &[String]) -> TokenStream {
 
 /// Generate field access without .to_string() conversion
 fn generate_field_access_raw(expr: &FieldAccessExpr) -> TokenStream {
+    generate_field_access_raw_with_locals(expr, &std::collections::HashSet::new())
+}
+
+/// Generate field access with local variable context
+fn generate_field_access_raw_with_locals(
+    expr: &FieldAccessExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
     if expr.path.is_empty() {
         return quote! { false };
     }
 
+    // Check if the first element is a local variable
+    if let Some(first) = expr.path.first() {
+        if local_vars.contains(first) {
+            // Use the local variable directly without model. prefix
+            let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
+            return quote! { #(#field_access).* };
+        }
+    }
+
     let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
     quote! { model.#(#field_access).* }
+}
+
+/// Generate bool expression with local variable context
+pub fn generate_bool_expr_with_locals(
+    expr: &Expr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    match expr {
+        Expr::FieldAccess(field_access) => {
+            generate_field_access_raw_with_locals(field_access, local_vars)
+        }
+        Expr::SharedFieldAccess(shared_access) => generate_shared_field_access_raw(shared_access),
+        Expr::MethodCall(method_call) => {
+            generate_method_call_raw_with_locals(method_call, local_vars)
+        }
+        Expr::BinaryOp(binary_op) => generate_binary_op_raw_with_locals(binary_op, local_vars),
+        Expr::UnaryOp(unary_op) => generate_unary_op_raw_with_locals(unary_op, local_vars),
+        Expr::Conditional(conditional) => {
+            generate_conditional_raw_with_locals(conditional, local_vars)
+        }
+        Expr::Literal(literal) => generate_literal_raw(literal),
+    }
+}
+
+/// Generate expr with local variable context (returns String)
+pub fn generate_expr_with_locals(
+    expr: &Expr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    match expr {
+        Expr::FieldAccess(field_access) => {
+            generate_field_access_with_locals(field_access, local_vars)
+        }
+        Expr::SharedFieldAccess(shared_access) => generate_shared_field_access(shared_access),
+        Expr::MethodCall(method_call) => generate_method_call_with_locals(method_call, local_vars),
+        Expr::BinaryOp(binary_op) => generate_binary_op_with_locals(binary_op, local_vars),
+        Expr::UnaryOp(unary_op) => generate_unary_op_with_locals(unary_op, local_vars),
+        Expr::Conditional(conditional) => generate_conditional_with_locals(conditional, local_vars),
+        Expr::Literal(literal) => generate_literal(literal),
+    }
+}
+
+/// Generate field access with local variable context (returns String)
+fn generate_field_access_with_locals(
+    expr: &FieldAccessExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    if expr.path.is_empty() {
+        return quote! { String::new() };
+    }
+
+    // Check if the first element is a local variable
+    if let Some(first) = expr.path.first() {
+        if local_vars.contains(first) {
+            // Use the local variable directly without model. prefix
+            let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
+            return quote! { #(#field_access).*.to_string() };
+        }
+    }
+
+    let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
+    quote! { model.#(#field_access).*.to_string() }
+}
+
+fn generate_method_call_with_locals(
+    expr: &MethodCallExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    let receiver_tokens = generate_expr_with_locals(&expr.receiver, local_vars);
+    let method_ident = format_ident!("{}", expr.method);
+    let arg_tokens: Vec<_> = expr
+        .args
+        .iter()
+        .map(|a| generate_expr_with_locals(a, local_vars))
+        .collect();
+
+    if arg_tokens.is_empty() {
+        quote! { #receiver_tokens.#method_ident().to_string() }
+    } else {
+        quote! { #receiver_tokens.#method_ident(#(#arg_tokens),*).to_string() }
+    }
+}
+
+fn generate_binary_op_with_locals(
+    expr: &BinaryOpExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    let left = generate_expr_with_locals(&expr.left, local_vars);
+    let right = generate_expr_with_locals(&expr.right, local_vars);
+    let op = match expr.op {
+        BinaryOp::Eq => quote! { == },
+        BinaryOp::Ne => quote! { != },
+        BinaryOp::Lt => quote! { < },
+        BinaryOp::Le => quote! { <= },
+        BinaryOp::Gt => quote! { > },
+        BinaryOp::Ge => quote! { >= },
+        BinaryOp::And => quote! { && },
+        BinaryOp::Or => quote! { || },
+        BinaryOp::Add => quote! { + },
+        BinaryOp::Sub => quote! { - },
+        BinaryOp::Mul => quote! { * },
+        BinaryOp::Div => quote! { / },
+    };
+
+    quote! { (#left #op #right).to_string() }
+}
+
+fn generate_unary_op_with_locals(
+    expr: &UnaryOpExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    let operand = generate_expr_with_locals(&expr.operand, local_vars);
+    let op = match expr.op {
+        UnaryOp::Not => quote! { ! },
+        UnaryOp::Neg => quote! { - },
+    };
+
+    quote! { (#op #operand).to_string() }
+}
+
+fn generate_conditional_with_locals(
+    expr: &ConditionalExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    let condition = generate_expr_with_locals(&expr.condition, local_vars);
+    let then_branch = generate_expr_with_locals(&expr.then_branch, local_vars);
+    let else_branch = generate_expr_with_locals(&expr.else_branch, local_vars);
+
+    quote! {
+        {
+            let __cond = #condition;
+            let __then = #then_branch;
+            let __else = #else_branch;
+            if __cond.trim() == "true" || __cond.parse::<bool>().unwrap_or(false) {
+                __then
+            } else {
+                __else
+            }
+        }
+    }
+}
+
+fn generate_method_call_raw_with_locals(
+    expr: &MethodCallExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    let receiver_tokens = generate_bool_expr_with_locals(&expr.receiver, local_vars);
+    let method_ident = format_ident!("{}", &expr.method);
+    let arg_tokens: Vec<_> = expr
+        .args
+        .iter()
+        .map(|a| generate_bool_expr_with_locals(a, local_vars))
+        .collect();
+
+    quote! { #receiver_tokens.#method_ident(#(#arg_tokens),*) }
+}
+
+fn generate_binary_op_raw_with_locals(
+    expr: &BinaryOpExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    let left = generate_bool_expr_with_locals(&expr.left, local_vars);
+    let right = generate_bool_expr_with_locals(&expr.right, local_vars);
+    let op = match expr.op {
+        BinaryOp::Eq => quote! { == },
+        BinaryOp::Ne => quote! { != },
+        BinaryOp::Lt => quote! { < },
+        BinaryOp::Le => quote! { <= },
+        BinaryOp::Gt => quote! { > },
+        BinaryOp::Ge => quote! { >= },
+        BinaryOp::And => quote! { && },
+        BinaryOp::Or => quote! { || },
+        BinaryOp::Add => quote! { + },
+        BinaryOp::Sub => quote! { - },
+        BinaryOp::Mul => quote! { * },
+        BinaryOp::Div => quote! { / },
+    };
+
+    quote! { #left #op #right }
+}
+
+fn generate_unary_op_raw_with_locals(
+    expr: &UnaryOpExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    let operand = generate_bool_expr_with_locals(&expr.operand, local_vars);
+    let op = match expr.op {
+        UnaryOp::Not => quote! { ! },
+        UnaryOp::Neg => quote! { - },
+    };
+
+    quote! { #op #operand }
+}
+
+fn generate_conditional_raw_with_locals(
+    expr: &ConditionalExpr,
+    local_vars: &std::collections::HashSet<String>,
+) -> TokenStream {
+    let condition = generate_bool_expr_with_locals(&expr.condition, local_vars);
+    let then_branch = generate_bool_expr_with_locals(&expr.then_branch, local_vars);
+    let else_branch = generate_bool_expr_with_locals(&expr.else_branch, local_vars);
+
+    quote! {
+        if #condition {
+            #then_branch
+        } else {
+            #else_branch
+        }
+    }
 }
 
 /// Generate shared field access without .to_string() conversion

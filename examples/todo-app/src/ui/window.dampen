@@ -143,17 +143,17 @@
                         <row spacing="8">
                             <button
                                 label="All"
-                                on_click="filter:'All'"
+                                on_click="filter_changed:'All'"
                                 class="{if filter == 'All' then 'btn_primary' else 'btn_filter'}"
                             />
                             <button
                                 label="Active"
-                                on_click="filter:'Active'"
+                                on_click="filter_changed:'Active'"
                                 class="{if filter == 'Active' then 'btn_success' else 'btn_filter'}"
                             />
                             <button
                                 label="Completed"
-                                on_click="filter:'Completed'"
+                                on_click="filter_changed:'Completed'"
                                 class="{if filter == 'Completed' then 'btn_danger' else 'btn_filter'}"
                             />
                         </row>

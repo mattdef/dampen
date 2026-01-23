@@ -26,6 +26,12 @@ pub enum Filter {
     Completed,
 }
 
+impl std::fmt::Display for Filter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
 impl Filter {
     /// Returns the string representation of the filter for UI binding.
     pub fn as_str(&self) -> &str {
@@ -62,6 +68,12 @@ impl TaskState {
             TaskState::Idle => "Idle",
             TaskState::Editing => "Editing",
         }
+    }
+}
+
+impl std::fmt::Display for TaskState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
     }
 }
 
@@ -406,7 +418,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
     );
 
     registry.register_with_value(
-        "filter",
+        "filter_changed",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
             if let Some(m) = model.downcast_mut::<Model>()
                 && let Ok(s) = value.downcast::<String>()
