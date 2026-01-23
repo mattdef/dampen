@@ -282,7 +282,7 @@ fn test_debouncing_behavior() {
     let reduction_percent =
         (1.0 - (received_events.len() as f64 / NUM_MODIFICATIONS as f64)) * 100.0;
     assert!(
-        reduction_percent >= 20.0,
+        reduction_percent > 20.0,
         "Expected at least 20% reduction from debouncing, but only got {:.1}% \
         ({} events from {} modifications). Debouncing may be variable due to OS timing.",
         reduction_percent,
