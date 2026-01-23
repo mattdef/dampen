@@ -6,10 +6,10 @@
 // use crate::{CurrentView, Message};
 
 use dampen_core::{AppState, HandlerRegistry};
-use dampen_macros::{UiModel, dampen_ui, ui_handler, inventory_handlers};
+use dampen_macros::{UiModel, dampen_ui, inventory_handlers, ui_handler};
 use serde::{Deserialize, Serialize};
 
-/// Auto-load the window.dampen XML file.
+/// Auto-load the app.dampen XML file.
 /// Path is relative to this file (src/ui/).
 #[dampen_ui("window.dampen")]
 mod _app {}
@@ -20,23 +20,22 @@ pub struct Model {
     pub message: String,
 }
 
+/// Create the AppState for the hello-world example.
+pub fn create_app_state() -> AppState<Model> {
+    let document = _app::document();
+    let handler_registry = create_handler_registry();
+    AppState::with_handlers(document, handler_registry)
+}
+
 /// Example handler - updates the message
-/// Note: Handlers must be public for codegen mode to work
 #[ui_handler]
 pub fn greet(model: &mut Model) {
-    model.message = "Hello, World!".to_string();
+    model.message = "It's a good start !".to_string();
 }
 
 // Declare all handlers in this module for build-time code generation
 inventory_handlers! {
     greet
-}
-
-/// Create the AppState for the window view.
-pub fn create_app_state() -> AppState<Model> {
-    let document = _app::document();
-    let handler_registry = create_handler_registry();
-    AppState::with_handlers(document, handler_registry)
 }
 
 /// Create and configure the handler registry.

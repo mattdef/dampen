@@ -6,19 +6,6 @@
 //! ## Modes
 //! - **Interpreted mode** (default): Uses `#[dampen_app]` macro with hot-reload
 //! - **Codegen mode**: Uses pre-generated code for production builds
-//!
-//! ## Features
-//! - Auto-generated view management
-//! - Hot-reload support in development mode
-//! - Ready for multi-view extension
-//! - Type-safe handler dispatch
-//!
-//! ## Enabling Shared State
-//! To share state across multiple views:
-//! 1. Uncomment `mod shared;` below
-//! 2. Create `src/shared.rs` with your SharedState model
-//! 3. Uncomment `shared_model = "SharedState"` in #[dampen_app]
-//! 4. Use `{shared.field}` bindings in your .dampen files
 
 // Ensure codegen and interpreted are mutually exclusive
 #[cfg(all(feature = "codegen", feature = "interpreted"))]
@@ -31,7 +18,14 @@ compile_error!(
 // ============================================================================
 #[cfg(feature = "interpreted")]
 mod ui;
-// Uncomment to enable shared state across views:
+
+// ## Shared State (Advanced)
+// To share state across multiple views:
+// 1. Create `src/shared.rs` with your SharedState model
+// 2. Uncomment `mod shared;` below
+// 3. Uncomment `shared_model = "SharedState"` in #[dampen_app]
+// 4. Use `{shared.field}` bindings in your .dampen files
+//
 // #[cfg(feature = "interpreted")]
 // mod shared;
 
@@ -47,8 +41,6 @@ use dampen_dev::FileEvent;
 #[cfg(feature = "interpreted")]
 #[derive(Clone, Debug)]
 enum Message {
-    /// Uncomment to enable view switching between multiple views
-    // SwitchToView(CurrentView),
     /// Handler invocation from UI widgets
     Handler(HandlerMessage),
     /// Hot-reload event (development mode only)
@@ -61,17 +53,7 @@ enum Message {
     SystemThemeChanged(String),
 }
 
-
-
 /// Main application structure with auto-generated view management (interpreted mode)
-///
-/// ## Shared State (Advanced)
-/// To enable shared state across multiple views, uncomment the shared_model attribute:
-/// - shared_model = "SharedState"  // Name must match struct in src/shared.rs
-///
-/// Then use `{shared.field}` bindings in XML and handlers with:
-/// - registry.register_with_shared() for handlers that read shared state
-/// - registry.register_with_value_and_shared() for handlers that modify shared state
 #[cfg(feature = "interpreted")]
 #[dampen_app(
     ui_dir = "src/ui",
@@ -82,8 +64,6 @@ enum Message {
     system_theme_variant = "SystemThemeChanged",
     default_view = "window",
     exclude = ["theme/*"],
-    // Uncomment to enable view switching:
-    // switch_view_variant = "SwitchToView",
     // Uncomment to enable shared state across views:
     // shared_model = "SharedState",
 )]
@@ -120,15 +100,11 @@ include!(concat!(env!("OUT_DIR"), "/ui_generated.rs"));
 pub fn main() -> iced::Result {
     println!("🚀 Running in codegen mode (production)");
 
-    iced::application(
-        window::new_model,
-        window::update_model,
-        window::view_model,
-    )
-    .window_size(iced::Size::new(400.0, 300.0))
-    .centered()
-    .theme(window::theme)
-    .title("{{PROJECT_NAME}}")
-    .subscription(|_model| window::subscription_model())
-    .run()
+    iced::application(window::new_model, window::update_model, window::view_model)
+        .window_size(iced::Size::new(400.0, 300.0))
+        .centered()
+        .theme(window::theme)
+        .title("{{PROJECT_NAME}}")
+        .subscription(|_model| window::subscription_model())
+        .run()
 }

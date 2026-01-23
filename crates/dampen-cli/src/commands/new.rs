@@ -139,7 +139,6 @@ fn create_project(project_name: &str, project_path: &Path) -> Result<(), String>
     generate_ui_window_rs(project_path, project_name)?;
     generate_window_dampen(project_path, project_name)?;
     generate_theme_dampen(project_path, project_name)?;
-    generate_integration_test(project_path, project_name)?;
     generate_readme(project_path, project_name)?;
 
     Ok(())
@@ -172,16 +171,6 @@ fn create_project_structure(project_path: &Path) -> Result<(), String> {
         format!(
             "Failed to create directory '{}': {}",
             theme_dir.display(),
-            e
-        )
-    })?;
-
-    // Create tests/ directory
-    let tests_dir = project_path.join("tests");
-    fs::create_dir(&tests_dir).map_err(|e| {
-        format!(
-            "Failed to create directory '{}': {}",
-            tests_dir.display(),
             e
         )
     })?;
@@ -279,22 +268,6 @@ fn generate_theme_dampen(project_path: &Path, project_name: &str) -> Result<(), 
     let content = template.replace("{{PROJECT_NAME}}", project_name);
 
     let file_path = project_path.join("src/ui/theme/theme.dampen");
-    fs::write(&file_path, content)
-        .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
-
-    Ok(())
-}
-
-/// Generate tests/integration.rs from template
-fn generate_integration_test(project_path: &Path, project_name: &str) -> Result<(), String> {
-    let template = include_str!("../../templates/new/tests/integration.rs.template");
-
-    // Sanitize project name for use in Rust identifiers (replace hyphens with underscores)
-    let sanitized_name = project_name.replace('-', "_");
-
-    let content = template.replace("{{PROJECT_NAME}}", &sanitized_name);
-
-    let file_path = project_path.join("tests/integration.rs");
     fs::write(&file_path, content)
         .map_err(|e| format!("Failed to write '{}': {}", file_path.display(), e))?;
 

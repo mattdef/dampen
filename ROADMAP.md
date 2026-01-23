@@ -110,13 +110,13 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 |-----------|--------|-------------|
 | Window Theming | ✅ | Customizable window appearance |
 
-### v0.2.6 - Enhanced multi-windows application (in progress)
+### v0.2.6 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| Window Layouts | 🔲 | Predefined window arrangements |
+| Window Layouts | ✅ | Predefined window arrangements |
 
 ### v0.2.7 - Enhanced multi-windows application (planned)
 
