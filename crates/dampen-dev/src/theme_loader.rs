@@ -159,8 +159,7 @@ pub fn find_project_root() -> Option<PathBuf> {
                 // but the project is in workspace/examples/project-name/
                 if let Some(ref name) = exe_name {
                     let examples_path = ancestor.join("examples").join(name);
-                    let theme_in_examples =
-                        examples_path.join("src/ui/theme/theme.dampen");
+                    let theme_in_examples = examples_path.join("src/ui/theme/theme.dampen");
                     if theme_in_examples.exists() {
                         return Some(examples_path);
                     }
