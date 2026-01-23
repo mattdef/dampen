@@ -100,18 +100,3 @@ jobs:
 
       - name: Check for warnings
         run: cargo doc --workspace --no-deps 2>&1 | grep -i "warning" && exit 1 || echo "No warnings"
-
-      - name: Setup Pages
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: target/doc
-
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        id: deployment
-        uses: actions/deploy-pages@v4
