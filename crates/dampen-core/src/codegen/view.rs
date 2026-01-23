@@ -2942,15 +2942,14 @@ fn generate_container_with_locals(
         } else {
             None
         }
-    }) {
-        if widget_type == "row" {
-            let alignment_expr = match align_y.to_lowercase().as_str() {
-                "top" | "start" => quote! { iced::alignment::Vertical::Top },
-                "bottom" | "end" => quote! { iced::alignment::Vertical::Bottom },
-                _ => quote! { iced::alignment::Vertical::Center },
-            };
-            container = quote! { #container.align_y(#alignment_expr) };
-        }
+    }) && widget_type == "row"
+    {
+        let alignment_expr = match align_y.to_lowercase().as_str() {
+            "top" | "start" => quote! { iced::alignment::Vertical::Top },
+            "bottom" | "end" => quote! { iced::alignment::Vertical::Bottom },
+            _ => quote! { iced::alignment::Vertical::Center },
+        };
+        container = quote! { #container.align_y(#alignment_expr) };
     }
 
     // Apply styles

@@ -24,10 +24,10 @@
 
 **Purpose**: Prepare the module structure in dampen-core
 
-- [ ] T001 Create schema module directory at `crates/dampen-core/src/schema/`
-- [ ] T002 Create empty module file at `crates/dampen-core/src/schema/mod.rs`
-- [ ] T003 Add `pub mod schema;` declaration in `crates/dampen-core/src/lib.rs`
-- [ ] T004 Add re-exports in `crates/dampen-core/src/lib.rs` for schema types
+- [x] T001 Create schema module directory at `crates/dampen-core/src/schema/`
+- [x] T002 Create empty module file at `crates/dampen-core/src/schema/mod.rs`
+- [x] T003 Add `pub mod schema;` declaration in `crates/dampen-core/src/lib.rs`
+- [x] T004 Add re-exports in `crates/dampen-core/src/lib.rs` for schema types
 
 ---
 
@@ -37,12 +37,12 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Define `WidgetSchema` struct with static slice fields in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T006 [P] Define `COMMON_STYLE_ATTRIBUTES` constant (14 attributes) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T007 [P] Define `COMMON_LAYOUT_ATTRIBUTES` constant (22 attributes including align_x, align_y, align_self) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T008 [P] Define `COMMON_EVENTS` constant (9 attributes) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T009 Implement `WidgetSchema::all_valid()` method returning `HashSet<&'static str>` in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T010 Implement `WidgetSchema::all_valid_names()` method returning `Vec<&'static str>` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T005 Define `WidgetSchema` struct with static slice fields in `crates/dampen-core/src/schema/mod.rs`
+- [x] T006 [P] Define `COMMON_STYLE_ATTRIBUTES` constant (14 attributes) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T007 [P] Define `COMMON_LAYOUT_ATTRIBUTES` constant (22 attributes including align_x, align_y, align_self) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T008 [P] Define `COMMON_EVENTS` constant (9 attributes) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T009 Implement `WidgetSchema::all_valid()` method returning `HashSet<&'static str>` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T010 Implement `WidgetSchema::all_valid_names()` method returning `Vec<&'static str>` in `crates/dampen-core/src/schema/mod.rs`
 
 **Checkpoint**: Schema struct and common constants ready - widget-specific schemas can now be implemented
 
@@ -58,35 +58,35 @@
 
 ### Tests for User Story 2
 
-- [ ] T011 [P] [US2] Write test `test_button_schema_contains_expected_attributes` in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T012 [P] [US2] Write test `test_container_schema_includes_layout_attributes` in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T013 [P] [US2] Write test `test_textinput_schema_includes_size` in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T014 [P] [US2] Write test `test_custom_widget_returns_permissive_schema` in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T015 [P] [US2] Write test `test_all_widget_kinds_have_schema` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T011 [P] [US2] Write test `test_button_schema_contains_expected_attributes` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T012 [P] [US2] Write test `test_container_schema_includes_layout_attributes` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T013 [P] [US2] Write test `test_textinput_schema_includes_size` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T014 [P] [US2] Write test `test_custom_widget_returns_permissive_schema` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T015 [P] [US2] Write test `test_all_widget_kinds_have_schema` in `crates/dampen-core/src/schema/mod.rs`
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement `WidgetKind::schema(&self) -> WidgetSchema` method in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T017 [P] [US2] Add schema for Text widget (required: value, optional: size/weight/color) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T018 [P] [US2] Add schema for Image widget (required: src) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T019 [P] [US2] Add schema for Button widget (events: on_click/on_press/on_release) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T020 [P] [US2] Add schema for TextInput widget (optional includes size) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T021 [P] [US2] Add schema for Checkbox widget (optional includes size) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T022 [P] [US2] Add schema for Radio widget (required: label/value) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T023 [P] [US2] Add schema for Slider widget in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T024 [P] [US2] Add schema for Column/Row/Container widgets in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T025 [P] [US2] Add schema for Scrollable/Stack widgets in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T026 [P] [US2] Add schema for Svg widget (required: src) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T027 [P] [US2] Add schema for PickList/ComboBox widgets in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T028 [P] [US2] Add schema for Toggler widget in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T029 [P] [US2] Add schema for Space/Rule widgets in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T030 [P] [US2] Add schema for ProgressBar widget (optional includes style) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T031 [P] [US2] Add schema for Tooltip widget (no layout attributes) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T032 [P] [US2] Add schema for Grid/Canvas/Float widgets in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T033 [P] [US2] Add schema for For/If control flow widgets in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T034 [P] [US2] Add schema for Custom widget (empty/permissive) in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T035 [US2] Implement standalone `get_widget_schema(kind: &WidgetKind) -> WidgetSchema` function in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T036 [US2] Run `cargo test -p dampen-core` and verify all US2 tests pass
+- [x] T016 [US2] Implement `WidgetKind::schema(&self) -> WidgetSchema` method in `crates/dampen-core/src/schema/mod.rs`
+- [x] T017 [P] [US2] Add schema for Text widget (required: value, optional: size/weight/color) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T018 [P] [US2] Add schema for Image widget (required: src) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T019 [P] [US2] Add schema for Button widget (events: on_click/on_press/on_release) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T020 [P] [US2] Add schema for TextInput widget (optional includes size) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T021 [P] [US2] Add schema for Checkbox widget (optional includes size) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T022 [P] [US2] Add schema for Radio widget (required: label/value) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T023 [P] [US2] Add schema for Slider widget in `crates/dampen-core/src/schema/mod.rs`
+- [x] T024 [P] [US2] Add schema for Column/Row/Container widgets in `crates/dampen-core/src/schema/mod.rs`
+- [x] T025 [P] [US2] Add schema for Scrollable/Stack widgets in `crates/dampen-core/src/schema/mod.rs`
+- [x] T026 [P] [US2] Add schema for Svg widget (required: src) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T027 [P] [US2] Add schema for PickList/ComboBox widgets in `crates/dampen-core/src/schema/mod.rs`
+- [x] T028 [P] [US2] Add schema for Toggler widget in `crates/dampen-core/src/schema/mod.rs`
+- [x] T029 [P] [US2] Add schema for Space/Rule widgets in `crates/dampen-core/src/schema/mod.rs`
+- [x] T030 [P] [US2] Add schema for ProgressBar widget (optional includes style) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T031 [P] [US2] Add schema for Tooltip widget (no layout attributes) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T032 [P] [US2] Add schema for Grid/Canvas/Float widgets in `crates/dampen-core/src/schema/mod.rs`
+- [x] T033 [P] [US2] Add schema for For/If control flow widgets in `crates/dampen-core/src/schema/mod.rs`
+- [x] T034 [P] [US2] Add schema for Custom widget (empty/permissive) in `crates/dampen-core/src/schema/mod.rs`
+- [x] T035 [US2] Implement standalone `get_widget_schema(kind: &WidgetKind) -> WidgetSchema` function in `crates/dampen-core/src/schema/mod.rs`
+- [x] T036 [US2] Run `cargo test -p dampen-core` and verify all US2 tests pass
 
 **Checkpoint**: Schema API complete and tested - CLI can now query dampen-core for widget schemas
 
@@ -100,21 +100,21 @@
 
 ### Tests for User Story 1
 
-- [ ] T037 [P] [US1] Write integration test: CLI recognizes attribute defined only in dampen-core in `crates/dampen-cli/tests/check_attributes.rs`
-- [ ] T038 [P] [US1] Write integration test: CLI reports unknown attribute not in dampen-core schema in `crates/dampen-cli/tests/check_attributes.rs`
+- [x] T037 [P] [US1] Write integration test: CLI recognizes attribute defined only in dampen-core in `crates/dampen-cli/tests/check_attributes.rs`
+- [x] T038 [P] [US1] Write integration test: CLI reports unknown attribute not in dampen-core schema in `crates/dampen-cli/tests/check_attributes.rs`
 
 ### Implementation for User Story 1
 
-- [ ] T039 [US1] Create thin wrapper `WidgetAttributeSchema` struct delegating to `dampen_core::schema::WidgetSchema` in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T040 [US1] Implement `WidgetAttributeSchema::for_widget()` delegating to `kind.schema()` in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T041 [US1] Implement wrapper methods `all_valid()`, `all_valid_names()` delegating to inner schema in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T042 [US1] Add public fields `required`, `optional`, `events`, `style_attributes`, `layout_attributes` to wrapper for test compatibility in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T043 [US1] Remove `lazy_static!` block with `STYLE_COMMON`, `LAYOUT_COMMON`, `EVENTS_COMMON` from `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T044 [US1] Remove widget-specific match arms from old `for_widget()` implementation in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T045 [US1] Update `validate_widget_attributes()` to use new wrapper in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T046 [US1] Update `validate_required_attributes()` to use new wrapper in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T047 [US1] Run existing CLI tests: `cargo test -p dampen-cli` and verify all pass without test logic changes
-- [ ] T048 [US1] Run `dampen check --input examples/todo-app/src/ui --verbose` and verify 0 errors
+- [x] T039 [US1] Create thin wrapper `WidgetAttributeSchema` struct delegating to `dampen_core::schema::WidgetSchema` in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T040 [US1] Implement `WidgetAttributeSchema::for_widget()` delegating to `kind.schema()` in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T041 [US1] Implement wrapper methods `all_valid()`, `all_valid_names()` delegating to inner schema in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T042 [US1] Add public fields `required`, `optional`, `events`, `style_attributes`, `layout_attributes` to wrapper for test compatibility in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T043 [US1] Remove `lazy_static!` block with `STYLE_COMMON`, `LAYOUT_COMMON`, `EVENTS_COMMON` from `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T044 [US1] Remove widget-specific match arms from old `for_widget()` implementation in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T045 [US1] Update `validate_widget_attributes()` to use new wrapper in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T046 [US1] Update `validate_required_attributes()` to use new wrapper in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T047 [US1] Run existing CLI tests: `cargo test -p dampen-cli` and verify all pass without test logic changes
+- [x] T048 [US1] Run `dampen check --input examples/todo-app/src/ui --verbose` and verify 0 errors
 
 **Checkpoint**: CLI now uses single source of truth from dampen-core
 
@@ -128,17 +128,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T049 [P] [US3] Write test verifying `WidgetSchema` is accessible via `dampen_core::schema::WidgetSchema` in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T050 [P] [US3] Write test verifying constants are accessible via `dampen_core::schema::COMMON_*` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T049 [P] [US3] Write test verifying `WidgetSchema` is accessible via `dampen_core::schema::WidgetSchema` in `crates/dampen-core/src/schema/mod.rs`
+- [x] T050 [P] [US3] Write test verifying constants are accessible via `dampen_core::schema::COMMON_*` in `crates/dampen-core/src/schema/mod.rs`
 
 ### Implementation for User Story 3
 
-- [ ] T051 [US3] Add rustdoc module documentation to `crates/dampen-core/src/schema/mod.rs`
-- [ ] T052 [US3] Add rustdoc for `WidgetSchema` struct with examples in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T053 [US3] Add rustdoc for `get_widget_schema()` function with examples in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T054 [US3] Add rustdoc for common attribute constants in `crates/dampen-core/src/schema/mod.rs`
-- [ ] T055 [US3] Run `cargo doc -p dampen-core --open` and verify schema module appears in documentation
-- [ ] T056 [US3] Add `pub use schema::*;` exports in `crates/dampen-core/src/lib.rs` for convenience access
+- [x] T051 [US3] Add rustdoc module documentation to `crates/dampen-core/src/schema/mod.rs`
+- [x] T052 [US3] Add rustdoc for `WidgetSchema` struct with examples in `crates/dampen-core/src/schema/mod.rs`
+- [x] T053 [US3] Add rustdoc for `get_widget_schema()` function with examples in `crates/dampen-core/src/schema/mod.rs`
+- [x] T054 [US3] Add rustdoc for common attribute constants in `crates/dampen-core/src/schema/mod.rs`
+- [x] T055 [US3] Run `cargo doc -p dampen-core --open` and verify schema module appears in documentation
+- [x] T056 [US3] Add `pub use schema::*;` exports in `crates/dampen-core/src/lib.rs` for convenience access
 
 **Checkpoint**: Schema module fully documented and publicly accessible
 
@@ -152,16 +152,16 @@
 
 ### Tests for User Story 4
 
-- [ ] T057 [P] [US4] Write test verifying `dampen check` passes on todo-app with 0 errors in `crates/dampen-cli/tests/check_tests.rs`
-- [ ] T058 [P] [US4] Write test verifying error message format unchanged for unknown attributes in `crates/dampen-cli/tests/check_tests.rs`
-- [ ] T059 [P] [US4] Write test verifying suggestion logic still works (e.g., "align_xx" suggests "align_x") in `crates/dampen-cli/tests/check_tests.rs`
+- [x] T057 [P] [US4] Write test verifying `dampen check` passes on todo-app with 0 errors in `crates/dampen-cli/tests/check_tests.rs`
+- [x] T058 [P] [US4] Write test verifying error message format unchanged for unknown attributes in `crates/dampen-cli/tests/check_tests.rs`
+- [x] T059 [P] [US4] Write test verifying suggestion logic still works (e.g., "align_xx" suggests "align_x") in `crates/dampen-cli/tests/check_tests.rs`
 
 ### Implementation for User Story 4
 
-- [ ] T060 [US4] Verify `validate_widget_attributes()` produces identical suggestions in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T061 [US4] Verify `is_valid_attribute()` function works unchanged in `crates/dampen-cli/src/commands/check/attributes.rs`
-- [ ] T062 [US4] Run full CLI test suite: `cargo test -p dampen-cli --all-features`
-- [ ] T063 [US4] Run workspace tests: `cargo test --workspace`
+- [x] T060 [US4] Verify `validate_widget_attributes()` produces identical suggestions in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T061 [US4] Verify `is_valid_attribute()` function works unchanged in `crates/dampen-cli/src/commands/check/attributes.rs`
+- [x] T062 [US4] Run full CLI test suite: `cargo test -p dampen-cli --all-features`
+- [x] T063 [US4] Run workspace tests: `cargo test --workspace`
 
 **Checkpoint**: Backward compatibility verified - no regressions
 
@@ -171,13 +171,13 @@
 
 **Purpose**: Final cleanup and dependency removal
 
-- [ ] T064 [P] Check if `lazy_static` is used elsewhere in dampen-cli: `grep -r "lazy_static" crates/dampen-cli/`
-- [ ] T065 Remove `lazy_static` from `crates/dampen-cli/Cargo.toml` dependencies (if no other usages found)
-- [ ] T066 [P] Run `cargo clippy --workspace -- -D warnings` and fix any warnings
-- [ ] T067 [P] Run `cargo fmt --all -- --check` and fix any formatting issues
-- [ ] T068 Run `cargo build --release --workspace` and verify clean build
-- [ ] T069 Run quickstart.md validation: test example code snippets compile
-- [ ] T070 Update AGENTS.md if needed (already done via update-agent-context.sh)
+- [x] T064 [P] Check if `lazy_static` is used elsewhere in dampen-cli: `grep -r "lazy_static" crates/dampen-cli/`
+- [x] T065 Remove `lazy_static` from `crates/dampen-cli/Cargo.toml` dependencies (if no other usages found)
+- [x] T066 [P] Run `cargo clippy --workspace -- -D warnings` and fix any warnings
+- [x] T067 [P] Run `cargo fmt --all -- --check` and fix any formatting issues
+- [x] T068 Run `cargo build --release --workspace` and verify clean build
+- [x] T069 Run quickstart.md validation: test example code snippets compile
+- [x] T070 Update AGENTS.md if needed (already done via update-agent-context.sh)
 
 ---
 

@@ -307,12 +307,12 @@ fn generate_field_access_raw_with_locals(
     }
 
     // Check if the first element is a local variable
-    if let Some(first) = expr.path.first() {
-        if local_vars.contains(first) {
-            // Use the local variable directly without model. prefix
-            let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
-            return quote! { #(#field_access).* };
-        }
+    if let Some(first) = expr.path.first()
+        && local_vars.contains(first)
+    {
+        // Use the local variable directly without model. prefix
+        let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
+        return quote! { #(#field_access).* };
     }
 
     let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
@@ -369,12 +369,12 @@ fn generate_field_access_with_locals(
     }
 
     // Check if the first element is a local variable
-    if let Some(first) = expr.path.first() {
-        if local_vars.contains(first) {
-            // Use the local variable directly without model. prefix
-            let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
-            return quote! { #(#field_access).*.to_string() };
-        }
+    if let Some(first) = expr.path.first()
+        && local_vars.contains(first)
+    {
+        // Use the local variable directly without model. prefix
+        let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();
+        return quote! { #(#field_access).*.to_string() };
     }
 
     let field_access: Vec<_> = expr.path.iter().map(|s| format_ident!("{}", s)).collect();

@@ -53,6 +53,7 @@ fn test_ir_serialization() {
         themes: HashMap::new(),
         style_classes: HashMap::new(),
         global_theme: None,
+        follow_system: true,
     };
 
     // Test serialization

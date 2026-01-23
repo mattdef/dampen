@@ -225,6 +225,11 @@ impl WidgetKind {
             _ => crate::ir::SchemaVersion { major: 1, minor: 0 },
         }
     }
+
+    /// Returns the validation schema for this widget type.
+    pub fn schema(&self) -> crate::schema::WidgetSchema {
+        crate::schema::get_widget_schema(self)
+    }
 }
 
 #[cfg(test)]

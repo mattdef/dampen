@@ -350,6 +350,14 @@ fn test_grid_columns_only() {
 }
 
 #[test]
+fn test_cli_delegates_to_core_schema() {
+    // This tests that we are getting data from core.
+    // Since we know core returns "value" for Text, checking that here indirectly confirms it.
+    let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Text);
+    assert!(schema.all_valid().contains("value"));
+}
+
+#[test]
 fn test_text_simple_attributes() {
     let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Text);
 

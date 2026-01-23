@@ -1,17 +1,10 @@
 use dampen_core::ir::WidgetKind;
 use std::collections::HashSet;
 
-/// Helper macro to create a HashSet from string literals.
-macro_rules! hashset {
-    [$($item:expr),* $(,)?] => {{
-        #[allow(unused_mut)]
-        let mut set = HashSet::new();
-        $(set.insert($item);)*
-        set
-    }};
-}
-
 /// Schema defining valid attributes for a widget type.
+///
+/// This is a wrapper around `dampen_core::schema::WidgetSchema` to maintain
+/// backward compatibility with existing CLI tests and logic.
 #[derive(Debug, Clone)]
 pub struct WidgetAttributeSchema {
     pub required: HashSet<&'static str>,
@@ -24,176 +17,19 @@ pub struct WidgetAttributeSchema {
 impl WidgetAttributeSchema {
     /// Returns the schema for a specific widget kind.
     pub fn for_widget(kind: &WidgetKind) -> Self {
-        match kind {
-            WidgetKind::Text => Self {
-                required: hashset!["value"],
-                optional: hashset!["size", "weight", "color"],
-                events: EVENTS_COMMON.clone(),
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Image => Self {
-                required: hashset!["src"],
-                optional: hashset!["width", "height", "fit", "filter_method", "path"],
-                events: EVENTS_COMMON.clone(),
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Button => Self {
-                required: hashset![],
-                optional: hashset!["label", "enabled"],
-                events: hashset!["on_click", "on_press", "on_release"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::TextInput => Self {
-                required: hashset![],
-                optional: hashset!["placeholder", "value", "password", "icon", "size"],
-                events: hashset!["on_input", "on_submit", "on_change", "on_paste"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Checkbox => Self {
-                required: hashset![],
-                optional: hashset!["checked", "label", "icon", "size"],
-                events: hashset!["on_toggle"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Radio => Self {
-                required: hashset!["label", "value"],
-                optional: hashset![
-                    "selected",
-                    "disabled",
-                    "size",
-                    "text_size",
-                    "text_line_height",
-                    "text_shaping"
-                ],
-                events: hashset!["on_select"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Slider => Self {
-                required: hashset![],
-                optional: hashset!["min", "max", "value", "step"],
-                events: hashset!["on_change", "on_release"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Column | WidgetKind::Row | WidgetKind::Container => Self {
-                required: hashset![],
-                optional: hashset![],
-                events: EVENTS_COMMON.clone(),
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Scrollable => Self {
-                required: hashset![],
-                optional: hashset![],
-                events: hashset!["on_scroll"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Stack => Self {
-                required: hashset![],
-                optional: hashset![],
-                events: EVENTS_COMMON.clone(),
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Svg => Self {
-                required: hashset!["src"],
-                optional: hashset!["width", "height", "path"],
-                events: EVENTS_COMMON.clone(),
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::PickList => Self {
-                required: hashset![],
-                optional: hashset!["placeholder", "selected", "options"],
-                events: hashset!["on_select"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Toggler => Self {
-                required: hashset![],
-                optional: hashset!["checked", "active", "label"],
-                events: hashset!["on_toggle"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Space | WidgetKind::Rule => Self {
-                required: hashset![],
-                optional: hashset![],
-                events: hashset![],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::ComboBox => Self {
-                required: hashset![],
-                optional: hashset!["placeholder", "value", "options"],
-                events: hashset!["on_input", "on_select"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::ProgressBar => Self {
-                required: hashset![],
-                optional: hashset!["value", "min", "max", "style"],
-                events: hashset![],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Tooltip => Self {
-                required: hashset![],
-                optional: hashset!["message", "position", "delay"],
-                events: EVENTS_COMMON.clone(),
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: hashset![],
-            },
-            WidgetKind::Grid => Self {
-                required: hashset![],
-                optional: hashset!["columns"],
-                events: EVENTS_COMMON.clone(),
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Canvas => Self {
-                required: hashset![],
-                optional: hashset!["program"],
-                events: hashset!["on_draw"],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Float => Self {
-                required: hashset![],
-                optional: hashset![],
-                events: EVENTS_COMMON.clone(),
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::For => Self {
-                required: hashset!["each", "in"],
-                optional: hashset!["template"],
-                events: hashset![],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::If => Self {
-                required: hashset!["condition"],
-                optional: hashset![],
-                events: hashset![],
-                style_attributes: STYLE_COMMON.clone(),
-                layout_attributes: LAYOUT_COMMON.clone(),
-            },
-            WidgetKind::Custom(_) => Self {
-                // Custom widgets will be validated separately via custom widget config
-                required: hashset![],
-                optional: hashset![],
-                events: hashset![],
-                style_attributes: hashset![],
-                layout_attributes: hashset![],
-            },
+        let core_schema = kind.schema();
+
+        // Helper to convert slice to HashSet
+        let to_set = |slice: &'static [&'static str]| -> HashSet<&'static str> {
+            slice.iter().copied().collect()
+        };
+
+        Self {
+            required: to_set(core_schema.required),
+            optional: to_set(core_schema.optional),
+            events: to_set(core_schema.events),
+            style_attributes: to_set(core_schema.style_attributes),
+            layout_attributes: to_set(core_schema.layout_attributes),
         }
     }
 
@@ -212,64 +48,6 @@ impl WidgetAttributeSchema {
     pub fn all_valid_names(&self) -> Vec<&'static str> {
         self.all_valid().into_iter().collect()
     }
-}
-
-lazy_static::lazy_static! {
-    pub static ref STYLE_COMMON: HashSet<&'static str> = hashset![
-        "background",
-        "color",
-        "border_color",
-        "border_width",
-        "border_radius",
-        "border_style",
-        "shadow",
-        "opacity",
-        "transform",
-        "style",
-        "text_color",
-        "shadow_color",
-        "shadow_offset",
-        "shadow_blur_radius",
-    ];
-
-    pub static ref LAYOUT_COMMON: HashSet<&'static str> = hashset![
-        "width",
-        "height",
-        "min_width",
-        "max_width",
-        "min_height",
-        "max_height",
-        "padding",
-        "spacing",
-        "align_items",
-        "justify_content",
-        "align",
-        "align_x",
-        "align_y",
-        "align_self",
-        "direction",
-        "position",
-        "top",
-        "right",
-        "bottom",
-        "left",
-        "z_index",
-        "class",      // Style class reference
-        "theme",      // Theme reference
-        "theme_ref",  // Theme reference (alternative name)
-    ];
-
-    pub static ref EVENTS_COMMON: HashSet<&'static str> = hashset![
-        "on_click",
-        "on_press",
-        "on_release",
-        "on_change",
-        "on_input",
-        "on_submit",
-        "on_select",
-        "on_toggle",
-        "on_scroll",
-    ];
 }
 
 /// Validates widget attributes and detects unknown attributes.

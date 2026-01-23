@@ -71,6 +71,7 @@ pub mod expr;
 pub mod handler;
 pub mod ir;
 pub mod parser;
+pub mod schema;
 pub mod shared;
 pub mod state;
 pub mod traits;
@@ -117,6 +118,12 @@ pub use parser::{
     MAX_SUPPORTED_VERSION, ValidationWarning, parse, parse_version_string,
     validate_version_supported, validate_widget_versions,
 };
+
+/// Widget schema definitions and constants.
+///
+/// This module provides the validation schema for all widget types,
+/// ensuring a single source of truth for attribute validation.
+pub use schema::*;
 
 /// Backend abstraction traits.
 ///
