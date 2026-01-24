@@ -134,7 +134,7 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 |-----------|--------|-------------|
 | Window Persistence | ✅ | Save and restore window states |
 
-### v0.3.0 - Advanced Widgets (planned)
+### v0.3.0 - Advanced Widgets (In progress)
 
 **Objective**: Enrich available widget library
 
