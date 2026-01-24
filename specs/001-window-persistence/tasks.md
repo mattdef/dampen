@@ -28,10 +28,10 @@ Based on plan.md structure:
 
 **Purpose**: Create persistence module structure in dampen-dev
 
-- [ ] T001 Create persistence module directory at `crates/dampen-dev/src/persistence/`
-- [ ] T002 Create module entry point at `crates/dampen-dev/src/persistence/mod.rs` with public exports
-- [ ] T003 Update `crates/dampen-dev/src/lib.rs` to export persistence module
-- [ ] T004 [P] Add `tracing` dependency to `crates/dampen-dev/Cargo.toml` if not present
+- [x] T001 Create persistence module directory at `crates/dampen-dev/src/persistence/`
+- [x] T002 Create module entry point at `crates/dampen-dev/src/persistence/mod.rs` with public exports
+- [x] T003 Update `crates/dampen-dev/src/lib.rs` to export persistence module
+- [x] T004 [P] Add `tracing` dependency to `crates/dampen-dev/Cargo.toml` if not present
 
 ---
 
@@ -41,14 +41,14 @@ Based on plan.md structure:
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create PersistenceError enum with thiserror derives at `crates/dampen-dev/src/persistence/error.rs`
-- [ ] T006 Create WindowState struct with serde derives at `crates/dampen-dev/src/persistence/window_state.rs`
-- [ ] T007 Implement WindowState::with_defaults() constructor
-- [ ] T008 Implement WindowState::validate() method with bounds checking (100-16384)
-- [ ] T009 [P] Implement WindowState::size() -> iced::Size conversion method
-- [ ] T010 [P] Implement WindowState::position() -> Option<iced::Point> conversion method
-- [ ] T011 Create storage utilities module at `crates/dampen-dev/src/persistence/storage.rs`
-- [ ] T012 Implement get_config_path() using directories crate in storage.rs
+- [x] T005 Create PersistenceError enum with thiserror derives at `crates/dampen-dev/src/persistence/error.rs`
+- [x] T006 Create WindowState struct with serde derives at `crates/dampen-dev/src/persistence/window_state.rs`
+- [x] T007 Implement WindowState::with_defaults() constructor
+- [x] T008 Implement WindowState::validate() method with bounds checking (100-16384)
+- [x] T009 [P] Implement WindowState::size() -> iced::Size conversion method
+- [x] T010 [P] Implement WindowState::position() -> Option<iced::Point> conversion method
+- [x] T011 Create storage utilities module at `crates/dampen-dev/src/persistence/storage.rs`
+- [x] T012 Implement get_config_path() using directories crate in storage.rs
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -64,22 +64,22 @@ Based on plan.md structure:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T013 [P] [US1] Unit test for load_or_default with missing file in `crates/dampen-dev/tests/persistence_tests.rs`
-- [ ] T014 [P] [US1] Unit test for load_or_default with valid JSON file in `crates/dampen-dev/tests/persistence_tests.rs`
-- [ ] T015 [P] [US1] Unit test for load_or_default with corrupted JSON file in `crates/dampen-dev/tests/persistence_tests.rs`
-- [ ] T016 [P] [US1] Unit test for save_window_state creating directories in `crates/dampen-dev/tests/persistence_tests.rs`
-- [ ] T017 [P] [US1] Unit test for save_window_state writing valid JSON in `crates/dampen-dev/tests/persistence_tests.rs`
+- [x] T013 [P] [US1] Unit test for load_or_default with missing file in `crates/dampen-dev/tests/persistence_tests.rs`
+- [x] T014 [P] [US1] Unit test for load_or_default with valid JSON file in `crates/dampen-dev/tests/persistence_tests.rs`
+- [x] T015 [P] [US1] Unit test for load_or_default with corrupted JSON file in `crates/dampen-dev/tests/persistence_tests.rs`
+- [x] T016 [P] [US1] Unit test for save_window_state creating directories in `crates/dampen-dev/tests/persistence_tests.rs`
+- [x] T017 [P] [US1] Unit test for save_window_state writing valid JSON in `crates/dampen-dev/tests/persistence_tests.rs`
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Implement load_window_state() internal function in `crates/dampen-dev/src/persistence/storage.rs`
-- [ ] T019 [US1] Implement load_or_default() public API function in `crates/dampen-dev/src/persistence/storage.rs`
-- [ ] T020 [US1] Implement save_window_state() public API function in `crates/dampen-dev/src/persistence/storage.rs`
-- [ ] T021 [US1] Add tracing::warn! logging for load failures in storage.rs
-- [ ] T022 [US1] Add tracing::warn! logging for save failures in storage.rs
-- [ ] T023 [US1] Implement atomic write (temp file + rename) in save_window_state()
-- [ ] T024 [US1] Re-export public API functions from `crates/dampen-dev/src/persistence/mod.rs`
-- [ ] T025 [US1] Re-export persistence module from `crates/dampen-dev/src/lib.rs`
+- [x] T018 [US1] Implement load_window_state() internal function in `crates/dampen-dev/src/persistence/storage.rs`
+- [x] T019 [US1] Implement load_or_default() public API function in `crates/dampen-dev/src/persistence/storage.rs`
+- [x] T020 [US1] Implement save_window_state() public API function in `crates/dampen-dev/src/persistence/storage.rs`
+- [x] T021 [US1] Add tracing::warn! logging for load failures in storage.rs
+- [x] T022 [US1] Add tracing::warn! logging for save failures in storage.rs
+- [x] T023 [US1] Implement atomic write (temp file + rename) in save_window_state()
+- [x] T024 [US1] Re-export public API functions from `crates/dampen-dev/src/persistence/mod.rs`
+- [x] T025 [US1] Re-export persistence module from `crates/dampen-dev/src/lib.rs`
 
 **Checkpoint**: User Story 1 complete - size/position persistence is functional
 
@@ -93,13 +93,13 @@ Based on plan.md structure:
 
 ### Tests for User Story 2
 
-- [ ] T026 [P] [US2] Unit test for WindowState serialization with maximized=true in `crates/dampen-dev/tests/persistence_tests.rs`
-- [ ] T027 [P] [US2] Unit test for WindowState deserialization with maximized=true in `crates/dampen-dev/tests/persistence_tests.rs`
+- [x] T026 [P] [US2] Unit test for WindowState serialization with maximized=true in `crates/dampen-dev/tests/persistence_tests.rs`
+- [x] T027 [P] [US2] Unit test for WindowState deserialization with maximized=true in `crates/dampen-dev/tests/persistence_tests.rs`
 
 ### Implementation for User Story 2
 
-- [ ] T028 [US2] Verify maximized field is correctly serialized/deserialized in WindowState (already in struct)
-- [ ] T029 [US2] Add documentation for maximized field usage in rustdoc at `crates/dampen-dev/src/persistence/window_state.rs`
+- [x] T028 [US2] Verify maximized field is correctly serialized/deserialized in WindowState (already in struct)
+- [x] T029 [US2] Add documentation for maximized field usage in rustdoc at `crates/dampen-dev/src/persistence/window_state.rs`
 
 **Checkpoint**: User Story 2 complete - maximized state persistence is functional
 
@@ -117,14 +117,14 @@ Based on plan.md structure:
 
 ### Implementation for User Story 3
 
-- [ ] T031 [US3] Add `persistence` attribute support to `#[dampen_app]` macro at `crates/dampen-macros/src/dampen_app.rs`
-- [ ] T032 [US3] Add `app_name` attribute support (required when persistence=true) at `crates/dampen-macros/src/dampen_app.rs`
-- [ ] T033 [US3] Generate window event subscription when persistence=true in macro
-- [ ] T034 [US3] Generate CloseRequested handler with save_window_state call in macro
-- [ ] T035 [US3] Generate Resized/Moved event handlers to track current geometry in macro
-- [ ] T036 [US3] Add window state fields to generated AppState when persistence=true
-- [ ] T037 [US3] Load persisted state in generated init() function when persistence=true
-- [ ] T038 [US3] Update CLI template at `crates/dampen-cli/templates/main.rs.template` with persistence boilerplate comments
+- [x] T031 [US3] Add `persistence` attribute support to `#[dampen_app]` macro at `crates/dampen-macros/src/dampen_app.rs`
+- [x] T032 [US3] Add `app_name` attribute support (required when persistence=true) at `crates/dampen-macros/src/dampen_app.rs`
+- [x] T033 [US3] Generate window event subscription when persistence=true in macro
+- [x] T034 [US3] Generate CloseRequested handler with save_window_state call in macro
+- [x] T035 [US3] Generate Resized/Moved event handlers to track current geometry in macro
+- [x] T036 [US3] Add window state fields to generated AppState when persistence=true
+- [x] T037 [US3] Load persisted state in generated init() function when persistence=true
+- [x] T038 [US3] Update CLI template at `crates/dampen-cli/templates/main.rs.template` with persistence boilerplate comments
 
 **Checkpoint**: User Story 3 complete - developers can enable persistence with single attribute
 
@@ -143,11 +143,11 @@ Based on plan.md structure:
 
 ### Implementation for User Story 4
 
-- [ ] T041 [US4] Create monitor validation module at `crates/dampen-dev/src/persistence/monitor.rs`
-- [ ] T042 [US4] Implement position_is_reasonable() function checking against reasonable screen bounds
-- [ ] T043 [US4] Integrate position validation into load_or_default() - return None position if unreasonable
-- [ ] T044 [US4] Export monitor module from `crates/dampen-dev/src/persistence/mod.rs`
-- [ ] T045 [US4] Document fallback behavior in rustdoc at storage.rs
+- [x] T041 [US4] Create monitor validation module at `crates/dampen-dev/src/persistence/monitor.rs`
+- [x] T042 [US4] Implement position_is_reasonable() function checking against reasonable screen bounds
+- [x] T043 [US4] Integrate position validation into load_or_default() - return None position if unreasonable
+- [x] T044 [US4] Export monitor module from `crates/dampen-dev/src/persistence/mod.rs`
+- [x] T045 [US4] Document fallback behavior in rustdoc at storage.rs
 
 **Checkpoint**: User Story 4 complete - off-screen windows are repositioned
 
@@ -166,9 +166,9 @@ Based on plan.md structure:
 
 ### Implementation for User Story 5
 
-- [ ] T048 [US5] Ensure position fields use #[serde(skip_serializing_if = "Option::is_none")] in window_state.rs
-- [ ] T049 [US5] Document platform behavior in rustdoc at window_state.rs (Wayland limitations)
-- [ ] T050 [US5] Add platform notes to quickstart.md at `specs/001-window-persistence/quickstart.md`
+- [x] T048 [US5] Ensure position fields use #[serde(skip_serializing_if = "Option::is_none")] in window_state.rs
+- [x] T049 [US5] Document platform behavior in rustdoc at window_state.rs (Wayland limitations)
+- [x] T050 [US5] Add platform notes to quickstart.md at `specs/001-window-persistence/quickstart.md`
 
 **Checkpoint**: User Story 5 complete - cross-platform handling verified
 
@@ -178,14 +178,19 @@ Based on plan.md structure:
 
 **Purpose**: Examples, documentation, and final validation
 
-- [ ] T051 [P] Add persistence to hello-world example at `examples/hello-world/src/main.rs`
-- [ ] T052 [P] Add persistence to todo-app example at `examples/todo-app/src/main.rs`
-- [ ] T053 [P] Add persistence to theming example at `examples/theming/src/main.rs`
-- [ ] T054 Add rustdoc module documentation to `crates/dampen-dev/src/persistence/mod.rs`
-- [ ] T055 [P] Run `cargo clippy --workspace -- -D warnings` and fix any warnings
-- [ ] T056 [P] Run `cargo fmt --all` to ensure formatting
-- [ ] T057 Run `cargo test --workspace` to verify all tests pass
-- [ ] T058 Validate quickstart.md instructions work end-to-end
+- [x] T051 [P] Add persistence to hello-world example at `examples/hello-world/src/main.rs`
+- [x] T052 [P] Add persistence to todo-app example at `examples/todo-app/src/main.rs`
+- [x] T053 [P] Add persistence to theming example at `examples/theming/src/main.rs`
+- [x] T054 Add rustdoc module documentation to `crates/dampen-dev/src/persistence/mod.rs`
+- [x] T055 [P] Run `cargo clippy --workspace -- -D warnings` and fix any warnings
+- [x] T056 [P] Run `cargo fmt --all` to ensure formatting
+- [x] T057 Run `cargo test --workspace` to verify all tests pass
+- [x] T058 Validate quickstart.md instructions work end-to-end
+
+## Completion
+
+All tasks completed. Feature ready for review.
+
 
 ---
 

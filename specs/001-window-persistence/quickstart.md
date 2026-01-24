@@ -71,13 +71,13 @@ impl MyApp {
 #[derive(Debug, Clone)]
 enum Message {
     // ... your existing messages ...
-    Window(iced::window::Event),
+    Window(iced::window::Id, iced::window::Event),
 }
 
 impl MyApp {
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::Window(event) => match event {
+            Message::Window(id, event) => match event {
                 iced::window::Event::Resized(size) => {
                     self.window_width = size.width as u32;
                     self.window_height = size.height as u32;
@@ -100,7 +100,7 @@ impl MyApp {
                     if let Err(e) = save_window_state("my-app", &state) {
                         tracing::warn!("Failed to save window state: {e}");
                     }
-                    iced::window::close(iced::window::Id::MAIN)
+                    iced::window::close(id)
                 }
                 _ => Task::none(),
             },
@@ -109,7 +109,7 @@ impl MyApp {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        iced::window::events().map(|(_, event)| Message::Window(event))
+        iced::window::events().map(|(id, event)| Message::Window(id, event))
     }
 }
 ```
@@ -191,6 +191,20 @@ cat ~/.config/my-app/window.json
 
 ---
 
+## Platform Specifics
+
+### Linux (Wayland vs X11)
+
+- **X11**: Full support for size, position, and maximized state.
+- **Wayland**:
+    - **Size**: Supported and persisted.
+    - **Maximized**: Supported and persisted.
+    - **Position**: **Not supported**. Wayland compositors generally do not allow applications to set their own absolute position. The `x` and `y` coordinates will be `null` in the JSON file, and the window will be positioned by the compositor upon restore.
+
+### macOS & Windows
+
+Full support for size, position, and maximized state on both platforms.
+
 ## Troubleshooting
 
 ### Window always opens at default size
@@ -213,7 +227,7 @@ If you're running on Wayland, window positioning is handled by the compositor. S
 
 ### State not saved on close
 
-Ensure you're handling `CloseRequested` and calling `save_window_state()` before `iced::window::close()`.
+Ensure you're handling `CloseRequested` and calling `save_window_state()` before `iced::window::close(id)`.
 
 ---
 

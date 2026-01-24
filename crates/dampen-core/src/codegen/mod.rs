@@ -298,6 +298,7 @@ pub fn generate_application(
 }
 
 use crate::ir::theme::ThemeDocument;
+pub use config::PersistenceConfig;
 
 /// Generate complete application code with theme and subscription support
 ///
@@ -408,6 +409,302 @@ pub fn generate_application_with_theme_and_subscriptions(
     })
 }
 
+/// Generate complete application code with theme, subscription, and persistence support
+///
+/// This is the most complete entry point for code generation that includes:
+/// - Message enum with system theme variant (if follow_system is enabled)
+/// - Subscription function for system theme detection
+/// - Theme code generation
+/// - View and update functions
+/// - Window settings function for persistence (if persistence config is provided)
+/// - Full window event handling for persistence (tracking size, position, save on close)
+///
+/// # Arguments
+///
+/// * `document` - Parsed Dampen document
+/// * `model_name` - Name of the model struct (e.g., "Model")
+/// * `message_name` - Name of the message enum (e.g., "Message")
+/// * `handlers` - List of handler signatures
+/// * `theme_document` - Optional theme document for theme code generation
+/// * `persistence` - Optional persistence configuration for window state
+///
+/// # Returns
+///
+/// `Ok(CodegenOutput)` with generated code and warnings
+pub fn generate_application_full(
+    document: &DampenDocument,
+    model_name: &str,
+    message_name: &str,
+    handlers: &[HandlerSignature],
+    theme_document: Option<&ThemeDocument>,
+    persistence: Option<&PersistenceConfig>,
+) -> Result<CodegenOutput, CodegenError> {
+    let warnings = Vec::new();
+
+    // Create subscription config from theme document
+    let sub_config =
+        subscription::SubscriptionConfig::from_theme_document(theme_document, message_name);
+
+    // Determine if we need window events (for persistence)
+    let has_persistence = persistence.is_some();
+
+    // Generate message enum with system theme variant and window events if needed
+    let message_enum = generate_message_enum_full(handlers, Some(&sub_config), has_persistence);
+
+    let view_fn = view::generate_view(document, model_name, message_name)?;
+
+    let update_arms = update::generate_arms(handlers, message_name)?;
+
+    // Generate system theme update arm if needed
+    let system_theme_arm = subscription::generate_system_theme_update_arm(&sub_config);
+
+    let model_ident = syn::Ident::new(model_name, proc_macro2::Span::call_site());
+    let message_ident = syn::Ident::new(message_name, proc_macro2::Span::call_site());
+
+    // Generate theme code if theme document is provided
+    let theme_code = if let Some(theme_doc) = theme_document {
+        match theme::generate_theme_code(theme_doc, &document.style_classes, "app") {
+            Ok(generated) => {
+                let code_str = generated.code;
+                syn::parse_str::<TokenStream>(&code_str).unwrap_or_default()
+            }
+            Err(e) => {
+                return Err(CodegenError::ThemeError(e));
+            }
+        }
+    } else {
+        TokenStream::new()
+    };
+
+    let has_theme = theme_document.is_some();
+    let theme_method = if has_theme {
+        quote! {
+            pub fn theme(_model: &AppModel) -> iced::Theme {
+                app_theme()
+            }
+        }
+    } else {
+        quote! {}
+    };
+
+    // Generate persistence-related code
+    let (
+        wrapper_struct,
+        new_model_fn,
+        update_model_fn,
+        view_model_fn,
+        subscription_fn,
+        window_settings_fn,
+    ) = if let Some(config) = persistence {
+        let app_name = &config.app_name;
+
+        // Generate wrapper struct that includes persisted_window_state
+        let wrapper = quote! {
+            /// Application model wrapper with persistence state
+            pub struct AppModel {
+                /// User's model
+                pub inner: #model_ident,
+                /// Persisted window state for saving on close
+                persisted_window_state: dampen_dev::persistence::WindowState,
+            }
+        };
+
+        // Generate new_model that initializes the wrapper
+        let new_model = quote! {
+            pub fn new_model() -> (AppModel, Task<#message_ident>) {
+                let persisted_state = dampen_dev::persistence::load_or_default(#app_name, 800, 600);
+                (
+                    AppModel {
+                        inner: #model_ident::default(),
+                        persisted_window_state: persisted_state,
+                    },
+                    Task::none(),
+                )
+            }
+        };
+
+        // Generate update arms that access model.inner for user handlers
+        let update_arms_inner = generate_update_arms_for_inner(handlers, message_name)?;
+
+        // Generate update_model with window event handling
+        let update_model = quote! {
+            pub fn update_model(model: &mut AppModel, message: #message_ident) -> Task<#message_ident> {
+                match message {
+                    #update_arms_inner
+                    #system_theme_arm
+                    #message_ident::Window(id, event) => {
+                        match event {
+                            iced::window::Event::Opened { .. } => {
+                                // Window is already created with correct size via window_settings().
+                                // Only need to maximize if that was the saved state.
+                                if model.persisted_window_state.maximized {
+                                    iced::window::maximize(id, true)
+                                } else {
+                                    Task::none()
+                                }
+                            }
+                            iced::window::Event::Resized(size) => {
+                                // Update persisted state with new size
+                                model.persisted_window_state.width = size.width as u32;
+                                model.persisted_window_state.height = size.height as u32;
+                                Task::none()
+                            }
+                            iced::window::Event::Moved(position) => {
+                                model.persisted_window_state.x = Some(position.x as i32);
+                                model.persisted_window_state.y = Some(position.y as i32);
+                                Task::none()
+                            }
+                            iced::window::Event::CloseRequested => {
+                                let _ = dampen_dev::persistence::save_window_state(
+                                    #app_name,
+                                    &model.persisted_window_state,
+                                );
+                                iced::window::close(id)
+                            }
+                            _ => Task::none(),
+                        }
+                    }
+                }
+            }
+        };
+
+        // Generate view_model that accesses inner model
+        // Note: view_fn uses `model` as the variable name, so we shadow it with the inner model
+        let view_model = quote! {
+            pub fn view_model(app_model: &AppModel) -> Element<'_, #message_ident> {
+                let model = &app_model.inner;
+                #view_fn
+            }
+        };
+
+        // Generate subscription with window events
+        let subscription = if sub_config.system_theme_variant.is_some() {
+            let variant_name = sub_config
+                .system_theme_variant
+                .as_ref()
+                .map(|v| syn::Ident::new(v, proc_macro2::Span::call_site()));
+            quote! {
+                pub fn subscription_model(_model: &AppModel) -> iced::Subscription<#message_ident> {
+                    let window_events = iced::window::events()
+                        .map(|(id, e)| #message_ident::Window(id, e));
+
+                    if app_follows_system() {
+                        let system_theme = dampen_iced::watch_system_theme()
+                            .map(#message_ident::#variant_name);
+                        iced::Subscription::batch(vec![window_events, system_theme])
+                    } else {
+                        window_events
+                    }
+                }
+            }
+        } else {
+            quote! {
+                pub fn subscription_model(_model: &AppModel) -> iced::Subscription<#message_ident> {
+                    iced::window::events()
+                        .map(|(id, e)| #message_ident::Window(id, e))
+                }
+            }
+        };
+
+        // Generate window_settings function
+        let window_settings = quote! {
+            /// Returns a WindowSettingsBuilder for configuring the initial window state.
+            ///
+            /// This function loads persisted window state if available, or uses defaults
+            /// for first launch.
+            ///
+            /// # Example
+            ///
+            /// ```ignore
+            /// iced::application(...)
+            ///     .window(window::window_settings()
+            ///         .default_size(800, 600)
+            ///         .min_size(400, 300)
+            ///         .build())
+            ///     .run()
+            /// ```
+            pub fn window_settings() -> dampen_dev::persistence::WindowSettingsBuilder {
+                dampen_dev::persistence::WindowSettingsBuilder::new(#app_name)
+            }
+        };
+
+        (
+            wrapper,
+            new_model,
+            update_model,
+            view_model,
+            subscription,
+            window_settings,
+        )
+    } else {
+        // No persistence - generate simpler code without wrapper
+        let wrapper = TokenStream::new();
+
+        let new_model = quote! {
+            pub fn new_model() -> (#model_ident, Task<#message_ident>) {
+                (#model_ident::default(), Task::none())
+            }
+        };
+
+        let update_model = quote! {
+            pub fn update_model(model: &mut #model_ident, message: #message_ident) -> Task<#message_ident> {
+                match message {
+                    #update_arms
+                    #system_theme_arm
+                }
+            }
+        };
+
+        let view_model = quote! {
+            pub fn view_model(model: &#model_ident) -> Element<'_, #message_ident> {
+                #view_fn
+            }
+        };
+
+        let subscription = subscription::generate_subscription_function(&sub_config);
+
+        let window_settings = TokenStream::new();
+
+        (
+            wrapper,
+            new_model,
+            update_model,
+            view_model,
+            subscription,
+            window_settings,
+        )
+    };
+
+    let combined = quote! {
+        use iced::{Element, Task, Theme};
+        use crate::ui::window::*;
+        use std::collections::HashMap;
+
+        #theme_code
+
+        #message_enum
+
+        #wrapper_struct
+
+        #new_model_fn
+
+        #update_model_fn
+
+        #view_model_fn
+
+        #theme_method
+
+        #subscription_fn
+
+        #window_settings_fn
+    };
+
+    Ok(CodegenOutput {
+        code: combined.to_string(),
+        warnings,
+    })
+}
+
 /// Generate Message enum from handler signatures
 fn generate_message_enum(handlers: &[HandlerSignature]) -> TokenStream {
     generate_message_enum_with_subscription(handlers, None)
@@ -417,6 +714,15 @@ fn generate_message_enum(handlers: &[HandlerSignature]) -> TokenStream {
 fn generate_message_enum_with_subscription(
     handlers: &[HandlerSignature],
     sub_config: Option<&subscription::SubscriptionConfig>,
+) -> TokenStream {
+    generate_message_enum_full(handlers, sub_config, false)
+}
+
+/// Generate Message enum with all optional variants
+fn generate_message_enum_full(
+    handlers: &[HandlerSignature],
+    sub_config: Option<&subscription::SubscriptionConfig>,
+    include_window_events: bool,
 ) -> TokenStream {
     let handler_variants: Vec<_> = handlers
         .iter()
@@ -437,9 +743,20 @@ fn generate_message_enum_with_subscription(
     // Add system theme variant if configured
     let system_theme_variant = sub_config.and_then(subscription::generate_system_theme_variant);
 
+    // Add window events variant if persistence is enabled
+    let window_variant = if include_window_events {
+        Some(quote! {
+            /// Window events for persistence
+            Window(iced::window::Id, iced::window::Event)
+        })
+    } else {
+        None
+    };
+
     let all_variants: Vec<TokenStream> = handler_variants
         .into_iter()
         .chain(system_theme_variant)
+        .chain(window_variant)
         .collect();
 
     if all_variants.is_empty() {
@@ -472,6 +789,54 @@ fn to_upper_camel_case(s: &str) -> String {
         }
     }
     result
+}
+
+/// Generate update match arms that access `model.inner` instead of `model`
+///
+/// This is used when the model is wrapped in an AppModel struct for persistence.
+/// The handlers expect the user's model type, not the wrapper.
+fn generate_update_arms_for_inner(
+    handlers: &[HandlerSignature],
+    message_name: &str,
+) -> Result<TokenStream, CodegenError> {
+    use quote::format_ident;
+
+    let message_ident = format_ident!("{}", message_name);
+
+    let match_arms: Vec<TokenStream> = handlers
+        .iter()
+        .map(|handler| {
+            let handler_name = format_ident!("{}", handler.name);
+            let variant_name = to_upper_camel_case(&handler.name);
+            let variant_ident = syn::Ident::new(&variant_name, proc_macro2::Span::call_site());
+
+            if let Some(_param_type) = &handler.param_type {
+                quote! {
+                    #message_ident::#variant_ident(value) => {
+                        #handler_name(&mut model.inner, value);
+                        iced::Task::none()
+                    }
+                }
+            } else if handler.returns_command {
+                quote! {
+                    #message_ident::#variant_ident => {
+                        #handler_name(&mut model.inner)
+                    }
+                }
+            } else {
+                quote! {
+                    #message_ident::#variant_ident => {
+                        #handler_name(&mut model.inner);
+                        iced::Task::none()
+                    }
+                }
+            }
+        })
+        .collect();
+
+    Ok(quote! {
+        #(#match_arms)*
+    })
 }
 
 /// Basic constant folding optimizations for generated code

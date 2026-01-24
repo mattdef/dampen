@@ -1,42 +1,73 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<column padding="40" spacing="30">
-    <row spacing="10">
-        <button label="← Back" on_click="switch_to_window" />
-        <text value="Tooltip Widget Showcase" size="32" weight="bold" />
-    </row>
-    
-    <text value="Top Position" size="18" />
-    <tooltip message="This tooltip appears at the top of the button" position="top">
-        <button label="Hover me (Top)" width="200" />
-    </tooltip>
-    
-    <text value="Bottom Position" size="18" />
-    <tooltip message="This tooltip appears at the bottom of the button" position="bottom">
-        <button label="Hover me (Bottom)" width="200" />
-    </tooltip>
-    
-    <text value="Left Position" size="18" />
-    <tooltip message="This tooltip appears to the left of the button" position="left">
-        <button label="Hover me (Left)" width="200" />
-    </tooltip>
-    
-    <text value="Right Position" size="18" />
-    <tooltip message="This tooltip appears to the right of the button" position="right">
-        <button label="Hover me (Right)" width="200" />
-    </tooltip>
-    
-    <text value="Follow Cursor (Default)" size="18" />
-    <tooltip message="This tooltip follows the mouse cursor" position="follow_cursor">
-        <button label="Hover me (Cursor)" width="200" />
-    </tooltip>
-    
-    <text value="Custom Delay (500ms)" size="18" />
-    <tooltip message="This tooltip appears quickly" position="top" delay="500">
-        <button label="Quick tooltip" width="200" />
-    </tooltip>
-    
-    <text value="Long Delay (3000ms)" size="18" />
-    <tooltip message="This tooltip appears slowly" position="top" delay="3000">
-        <button label="Slow tooltip" width="200" />
-    </tooltip>
-</column>
+<dampen version="1.0">
+    <styles>
+        <style name="tt_base">
+            <base background="green" color="green" border_width="1" />
+        </style>
+    </styles>
+    <column padding="40" spacing="30">
+        <row spacing="10">
+            <button label="← Back" on_click="switch_to_window" />
+            <text value="Tooltip Widget Showcase" size="32" weight="bold" />
+        </row>
+
+        <text value="Top Position" size="18" />
+        <tooltip
+            class="tt_base"
+            message="This tooltip appears at the top of the button"
+            position="top"
+        >
+            <button label="Hover me (Top)" width="200" />
+        </tooltip>
+
+        <text value="Bottom Position" size="18" />
+        <tooltip
+            message="This tooltip appears at the bottom of the button"
+            position="bottom"
+        >
+            <button label="Hover me (Bottom)" width="200" />
+        </tooltip>
+
+        <text value="Left Position" size="18" />
+        <tooltip
+            message="This tooltip appears to the left of the button"
+            position="left"
+        >
+            <button label="Hover me (Left)" width="200" />
+        </tooltip>
+
+        <text value="Right Position" size="18" />
+        <tooltip
+            message="This tooltip appears to the right of the button"
+            position="right"
+        >
+            <button label="Hover me (Right)" width="200" />
+        </tooltip>
+
+        <text value="Follow Cursor (Default)" size="18" />
+        <tooltip
+            message="This tooltip follows the mouse cursor"
+            position="follow_cursor"
+        >
+            <button label="Hover me (Cursor)" width="200" />
+        </tooltip>
+
+        <text value="Custom Delay (500ms)" size="18" />
+        <tooltip
+            message="This tooltip appears quickly"
+            position="top"
+            delay="500"
+        >
+            <button label="Quick tooltip" width="200" />
+        </tooltip>
+
+        <text value="Long Delay (3000ms)" size="18" />
+        <tooltip
+            message="This tooltip appears slowly"
+            position="top"
+            delay="3000"
+        >
+            <button label="Slow tooltip" width="200" />
+        </tooltip>
+    </column>
+</dampen>

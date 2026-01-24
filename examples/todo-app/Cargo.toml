@@ -9,7 +9,7 @@ build = "build.rs"
 dampen-core = { workspace = true }
 dampen-macros = { workspace = true }
 dampen-iced = { workspace = true }
-dampen-dev = { workspace = true, optional = true }
+dampen-dev = { workspace = true }
 iced = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -23,7 +23,7 @@ dampen-core = { workspace = true }
 [features]
 default = ["interpreted"]
 codegen = ["dampen-core/codegen"]
-interpreted = ["dampen-dev", "dampen-core/interpreted"]
+interpreted = ["dampen-core/interpreted"]
 
 [[bin]]
 name = "todo-app"

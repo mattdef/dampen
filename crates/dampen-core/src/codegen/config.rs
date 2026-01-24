@@ -22,6 +22,16 @@ pub struct CodegenConfig {
 
     /// Message enum name (e.g., "Message")
     pub message_type: String,
+
+    /// Optional persistence configuration
+    pub persistence: Option<PersistenceConfig>,
+}
+
+/// Configuration for window state persistence
+#[derive(Debug, Clone)]
+pub struct PersistenceConfig {
+    /// Application identifier for persistence (e.g., "my-app")
+    pub app_name: String,
 }
 
 impl CodegenConfig {
@@ -39,7 +49,16 @@ impl CodegenConfig {
             validate_syntax: true,
             model_type: "Model".to_string(),
             message_type: "Message".to_string(),
+            persistence: None,
         }
+    }
+
+    /// Enable window state persistence with the given app name
+    pub fn with_persistence(mut self, app_name: impl Into<String>) -> Self {
+        self.persistence = Some(PersistenceConfig {
+            app_name: app_name.into(),
+        });
+        self
     }
 
     /// Set the model type name
@@ -99,6 +118,15 @@ impl CodegenConfig {
 impl Default for CodegenConfig {
     fn default() -> Self {
         Self::new(PathBuf::from("target/generated"))
+    }
+}
+
+impl PersistenceConfig {
+    /// Create a new PersistenceConfig with the given app name
+    pub fn new(app_name: impl Into<String>) -> Self {
+        Self {
+            app_name: app_name.into(),
+        }
     }
 }
 

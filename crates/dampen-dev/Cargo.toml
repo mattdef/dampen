@@ -23,7 +23,7 @@ notify-debouncer-full = "0.3"
 # Async/concurrency
 crossbeam-channel = "0.5"
 futures = "0.3"
-tokio = { version = "1.0", features = ["rt", "sync"] }
+tokio = { version = "1.0", features = ["rt", "sync", "fs"] }
 tokio-stream = { version = "0.1", features = ["sync"] }
 async-stream = "0.3"
 
@@ -31,8 +31,15 @@ async-stream = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
+# Filesystem
+directories = "5.0"
+
+# Logging
+tracing = "0.1"
+
 # Error handling
 thiserror = "1.0"
 
 [dev-dependencies]
 tempfile = "3.0"
+uuid = { version = "1.0", features = ["v4"] }

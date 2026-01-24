@@ -43,6 +43,8 @@ enum Message {
     DismissError,
     /// System theme change
     SystemThemeChanged(String),
+    /// Window event for persistence
+    Window(iced::window::Id, iced::window::Event),
 }
 
 /// Main application structure with auto-generated view management (interpreted mode)
@@ -56,6 +58,8 @@ enum Message {
     default_view = "window",
     system_theme_variant = "SystemThemeChanged",
     exclude = ["theme/*"],
+    persistence = true,
+    app_name = "dampen-todo",
 )]
 struct TodoApp;
 
@@ -68,11 +72,16 @@ pub fn main() -> iced::Result {
     println!("🚀 Running in interpreted release mode.");
 
     iced::application(TodoApp::init, TodoApp::update, TodoApp::view)
-        .window_size(iced::Size::new(500.0, 800.0))
-        .centered()
+        .window(
+            TodoApp::window_settings()
+                .default_size(500, 800)
+                .min_size(400, 600)
+                .build(),
+        )
         .title("Dampen Todo App")
         .theme(TodoApp::theme)
         .subscription(TodoApp::subscription)
+        .exit_on_close_request(false)
         .run()
 }
 

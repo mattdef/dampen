@@ -7,6 +7,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 pub mod overlay;
+pub mod persistence;
 pub mod reload;
 pub mod subscription;
 pub mod theme_loader;

@@ -143,6 +143,12 @@ pub struct MacroAttributes {
 
     /// Optional: Message variant for system theme change events
     pub system_theme_variant: Option<Ident>,
+
+    /// Optional: Enable window state persistence (requires app_name)
+    pub persistence: bool,
+
+    /// Optional: Application identifier for persistence (required if persistence = true)
+    pub app_name: Option<String>,
 }
 
 impl Parse for MacroAttributes {
@@ -157,6 +163,8 @@ impl Parse for MacroAttributes {
         let mut default_view = None;
         let mut shared_model = None;
         let mut system_theme_variant = None;
+        let mut persistence = false;
+        let mut app_name = None;
 
         // Parse key-value pairs
         while !input.is_empty() {
@@ -210,6 +218,12 @@ impl Parse for MacroAttributes {
             } else if key == "shared_model" {
                 let value: LitStr = input.parse()?;
                 shared_model = Some(Ident::new(&value.value(), value.span()));
+            } else if key == "persistence" {
+                let value: syn::LitBool = input.parse()?;
+                persistence = value.value;
+            } else if key == "app_name" {
+                let value: LitStr = input.parse()?;
+                app_name = Some(value.value());
             } else {
                 return Err(syn::Error::new(
                     key.span(),
@@ -244,6 +258,14 @@ impl Parse for MacroAttributes {
                 "missing required attribute 'handler_variant'\nhelp: Add handler_variant = \"Handler\" to the macro attributes"
             )
         })?;
+
+        // Validate persistence requirements
+        if persistence && app_name.is_none() {
+            return Err(syn::Error::new(
+                input.span(),
+                "persistence = true requires app_name attribute\nhelp: Add app_name = \"my-app-id\"",
+            ));
+        }
 
         // Validate exclude patterns
         for pattern in &exclude {
@@ -290,6 +312,8 @@ impl Parse for MacroAttributes {
             default_view,
             shared_model,
             system_theme_variant,
+            persistence,
+            app_name,
         })
     }
 }
@@ -416,7 +440,16 @@ pub fn generate_app_struct(
     let error_overlay_field = if attrs.dismiss_error_variant.is_some() {
         Some(quote! {
             #[cfg(debug_assertions)]
-            error_overlay: dampen_dev::ErrorOverlay
+            error_overlay: dampen_dev::ErrorOverlay,
+        })
+    } else {
+        None
+    };
+
+    // Add window_state field if persistence is enabled
+    let window_state_field = if attrs.persistence {
+        Some(quote! {
+            persisted_window_state: dampen_dev::persistence::WindowState,
         })
     } else {
         None
@@ -428,6 +461,7 @@ pub fn generate_app_struct(
             #(#fields,)*
             current_view: CurrentView,
             #error_overlay_field
+            #window_state_field
         }
     }
 }
@@ -464,6 +498,8 @@ pub fn generate_app_struct(
 /// }
 /// ```
 pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> TokenStream {
+    let message_type = &attrs.message_type;
+
     // Determine the default view variant
     let first_variant = if let Some(ref default_view_name) = attrs.default_view {
         // User specified a default view - find it (validated in dampen_app_impl)
@@ -549,8 +585,22 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
         None
     };
 
+    // Initialize window_state if persistence is enabled
+    let window_state_init = if attrs.persistence {
+        #[allow(clippy::unwrap_used)]
+        let app_name = attrs.app_name.as_ref().unwrap();
+        Some(quote! {
+            persisted_window_state: dampen_dev::persistence::load_or_default(#app_name, 800, 600),
+        })
+    } else {
+        None
+    };
+
     quote! {
-        pub fn init() -> Self {
+        pub fn init() -> (Self, iced::Task<#message_type>) {
+            #[cfg(debug_assertions)]
+            println!("DEBUG: DampenApp::init called");
+
             #shared_init
 
             // Load theme context from theme.dampen if present
@@ -569,15 +619,16 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
                 #(#field_inits,)*
                 current_view: CurrentView::#first_variant,
                 #error_overlay_init
+                #window_state_init
             };
 
             // Set theme context on all view states
             #(#theme_context_setters)*
 
-            app
+            (app, iced::Task::none())
         }
 
-        pub fn new() -> Self {
+        pub fn new() -> (Self, iced::Task<#message_type>) {
             Self::init()
         }
     }
@@ -960,8 +1011,55 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
         None
     };
 
+    // Generate window event handling match arm if persistence is enabled
+    let window_event_arm = if attrs.persistence {
+        #[allow(clippy::unwrap_used)]
+        let app_name = attrs.app_name.as_ref().unwrap();
+        Some(quote! {
+            #message_type::Window(id, event) => {
+                match event {
+                    iced::window::Event::Opened { .. } => {
+                        #[cfg(debug_assertions)]
+                        println!("DEBUG: Window opened with persisted state: {:?}", self.persisted_window_state);
+
+                        // Window is already created with correct size via window_settings().
+                        // Only need to maximize if that was the saved state.
+                        if self.persisted_window_state.maximized {
+                            iced::window::maximize(id, true)
+                        } else {
+                            iced::Task::none()
+                        }
+                    }
+                    iced::window::Event::Resized(size) => {
+                        // Update persisted state with new size
+                        self.persisted_window_state.width = size.width as u32;
+                        self.persisted_window_state.height = size.height as u32;
+                        iced::Task::none()
+                    }
+                    iced::window::Event::Moved(position) => {
+                        self.persisted_window_state.x = Some(position.x as i32);
+                        self.persisted_window_state.y = Some(position.y as i32);
+                        iced::Task::none()
+                    }
+                    iced::window::Event::CloseRequested => {
+                         #[cfg(debug_assertions)]
+                         println!("DEBUG: Saving window state on close");
+                         let _ = dampen_dev::persistence::save_window_state(#app_name, &self.persisted_window_state);
+                         iced::window::close(id)
+                    }
+                    _ => iced::Task::none(),
+                }
+            }
+        })
+    } else {
+        None
+    };
+
     quote! {
         pub fn update(&mut self, message: #message_type) -> iced::Task<#message_type> {
+            #[cfg(debug_assertions)]
+            println!("DEBUG: Update received message"); // Generic debug to avoid needing Debug trait on Message
+
             #helper_functions
 
             match message {
@@ -974,6 +1072,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
                 #dismiss_error_arm
                 #switch_view_arm
                 #system_theme_arm
+                #window_event_arm
                 _ => iced::Task::none(),
             }
         }
@@ -1099,6 +1198,48 @@ pub fn generate_theme_method(views: &[ViewInfo]) -> TokenStream {
     }
 }
 
+/// Generates a static `window_settings()` method for persistence.
+///
+/// Creates a method that returns `iced::window::Settings` with the persisted window size
+/// so the window can be created with the correct initial size.
+///
+/// # Arguments
+///
+/// * `attrs` - Parsed macro attributes (for app_name)
+///
+/// # Returns
+///
+/// Option with token stream containing the `window_settings()` method if persistence is enabled.
+pub fn generate_window_settings_method(attrs: &MacroAttributes) -> Option<TokenStream> {
+    if !attrs.persistence {
+        return None;
+    }
+
+    #[allow(clippy::unwrap_used)]
+    let app_name = attrs.app_name.as_ref().unwrap();
+
+    Some(quote! {
+        /// Default window settings for first launch.
+        ///
+        /// Use this builder to configure the initial window state when no
+        /// persisted configuration exists yet.
+        ///
+        /// # Example
+        ///
+        /// ```ignore
+        /// iced::application(...)
+        ///     .window(DampenApp::window_settings()
+        ///         .default_size(800, 600)
+        ///         .default_maximized(false)
+        ///         .build())
+        ///     .run()
+        /// ```
+        pub fn window_settings() -> dampen_dev::persistence::WindowSettingsBuilder {
+            dampen_dev::persistence::WindowSettingsBuilder::new(#app_name)
+        }
+    })
+}
+
 /// Generates the `subscription()` method for hot-reload file watching (debug builds only).
 ///
 /// Creates subscription logic that:
@@ -1175,7 +1316,20 @@ pub fn generate_subscription_method(
             }
         });
 
-    // Build subscription expressions for debug mode (hot reload + system theme)
+    // Persistence subscription (window events)
+    let persistence_sub = if attrs.persistence {
+        Some(quote! {
+           let window_events = iced::window::events().map(|(id, e)| {
+               #[cfg(debug_assertions)]
+               println!("DEBUG: Window event detected: {:?}", e);
+               #message_type::Window(id, e)
+           });
+        })
+    } else {
+        None
+    };
+
+    // Build subscription expressions for debug mode (hot reload + system theme + persistence)
     let mut debug_subs = Vec::new();
     if hot_reload_sub.is_some() {
         debug_subs.push(quote! { hot_reload });
@@ -1183,11 +1337,17 @@ pub fn generate_subscription_method(
     if system_theme_sub.is_some() {
         debug_subs.push(quote! { system_theme });
     }
+    if persistence_sub.is_some() {
+        debug_subs.push(quote! { window_events });
+    }
 
-    // Build subscription expressions for release mode (system theme only)
+    // Build subscription expressions for release mode (system theme + persistence)
     let mut release_subs = Vec::new();
     if system_theme_sub.is_some() {
         release_subs.push(quote! { system_theme });
+    }
+    if persistence_sub.is_some() {
+        release_subs.push(quote! { window_events });
     }
 
     // If no subscriptions at all, don't generate the method
@@ -1216,6 +1376,7 @@ pub fn generate_subscription_method(
         pub fn subscription(&self) -> iced::Subscription<#message_type> {
             #hot_reload_sub
             #system_theme_sub
+            #persistence_sub
 
             #debug_sub_expr
         }
@@ -1223,6 +1384,7 @@ pub fn generate_subscription_method(
         #[cfg(not(debug_assertions))]
         pub fn subscription(&self) -> iced::Subscription<#message_type> {
             #system_theme_sub
+            #persistence_sub
 
             #release_sub_expr
         }
@@ -1337,27 +1499,56 @@ pub fn dampen_app_impl(attr: TokenStream, item: TokenStream) -> Result<TokenStre
     let view_method = generate_view_method(&views, &attrs);
     let theme_method = generate_theme_method(&views);
     let subscription_method = generate_subscription_method(&views, &attrs);
+    let window_settings_method = generate_window_settings_method(&attrs);
 
-    // Build impl block with optional subscription method
-    let impl_methods = if let Some(subscription) = subscription_method {
-        quote! {
-            impl #struct_name {
-                #init_method
-                #switch_to_methods
-                #update_method
-                #view_method
-                #theme_method
-                #subscription
+    // Build impl block with optional methods
+    let impl_methods = match (subscription_method, window_settings_method) {
+        (Some(subscription), Some(window_settings)) => {
+            quote! {
+                impl #struct_name {
+                    #init_method
+                    #switch_to_methods
+                    #update_method
+                    #view_method
+                    #theme_method
+                    #subscription
+                    #window_settings
+                }
             }
         }
-    } else {
-        quote! {
-            impl #struct_name {
-                #init_method
-                #switch_to_methods
-                #update_method
-                #view_method
-                #theme_method
+        (Some(subscription), None) => {
+            quote! {
+                impl #struct_name {
+                    #init_method
+                    #switch_to_methods
+                    #update_method
+                    #view_method
+                    #theme_method
+                    #subscription
+                }
+            }
+        }
+        (None, Some(window_settings)) => {
+            quote! {
+                impl #struct_name {
+                    #init_method
+                    #switch_to_methods
+                    #update_method
+                    #view_method
+                    #theme_method
+                    #window_settings
+                }
+            }
+        }
+        (None, None) => {
+            quote! {
+                impl #struct_name {
+                    #init_method
+                    #switch_to_methods
+                    #update_method
+                    #view_method
+                    #theme_method
+                }
             }
         }
     };

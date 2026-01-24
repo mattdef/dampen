@@ -42,6 +42,8 @@ enum Message {
     /// Set theme explicitly
     #[allow(dead_code)]
     SetTheme(String),
+    /// Window event for persistence
+    Window(iced::window::Id, iced::window::Event),
 }
 
 /// Main application structure with auto-generated view management (interpreted mode)
@@ -53,7 +55,9 @@ enum Message {
     hot_reload_variant = "HotReload",
     dismiss_error_variant = "DismissError",
     system_theme_variant = "SystemThemeChanged",
-    exclude = ["theme/*"]
+    exclude = ["theme/*"],
+    persistence = true,
+    app_name = "dampen-theming",
 )]
 struct ThemingApp;
 
@@ -63,8 +67,10 @@ pub fn main() -> iced::Result {
     println!("Theming example - Edit src/ui/theme/theme.dampen to see hot-reload!");
 
     iced::application(ThemingApp::init, ThemingApp::update, ThemingApp::view)
+        .window(ThemingApp::window_settings().default_size(600, 400).build())
         .theme(ThemingApp::theme)
         .subscription(ThemingApp::subscription)
+        .exit_on_close_request(false)
         .run()
 }
 

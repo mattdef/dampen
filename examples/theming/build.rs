@@ -28,7 +28,7 @@ fn main() {
 
 #[cfg(feature = "codegen")]
 fn generate_ui_code() {
-    use dampen_core::codegen::{generate_application_with_theme_and_subscriptions, inventory};
+    use dampen_core::codegen::{PersistenceConfig, generate_application_full, inventory};
     use dampen_core::parser;
     use dampen_core::parser::theme_parser::parse_theme_document;
 
@@ -122,13 +122,17 @@ fn generate_ui_code() {
             }
         };
 
+        // Configure persistence for this app
+        let persistence = PersistenceConfig::new("dampen-theming");
+
         // Generate the application code
-        let output = match generate_application_with_theme_and_subscriptions(
+        let output = match generate_application_full(
             &document,
             "Model",
             "Message",
             &handlers,
             theme_document.as_ref(),
+            Some(&persistence),
         ) {
             Ok(output) => output,
             Err(e) => {

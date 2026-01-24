@@ -40,6 +40,8 @@ enum Message {
     DismissError,
     /// System theme change
     SystemThemeChanged(String),
+    /// Window event for persistence
+    Window(iced::window::Id, iced::window::Event),
 }
 
 /// Main application structure with auto-generated view management (interpreted mode)
@@ -53,13 +55,13 @@ enum Message {
     system_theme_variant = "SystemThemeChanged",
     default_view = "window",
     exclude = ["theme/*"],
+    persistence = true,
+    app_name = "hello-world",
 )]
 struct DampenApp;
 
 #[cfg(feature = "interpreted")]
 pub fn main() -> iced::Result {
-    use iced::{Size, window};
-
     #[cfg(debug_assertions)]
     println!("🔥 Hot-reload enabled! Edit src/ui/*.dampen files to see live updates.");
 
@@ -67,16 +69,16 @@ pub fn main() -> iced::Result {
     println!("🚀 Running in interpreted release mode.");
 
     iced::application(DampenApp::init, DampenApp::update, DampenApp::view)
-        .window(window::Settings {
-            size: Size::new(400.0, 300.0),
-            min_size: Some(Size::new(400.0, 300.0)),
-            resizable: true,
-            ..Default::default()
-        })
-        .centered()
+        .window(
+            DampenApp::window_settings()
+                .default_size(500, 400)
+                .min_size(350, 300)
+                .build(),
+        )
         .theme(DampenApp::theme)
         .title("Dampen Hello World!")
         .subscription(DampenApp::subscription)
+        .exit_on_close_request(false)
         .run()
 }
 
@@ -95,10 +97,15 @@ pub fn main() -> iced::Result {
     println!("🚀 Running in codegen mode (production)");
 
     iced::application(window::new_model, window::update_model, window::view_model)
-        .window_size((400.0, 300.0))
-        .centered()
+        .window(
+            window::window_settings()
+                .default_size(500, 400)
+                .min_size(400, 300)
+                .build(),
+        )
         .theme(window::theme)
         .title("Dampen Hello World!")
-        .subscription(|_model| window::subscription_model())
+        .subscription(window::subscription_model)
+        .exit_on_close_request(false)
         .run()
 }
