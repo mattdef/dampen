@@ -51,8 +51,8 @@ enum Message {
     DismissError,
     /// System theme change
     SystemThemeChanged(String),
-    // Uncomment for window persistence:
-    // Window(iced::window::Event),
+    // Window persistence:
+    Window(iced::window::Event),
 }
 
 /// Main application structure with auto-generated view management (interpreted mode)
@@ -66,11 +66,10 @@ enum Message {
     system_theme_variant = "SystemThemeChanged",
     default_view = "window",
     exclude = ["theme/*"],
+    persistence = true,
+    app_name = "{{PROJECT_NAME}}",
     // Uncomment to enable shared state across views:
     // shared_model = "SharedState",
-    // Uncomment to enable window state persistence:
-    // persistence = true,
-    // app_name = "{{PROJECT_NAME}}",
 )]
 struct DampenApp;
 
@@ -83,11 +82,16 @@ pub fn main() -> iced::Result {
     println!("🚀 Running in interpreted release mode.");
 
     iced::application(DampenApp::init, DampenApp::update, DampenApp::view)
-        .window_size(iced::Size::new(400.0, 300.0))
-        .centered()
+        .window(
+            DampenApp::window_settings()
+                .default_size(500, 400)
+                .min_size(350, 300)
+                .build(),
+        )
         .theme(DampenApp::theme)
         .title("{{PROJECT_NAME}}")
         .subscription(DampenApp::subscription)
+        .exit_on_close_request(false)
         .run()
 }
 
@@ -106,10 +110,15 @@ pub fn main() -> iced::Result {
     println!("🚀 Running in codegen mode (production)");
 
     iced::application(window::new_model, window::update_model, window::view_model)
-        .window_size(iced::Size::new(400.0, 300.0))
-        .centered()
+        .window(
+            window::window_settings()
+                .default_size(500, 400)
+                .min_size(400, 300)
+                .build(),
+        )
         .theme(window::theme)
         .title("{{PROJECT_NAME}}")
         .subscription(|_model| window::subscription_model())
+        .exit_on_close_request(false)
         .run()
 }
