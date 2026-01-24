@@ -54,7 +54,7 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 | Basic CLI | ✅ | Commands `new`, `check`, `build` |
 | Examples | ✅ | hello-world, counter, todo-app |
 
-### v0.2.0 - Validation and Dual-Mode Architecture (In Progress)
+### v0.2.0 - Validation and Dual-Mode Architecture (Completed ✓)
 
 **Objective**: Improve robustness and prepare for production
 
@@ -66,7 +66,7 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 | Parity Tests | ✅ | Ensure identical behavior |
 | Benchmarks | ✅ | Performance metrics |
 
-### v0.2.1 - Add versioning to the XML schema
+### v0.2.1 - Add versioning to the XML schema (Completed ✓)
 
 **Objective**: Improve robustness and prepare for production
 
@@ -78,7 +78,7 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 | Version Migration | ✅ | Provide migration tools |
 | Version Documentation | ✅ | Document version changes |
 
-### v0.2.2 - Enhanced multi-windows application
+### v0.2.2 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
@@ -126,13 +126,13 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 |-----------|--------|-------------|
 | Widgets Schema | ✅ | Expose get_widget_schema(kind) and a WidgetKind.schema() helper |
 
-### v0.2.8 - Enhanced multi-windows application (planned)
+### v0.2.8 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| Window Persistence | 🔲 | Save and restore window states |
+| Window Persistence | ✅ | Save and restore window states |
 
 ### v0.3.0 - Advanced Widgets (planned)
 
