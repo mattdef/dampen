@@ -48,8 +48,8 @@ fn create_test_handlers() -> HandlerRegistry {
 /// Generate XML with the specified number of widgets
 fn generate_large_xml(widget_count: usize) -> String {
     let mut xml = String::from(
-        r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+        r#"
+<dampen version="1.1" encoding="utf-8">
     <column padding="20" spacing="10">
 "#,
     );
@@ -241,15 +241,15 @@ fn test_state_preservation_100_reloads() {
     );
 
     // Base XML templates
-    let xml_v1 = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let xml_v1 = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Counter: {counter}" />
     </column>
 </dampen>"#;
 
-    let xml_v2 = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let xml_v2 = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Counter: {counter}" />
         <text value="Data: {data}" />
@@ -350,8 +350,8 @@ fn test_state_preservation_with_rapid_changes() {
 
     println!("\n=== T092: Testing state preservation with rapid state changes ===",);
 
-    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="{data}" />
     </column>

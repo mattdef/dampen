@@ -10,7 +10,7 @@ use std::time::Duration;
 /// Generate XML for a large UI with 1000 widgets
 fn generate_large_ui_xml(widget_count: usize) -> String {
     let mut xml = String::from(
-        r#"<dampen version="1.0">
+        r#"<dampen version="1.1" encoding="utf-8">
   <column spacing="10" padding="20">
 "#,
     );

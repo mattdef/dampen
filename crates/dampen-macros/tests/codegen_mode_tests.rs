@@ -73,7 +73,7 @@ mod codegen_inactive {
         use dampen_core::parse;
 
         let xml = r#"
-            <dampen version="1.0">
+            <dampen version="1.1" encoding="utf-8">
                 <column>
                     <text value="Test" />
                 </column>

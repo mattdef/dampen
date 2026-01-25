@@ -296,7 +296,14 @@ mod tests {
         let content = fs::read_to_string(target_path.absolute.join("settings.dampen")).unwrap();
 
         // Check for key patterns in generated XML file
-        assert!(content.contains("<?xml"), "Should have XML declaration");
+        assert!(
+            !content.contains("<?xml"),
+            "Should NOT have XML declaration"
+        );
+        assert!(
+            content.contains("<dampen version=\"1.1\" encoding=\"utf-8\">"),
+            "Should have correct root element"
+        );
         assert!(content.contains("<column"), "Should have column layout");
         assert!(content.contains("Settings"), "Should contain window title");
     }

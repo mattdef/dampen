@@ -37,7 +37,7 @@ mod interpreted_active {
     fn test_runtime_xml_parsing() {
         // In interpreted mode, XML is parsed at runtime on first access
         let xml = r#"
-            <dampen version="1.0">
+            <dampen version="1.1" encoding="utf-8">
                 <column padding="20">
                     <text value="Hello, World!" size="24" />
                 </column>
@@ -56,7 +56,7 @@ mod interpreted_active {
     fn test_lazylock_initialization() {
         // LazyLock ensures XML is parsed only once, on first access
         static TEST_DOC: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
-            let xml = r#"<dampen version="1.0"><column><text value="Test" /></column></dampen>"#;
+            let xml = r#"<dampen version="1.1" encoding="utf-8"><column><text value="Test" /></column></dampen>"#;
             parse(xml).expect("Parse failed")
         });
 
@@ -88,12 +88,12 @@ mod interpreted_active {
     fn test_multiple_views() {
         // Multiple #[dampen_ui] invocations work independently
         static VIEW1: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
-            let xml = r#"<dampen version="1.0"><column><text value="View 1" /></column></dampen>"#;
+            let xml = r#"<dampen version="1.1" encoding="utf-8"><column><text value="View 1" /></column></dampen>"#;
             parse(xml).expect("Parse View 1 failed")
         });
 
         static VIEW2: LazyLock<dampen_core::DampenDocument> = LazyLock::new(|| {
-            let xml = r#"<dampen version="1.0"><column><text value="View 2" /></column></dampen>"#;
+            let xml = r#"<dampen version="1.1" encoding="utf-8"><column><text value="View 2" /></column></dampen>"#;
             parse(xml).expect("Parse View 2 failed")
         });
 
@@ -148,7 +148,7 @@ fn test_interpreted_priority_over_codegen() {
 fn test_document_function_api() {
     // The generated document() function returns a cloned DampenDocument
     // This API is consistent in both modes
-    let xml = r#"<dampen version="1.0"><column><text value="API Test" /></column></dampen>"#;
+    let xml = r#"<dampen version="1.1" encoding="utf-8"><column><text value="API Test" /></column></dampen>"#;
     let doc = parse(xml).expect("Parse failed");
 
     // The document() function in generated code does this:
@@ -159,7 +159,7 @@ fn test_document_function_api() {
 #[test]
 fn test_error_handling() {
     // In interpreted mode, parse errors are caught at runtime
-    let invalid_xml = r#"<dampen version="1.0"><invalid></dampen>"#;
+    let invalid_xml = r#"<dampen version="1.1" encoding="utf-8"><invalid></dampen>"#;
     let result = parse(invalid_xml);
 
     assert!(result.is_err(), "Invalid XML should produce parse error");
@@ -190,7 +190,7 @@ fn test_xml_validation_at_runtime() {
     // In interpreted mode, XML validation happens at runtime
     // This provides immediate feedback during development
     let valid_xml = r#"
-        <dampen version="1.0">
+        <dampen version="1.1" encoding="utf-8">
             <column>
                 <text value="Valid" />
             </column>

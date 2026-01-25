@@ -103,7 +103,7 @@ fn test_file_creation_detection() {
     let test_file = temp_dir.path().join("test.dampen");
     fs::write(
         &test_file,
-        r#"<dampen version="1.0"><text value="Hello" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Hello" /></dampen>"#,
     )
     .expect("Failed to create file");
 
@@ -145,7 +145,7 @@ fn test_file_modification_detection() {
     let test_file = create_dampen_file(
         &temp_dir,
         "existing.dampen",
-        r#"<dampen version="1.0"><text value="Original" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Original" /></dampen>"#,
     );
 
     // Give filesystem time to settle
@@ -174,7 +174,7 @@ fn test_file_modification_detection() {
     // Modify the existing file
     modify_dampen_file(
         &test_file,
-        r#"<dampen version="1.0"><text value="Modified" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Modified" /></dampen>"#,
     );
 
     // Wait for debouncer to process the event
@@ -229,7 +229,7 @@ fn test_debouncing_behavior() {
     let test_file = temp_dir.path().join("debounce_test.dampen");
     fs::write(
         &test_file,
-        r#"<dampen version="1.0"><text value="Original" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Original" /></dampen>"#,
     )
     .expect("Failed to create file");
 
@@ -246,7 +246,7 @@ fn test_debouncing_behavior() {
         modify_dampen_file(
             &test_file,
             &format!(
-                r#"<dampen version="1.0"><text value="Change {}" /></dampen>"#,
+                r#"<dampen version="1.1" encoding="utf-8"><text value="Change {}" /></dampen>"#,
                 i
             ),
         );
@@ -371,7 +371,7 @@ fn test_deleted_file_handling() {
     let test_file = create_dampen_file(
         &temp_dir,
         "to_delete.dampen",
-        r#"<dampen version="1.0"><text value="Will be deleted" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Will be deleted" /></dampen>"#,
     );
 
     // Give filesystem time to settle
@@ -448,7 +448,7 @@ fn test_file_change_detection_latency() {
     let test_file = temp_dir.path().join("latency_test.dampen");
     fs::write(
         &test_file,
-        r#"<dampen version="1.0"><text value="Initial" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Initial" /></dampen>"#,
     )
     .expect("Failed to create file");
 
@@ -471,7 +471,7 @@ fn test_file_change_detection_latency() {
         modify_dampen_file(
             &test_file,
             &format!(
-                r#"<dampen version="1.0"><text value="Measurement {}" /></dampen>"#,
+                r#"<dampen version="1.1" encoding="utf-8"><text value="Measurement {}" /></dampen>"#,
                 i
             ),
         );

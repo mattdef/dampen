@@ -160,7 +160,7 @@ fn test_error_message_format_unchanged() {
 
     fs::write(
         ui_dir.join("main.dampen"),
-        r#"<?xml version="1.0" encoding="UTF-8"?>
+        r#"
 <dampen>
     <column>
         <button on_clik="msg" />
@@ -189,7 +189,7 @@ fn test_suggestion_logic_unchanged() {
 
     fs::write(
         ui_dir.join("main.dampen"),
-        r#"<?xml version="1.0" encoding="UTF-8"?>
+        r#"
 <dampen>
     <column>
         <text valeu="Hello" />

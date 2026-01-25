@@ -222,7 +222,7 @@ fn widget_kind_name(kind: &WidgetKind) -> String {
 /// ```rust
 /// use dampen_core::{parse, validate_widget_versions};
 ///
-/// let xml = r#"<dampen version="1.0"><canvas width="400" height="200" program="{chart}" /></dampen>"#;
+/// let xml = r#"<dampen version="1.1" encoding="utf-8"><canvas width="400" height="200" program="{chart}" /></dampen>"#;
 /// let doc = parse(xml).unwrap();
 /// let warnings = validate_widget_versions(&doc);
 /// assert_eq!(warnings.len(), 1); // Canvas requires v1.1

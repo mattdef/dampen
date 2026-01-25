@@ -1,4 +1,4 @@
-<dampen version="1.0">
+<dampen version="1.1" encoding="utf-8">
   <!-- Complex nested layout test case -->
   <!-- Tests: columns inside rows, rows inside columns, mixed alignments, padding -->
 

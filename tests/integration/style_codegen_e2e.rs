@@ -25,8 +25,8 @@ fn to_theme_document(doc: &DampenDocument) -> ThemeDocument {
 const APP_WITH_STYLES_XML: &str = include_str!("fixtures/app_with_styles.dampen");
 
 // Simpler inline fixture for quick tests
-const SIMPLE_STYLED_APP: &str = r##"<?xml version="1.0" encoding="UTF-8" ?>
-<dampen version="1.0">
+const SIMPLE_STYLED_APP: &str = r##"
+<dampen version="1.1" encoding="utf-8">
     <themes>
         <theme name="light">
             <palette 
@@ -409,8 +409,8 @@ mod full_pipeline_tests {
     #[test]
     fn test_style_priority_order() {
         // Create document with both class and inline styles on same widget
-        let xml = r##"<?xml version="1.0" encoding="UTF-8" ?>
-<dampen version="1.0">
+        let xml = r##"
+<dampen version="1.1" encoding="utf-8">
     <style_classes>
         <style name="test-style" widget="button">
             <base background="#ff0000" color="#ffffff" />
@@ -474,8 +474,8 @@ mod full_pipeline_tests {
 
     #[test]
     fn test_empty_style_classes_still_works() {
-        let xml = r##"<?xml version="1.0" encoding="UTF-8" ?>
-<dampen version="1.0">
+        let xml = r##"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <button label="Plain Button" on_click="test" />
     </column>

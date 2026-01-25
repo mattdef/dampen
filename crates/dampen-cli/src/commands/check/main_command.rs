@@ -717,15 +717,18 @@ fn run_checks_internal(
 }
 
 fn validate_xml_declaration(content: &str, file_path: &Path, errors: &mut Vec<CheckError>) {
-    // Check if content starts with proper XML declaration
+    // XML declaration is now optional (since Dampen v0.2.9)
+    // If present, it must be valid. If absent, we assume UTF-8.
     let trimmed = content.trim_start();
-    if !trimmed.starts_with("<?xml version=\"1.0\"") {
-        errors.push(CheckError::XmlValidationError {
-            file: file_path.to_path_buf(),
-            line: 1,
-            col: 1,
-            message: "Missing or invalid XML declaration. Expected: <?xml version=\"1.0\" encoding=\"UTF-8\"?>".to_string(),
-        });
+    if trimmed.starts_with("<?xml") {
+        if !trimmed.starts_with("<?xml version=\"1.0\"") {
+            errors.push(CheckError::XmlValidationError {
+                file: file_path.to_path_buf(),
+                line: 1,
+                col: 1,
+                message: "Invalid XML declaration. Expected: <?xml version=\"1.0\" ... ?> or no declaration".to_string(),
+            });
+        }
     }
 }
 

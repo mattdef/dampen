@@ -50,8 +50,8 @@ fn create_test_handlers() -> HandlerRegistry {
 #[test]
 fn test_state_preservation_across_reload() {
     // Initial XML with a counter UI
-    let initial_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let initial_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Count: {count}" />
         <button label="Increment" />
@@ -59,8 +59,8 @@ fn test_state_preservation_across_reload() {
 </dampen>"#;
 
     // Modified XML (changed button label, added text)
-    let modified_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let modified_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Count: {count}" />
         <text value="Name: {name}" />
@@ -129,15 +129,15 @@ fn test_state_preservation_across_reload() {
 /// T088: Test state preservation with default fallback when deserialization fails
 #[test]
 fn test_state_preservation_with_schema_change() {
-    let initial_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let initial_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Count: {count}" />
     </column>
 </dampen>"#;
 
-    let modified_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let modified_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Count: {count}" />
         <text value="Updated UI" />
@@ -186,16 +186,16 @@ fn test_state_preservation_with_schema_change() {
 /// T089: Test that parse errors are handled gracefully without crashing
 #[test]
 fn test_parse_error_handling() {
-    let valid_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let valid_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Hello" />
     </column>
 </dampen>"#;
 
     // Invalid XML - missing closing tag
-    let invalid_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let invalid_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Hello" />
     </column>
@@ -242,16 +242,16 @@ fn test_parse_error_handling() {
 /// T089: Test handling of unknown widget errors
 #[test]
 fn test_unknown_widget_error_handling() {
-    let valid_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let valid_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Hello" />
     </column>
 </dampen>"#;
 
     // Invalid XML - unknown widget type
-    let invalid_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let invalid_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <unknown_widget />
     </column>
@@ -288,8 +288,8 @@ fn test_unknown_widget_error_handling() {
 /// T090: Test that rapid successive file saves are handled correctly
 #[test]
 fn test_rapid_successive_reloads() {
-    let base_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let base_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Version {count}" />
     </column>
@@ -314,8 +314,8 @@ fn test_rapid_successive_reloads() {
     for i in 1..=reload_count {
         // Generate slightly different XML each time
         let modified_xml = format!(
-            r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+            r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Version {{count}}" />
         <text value="Reload {}" />
@@ -395,20 +395,20 @@ fn test_rapid_successive_reloads() {
 /// T090: Test debouncing behavior with very rapid changes
 #[test]
 fn test_debouncing_with_invalid_intermediate_states() {
-    let valid_xml_v1 = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let valid_xml_v1 = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Version 1" />
     </column>
 </dampen>"#;
 
-    let invalid_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let invalid_xml = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Incomplete"#;
 
-    let valid_xml_v2 = r#"<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0">
+    let valid_xml_v2 = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Version 2" />
         <text value="Complete" />

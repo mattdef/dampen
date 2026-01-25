@@ -11,8 +11,8 @@ use dampen_core::state::AppState;
 use dampen_core::state::ThemeContext;
 use std::collections::HashMap;
 
-const SIMPLE_APP_XML: &str = r#"<?xml version="1.0" encoding="UTF-8" ?>
-<dampen version="1.0">
+const SIMPLE_APP_XML: &str = r#"
+<dampen version="1.1" encoding="utf-8">
     <column>
         <text value="Hello, Theming!" />
         <button label="Click me" />
@@ -20,7 +20,7 @@ const SIMPLE_APP_XML: &str = r#"<?xml version="1.0" encoding="UTF-8" ?>
 </dampen>
 "#;
 
-const THEME_WITH_LIGHT_DARK: &str = r##"<dampen version="1.0">
+const THEME_WITH_LIGHT_DARK: &str = r##"<dampen version="1.1" encoding="utf-8">
     <themes>
         <theme name="light">
             <palette
@@ -321,7 +321,7 @@ mod contract_theme_hot_reload_integration {
 mod contract_theme_inheritance_integration {
     use super::*;
 
-    const THEME_WITH_INHERITANCE: &str = r##"<dampen version="1.0">
+    const THEME_WITH_INHERITANCE: &str = r##"<dampen version="1.1" encoding="utf-8">
     <themes>
         <theme name="base">
             <palette
@@ -413,7 +413,7 @@ mod contract_theme_inheritance_integration {
 
     #[test]
     fn integration_circular_inheritance_detection() {
-        const CIRCULAR_THEME: &str = r##"<dampen version="1.0">
+        const CIRCULAR_THEME: &str = r##"<dampen version="1.1" encoding="utf-8">
     <themes>
         <theme name="theme_a" extends="theme_b">
             <palette primary="#3498db" secondary="#2ecc71" success="#27ae60" warning="#f39c12" danger="#e74c3c" background="#ecf0f1" surface="#ffffff" text="#2c3e50" text_secondary="#7f8c8d" />
@@ -443,7 +443,7 @@ mod contract_theme_inheritance_integration {
 
     #[test]
     fn integration_missing_parent_theme_detection() {
-        const MISSING_PARENT: &str = r##"<dampen version="1.0">
+        const MISSING_PARENT: &str = r##"<dampen version="1.1" encoding="utf-8">
     <themes>
         <theme name="child" extends="nonexistent">
             <palette primary="#3498db" secondary="#2ecc71" success="#27ae60" warning="#f39c12" danger="#e74c3c" background="#ecf0f1" surface="#ffffff" text="#2c3e50" text_secondary="#7f8c8d" />
@@ -473,8 +473,8 @@ mod contract_theme_inheritance_integration {
 mod contract_widget_level_overrides_integration {
     use super::*;
 
-    const APP_WITH_OVERRIDES: &str = r##"<?xml version="1.0" encoding="UTF-8" ?>
-<dampen version="1.0">
+    const APP_WITH_OVERRIDES: &str = r##"
+<dampen version="1.1" encoding="utf-8">
     <style_classes>
         <style name="custom_button"
             background="#ff0000"

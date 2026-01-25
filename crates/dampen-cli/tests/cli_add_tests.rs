@@ -87,8 +87,8 @@ fn test_add_ui_creates_files() {
     // Verify content of .dampen file
     let dampen_content = fs::read_to_string(&settings_dampen).unwrap();
     assert!(
-        dampen_content.contains("<?xml"),
-        "XML file should have declaration"
+        !dampen_content.contains("<?xml"),
+        "XML file should NOT have declaration"
     );
     assert!(
         dampen_content.contains("Settings"),
@@ -253,7 +253,7 @@ fn test_generated_files_compile() {
 
     // XML should be well-formed (basic check)
     assert!(
-        dampen_content.starts_with("<?xml") && dampen_content.contains("</dampen>"),
+        dampen_content.starts_with("<dampen") && dampen_content.contains("</dampen>"),
         "XML should be well-formed"
     );
 }

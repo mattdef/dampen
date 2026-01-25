@@ -81,7 +81,7 @@ mod contract_validation_missing_palette_color {
     #[test]
     fn contract_validation_missing_palette_color() {
         let xml = r##"
-            <dampen version="1.0">
+            <dampen version="1.1" encoding="utf-8">
                 <themes>
                     <theme name="incomplete">
                         <palette primary="#3498db" />
@@ -109,7 +109,7 @@ mod contract_validation_invalid_default_theme {
     #[test]
     fn contract_validation_invalid_default_theme() {
         let xml = r##"
-            <dampen version="1.0">
+            <dampen version="1.1" encoding="utf-8">
                 <themes>
                     <theme name="light">
                         <palette
@@ -147,7 +147,7 @@ mod contract_validation_no_themes {
     #[test]
     fn contract_validation_no_themes() {
         let xml = r##"
-            <dampen version="1.0">
+            <dampen version="1.1" encoding="utf-8">
                 <themes>
                 </themes>
             </dampen>

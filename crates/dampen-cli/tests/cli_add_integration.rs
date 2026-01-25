@@ -160,12 +160,12 @@ fn test_generated_xml_has_correct_structure() {
 
     // Verify XML structure
     assert!(
-        dampen_content.contains("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"),
-        "Should have XML declaration"
+        !dampen_content.contains("<?xml"),
+        "Should NOT have XML declaration"
     );
     assert!(
-        dampen_content.contains("<dampen version=\"1.0\">"),
-        "Should have dampen root with version"
+        dampen_content.contains("<dampen version=\"1.1\" encoding=\"utf-8\">"),
+        "Should have correct root element"
     );
     assert!(
         dampen_content.contains("<column"),

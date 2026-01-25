@@ -18,7 +18,7 @@ fn test_unknown_attribute_detection_integration() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create a test file with unknown attribute
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <button on_clik="handle_click" label="Click Me" />
 </column>"#;
@@ -52,7 +52,7 @@ fn test_valid_attributes_pass_validation() {
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
 
     // Create a test file with all valid attributes
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <ui>
     <Button on_click="handle_click" label="Click Me" width="100" />
 </ui>"#;
@@ -68,7 +68,7 @@ fn test_strict_mode_placeholder() {
     // For now, it serves as a contract for the feature
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
 
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <ui>
     <Button on_clik="handle_click" />
 </ui>"#;
@@ -101,7 +101,7 @@ fn test_handler_validation_with_registry() {
     fs::write(&registry_path, registry_content).expect("Failed to write registry");
 
     // Create UI file with valid handler
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <button on_click="handle_click" label="Click Me" />
 </column>"#;
@@ -144,7 +144,7 @@ fn test_handler_validation_with_unknown_handler() {
     fs::write(&registry_path, registry_content).expect("Failed to write registry");
 
     // Create UI file with unknown handler
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <button on_click="unknown_handler" label="Click Me" />
 </column>"#;
@@ -176,7 +176,7 @@ fn test_handler_validation_without_registry() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create UI file with handler (no registry provided)
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <button on_click="any_handler" label="Click Me" />
 </column>"#;
@@ -229,7 +229,7 @@ fn test_binding_validation_with_model() {
     fs::write(&model_path, model_content).expect("Failed to write model");
 
     // Create UI file with valid binding
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <text value="{count}" />
     <text value="{user.name}" />
@@ -274,7 +274,7 @@ fn test_binding_validation_with_invalid_field() {
     fs::write(&model_path, model_content).expect("Failed to write model");
 
     // Create UI file with invalid binding
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <text value="{unknown_field}" />
 </column>"#;
@@ -306,7 +306,7 @@ fn test_binding_validation_without_model() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create UI file with binding (no model provided)
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <text value="{any_field}" />
 </column>"#;
@@ -338,7 +338,7 @@ fn test_valid_radio_group_integration() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create UI file with valid radio group
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <radio id="size_group" value="small" label="Small" on_select="handle_size" />
     <radio id="size_group" value="medium" label="Medium" on_select="handle_size" />
@@ -375,7 +375,7 @@ fn test_valid_theme_integration() {
     // Create UI file with theme and style class definitions
     // Note: This is a simplified test since full theme validation
     // would require parsing theme XML/JSON definitions
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <text value="Hello Theme" />
 </column>"#;
@@ -408,7 +408,7 @@ fn test_strict_mode_with_errors() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create UI file with unknown attribute (would be a warning normally)
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <button on_clik="handle_click" label="Click Me" />
 </column>"#;
@@ -456,7 +456,7 @@ fn test_strict_mode_with_no_warnings() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create UI file with valid content (no errors or warnings)
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <button on_click="handle_click" label="Click Me" />
     <text value="Hello World" />
@@ -490,7 +490,7 @@ fn test_required_attribute_validation_text_missing_value() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create a test file with Text widget missing required 'value' attribute
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <text size="16" color="blue" />
 </column>"#;
@@ -526,7 +526,7 @@ fn test_required_attribute_validation_image_missing_src() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create a test file with Image widget missing required 'src' attribute
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <image width="200" height="100" fit="contain" />
 </column>"#;
@@ -562,7 +562,7 @@ fn test_required_attribute_validation_radio_missing_label() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create a test file with Radio widget missing required 'label' attribute
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <radio value="option1" on_select="handle_select" />
 </column>"#;
@@ -598,7 +598,7 @@ fn test_required_attribute_validation_all_present() {
     fs::create_dir(&ui_dir).expect("Failed to create ui dir");
 
     // Create a test file with all required attributes present
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <text value="Hello World" size="16" />
     <image src="logo.png" width="100" />
@@ -681,7 +681,7 @@ fn test_complete_validation_pipeline_all_flags() {
     fs::write(&model_path, model_content).expect("Failed to write model");
 
     // Create a comprehensive UI file with all validation scenarios
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <text value="{title}" size="24" />
     <text value="Count: {count}" />
@@ -743,7 +743,7 @@ fn test_complete_validation_pipeline_with_errors() {
     fs::write(&model_path, model_content).expect("Failed to write model");
 
     // Create UI file with multiple validation errors
-    let content = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let content = r#"
 <column>
     <text size="24" />
     <button on_clik="handle_click" label="Click Me" />

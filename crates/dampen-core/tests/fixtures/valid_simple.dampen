@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <column padding="20" spacing="10">
     <text value="Hello, World!" size="24" />
     <button label="Click me" on_click="handle_click" />

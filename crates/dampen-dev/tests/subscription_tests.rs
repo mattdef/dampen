@@ -45,7 +45,7 @@ fn test_filewatcher_integration_with_parsing() {
 
     // Create a valid .dampen file
     let test_file = temp_dir.path().join("test.dampen");
-    let valid_xml = r#"<dampen version="1.0">
+    let valid_xml = r#"<dampen version="1.1" encoding="utf-8">
     <column spacing="10">
         <text value="Hello World" />
         <button label="Click me" on_click="handle_click" />
@@ -87,7 +87,7 @@ fn test_filewatcher_file_modification_detection() {
     let test_file = temp_dir.path().join("modify_test.dampen");
     fs::write(
         &test_file,
-        r#"<dampen version="1.0"><text value="Initial" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Initial" /></dampen>"#,
     )
     .expect("Failed to create initial file");
 
@@ -115,7 +115,7 @@ fn test_filewatcher_file_modification_detection() {
     // Modify the file
     fs::write(
         &test_file,
-        r#"<dampen version="1.0"><text value="Modified" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Modified" /></dampen>"#,
     )
     .expect("Failed to modify file");
 
@@ -141,7 +141,7 @@ fn test_parse_error_handling() {
     //
     // Verifies that parse errors are detected and can be handled
 
-    let invalid_xml = r#"<dampen version="1.0">
+    let invalid_xml = r#"<dampen version="1.1" encoding="utf-8">
     <text value="Unclosed tag"
 </dampen>"#; // Missing closing > on text element
 
@@ -211,13 +211,13 @@ fn test_multiple_file_events() {
 
     fs::write(
         &file1,
-        r#"<dampen version="1.0"><text value="File 1" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="File 1" /></dampen>"#,
     )
     .expect("Failed to create file1");
 
     fs::write(
         &file2,
-        r#"<dampen version="1.0"><text value="File 2" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="File 2" /></dampen>"#,
     )
     .expect("Failed to create file2");
 
@@ -305,7 +305,7 @@ fn test_parse_success_with_valid_document() {
     //
     // Verifies the happy path of the subscription flow
 
-    let valid_xml = r#"<dampen version="1.0">
+    let valid_xml = r#"<dampen version="1.1" encoding="utf-8">
     <column spacing="20">
         <text value="Hello" size="24" />
         <button label="Click" on_click="action" />
@@ -350,7 +350,7 @@ fn test_error_recovery_simulation() {
 
     // Create invalid file
     let invalid_file = temp_dir.path().join("invalid.dampen");
-    fs::write(&invalid_file, r#"<dampen version="1.0"><broken"#)
+    fs::write(&invalid_file, r#"<dampen version="1.1" encoding="utf-8"><broken"#)
         .expect("Failed to create invalid file");
 
     thread::sleep(Duration::from_millis(80));
@@ -359,7 +359,7 @@ fn test_error_recovery_simulation() {
     let valid_file = temp_dir.path().join("valid.dampen");
     fs::write(
         &valid_file,
-        r#"<dampen version="1.0"><text value="Valid" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Valid" /></dampen>"#,
     )
     .expect("Failed to create valid file");
 
@@ -416,7 +416,7 @@ fn test_watcher_shutdown_detection() {
     let test_file = temp_dir.path().join("test.dampen");
     fs::write(
         &test_file,
-        r#"<dampen version="1.0"><text value="Test" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Test" /></dampen>"#,
     )
     .expect("Failed to create file");
 
@@ -446,7 +446,7 @@ fn test_watcher_shutdown_detection() {
     // The watcher is still alive and can receive more events
     fs::write(
         &test_file,
-        r#"<dampen version="1.0"><text value="Modified" /></dampen>"#,
+        r#"<dampen version="1.1" encoding="utf-8"><text value="Modified" /></dampen>"#,
     )
     .expect("Failed to modify file");
 

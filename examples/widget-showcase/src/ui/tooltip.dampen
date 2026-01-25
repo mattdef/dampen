@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<dampen version="1.0">
+<dampen version="1.1" encoding="utf-8">
     <column padding="40" spacing="30">
         <row spacing="10">
             <button label="← Back" on_click="switch_to_window" />

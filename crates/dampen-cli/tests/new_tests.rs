@@ -141,8 +141,8 @@ fn test_new_creates_valid_xml() {
     let xml_content = fs::read_to_string(xml_file).unwrap();
 
     // Verify it's valid XML (at least has XML declaration and root element)
-    assert!(xml_content.contains("<?xml"));
-    assert!(xml_content.contains(r#"<dampen version="1.0">"#));
+    assert!(!xml_content.contains("<?xml"));
+    assert!(xml_content.contains(r#"<dampen version="1.1" encoding="utf-8">"#));
     assert!(xml_content.contains("</dampen>"));
     assert!(xml_content.contains("<column"));
     assert!(xml_content.contains("</column>"));

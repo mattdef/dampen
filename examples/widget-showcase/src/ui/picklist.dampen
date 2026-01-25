@@ -1,4 +1,3 @@
-<?xml version="1.0" ?>
 <column padding="20" spacing="10">
     <row spacing="10">
         <button label="← Back" on_click="switch_to_window" />
