@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<dampen version="1.0">
+<dampen version="1.1">
     <column
         width="fill"
         height="fill"
         align_items="center"
         justify_content="center"
         spacing="20"
+        padding="20"
     >
+        <row width="fill">
+            <button label="Back to Menu" on_click="switch_to_window" />
+            <space />
+        </row>
+
         <text value="Dampen Canvas Demo" size="24" weight="bold" />
 
         <row spacing="10">
             <button label="Change Color" on_click="change_color" />
         </row>
 
-        <!-- Added on_click, on_drag and on_release handlers -->
         <canvas
             width="400"
             height="300"
@@ -43,7 +48,7 @@
                 stroke_width="3"
             />
 
-            <!-- Text moved inside the rect -->
+            <!-- Text -->
             <canvas_text
                 x="140"
                 y="100"

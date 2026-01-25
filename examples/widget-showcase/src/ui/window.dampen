@@ -49,6 +49,7 @@
             <row spacing="10">
                 <button label="Combo Box" on_click="switch_to_combobox" />
                 <button label="Pick List" on_click="switch_to_picklist" />
+                <button label="Canvas" on_click="switch_to_canvas" />
             </row>
             <row spacing="10">
                 <button label="Progress Bar" on_click="switch_to_progressbar" />

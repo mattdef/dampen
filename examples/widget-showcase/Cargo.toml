@@ -13,6 +13,7 @@ dampen-iced = { workspace = true }
 dampen-dev = { workspace = true, optional = true }
 iced = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
 
 [build-dependencies]
 dampen-core = { workspace = true }

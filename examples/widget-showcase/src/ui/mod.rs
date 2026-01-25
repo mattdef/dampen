@@ -3,6 +3,7 @@
 // This module exports all the widget showcase views.
 
 pub mod button;
+pub mod canvas;
 pub mod checkbox;
 pub mod combobox;
 pub mod for_loop;

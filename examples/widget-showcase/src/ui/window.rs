@@ -28,6 +28,10 @@ pub fn create_handler_registry() -> HandlerRegistry {
         Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Button)))
     });
 
+    registry.register_with_command("switch_to_canvas", |_model: &mut dyn std::any::Any| {
+        Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Canvas)))
+    });
+
     registry.register_with_command("switch_to_text", |_model: &mut dyn std::any::Any| {
         Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Text)))
     });

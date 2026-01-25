@@ -8,7 +8,10 @@ use iced::{Color, Point, Rectangle, Renderer, Theme, Vector, mouse::Cursor};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-#[dampen_ui("window.dampen")]
+// Import Message and CurrentView from the parent module
+use crate::{CurrentView, Message};
+
+#[dampen_ui("canvas.dampen")]
 mod _app {}
 
 #[derive(UiModel, Serialize, Deserialize, Clone, Debug)]
@@ -49,12 +52,10 @@ pub fn create_app_state() -> AppState<Model> {
 
 #[ui_handler]
 pub fn on_canvas_click(model: &mut Model, event: CanvasEvent) {
-    // Calcul de la distance entre le clic et le centre du cercle
     let dx = event.x - model.circle_x;
     let dy = event.y - model.circle_y;
     let distance_sq = dx * dx + dy * dy;
 
-    // Si on clique à l'intérieur du cercle (rayon = 50), on active le drag
     if distance_sq <= model.circle_radius * model.circle_radius {
         model.circle_dragging = true;
         model.circle_x = event.x;
@@ -64,7 +65,6 @@ pub fn on_canvas_click(model: &mut Model, event: CanvasEvent) {
 
 #[ui_handler]
 pub fn on_canvas_drag(model: &mut Model, event: CanvasEvent) {
-    // On met à jour la position seulement si on est en train de dragger
     if model.circle_dragging {
         model.circle_x = event.x;
         model.circle_y = event.y;
@@ -73,7 +73,6 @@ pub fn on_canvas_drag(model: &mut Model, event: CanvasEvent) {
 
 #[ui_handler]
 pub fn on_canvas_release(model: &mut Model, _event: CanvasEvent) {
-    // On arrête le drag
     model.circle_dragging = false;
 }
 
@@ -90,11 +89,17 @@ inventory_handlers! { change_color, on_canvas_click, on_canvas_drag, on_canvas_r
 
 pub fn create_handler_registry() -> HandlerRegistry {
     let registry = HandlerRegistry::new();
+
+    registry.register_with_command("switch_to_window", |_model: &mut dyn std::any::Any| {
+        Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Window)))
+    });
+
     registry.register_simple("change_color", |model: &mut dyn std::any::Any| {
         if let Some(m) = model.downcast_mut::<Model>() {
             change_color(m);
         }
     });
+
     registry.register_with_value(
         "on_canvas_click",
         |model: &mut dyn std::any::Any, val: Box<dyn std::any::Any>| {
@@ -134,7 +139,7 @@ pub fn create_handler_registry() -> HandlerRegistry {
 // Custom Clock Program
 #[derive(Debug, Default)]
 struct Clock {
-    cache: std::sync::Mutex<canvas::Cache>, // Mutex for Sync
+    cache: std::sync::Mutex<canvas::Cache>,
 }
 
 impl<M> canvas::Program<M> for Clock {
@@ -143,7 +148,7 @@ impl<M> canvas::Program<M> for Clock {
     fn update(
         &self,
         _state: &mut Self::State,
-        _event: &iced::Event, // Match trait signature
+        _event: &iced::Event,
         _bounds: Rectangle,
         _cursor: Cursor,
     ) -> Option<canvas::Action<M>> {
@@ -159,7 +164,6 @@ impl<M> canvas::Program<M> for Clock {
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let cache = self.cache.lock().unwrap();
-        // Simplified clock drawing
         let geometry = cache.draw(renderer, bounds.size(), |frame| {
             let center = frame.center();
             let radius = frame.width().min(frame.height()) / 2.0;
