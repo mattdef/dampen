@@ -16,6 +16,8 @@ categories = { workspace = true }
 dampen-core = { workspace = true }
 iced = { workspace = true }
 serde_json = { workspace = true }
+iced_aw = { version = "0.13", default-features = false, features = ["date_picker", "time_picker"] }
+chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
 criterion = "0.5"

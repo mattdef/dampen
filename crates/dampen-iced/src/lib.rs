@@ -19,6 +19,8 @@ use iced::{Element, Renderer, Theme};
 pub enum HandlerMessage {
     /// Simple handler with optional payload
     Handler(String, Option<String>),
+    /// No-op message
+    None,
 }
 
 // Re-export builder
@@ -516,6 +518,7 @@ pub fn render<'a>(
         | WidgetKind::CanvasLine
         | WidgetKind::CanvasText
         | WidgetKind::CanvasGroup => backend.column(Vec::new()),
+        WidgetKind::DatePicker | WidgetKind::TimePicker => backend.column(Vec::new()),
     }
 }
 

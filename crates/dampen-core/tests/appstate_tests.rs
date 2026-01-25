@@ -292,9 +292,12 @@ fn test_hot_reload_preserves_handlers() {
 
 #[test]
 fn test_hot_reload_multiple_times() {
-    let xml_v1 = r#"<dampen version="1.1" encoding="utf-8"><column><text value="V1" /></column></dampen>"#;
-    let xml_v2 = r#"<dampen version="1.1" encoding="utf-8"><column><text value="V2" /></column></dampen>"#;
-    let xml_v3 = r#"<dampen version="1.1" encoding="utf-8"><column><text value="V3" /></column></dampen>"#;
+    let xml_v1 =
+        r#"<dampen version="1.1" encoding="utf-8"><column><text value="V1" /></column></dampen>"#;
+    let xml_v2 =
+        r#"<dampen version="1.1" encoding="utf-8"><column><text value="V2" /></column></dampen>"#;
+    let xml_v3 =
+        r#"<dampen version="1.1" encoding="utf-8"><column><text value="V3" /></column></dampen>"#;
 
     let document_v1 = dampen_core::parse(xml_v1).unwrap();
     let model = TestModel {

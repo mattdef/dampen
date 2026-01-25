@@ -28,6 +28,7 @@ thiserror = { workspace = true }
 nom = { workspace = true }
 csscolorparser = { workspace = true }
 prettyplease = "0.2"
+chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
 proptest = { workspace = true }

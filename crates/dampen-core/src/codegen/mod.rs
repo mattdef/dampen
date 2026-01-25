@@ -736,8 +736,16 @@ fn generate_message_enum_full(
             let ident = syn::Ident::new(&variant_name, proc_macro2::Span::call_site());
 
             if let Some(param_type) = &h.param_type {
-                let type_ident = syn::Ident::new(param_type, proc_macro2::Span::call_site());
-                quote! { #ident(#type_ident) }
+                // If the parameter type is "&str", use "String" for the enum variant
+                // because enum variants cannot hold references without lifetimes
+                let effective_type = if param_type == "&str" {
+                    "String"
+                } else {
+                    param_type
+                };
+                let type_path: syn::Type =
+                    syn::parse_str(effective_type).expect("Failed to parse parameter type");
+                quote! { #ident(#type_path) }
             } else {
                 quote! { #ident }
             }

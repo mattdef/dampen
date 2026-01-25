@@ -58,6 +58,12 @@ pub fn create_handler_registry() -> HandlerRegistry {
         )))
     });
 
+    registry.register_with_command("switch_to_datetime", |_model: &mut dyn std::any::Any| {
+        Box::new(iced::Task::done(Message::SwitchToView(
+            CurrentView::DatetimePicker,
+        )))
+    });
+
     registry.register_with_command("switch_to_image", |_model: &mut dyn std::any::Any| {
         Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Image)))
     });

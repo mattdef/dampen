@@ -196,6 +196,12 @@ fn generate_widget_with_locals(
         WidgetKind::Custom(ref name) => {
             generate_custom_widget(node, name, model_ident, message_ident, style_classes)
         }
+        WidgetKind::DatePicker => {
+            generate_date_picker(node, model_ident, message_ident, style_classes)
+        }
+        WidgetKind::TimePicker => {
+            generate_time_picker(node, model_ident, message_ident, style_classes)
+        }
         WidgetKind::CanvasRect
         | WidgetKind::CanvasCircle
         | WidgetKind::CanvasLine
@@ -2692,6 +2698,231 @@ fn generate_if(
 }
 
 /// Generate custom widget
+/// Generate DatePicker widget
+fn generate_date_picker(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    let show = node
+        .attributes
+        .get("show")
+        .map(|attr| match attr {
+            AttributeValue::Binding(b) => super::bindings::generate_bool_expr(&b.expr),
+            AttributeValue::Static(s) => {
+                let v = s == "true";
+                quote! { #v }
+            }
+            _ => quote! { false },
+        })
+        .unwrap_or(quote! { false });
+
+    let date = if let Some(attr) = node.attributes.get("value") {
+        match attr {
+            AttributeValue::Binding(b) => {
+                let expr = super::bindings::generate_bool_expr(&b.expr);
+                quote! { iced_aw::date_picker::Date::from(#expr) }
+            }
+            AttributeValue::Static(s) => {
+                let format = node
+                    .attributes
+                    .get("format")
+                    .map(|f| match f {
+                        AttributeValue::Static(fs) => fs.as_str(),
+                        _ => "%Y-%m-%d",
+                    })
+                    .unwrap_or("%Y-%m-%d");
+                quote! {
+                    iced_aw::date_picker::Date::from(
+                        chrono::NaiveDate::parse_from_str(#s, #format).unwrap_or_default()
+                    )
+                }
+            }
+            _ => quote! { iced_aw::date_picker::Date::today() },
+        }
+    } else {
+        quote! { iced_aw::date_picker::Date::today() }
+    };
+
+    let on_cancel = if let Some(h) = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Cancel)
+    {
+        let msg = format_ident!("{}", h.handler);
+        quote! { #message_ident::#msg }
+    } else {
+        quote! { #message_ident::None }
+    };
+
+    let on_submit = if let Some(h) = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Submit)
+    {
+        let msg = format_ident!("{}", h.handler);
+        quote! {
+            |date| {
+                let s = chrono::NaiveDate::from(date).format("%Y-%m-%d").to_string();
+                #message_ident::#msg(s)
+            }
+        }
+    } else {
+        quote! { |_| #message_ident::None }
+    };
+
+    let underlay = if let Some(child) = node.children.first() {
+        generate_widget(child, model_ident, message_ident, style_classes)?
+    } else {
+        quote! { iced::widget::text("Missing child") }
+    };
+
+    Ok(quote! {
+        iced_aw::widgets::date_picker::DatePicker::new(
+            #show,
+            #date,
+            #underlay,
+            #on_cancel,
+            #on_submit
+        )
+    })
+}
+
+/// Generate TimePicker widget
+fn generate_time_picker(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    let show = node
+        .attributes
+        .get("show")
+        .map(|attr| match attr {
+            AttributeValue::Binding(b) => super::bindings::generate_bool_expr(&b.expr),
+            AttributeValue::Static(s) => {
+                let v = s == "true";
+                quote! { #v }
+            }
+            _ => quote! { false },
+        })
+        .unwrap_or(quote! { false });
+
+    let time = if let Some(attr) = node.attributes.get("value") {
+        match attr {
+            AttributeValue::Binding(b) => {
+                let expr = super::bindings::generate_bool_expr(&b.expr);
+                quote! { iced_aw::time_picker::Time::from(#expr) }
+            }
+            AttributeValue::Static(s) => {
+                let format = node
+                    .attributes
+                    .get("format")
+                    .map(|f| match f {
+                        AttributeValue::Static(fs) => fs.as_str(),
+                        _ => "%H:%M:%S",
+                    })
+                    .unwrap_or("%H:%M:%S");
+                quote! {
+                    iced_aw::time_picker::Time::from(
+                        chrono::NaiveTime::parse_from_str(#s, #format).unwrap_or_default()
+                    )
+                }
+            }
+            _ => {
+                quote! { iced_aw::time_picker::Time::from(chrono::Local::now().naive_local().time()) }
+            }
+        }
+    } else {
+        quote! { iced_aw::time_picker::Time::from(chrono::Local::now().naive_local().time()) }
+    };
+
+    let use_24h = node.attributes.get("use_24h").map(|attr| match attr {
+        AttributeValue::Binding(b) => super::bindings::generate_bool_expr(&b.expr),
+        AttributeValue::Static(s) => {
+            let v = s == "true";
+            quote! { #v }
+        }
+        _ => quote! { false },
+    });
+
+    let show_seconds = node.attributes.get("show_seconds").map(|attr| match attr {
+        AttributeValue::Binding(b) => super::bindings::generate_bool_expr(&b.expr),
+        AttributeValue::Static(s) => {
+            let v = s == "true";
+            quote! { #v }
+        }
+        _ => quote! { false },
+    });
+
+    let on_cancel = if let Some(h) = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Cancel)
+    {
+        let msg = format_ident!("{}", h.handler);
+        quote! { #message_ident::#msg }
+    } else {
+        quote! { #message_ident::None }
+    };
+
+    let on_submit = if let Some(h) = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Submit)
+    {
+        let msg = format_ident!("{}", h.handler);
+        quote! {
+            |time| {
+                let s = chrono::NaiveTime::from(time).format("%H:%M:%S").to_string();
+                #message_ident::#msg(s)
+            }
+        }
+    } else {
+        quote! { |_| #message_ident::None }
+    };
+
+    let underlay = if let Some(child) = node.children.first() {
+        generate_widget(child, model_ident, message_ident, style_classes)?
+    } else {
+        quote! { iced::widget::text("Missing child") }
+    };
+
+    let mut picker_setup = quote! {
+        let mut picker = iced_aw::widgets::time_picker::TimePicker::new(
+            #show,
+            #time,
+            #underlay,
+            #on_cancel,
+            #on_submit
+        );
+    };
+
+    if let Some(use_24h_expr) = use_24h {
+        picker_setup.extend(quote! {
+            if #use_24h_expr {
+                picker = picker.use_24h();
+            }
+        });
+    }
+
+    if let Some(show_seconds_expr) = show_seconds {
+        picker_setup.extend(quote! {
+            if #show_seconds_expr {
+                picker = picker.show_seconds();
+            }
+        });
+    }
+
+    Ok(quote! {
+        {
+            #picker_setup
+            picker
+        }
+    })
+}
+
 fn generate_custom_widget(
     node: &crate::WidgetNode,
     name: &str,

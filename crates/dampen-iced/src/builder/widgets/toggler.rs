@@ -7,20 +7,28 @@ use dampen_core::ir::style::StyleProperties;
 use iced::{Element, Renderer, Theme};
 
 /// Convert Dampen StyleProperties to Iced toggler Style
-fn apply_toggler_style(props: &StyleProperties) -> iced::widget::toggler::Style {
+fn apply_toggler_style(
+    theme: &iced::Theme,
+    _status: iced::widget::toggler::Status,
+    props: &StyleProperties,
+) -> iced::widget::toggler::Style {
     use iced::widget::toggler;
     use iced::{Background, Color};
 
     let mut style = toggler::Style {
-        background: Background::Color(Color::from_rgb(0.7, 0.7, 0.7)),
+        background: Background::Color(if theme.palette().background.r < 0.5 {
+            Color::from_rgb(0.3, 0.3, 0.3)
+        } else {
+            Color::from_rgb(0.7, 0.7, 0.7)
+        }),
         background_border_width: 1.0,
         background_border_color: Color::TRANSPARENT,
-        foreground: Background::Color(Color::WHITE),
+        foreground: Background::Color(theme.palette().primary),
         foreground_border_width: 0.0,
         foreground_border_color: Color::TRANSPARENT,
         border_radius: None,
         padding_ratio: 0.2,
-        text_color: None,
+        text_color: Some(theme.palette().text),
     };
 
     if let Some(ref bg) = props.background

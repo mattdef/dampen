@@ -8,15 +8,22 @@ use dampen_core::ir::style::StyleProperties;
 use iced::{Element, Renderer, Theme};
 
 /// Convert Dampen StyleProperties to Iced checkbox Style
-fn apply_checkbox_style(props: &StyleProperties) -> iced::widget::checkbox::Style {
-    use iced::widget::checkbox;
+fn apply_checkbox_style(
+    theme: &iced::Theme,
+    _status: iced::widget::checkbox::Status,
+    props: &StyleProperties,
+) -> iced::widget::checkbox::Style {
     use iced::{Background, Border, Color};
 
-    let mut style = checkbox::Style {
-        background: Background::Color(Color::WHITE),
-        icon_color: Color::BLACK,
+    let mut style = iced::widget::checkbox::Style {
+        background: Background::Color(if theme.palette().background.r < 0.5 {
+            Color::from_rgb(0.2, 0.2, 0.2)
+        } else {
+            Color::WHITE
+        }),
+        icon_color: theme.palette().text,
         border: Border::default(),
-        text_color: None,
+        text_color: Some(theme.palette().text),
     };
 
     if let Some(ref bg) = props.background

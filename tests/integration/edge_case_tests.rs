@@ -174,8 +174,11 @@ fn test_permission_loss_during_watch() {
     let file_path = temp_dir.path().join("test.dampen");
 
     // Create file
-    fs::write(&file_path, r#"<dampen version="1.1" encoding="utf-8"><column /></dampen>"#)
-        .expect("Failed to write file");
+    fs::write(
+        &file_path,
+        r#"<dampen version="1.1" encoding="utf-8"><column /></dampen>"#,
+    )
+    .expect("Failed to write file");
 
     // Remove read permissions
     let mut perms = fs::metadata(&file_path)
@@ -303,13 +306,19 @@ fn test_very_large_ui_file() {
 #[test]
 fn test_malformed_xml_recovery() {
     let invalid_xml_cases = vec![
-        (r#"<dampen version="1.1" encoding="utf-8"><column>"#, "Unclosed tag"),
+        (
+            r#"<dampen version="1.1" encoding="utf-8"><column>"#,
+            "Unclosed tag",
+        ),
         (
             r#"<dampen version="1.1" encoding="utf-8"><unknown /></dampen>"#,
             "Unknown widget",
         ),
         ("not xml at all", "Not XML"),
-        (r#"<dampen version="1.1" encoding="utf-8"></dampen>"#, "Empty document"),
+        (
+            r#"<dampen version="1.1" encoding="utf-8"></dampen>"#,
+            "Empty document",
+        ),
     ];
 
     for (xml, description) in invalid_xml_cases {

@@ -963,8 +963,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state with a model
-        let xml_v1 =
-            r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 42,
@@ -977,8 +976,7 @@ mod tests {
         let mut context = HotReloadContext::<TestModel>::new();
 
         // New XML with changes
-        let xml_v2 =
-            r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 2" /></column></dampen>"#;
+        let xml_v2 = r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 2" /></column></dampen>"#;
 
         // Attempt hot-reload
         let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || HandlerRegistry::new());
@@ -1000,8 +998,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state
-        let xml_v1 =
-            r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 10,
@@ -1035,8 +1032,7 @@ mod tests {
         use dampen_core::parser;
 
         // Create initial state
-        let xml_v1 =
-            r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 1" /></column></dampen>"#;
+        let xml_v1 = r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 1" /></column></dampen>"#;
         let doc_v1 = parser::parse(xml_v1).unwrap();
         let model_v1 = TestModel {
             count: 99,
@@ -1049,8 +1045,7 @@ mod tests {
         context.last_model_snapshot = Some("{ invalid json }".to_string()); // Invalid JSON
 
         // New valid XML
-        let xml_v2 =
-            r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 2" /></column></dampen>"#;
+        let xml_v2 = r#"<dampen version="1.1" encoding="utf-8"><column><text value="Version 2" /></column></dampen>"#;
 
         // Attempt hot-reload (will snapshot current model, then try to restore from corrupted snapshot)
         let result = attempt_hot_reload(xml_v2, &state_v1, &mut context, || HandlerRegistry::new());

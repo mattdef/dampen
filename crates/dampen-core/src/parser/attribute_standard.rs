@@ -133,6 +133,8 @@ fn widget_kind_to_string(kind: &WidgetKind) -> String {
         WidgetKind::CanvasLine => "Line".to_string(),
         WidgetKind::CanvasText => "Text".to_string(),
         WidgetKind::CanvasGroup => "Group".to_string(),
+        WidgetKind::DatePicker => "DatePicker".to_string(),
+        WidgetKind::TimePicker => "TimePicker".to_string(),
         WidgetKind::Custom(name) => name.clone(),
     }
 }

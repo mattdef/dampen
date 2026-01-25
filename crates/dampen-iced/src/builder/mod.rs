@@ -509,6 +509,8 @@ impl<'a> DampenWidgetBuilder<'a> {
             WidgetKind::Float => self.build_float(node),
             WidgetKind::For => self.build_for(node),
             WidgetKind::If => self.build_if(node),
+            WidgetKind::DatePicker => self.build_date_picker(node),
+            WidgetKind::TimePicker => self.build_time_picker(node),
             WidgetKind::Radio => self.build_radio(node),
             WidgetKind::CanvasRect
             | WidgetKind::CanvasCircle

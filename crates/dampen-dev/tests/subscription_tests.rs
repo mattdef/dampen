@@ -350,8 +350,11 @@ fn test_error_recovery_simulation() {
 
     // Create invalid file
     let invalid_file = temp_dir.path().join("invalid.dampen");
-    fs::write(&invalid_file, r#"<dampen version="1.1" encoding="utf-8"><broken"#)
-        .expect("Failed to create invalid file");
+    fs::write(
+        &invalid_file,
+        r#"<dampen version="1.1" encoding="utf-8"><broken"#,
+    )
+    .expect("Failed to create invalid file");
 
     thread::sleep(Duration::from_millis(80));
 

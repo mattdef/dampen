@@ -26,6 +26,12 @@ pub enum ParseErrorKind {
     DeprecatedAttribute,
     /// Child widget is not allowed in this context
     InvalidChild,
+    /// Invalid date format for static value
+    InvalidDateFormat,
+    /// Invalid time format for static value
+    InvalidTimeFormat,
+    /// Invalid date range (min > max)
+    InvalidDateRange,
 }
 
 impl std::fmt::Display for ParseError {

@@ -8,16 +8,23 @@ use dampen_core::ir::style::StyleProperties;
 use iced::{Element, Renderer, Theme};
 
 /// Convert Dampen StyleProperties to Iced radio Style
-fn apply_radio_style(props: &StyleProperties) -> iced::widget::radio::Style {
-    use iced::widget::radio;
+fn apply_radio_style(
+    theme: &iced::Theme,
+    _status: iced::widget::radio::Status,
+    props: &StyleProperties,
+) -> iced::widget::radio::Style {
     use iced::{Background, Color};
 
-    let mut style = radio::Style {
-        background: Background::Color(Color::WHITE),
-        dot_color: Color::BLACK,
+    let mut style = iced::widget::radio::Style {
+        background: Background::Color(if theme.palette().background.r < 0.5 {
+            Color::from_rgb(0.2, 0.2, 0.2)
+        } else {
+            Color::WHITE
+        }),
+        dot_color: theme.palette().primary,
         border_width: 1.0,
-        border_color: Color::from_rgb(0.5, 0.5, 0.5),
-        text_color: None,
+        border_color: theme.palette().text,
+        text_color: Some(theme.palette().text),
     };
 
     if let Some(ref bg) = props.background

@@ -8,13 +8,21 @@ use dampen_core::ir::style::StyleProperties;
 use iced::{Element, Renderer, Theme};
 
 /// Convert Dampen StyleProperties to Iced slider Style
-fn apply_slider_style(props: &StyleProperties) -> iced::widget::slider::Style {
+fn apply_slider_style(
+    theme: &iced::Theme,
+    _status: iced::widget::slider::Status,
+    props: &StyleProperties,
+) -> iced::widget::slider::Style {
     use iced::widget::slider;
     use iced::{Background, Border, Color};
 
     let mut rail_bg = (
-        Background::Color(Color::from_rgb(0.6, 0.6, 0.6)),
-        Background::Color(Color::from_rgb(0.2, 0.6, 1.0)),
+        Background::Color(if theme.palette().background.r < 0.5 {
+            Color::from_rgb(0.3, 0.3, 0.3)
+        } else {
+            Color::from_rgb(0.6, 0.6, 0.6)
+        }),
+        Background::Color(theme.palette().primary),
     );
     let mut rail_width = 4.0;
     let mut rail_border = Border::default();
@@ -66,7 +74,7 @@ fn apply_slider_style(props: &StyleProperties) -> iced::widget::slider::Style {
                     a: c.a,
                 }
             } else {
-                Color::from_rgb(0.4, 0.4, 0.8)
+                theme.palette().primary
             }),
             border_width: 1.0,
             border_color: if let Some(ref c) = props.color {
@@ -77,7 +85,11 @@ fn apply_slider_style(props: &StyleProperties) -> iced::widget::slider::Style {
                     a: 1.0,
                 }
             } else {
-                Color::from_rgb(0.3, 0.3, 0.7)
+                let mut c = theme.palette().primary;
+                c.r *= 0.7;
+                c.g *= 0.7;
+                c.b *= 0.7;
+                c
             },
         },
     }

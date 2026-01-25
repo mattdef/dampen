@@ -956,6 +956,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
                             }
                             iced::Task::none()
                         }
+                        dampen_iced::HandlerMessage::None => iced::Task::none(),
                     }
                 }
             }
@@ -982,6 +983,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
                         }
                         iced::Task::none()
                     }
+                    dampen_iced::HandlerMessage::None => iced::Task::none(),
                 }
             }
         }

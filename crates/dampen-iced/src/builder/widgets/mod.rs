@@ -10,6 +10,7 @@ mod column;
 mod combo_box;
 mod container;
 mod custom;
+mod date_picker;
 mod float;
 mod for_loop;
 mod grid;
@@ -27,6 +28,7 @@ mod stack;
 mod svg;
 mod text;
 mod text_input;
+mod time_picker;
 mod toggler;
 mod tooltip;
 

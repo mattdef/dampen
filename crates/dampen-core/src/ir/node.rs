@@ -57,6 +57,10 @@ pub enum WidgetKind {
     CanvasLine,
     CanvasText,
     CanvasGroup,
+    /// Date selection widget with calendar overlay
+    DatePicker,
+    /// Time selection widget with hour/minute/second picker
+    TimePicker,
     Float,
     // Control flow
     For,
@@ -199,6 +203,7 @@ pub enum EventKind {
     CanvasDrag,
     CanvasMove,
     CanvasRelease,
+    Cancel,
 }
 
 impl WidgetKind {
@@ -232,6 +237,8 @@ impl WidgetKind {
             "line",
             "canvas_text",
             "group",
+            "date_picker",
+            "time_picker",
             "float",
             "for",
             "if",
@@ -272,6 +279,9 @@ impl WidgetKind {
         // All other widgets are part of v1.0
         match self {
             WidgetKind::Canvas => crate::ir::SchemaVersion { major: 1, minor: 1 },
+            WidgetKind::DatePicker | WidgetKind::TimePicker => {
+                crate::ir::SchemaVersion { major: 1, minor: 1 }
+            }
             _ => crate::ir::SchemaVersion { major: 1, minor: 0 },
         }
     }

@@ -15,6 +15,7 @@ use crate::ir::{
     SchemaVersion, Span, WidgetKind, WidgetNode,
 };
 use crate::parser::error::{ParseError, ParseErrorKind};
+use chrono::{NaiveDate, NaiveTime};
 use roxmltree::{Document, Node, NodeType};
 use std::collections::HashMap;
 
@@ -199,6 +200,8 @@ fn widget_kind_name(kind: &WidgetKind) -> String {
         WidgetKind::CanvasLine => "line".to_string(),
         WidgetKind::CanvasText => "canvas_text".to_string(),
         WidgetKind::CanvasGroup => "group".to_string(),
+        WidgetKind::DatePicker => "date_picker".to_string(),
+        WidgetKind::TimePicker => "time_picker".to_string(),
         WidgetKind::Custom(name) => name.clone(),
     }
 }
@@ -343,6 +346,13 @@ fn validate_widget_attributes(
                 "Add a comma-separated list: options=\"Option1,Option2\"",
             )?;
         }
+        WidgetKind::DatePicker => {
+            validate_date_format(kind, attributes, span)?;
+            validate_date_range(kind, attributes, span)?;
+        }
+        WidgetKind::TimePicker => {
+            validate_time_format(kind, attributes, span)?;
+        }
         WidgetKind::Canvas => {
             // Width and height are optional (defaulted in builder if missing)
             // But validation ensures they are numbers if present
@@ -401,6 +411,100 @@ fn validate_widget_attributes(
             canvas::validate_shape_attributes(kind, attributes, span)?;
         }
         _ => {}
+    }
+    Ok(())
+}
+
+/// Helper to validate date format for static value
+fn validate_date_format(
+    kind: &WidgetKind,
+    attributes: &HashMap<String, AttributeValue>,
+    span: Span,
+) -> Result<(), ParseError> {
+    if let Some(AttributeValue::Static(value)) = attributes.get("value") {
+        let format = if let Some(AttributeValue::Static(f)) = attributes.get("format") {
+            f.as_str()
+        } else {
+            "%Y-%m-%d"
+        };
+
+        if NaiveDate::parse_from_str(value, format).is_err() {
+            return Err(ParseError {
+                kind: ParseErrorKind::InvalidDateFormat,
+                message: format!(
+                    "Invalid date format for {:?}: '{}' does not match format '{}'",
+                    kind, value, format
+                ),
+                span,
+                suggestion: Some(
+                    "Use ISO 8601 format (YYYY-MM-DD) or specify correct format attribute (e.g., format=\"%d/%m/%Y\")".to_string()
+                ),
+            });
+        }
+    }
+    Ok(())
+}
+
+/// Helper to validate time format for static value
+fn validate_time_format(
+    kind: &WidgetKind,
+    attributes: &HashMap<String, AttributeValue>,
+    span: Span,
+) -> Result<(), ParseError> {
+    if let Some(AttributeValue::Static(value)) = attributes.get("value") {
+        let format = if let Some(AttributeValue::Static(f)) = attributes.get("format") {
+            f.as_str()
+        } else {
+            "%H:%M:%S"
+        };
+
+        if NaiveTime::parse_from_str(value, format).is_err() {
+            return Err(ParseError {
+                kind: ParseErrorKind::InvalidTimeFormat,
+                message: format!(
+                    "Invalid time format for {:?}: '{}' does not match format '{}'",
+                    kind, value, format
+                ),
+                span,
+                suggestion: Some(
+                    "Use 24-hour format (HH:MM:SS) or specify correct format attribute (e.g., format=\"%I:%M %p\")".to_string()
+                ),
+            });
+        }
+    }
+    Ok(())
+}
+
+/// Helper to validate date range (min <= max)
+fn validate_date_range(
+    kind: &WidgetKind,
+    attributes: &HashMap<String, AttributeValue>,
+    span: Span,
+) -> Result<(), ParseError> {
+    let min_date = if let Some(AttributeValue::Static(m)) = attributes.get("min_date") {
+        NaiveDate::parse_from_str(m, "%Y-%m-%d").ok()
+    } else {
+        None
+    };
+
+    let max_date = if let Some(AttributeValue::Static(m)) = attributes.get("max_date") {
+        NaiveDate::parse_from_str(m, "%Y-%m-%d").ok()
+    } else {
+        None
+    };
+
+    if let (Some(min), Some(max)) = (min_date, max_date)
+        && min > max
+    {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidDateRange,
+            message: format!(
+                "Invalid date range for {:?}: min_date ({}) is after max_date ({})",
+                kind, min, max
+            ),
+            span,
+            suggestion: Some("Ensure min_date is before or equal to max_date".to_string()),
+        });
     }
     Ok(())
 }
@@ -529,6 +633,44 @@ fn validate_canvas_children(
     canvas::validate_canvas_children(children, span)
 }
 
+/// Validate DatePicker/TimePicker has exactly one child
+fn validate_datetime_picker_children(
+    kind: &WidgetKind,
+    children: &[WidgetNode],
+    span: Span,
+) -> Result<(), ParseError> {
+    if children.is_empty() {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!(
+                "{:?} widget must have exactly one child widget (the underlay)",
+                kind
+            ),
+            span,
+            suggestion: Some(format!(
+                "Wrap a single widget (e.g., <button>) in <{}>",
+                widget_kind_name(kind)
+            )),
+        });
+    }
+    if children.len() > 1 {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: format!(
+                "{:?} widget must have exactly one child, found {}",
+                kind,
+                children.len()
+            ),
+            span,
+            suggestion: Some(format!(
+                "Wrap only one widget in <{}>",
+                widget_kind_name(kind)
+            )),
+        });
+    }
+    Ok(())
+}
+
 /// Parse a single XML node into a WidgetNode
 fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     // Only process element nodes
@@ -571,6 +713,8 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "line" => WidgetKind::CanvasLine,
         "canvas_text" => WidgetKind::CanvasText,
         "group" => WidgetKind::CanvasGroup,
+        "date_picker" => WidgetKind::DatePicker,
+        "time_picker" => WidgetKind::TimePicker,
         "float" => WidgetKind::Float,
         "for" => WidgetKind::For,
         "if" => WidgetKind::If,
@@ -636,6 +780,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
                 "on_select" => Some(EventKind::Select),
                 "on_toggle" => Some(EventKind::Toggle),
                 "on_scroll" => Some(EventKind::Scroll),
+                "on_cancel" => Some(EventKind::Cancel),
                 _ => None,
             };
 
@@ -761,6 +906,11 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     // Validate Canvas has no children (leaf widget)
     if kind == WidgetKind::Canvas {
         validate_canvas_children(&attributes, &children, get_span(node, source))?;
+    }
+
+    // Validate DatePicker/TimePicker has exactly one child
+    if matches!(kind, WidgetKind::DatePicker | WidgetKind::TimePicker) {
+        validate_datetime_picker_children(&kind, &children, get_span(node, source))?;
     }
 
     // Parse layout and style attributes into structured fields

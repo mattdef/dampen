@@ -322,6 +322,20 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
             style_attributes: &[],
             layout_attributes: &[],
         },
+        WidgetKind::DatePicker => WidgetSchema {
+            required: &[],
+            optional: &["value", "format", "show", "min_date", "max_date"],
+            events: &["on_submit", "on_cancel"],
+            style_attributes: COMMON_STYLE_ATTRIBUTES,
+            layout_attributes: COMMON_LAYOUT_ATTRIBUTES,
+        },
+        WidgetKind::TimePicker => WidgetSchema {
+            required: &[],
+            optional: &["value", "format", "show", "use_24h", "show_seconds"],
+            events: &["on_submit", "on_cancel"],
+            style_attributes: COMMON_STYLE_ATTRIBUTES,
+            layout_attributes: COMMON_LAYOUT_ATTRIBUTES,
+        },
         WidgetKind::Float => WidgetSchema {
             required: &[],
             optional: &[],

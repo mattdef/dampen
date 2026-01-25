@@ -75,5 +75,8 @@ crates/*/src/**/generated/
 .claude/
 .opencode/
 .specify/
+.agent/
+specs/
+openspec/
 CLAUDE.md
 AGENTS.md

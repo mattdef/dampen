@@ -302,6 +302,8 @@ fn display_widget_version_table() {
         ("tooltip", WidgetKind::Tooltip),
         ("grid", WidgetKind::Grid),
         ("canvas", WidgetKind::Canvas),
+        ("date_picker", WidgetKind::DatePicker),
+        ("time_picker", WidgetKind::TimePicker),
         ("float", WidgetKind::Float),
     ];
 
@@ -499,8 +501,6 @@ pub fn run_checks(input: Option<String>, strict: bool, verbose: bool) -> Result<
 }
 
 pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
-    use crate::commands::check::handlers::HandlerRegistry;
-
     // If --show-widget-versions flag is set, display widget version table and exit
     if args.show_widget_versions {
         display_widget_version_table();
@@ -720,15 +720,15 @@ fn validate_xml_declaration(content: &str, file_path: &Path, errors: &mut Vec<Ch
     // XML declaration is now optional (since Dampen v0.2.9)
     // If present, it must be valid. If absent, we assume UTF-8.
     let trimmed = content.trim_start();
-    if trimmed.starts_with("<?xml") {
-        if !trimmed.starts_with("<?xml version=\"1.0\"") {
-            errors.push(CheckError::XmlValidationError {
-                file: file_path.to_path_buf(),
-                line: 1,
-                col: 1,
-                message: "Invalid XML declaration. Expected: <?xml version=\"1.0\" ... ?> or no declaration".to_string(),
-            });
-        }
+    if trimmed.starts_with("<?xml") && !trimmed.starts_with("<?xml version=\"1.0\"") {
+        errors.push(CheckError::XmlValidationError {
+            file: file_path.to_path_buf(),
+            line: 1,
+            col: 1,
+            message:
+                "Invalid XML declaration. Expected: <?xml version=\"1.0\" ... ?> or no declaration"
+                    .to_string(),
+        });
     }
 }
 
@@ -1189,6 +1189,8 @@ impl WidgetKindExt for WidgetKind {
             WidgetKind::CanvasLine,
             WidgetKind::CanvasText,
             WidgetKind::CanvasGroup,
+            WidgetKind::DatePicker,
+            WidgetKind::TimePicker,
             WidgetKind::Float,
             WidgetKind::For,
             WidgetKind::If,

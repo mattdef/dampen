@@ -391,14 +391,14 @@ pub fn create_state_aware_style_fn<'a, S, T, F, M>(
 ) -> Option<impl Fn(&iced::Theme, T) -> S + 'a>
 where
     S: Clone + 'a,
-    T: 'a,
-    F: Fn(&dampen_core::ir::style::StyleProperties) -> S + 'a,
+    T: Clone + 'a,
+    F: Fn(&iced::Theme, T, &dampen_core::ir::style::StyleProperties) -> S + 'a,
     M: Fn(T) -> Option<dampen_core::ir::WidgetState> + Copy + 'a,
 {
     use crate::style_mapping::resolve_state_style;
 
     Some(move |_theme: &iced::Theme, status: T| {
-        let widget_state = status_mapper(status);
+        let widget_state = status_mapper(status.clone());
 
         let final_style_props = if let (Some(class), Some(state)) = (&style_class, widget_state) {
             if let Some(state_style) = resolve_state_style(class, state) {
@@ -410,7 +410,7 @@ where
             base_style.clone()
         };
 
-        style_converter(&final_style_props)
+        style_converter(_theme, status, &final_style_props)
     })
 }
 
@@ -879,12 +879,17 @@ impl<'a> DampenWidgetBuilder<'a> {
         // Get inline styles (also static)
         let inline_style = node.style.clone();
 
+        // If no theme, no classes, and no inline styles, don't apply a closure
+        // This allows Iced to use its default theme-based styling (e.g. for buttons)
+        if theme_context.is_none() && class_styles.is_none() && inline_style.is_none() {
+            return None;
+        }
+
         Some(
             move |_theme: &iced::Theme, status: iced::widget::button::Status| {
                 use crate::style_mapping::{
                     map_button_status, merge_style_properties, resolve_state_style,
                 };
-                use iced::widget::button;
                 use iced::{Background, Border, Color};
 
                 // Resolve theme colors for this widget type at render time
@@ -948,7 +953,13 @@ impl<'a> DampenWidgetBuilder<'a> {
                 };
 
                 // Convert to Iced style
-                let mut style = button::Style::default();
+                let mut style = iced::widget::button::Style {
+                    background: None,
+                    text_color: _theme.palette().text, // Default to theme's text color
+                    border: Border::default(),
+                    shadow: iced::Shadow::default(),
+                    snap: false,
+                };
 
                 if let Some(ref bg) = final_style_props.background
                     && let dampen_core::ir::style::Background::Color(color) = bg

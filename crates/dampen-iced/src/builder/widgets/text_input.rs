@@ -7,18 +7,39 @@ use dampen_core::ir::style::StyleProperties;
 use iced::{Element, Renderer, Theme};
 
 /// Convert Dampen StyleProperties to Iced text_input Style
-fn apply_text_input_style(props: &StyleProperties) -> iced::widget::text_input::Style {
+fn apply_text_input_style(
+    theme: &iced::Theme,
+    _status: iced::widget::text_input::Status,
+    props: &StyleProperties,
+) -> iced::widget::text_input::Style {
     use iced::widget::text_input;
     use iced::{Background, Border, Color};
 
     let mut style = text_input::Style {
         background: Background::Color(Color::WHITE),
         border: Border::default(),
-        icon: Color::BLACK,
-        placeholder: Color::from_rgb(0.5, 0.5, 0.5),
-        value: Color::BLACK,
-        selection: Color::from_rgb(0.5, 0.7, 1.0),
+        icon: theme.palette().text,
+        placeholder: {
+            let mut c = theme.palette().text;
+            c.a = 0.5;
+            c
+        },
+        value: theme.palette().text,
+        selection: {
+            let mut c = theme.palette().primary;
+            c.a = 0.4;
+            c
+        },
     };
+
+    if theme.palette().background.r < 0.5 {
+        style.background = Background::Color(Color {
+            r: 0.2,
+            g: 0.2,
+            b: 0.2,
+            a: 1.0,
+        });
+    }
 
     if let Some(ref bg) = props.background
         && let dampen_core::ir::style::Background::Color(color) = bg
@@ -130,6 +151,8 @@ impl<'a> DampenWidgetBuilder<'a> {
                     "[DampenWidgetBuilder] TextInput has submit event: handler={}",
                     handler
                 );
+            } else {
+                eprintln!("[DampenWidgetBuilder] TextInput has no submit event");
             }
         }
 
