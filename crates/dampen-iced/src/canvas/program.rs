@@ -13,7 +13,7 @@ use std::cell::RefCell;
 pub enum CanvasContent<M> {
     /// A set of shapes defined declaratively in XML.
     Declarative(DeclarativeProgram<M>),
-    /// A custom implementation of [`DampenCanvasProgram`].
+    /// A custom implementation of [`crate::canvas::custom::DampenCanvasProgram`].
     Custom(std::sync::Arc<dyn crate::canvas::custom::DampenCanvasProgram<()>>),
 }
 
