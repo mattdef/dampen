@@ -913,6 +913,10 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
         });
     };
 
+    // T098: Enforce strict version validation
+    // Widgets requiring a newer schema version than declared must be rejected
+    validate_widget_versions_strict(&root_widget, &version)?;
+
     Ok(DampenDocument {
         version,
         root: root_widget,
@@ -921,6 +925,39 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
         global_theme,
         follow_system,
     })
+}
+
+/// Recursively validate widget versions and return an error on mismatch.
+fn validate_widget_versions_strict(
+    node: &WidgetNode,
+    doc_version: &SchemaVersion,
+) -> Result<(), ParseError> {
+    let min_version = node.kind.minimum_version();
+
+    if (min_version.major, min_version.minor) > (doc_version.major, doc_version.minor) {
+        return Err(ParseError {
+            kind: ParseErrorKind::UnsupportedVersion,
+            message: format!(
+                "Widget '{}' requires schema v{}.{} but document declares v{}.{}",
+                widget_kind_name(&node.kind),
+                min_version.major,
+                min_version.minor,
+                doc_version.major,
+                doc_version.minor
+            ),
+            span: node.span,
+            suggestion: Some(format!(
+                "Update to <dampen version=\"{}.{}\"> or remove this widget",
+                min_version.major, min_version.minor
+            )),
+        });
+    }
+
+    for child in &node.children {
+        validate_widget_versions_strict(child, doc_version)?;
+    }
+
+    Ok(())
 }
 
 /// Parse comma-separated list into `Vec<String>`
