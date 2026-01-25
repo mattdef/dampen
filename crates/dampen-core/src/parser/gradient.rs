@@ -31,7 +31,7 @@ pub fn parse_gradient(s: &str) -> Result<Gradient, String> {
     }
 }
 
-/// Parse linear gradient: linear-gradient(<angle>, <color-stop>, ...)
+/// Parse linear gradient: `linear-gradient(<angle>, <color-stop>, ...)`
 fn parse_linear_gradient(s: &str) -> Result<Gradient, String> {
     let inner = &s[16..s.len() - 1]; // Remove "linear-gradient(" and ")"
     let parts: Vec<&str> = inner.split(',').collect();
@@ -46,7 +46,7 @@ fn parse_linear_gradient(s: &str) -> Result<Gradient, String> {
     Ok(Gradient::Linear { angle, stops })
 }
 
-/// Parse radial gradient: radial-gradient(<shape>, <color-stop>, ...)
+/// Parse radial gradient: `radial-gradient(<shape>, <color-stop>, ...)`
 fn parse_radial_gradient(s: &str) -> Result<Gradient, String> {
     let inner = &s[16..s.len() - 1]; // Remove "radial-gradient(" and ")"
     let parts: Vec<&str> = inner.split(',').collect();

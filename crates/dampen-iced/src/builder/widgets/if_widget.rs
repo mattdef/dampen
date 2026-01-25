@@ -6,7 +6,7 @@ use dampen_core::ir::node::WidgetNode;
 use iced::{Element, Renderer, Theme};
 
 impl<'a> DampenWidgetBuilder<'a> {
-    /// Build an <if> widget
+    /// Build an `<if>` widget
     ///
     /// Renders its children only if the condition evaluates to true.
     pub(in crate::builder) fn build_if(

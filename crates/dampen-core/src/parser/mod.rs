@@ -1002,7 +1002,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     })
 }
 
-/// Parse a <dampen> document with themes and widgets
+/// Parse a `<dampen>` document with themes and widgets
 fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, ParseError> {
     let mut themes = HashMap::new();
     let mut style_classes = HashMap::new();

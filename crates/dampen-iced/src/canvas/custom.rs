@@ -43,7 +43,7 @@ pub type AnyState = Box<dyn Any>;
 
 /// A container that holds a thread-safe, shared canvas program.
 ///
-/// This is used to transport custom programs through the [`BindingValue`](dampen_core::binding::BindingValue) system.
+/// This is used to transport custom programs through the [`BindingValue`] system.
 #[derive(Debug)]
 pub struct CustomProgramContainer<M>(pub std::sync::Arc<dyn DampenCanvasProgram<M> + 'static>);
 

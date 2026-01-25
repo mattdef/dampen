@@ -1,6 +1,6 @@
-//! UI Handler attribute macro
+//! `#[ui_handler]` attribute macro implementation
 //!
-//! This module provides the #[ui_handler] attribute macro that marks functions
+//! This module provides the `#[ui_handler]` attribute macro that marks functions
 //! as UI event handlers and emits metadata for build-time code generation.
 //!
 //! # Dual-Mode Architecture Support
@@ -30,7 +30,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{FnArg, ItemFn, ReturnType, parse_macro_input};
 
-/// Process the #[ui_handler] attribute macro.
+/// Process the `#[ui_handler]` attribute macro.
 ///
 /// This macro transforms a handler function to emit metadata for optional build-time
 /// code generation while preserving the original function for runtime use.

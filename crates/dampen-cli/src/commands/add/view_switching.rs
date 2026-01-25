@@ -161,7 +161,7 @@ fn uncomment_or_add_switch_message(content: &str) -> Result<String, ViewSwitchEr
     Err(ViewSwitchError::MessageEnumNotFound)
 }
 
-/// Add `switch_view_variant = "SwitchToView"` to #[dampen_app] macro
+/// Add `switch_view_variant = "SwitchToView"` to `#[dampen_app]` macro
 ///
 /// Patterns handled:
 /// 1. Commented line: `// switch_view_variant = "SwitchToView",` → uncommented

@@ -8,7 +8,7 @@ use dampen_core::ir::node::{AttributeValue, WidgetNode};
 use iced::{Element, Renderer, Theme};
 
 impl<'a> DampenWidgetBuilder<'a> {
-    /// Build a <for> loop widget
+    /// Build a `<for>` loop widget
     ///
     /// Iterates over a collection and renders the child widgets for each item,
     /// with the loop variable available in the binding context.

@@ -218,7 +218,7 @@ fn parse_boolean_string(s: &str, default: bool) -> bool {
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use crate::builder::helpers::resolve_handler_param;
 ///
 /// // In button widget builder
@@ -255,7 +255,7 @@ fn parse_boolean_string(s: &str, default: bool) -> bool {
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use crate::builder::helpers::resolve_handler_param;
 ///
 /// // In button widget builder
@@ -270,20 +270,6 @@ fn parse_boolean_string(s: &str, default: bool) -> bool {
 ///         }
 ///     }
 /// }
-///
-/// # Example
-///
-/// ```rust,ignore
-/// use crate::builder::helpers::resolve_boolean_attribute;
-///
-/// // Check if button is disabled
-/// let is_disabled = resolve_boolean_attribute(self, node, "disabled", false);
-/// if !is_disabled {
-///     button = button.on_press(message);
-/// }
-///
-/// // Check if checkbox is initially checked
-/// let is_checked = resolve_boolean_attribute(self, node, "checked", false);
 /// ```
 pub fn resolve_boolean_attribute(
     builder: &DampenWidgetBuilder<'_>,
@@ -362,7 +348,7 @@ pub fn resolve_handler_param(
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use crate::builder::helpers::create_state_aware_style_fn;
 /// use crate::style_mapping::{map_checkbox_status, resolve_state_style};
 /// use iced::widget::checkbox;
@@ -586,7 +572,7 @@ impl<'a> DampenWidgetBuilder<'a> {
 
     /// Push a new binding context for loop variables
     ///
-    /// Used by <for> widgets to make loop variables accessible in nested widgets.
+    /// Used by `<for>` widgets to make loop variables accessible in nested widgets.
     ///
     /// # Arguments
     ///

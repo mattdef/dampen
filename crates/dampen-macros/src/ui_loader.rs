@@ -1,4 +1,4 @@
-//! Helper module for the #[dampen_ui] macro.
+//! Helper module for the `#[dampen_ui]` macro.
 //!
 //! This module contains the implementation details for the dampen_ui macro.
 //!
@@ -16,7 +16,7 @@ use proc_macro2::Span;
 use quote::quote;
 use syn::{ItemMod, LitStr};
 
-/// Process the #[dampen_ui] attribute macro.
+/// Process the `#[dampen_ui]` attribute macro.
 ///
 /// Usage:
 /// ```rust,ignore

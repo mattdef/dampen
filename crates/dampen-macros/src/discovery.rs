@@ -1,4 +1,4 @@
-//! File discovery and ViewInfo management for #[dampen_app] macro
+//! File discovery and ViewInfo management for `#[dampen_app]` macro
 //!
 //! This module handles:
 //! - Scanning directories for `.dampen` files

@@ -1,4 +1,4 @@
-//! #[dampen_app] procedural macro implementation
+//! `#[dampen_app]` procedural macro implementation
 //!
 //! This module contains:
 //! - MacroAttributes parsing from attribute syntax
