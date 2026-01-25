@@ -182,6 +182,7 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
         WidgetKind::Radio => WidgetSchema {
             required: &["label", "value"],
             optional: &[
+                "id",
                 "selected",
                 "disabled",
                 "size",
@@ -237,7 +238,7 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
         },
         WidgetKind::Toggler => WidgetSchema {
             required: &[],
-            optional: &["checked", "active", "label"],
+            optional: &["checked", "active", "toggled", "label"],
             events: &["on_toggle"],
             style_attributes: COMMON_STYLE_ATTRIBUTES,
             layout_attributes: COMMON_LAYOUT_ATTRIBUTES,
@@ -251,7 +252,7 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
         },
         WidgetKind::ComboBox => WidgetSchema {
             required: &[],
-            optional: &["placeholder", "value", "options"],
+            optional: &["placeholder", "value", "selected", "options"],
             events: &["on_input", "on_select"],
             style_attributes: COMMON_STYLE_ATTRIBUTES,
             layout_attributes: COMMON_LAYOUT_ATTRIBUTES,

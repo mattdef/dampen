@@ -62,7 +62,25 @@ pub struct RunArgs {
 /// dampen run --features tokio,logging
 /// ```
 pub fn execute(args: &RunArgs) -> Result<(), String> {
+    // Run checks first (strict=false so warnings don't block, but errors do)
+    if args.verbose {
+        eprintln!("Running pre-flight checks...");
+    }
+
+    // Resolve UI directory based on package argument if present
+    let check_input = if let Some(ref pkg) = args.package {
+        crate::commands::check::resolve_package_ui_path(pkg)
+            .map(|p| p.to_string_lossy().to_string())
+    } else {
+        None
+    };
+
+    if let Err(e) = crate::commands::check::run_checks(check_input, false, args.verbose) {
+        return Err(format!("Pre-flight check failed: {}", e));
+    }
+
     // Check if Cargo.toml exists
+
     if !Path::new("Cargo.toml").exists() {
         return Err("Cargo.toml not found. Are you in a Rust project directory?".to_string());
     }

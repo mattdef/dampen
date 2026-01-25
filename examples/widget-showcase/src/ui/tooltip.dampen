@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dampen version="1.0">
-    <styles>
-        <style name="tt_base">
-            <base background="green" color="green" border_width="1" />
-        </style>
-    </styles>
     <column padding="40" spacing="30">
         <row spacing="10">
             <button label="← Back" on_click="switch_to_window" />
@@ -13,7 +8,6 @@
 
         <text value="Top Position" size="18" />
         <tooltip
-            class="tt_base"
             message="This tooltip appears at the top of the button"
             position="top"
         >

@@ -20,7 +20,7 @@
     </row>
 
     <text value="Container" size="18" weight="bold" />
-    <container width="300" height="100" padding="20" background="#e8f4f8" border-width="2" border-color="#3498db">
+    <container width="300" height="100" padding="20" background="#e8f4f8" border_width="2" border_color="#3498db">
         <text value="Container with padding, fixed size, and border" size="14" />
     </container>
 

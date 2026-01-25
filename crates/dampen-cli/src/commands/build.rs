@@ -73,6 +73,26 @@ pub fn execute(args: &BuildArgs) -> Result<(), String> {
 fn execute_production_build(args: &BuildArgs) -> Result<(), String> {
     use std::process::Command;
 
+    // Run checks first (strict=false so warnings don't block, but errors do)
+    if args.verbose {
+        eprintln!("Running pre-flight checks...");
+    }
+
+    // Use the input directory specified in args (default is "ui")
+    // Or pass None if we want auto-discovery logic (but args.input has a default value)
+
+    // Resolve UI directory based on package argument if present
+    let check_input = if let Some(ref pkg) = args.package {
+        crate::commands::check::resolve_package_ui_path(pkg)
+            .map(|p| p.to_string_lossy().to_string())
+    } else {
+        None
+    };
+
+    if let Err(e) = crate::commands::check::run_checks(check_input, false, args.verbose) {
+        return Err(format!("Pre-flight check failed: {}", e));
+    }
+
     let mode = if args.release {
         "codegen"
     } else {
@@ -183,6 +203,23 @@ pub fn execute_release_build(
     target_dir: Option<String>,
 ) -> Result<(), String> {
     use std::process::Command;
+
+    // Run checks first
+    if verbose {
+        eprintln!("Running pre-flight checks...");
+    }
+
+    // Resolve UI directory based on package argument if present
+    let check_input = if let Some(ref pkg) = package {
+        crate::commands::check::resolve_package_ui_path(pkg)
+            .map(|p| p.to_string_lossy().to_string())
+    } else {
+        None
+    };
+
+    if let Err(e) = crate::commands::check::run_checks(check_input, false, verbose) {
+        return Err(format!("Pre-flight check failed: {}", e));
+    }
 
     let mode = "codegen";
 

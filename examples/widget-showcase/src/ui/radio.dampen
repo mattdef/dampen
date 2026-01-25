@@ -9,18 +9,21 @@
 
             <text value="Size Selection" size="18" weight="bold" />
             <radio
+                id="size"
                 label="Small"
                 value="small"
                 selected="{selected_size}"
                 on_select="select_size"
             />
             <radio
+                id="size"
                 label="Medium"
                 value="medium"
                 selected="{selected_size}"
                 on_select="select_size"
             />
             <radio
+                id="size"
                 label="Large"
                 value="large"
                 selected="{selected_size}"
@@ -34,18 +37,21 @@
 
             <text value="Color Selection" size="18" weight="bold" />
             <radio
+                id="color"
                 label="Red"
                 value="red"
                 selected="{selected_color}"
                 on_select="select_color"
             />
             <radio
+                id="color"
                 label="Green"
                 value="green"
                 selected="{selected_color}"
                 on_select="select_color"
             />
             <radio
+                id="color"
                 label="Blue"
                 value="blue"
                 selected="{selected_color}"
@@ -59,18 +65,21 @@
 
             <text value="Plan Selection" size="18" weight="bold" />
             <radio
+                id="plan"
                 label="Free"
                 value="free"
                 selected="{selected_plan}"
                 on_select="select_plan"
             />
             <radio
+                id="plan"
                 label="Pro ($10/mo)"
                 value="pro"
                 selected="{selected_plan}"
                 on_select="select_plan"
             />
             <radio
+                id="plan"
                 label="Enterprise ($50/mo)"
                 value="enterprise"
                 selected="{selected_plan}"
@@ -91,6 +100,7 @@
                 />
             </row>
             <radio
+                id="plan"
                 label="Premium Option 1"
                 value="prem1"
                 selected="{selected_plan}"
@@ -98,6 +108,7 @@
                 disabled="{is_premium_disabled}"
             />
             <radio
+                id="plan"
                 label="Premium Option 2"
                 value="prem2"
                 selected="{selected_plan}"
@@ -108,12 +119,14 @@
             <text value="Multiple Independent Groups" size="18" weight="bold" />
             <text value="Group A:" size="14" />
             <radio
+                id="group_a"
                 label="Option A1"
                 value="a1"
                 selected="{selected_size}"
                 on_select="select_size"
             />
             <radio
+                id="group_a"
                 label="Option A2"
                 value="a2"
                 selected="{selected_size}"
@@ -121,12 +134,14 @@
             />
             <text value="Group B (independent):" size="14" />
             <radio
+                id="group_b"
                 label="Option B1"
                 value="b1"
                 selected="{selected_color}"
                 on_select="select_color"
             />
             <radio
+                id="group_b"
                 label="Option B2"
                 value="b2"
                 selected="{selected_color}"

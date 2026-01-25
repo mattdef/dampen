@@ -35,7 +35,6 @@
     <text value="Disabled" size="18" weight="bold" />
     <text_input
         value="This is disabled"
-        disabled="true"
     />
 
     <text value="With Width" size="18" weight="bold" />

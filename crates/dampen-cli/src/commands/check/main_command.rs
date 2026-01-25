@@ -184,8 +184,35 @@ pub struct CheckArgs {
     pub show_widget_versions: bool,
 }
 
+/// Resolves the UI directory path for a specific package
+///
+/// Searches for the UI directory in common package locations:
+/// - examples/{package}/src/ui
+/// - examples/{package}/ui
+/// - crates/{package}/src/ui
+/// - {package}/src/ui
+pub fn resolve_package_ui_path(package_name: &str) -> Option<PathBuf> {
+    let prefixes = ["examples", "crates", "."];
+    let suffixes = ["src/ui", "ui"];
+
+    for prefix in prefixes {
+        let package_root = Path::new(prefix).join(package_name);
+        if !package_root.exists() {
+            continue;
+        }
+
+        for suffix in suffixes {
+            let ui_path = package_root.join(suffix);
+            if ui_path.exists() {
+                return Some(ui_path);
+            }
+        }
+    }
+    None
+}
+
 /// Resolves the UI directory path using smart detection
-fn resolve_ui_directory(explicit_input: Option<&str>) -> Result<PathBuf, String> {
+pub fn resolve_ui_directory(explicit_input: Option<&str>) -> Result<PathBuf, String> {
     // If explicitly provided, use it
     if let Some(path) = explicit_input {
         let path_buf = PathBuf::from(path);
@@ -293,6 +320,184 @@ fn display_widget_version_table() {
     println!("Use 'dampen check' to validate your .dampen files for version compatibility.");
 }
 
+pub fn run_checks(input: Option<String>, strict: bool, verbose: bool) -> Result<(), CheckError> {
+    use crate::commands::check::handlers::HandlerRegistry;
+
+    // Resolve UI directory
+    let input_path = resolve_ui_directory(input.as_deref())
+        .map_err(|msg| CheckError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, msg)))?;
+
+    if verbose {
+        eprintln!("Using UI directory: {}", input_path.display());
+    }
+
+    // Attempt auto-discovery for handlers and model
+    // Note: In library usage (run_checks), we don't support explicit paths for now
+    // to keep the API simple. If needed, we can add them later.
+    let handlers_path = resolve_optional_file(None, "handlers.json");
+    if verbose && let Some(ref path) = handlers_path {
+        eprintln!("Using handler registry: {}", path.display());
+    }
+
+    let model_path = resolve_optional_file(None, "model.json");
+    if verbose && let Some(ref path) = model_path {
+        eprintln!("Using model info: {}", path.display());
+    }
+
+    // Load handler registry if auto-discovered
+    let handler_registry = if let Some(path) = handlers_path {
+        let registry = HandlerRegistry::load_from_json(&path).map_err(|e| {
+            CheckError::HandlerRegistryLoadError {
+                path: path.clone(),
+                source: serde_json::Error::io(std::io::Error::other(e.to_string())),
+            }
+        })?;
+        Some(registry)
+    } else {
+        None
+    };
+
+    // Load model info if auto-discovered
+    let model_info = if let Some(path) = model_path {
+        let model =
+            crate::commands::check::model::ModelInfo::load_from_json(&path).map_err(|e| {
+                CheckError::ModelInfoLoadError {
+                    path: path.clone(),
+                    source: serde_json::Error::io(std::io::Error::other(e.to_string())),
+                }
+            })?;
+        Some(model)
+    } else {
+        None
+    };
+
+    let mut errors = Vec::new();
+    let mut files_checked = 0;
+
+    // Find all .dampen files
+    for entry in WalkDir::new(input_path)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| {
+            e.path()
+                .extension()
+                .map(|ext| ext == "dampen")
+                .unwrap_or(false)
+        })
+    {
+        let file_path = entry.path();
+        files_checked += 1;
+
+        if verbose {
+            eprintln!("Checking: {}", file_path.display());
+        }
+
+        // Read and parse the file
+        let content = match fs::read_to_string(file_path) {
+            Ok(c) => c,
+            Err(e) => {
+                errors.push(CheckError::Io(e));
+                continue;
+            }
+        };
+
+        // First check for XML declaration
+        validate_xml_declaration(&content, file_path, &mut errors);
+
+        // Only proceed to parse if XML declaration is valid
+        if !errors.is_empty() {
+            // Keep going to check other files, but this file failed early
+            continue;
+        }
+
+        // Special handling for theme.dampen files
+        if file_path.file_name().is_some_and(|n| n == "theme.dampen") {
+            if let Err(theme_error) =
+                dampen_core::parser::theme_parser::parse_theme_document(&content)
+            {
+                errors.push(CheckError::XmlValidationError {
+                    file: file_path.to_path_buf(),
+                    line: 1,
+                    col: 1,
+                    message: format!("Theme validation error: {}", theme_error),
+                });
+            }
+            continue;
+        }
+
+        match parser::parse(&content) {
+            Ok(document) => {
+                // Validate the document structure
+                validate_document(
+                    &document,
+                    file_path,
+                    &handler_registry,
+                    &model_info,
+                    &mut errors,
+                );
+
+                // Validate references (themes, classes)
+                validate_references(&document, file_path, &mut errors);
+
+                // Validate widgets with styles, layout, breakpoints, and states
+                validate_widget_with_styles(&document.root, file_path, &document, &mut errors);
+
+                // Validate widget versions
+                let version_warnings = dampen_core::validate_widget_versions(&document);
+                if !version_warnings.is_empty() {
+                    for warning in version_warnings {
+                        eprintln!(
+                            "Warning: {} in {}:{}:{}",
+                            warning.format_message(),
+                            file_path.display(),
+                            warning.span.line,
+                            warning.span.column
+                        );
+                        eprintln!("  Suggestion: {}", warning.suggestion());
+                        eprintln!();
+                    }
+                }
+            }
+            Err(parse_error) => {
+                errors.push(CheckError::ParseError {
+                    file: file_path.to_path_buf(),
+                    line: parse_error.span.line,
+                    col: parse_error.span.column,
+                    message: parse_error.to_string(),
+                });
+            }
+        }
+    }
+
+    if verbose {
+        eprintln!("Checked {} files", files_checked);
+    }
+
+    // Report errors
+    if !errors.is_empty() {
+        let error_label = "error(s)";
+        eprintln!("Found {} {}:", errors.len(), error_label);
+
+        for error in &errors {
+            let prefix = "ERROR";
+            eprintln!("  [{}] {}", prefix, error);
+        }
+
+        Err(errors.remove(0))
+    } else {
+        if verbose {
+            let status = if strict {
+                "✓ All files passed validation (strict mode)"
+            } else {
+                "✓ All files passed validation"
+            };
+            eprintln!("{}", status);
+        }
+        Ok(())
+    }
+}
+
 pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
     use crate::commands::check::handlers::HandlerRegistry;
 
@@ -302,26 +507,58 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         return Ok(());
     }
 
+    // If custom paths provided, run full logic (legacy execute implementation)
+    // Otherwise delegate to run_checks
+    if args.handlers.is_some() || args.model.is_some() || args.custom_widgets.is_some() {
+        // ... (Original implementation needed here for full flexibility)
+        // For brevity in this refactor, we'll just inline the logic from run_checks
+        // but adapting it to use the explicit paths
+
+        // This is a partial duplication, but cleaner than refactoring everything at once
+        // Let's stick to the original plan: run_checks is a simplified entry point
+        // But execute needs to support all flags.
+        // So actually, execute should call a common internal function that takes all params.
+
+        return run_checks_internal(
+            args.input.clone(),
+            args.strict,
+            args.verbose,
+            args.handlers.clone(),
+            args.model.clone(),
+            args.custom_widgets.clone(),
+        );
+    }
+
+    run_checks(args.input.clone(), args.strict, args.verbose)
+}
+
+// Internal implementation that supports all options
+fn run_checks_internal(
+    input: Option<String>,
+    strict: bool,
+    verbose: bool,
+    handlers: Option<String>,
+    model: Option<String>,
+    _custom_widgets: Option<String>,
+) -> Result<(), CheckError> {
+    use crate::commands::check::handlers::HandlerRegistry;
+
     // Resolve UI directory
-    let input_path = resolve_ui_directory(args.input.as_deref())
+    let input_path = resolve_ui_directory(input.as_deref())
         .map_err(|msg| CheckError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, msg)))?;
 
-    if args.verbose {
+    if verbose {
         eprintln!("Using UI directory: {}", input_path.display());
     }
 
     // Resolve optional files
-    let handlers_path = resolve_optional_file(args.handlers.as_deref(), "handlers.json");
-    if args.verbose
-        && let Some(ref path) = handlers_path
-    {
+    let handlers_path = resolve_optional_file(handlers.as_deref(), "handlers.json");
+    if verbose && let Some(ref path) = handlers_path {
         eprintln!("Using handler registry: {}", path.display());
     }
 
-    let model_path = resolve_optional_file(args.model.as_deref(), "model.json");
-    if args.verbose
-        && let Some(ref path) = model_path
-    {
+    let model_path = resolve_optional_file(model.as_deref(), "model.json");
+    if verbose && let Some(ref path) = model_path {
         eprintln!("Using model info: {}", path.display());
     }
 
@@ -370,7 +607,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         let file_path = entry.path();
         files_checked += 1;
 
-        if args.verbose {
+        if verbose {
             eprintln!("Checking: {}", file_path.display());
         }
 
@@ -445,7 +682,7 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         }
     }
 
-    if args.verbose {
+    if verbose {
         eprintln!("Checked {} files", files_checked);
     }
 
@@ -467,8 +704,8 @@ pub fn execute(args: &CheckArgs) -> Result<(), CheckError> {
         // (This is already the default behavior)
         Err(errors.remove(0))
     } else {
-        if args.verbose {
-            let status = if args.strict {
+        if verbose {
+            let status = if strict {
                 "✓ All files passed validation (strict mode)"
             } else {
                 "✓ All files passed validation"
@@ -691,14 +928,8 @@ fn validate_widget_node(
     // Collect radio button information for cross-widget validation (US4: Radio Group Validation)
     if matches!(node.kind, WidgetKind::Radio) {
         // Extract radio button attributes
-        let group_id = node
-            .attributes
-            .get("id")
-            .and_then(|v| match v {
-                AttributeValue::Static(s) => Some(s.as_str()),
-                _ => None,
-            })
-            .unwrap_or("default");
+        // T096: Use node.id field instead of attributes map because parser special-cases 'id'
+        let group_id = node.id.as_deref().unwrap_or("default");
 
         let value = node
             .attributes
