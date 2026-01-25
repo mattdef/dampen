@@ -140,8 +140,8 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 | Milestone | Status | Priority | Description |
 |-----------|--------|----------|-------------|
-| Canvas | 🔲 | Medium | Vector drawing widget |
-| DatePicker | 🔲 | Medium | Date selector |
+| Canvas | ✅ | Medium | Vector drawing widget |
+| DatePicker | 🔲 | High | Date selector |
 | TimePicker | 🔲 | High | Time selector |
 | ColorPicker | 🔲 | Low | Color selector |
 | TreeView | 🔲 | Low | Hierarchical display |
