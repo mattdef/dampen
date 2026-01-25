@@ -378,8 +378,10 @@ pub fn generate_application_with_theme_and_subscriptions(
         use iced::{Element, Task, Theme};
         use crate::ui::window::*;
         use std::collections::HashMap;
+        use dampen_core::handler::CanvasEvent;
 
         #theme_code
+
 
         #message_enum
 
@@ -679,8 +681,10 @@ pub fn generate_application_full(
         use iced::{Element, Task, Theme};
         use crate::ui::window::*;
         use std::collections::HashMap;
+        use dampen_core::handler::CanvasEvent;
 
         #theme_code
+
 
         #message_enum
 

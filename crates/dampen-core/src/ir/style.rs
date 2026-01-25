@@ -508,6 +508,8 @@ pub enum Transform {
     Rotate(f32),
     /// Translation in pixels
     Translate { x: f32, y: f32 },
+    /// Matrix transform
+    Matrix([f32; 6]),
     /// Multiple composed transforms
     Multiple(Vec<Transform>),
 }
@@ -529,17 +531,13 @@ impl Transform {
         // Scale
         if s.starts_with("scale(") && s.ends_with(')') {
             let inner = &s[6..s.len() - 1];
-            let value: f32 = inner
-                .parse()
-                .map_err(|_| format!("Invalid scale value: {}", s))?;
-            return Ok(Transform::Scale(value));
-        }
-
-        // ScaleXY
-        if s.starts_with("scale(") && s.ends_with(')') {
-            let inner = &s[6..s.len() - 1];
             let parts: Vec<&str> = inner.split(',').collect();
-            if parts.len() == 2 {
+            if parts.len() == 1 {
+                let value: f32 = inner
+                    .parse()
+                    .map_err(|_| format!("Invalid scale value: {}", s))?;
+                return Ok(Transform::Scale(value));
+            } else if parts.len() == 2 {
                 let x: f32 = parts[0]
                     .trim()
                     .parse()
@@ -578,8 +576,24 @@ impl Transform {
             }
         }
 
+        // Matrix
+        if s.starts_with("matrix(") && s.ends_with(')') {
+            let inner = &s[7..s.len() - 1];
+            let parts: Vec<&str> = inner.split(',').collect();
+            if parts.len() == 6 {
+                let mut matrix = [0.0; 6];
+                for (i, p) in parts.iter().enumerate() {
+                    matrix[i] = p
+                        .trim()
+                        .parse()
+                        .map_err(|_| format!("Invalid matrix value at index {}: {}", i, p))?;
+                }
+                return Ok(Transform::Matrix(matrix));
+            }
+        }
+
         Err(format!(
-            "Invalid transform format: '{}'. Expected scale(n), rotate(n), or translate(x, y)",
+            "Invalid transform format: '{}'. Expected scale(n), scale(x, y), rotate(rad), translate(x, y), or matrix(...)",
             s
         ))
     }

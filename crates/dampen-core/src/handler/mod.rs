@@ -43,6 +43,9 @@ pub enum HandlerEntry {
     ///
     /// Use when the handler needs shared state and returns a command.
     WithCommandAndShared(Arc<dyn Fn(&mut dyn Any, &dyn Any) -> Box<dyn Any> + Send + Sync>),
+
+    /// Handler with canvas event: `fn(&mut Model, CanvasEvent)`
+    WithCanvasEvent(Arc<dyn Fn(&mut dyn Any, CanvasEvent) + Send + Sync>),
 }
 
 impl std::fmt::Debug for HandlerEntry {
@@ -54,6 +57,7 @@ impl std::fmt::Debug for HandlerEntry {
             HandlerEntry::WithShared(_) => f.write_str("WithShared(handler)"),
             HandlerEntry::WithValueAndShared(_) => f.write_str("WithValueAndShared(handler)"),
             HandlerEntry::WithCommandAndShared(_) => f.write_str("WithCommandAndShared(handler)"),
+            HandlerEntry::WithCanvasEvent(_) => f.write_str("WithCanvasEvent(handler)"),
         }
     }
 }
@@ -205,6 +209,19 @@ impl HandlerRegistry {
         }
     }
 
+    /// Register a handler that receives a canvas event
+    pub fn register_canvas_event<F>(&self, name: &str, handler: F)
+    where
+        F: Fn(&mut dyn Any, CanvasEvent) + Send + Sync + 'static,
+    {
+        if let Ok(mut handlers) = self.handlers.write() {
+            handlers.insert(
+                name.to_string(),
+                HandlerEntry::WithCanvasEvent(Arc::new(handler)),
+            );
+        }
+    }
+
     /// Look up a handler by name
     pub fn get(&self, name: &str) -> Option<HandlerEntry> {
         self.handlers.read().ok()?.get(name).cloned()
@@ -255,8 +272,9 @@ impl HandlerRegistry {
                 // Shared handlers require shared context - silently skip in dispatch()
                 HandlerEntry::WithShared(_)
                 | HandlerEntry::WithValueAndShared(_)
-                | HandlerEntry::WithCommandAndShared(_) => {
-                    // These handlers require shared context. Use dispatch_with_shared() instead.
+                | HandlerEntry::WithCommandAndShared(_)
+                | HandlerEntry::WithCanvasEvent(_) => {
+                    // These handlers require shared context or event data. Use specific dispatch methods.
                 }
             }
         }
@@ -326,7 +344,8 @@ impl HandlerRegistry {
                 // Shared handlers require shared context - not supported here
                 HandlerEntry::WithShared(_)
                 | HandlerEntry::WithValueAndShared(_)
-                | HandlerEntry::WithCommandAndShared(_) => None,
+                | HandlerEntry::WithCommandAndShared(_)
+                | HandlerEntry::WithCanvasEvent(_) => None,
             }
         } else {
             None
@@ -398,6 +417,20 @@ impl HandlerRegistry {
                 None
             }
             HandlerEntry::WithCommandAndShared(h) => Some(h(model, shared)),
+            // Canvas handlers require event data - ignore here
+            HandlerEntry::WithCanvasEvent(_) => None,
+        }
+    }
+
+    /// Dispatch a canvas event handler
+    pub fn dispatch_canvas_event(
+        &self,
+        handler_name: &str,
+        model: &mut dyn Any,
+        event: CanvasEvent,
+    ) {
+        if let Some(HandlerEntry::WithCanvasEvent(h)) = self.get(handler_name) {
+            h(model, event);
         }
     }
 
@@ -575,4 +608,23 @@ impl Default for HandlerCallGraph {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Canvas event data passed to handlers
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct CanvasEvent {
+    pub kind: CanvasEventKind,
+    pub x: f32,
+    pub y: f32,
+    pub delta_x: Option<f32>,
+    pub delta_y: Option<f32>,
+}
+
+/// Type of canvas interaction
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+pub enum CanvasEventKind {
+    Click,
+    Drag,
+    Move,
+    Release,
 }

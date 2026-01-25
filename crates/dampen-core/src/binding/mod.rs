@@ -87,20 +87,7 @@ pub trait UiBindable {
 }
 
 /// Value returned from a binding evaluation
-///
-/// This enum represents all possible types that can be produced by
-/// evaluating a binding expression.
-///
-/// # Variants
-///
-/// * `String` - Text values
-/// * `Integer` - Whole numbers
-/// * `Float` - Decimal numbers
-/// * `Bool` - Boolean values
-/// * `List` - Collections of values
-/// * `Object` - Key-value mappings (for structs/records)
-/// * `None` - Absence of value
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum BindingValue {
     /// String value
     String(String),
@@ -114,8 +101,27 @@ pub enum BindingValue {
     List(Vec<BindingValue>),
     /// Object/record with named fields
     Object(std::collections::HashMap<String, BindingValue>),
+    /// Custom opaque value (not serializable)
+    #[serde(skip)]
+    Custom(std::sync::Arc<dyn std::any::Any + Send + Sync>),
     /// No value (null/none)
     None,
+}
+
+impl PartialEq for BindingValue {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::String(l0), Self::String(r0)) => l0 == r0,
+            (Self::Integer(l0), Self::Integer(r0)) => l0 == r0,
+            (Self::Float(l0), Self::Float(r0)) => l0 == r0,
+            (Self::Bool(l0), Self::Bool(r0)) => l0 == r0,
+            (Self::List(l0), Self::List(r0)) => l0 == r0,
+            (Self::Object(l0), Self::Object(r0)) => l0 == r0,
+            (Self::Custom(l0), Self::Custom(r0)) => std::sync::Arc::ptr_eq(l0, r0),
+            (Self::None, Self::None) => true,
+            _ => false,
+        }
+    }
 }
 
 impl BindingValue {
@@ -139,6 +145,7 @@ impl BindingValue {
             BindingValue::Bool(b) => b.to_string(),
             BindingValue::List(l) => format!("[{} items]", l.len()),
             BindingValue::Object(map) => format!("{{Object with {} fields}}", map.len()),
+            BindingValue::Custom(_) => "[Custom Value]".to_string(),
             BindingValue::None => String::new(),
         }
     }
@@ -154,6 +161,7 @@ impl BindingValue {
     /// * Non-zero numbers → `true`
     /// * Non-empty lists → `true`
     /// * `None` → `false`
+    /// * `Custom` → `true`
     pub fn to_bool(&self) -> bool {
         match self {
             BindingValue::Bool(b) => *b,
@@ -162,6 +170,7 @@ impl BindingValue {
             BindingValue::Float(f) => *f != 0.0,
             BindingValue::List(l) => !l.is_empty(),
             BindingValue::Object(map) => !map.is_empty(),
+            BindingValue::Custom(_) => true,
             BindingValue::None => false,
         }
     }
@@ -276,6 +285,13 @@ impl<T: ToBindingValue> ToBindingValue for std::collections::HashMap<String, T> 
                 .map(|(k, v)| (k.clone(), v.to_binding_value()))
                 .collect(),
         )
+    }
+}
+
+/// Convert `Arc<dyn Any + Send + Sync>` to `BindingValue::Custom`
+impl ToBindingValue for std::sync::Arc<dyn std::any::Any + Send + Sync> {
+    fn to_binding_value(&self) -> BindingValue {
+        BindingValue::Custom(self.clone())
     }
 }
 

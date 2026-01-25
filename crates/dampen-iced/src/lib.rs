@@ -1,6 +1,7 @@
 //! Dampen Iced - Iced Backend Implementation
 
 pub mod builder;
+pub mod canvas;
 pub mod convert;
 pub mod style_mapping;
 pub mod system_theme;
@@ -510,6 +511,11 @@ pub fn render<'a>(
         WidgetKind::Float => backend.column(Vec::new()),
         WidgetKind::For => backend.column(Vec::new()), // For loop requires model context, not supported in this legacy function
         WidgetKind::If => backend.column(Vec::new()),
+        WidgetKind::CanvasRect
+        | WidgetKind::CanvasCircle
+        | WidgetKind::CanvasLine
+        | WidgetKind::CanvasText
+        | WidgetKind::CanvasGroup => backend.column(Vec::new()),
     }
 }
 

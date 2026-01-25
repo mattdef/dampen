@@ -24,6 +24,8 @@ pub enum ParseErrorKind {
     UnsupportedVersion,
     /// Attribute is deprecated in favor of a standardized alternative
     DeprecatedAttribute,
+    /// Child widget is not allowed in this context
+    InvalidChild,
 }
 
 impl std::fmt::Display for ParseError {

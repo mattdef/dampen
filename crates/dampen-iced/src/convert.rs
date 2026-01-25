@@ -44,3 +44,7 @@ pub fn map_float_position(position: FloatPosition) -> &'static str {
         FloatPosition::BottomRight => "bottom_right",
     }
 }
+
+pub fn parse_color_maybe(s: &str) -> Option<Color> {
+    crate::builder::helpers::parse_color(s)
+}

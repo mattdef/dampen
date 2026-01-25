@@ -61,7 +61,7 @@
     clippy::collapsible_else_if
 )]
 
-mod helpers;
+pub mod helpers;
 mod widgets;
 
 use crate::HandlerMessage;
@@ -510,6 +510,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             WidgetKind::For => self.build_for(node),
             WidgetKind::If => self.build_if(node),
             WidgetKind::Radio => self.build_radio(node),
+            WidgetKind::CanvasRect
+            | WidgetKind::CanvasCircle
+            | WidgetKind::CanvasLine
+            | WidgetKind::CanvasText
+            | WidgetKind::CanvasGroup => iced::widget::column(Vec::new()).into(),
         }
     }
 }

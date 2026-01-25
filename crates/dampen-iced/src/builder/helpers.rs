@@ -472,6 +472,39 @@ impl<'a> DampenWidgetBuilder<'a> {
         evaluate_binding_expr_with_shared(expr, &context_model, self.shared_context)
     }
 
+    /// Evaluate an attribute value to a BindingValue (without converting to string)
+    ///
+    /// This is useful when the attribute might be a complex object (like a custom program).
+    ///
+    /// # Arguments
+    ///
+    /// * `attr` - Attribute value to evaluate
+    ///
+    /// # Returns
+    ///
+    /// The evaluated BindingValue, or BindingValue::String for static/interpolated
+    pub(super) fn evaluate_attribute_value(&self, attr: &AttributeValue) -> BindingValue {
+        match attr {
+            AttributeValue::Static(value) => BindingValue::String(value.clone()),
+            AttributeValue::Binding(expr) => {
+                #[cfg(debug_assertions)]
+                if expr.uses_shared() && self.shared_context.is_none() {
+                    eprintln!(
+                        "⚠️  Warning: Binding uses {{shared.}} syntax but no shared context was provided to DampenWidgetBuilder"
+                    );
+                }
+
+                self.evaluate_binding_with_context(expr)
+                    .unwrap_or(BindingValue::None)
+            }
+            AttributeValue::Interpolated(_parts) => {
+                // Interpolated values are always strings
+                let s = self.evaluate_attribute(attr);
+                BindingValue::String(s)
+            }
+        }
+    }
+
     /// Evaluate an attribute value (handles static, binding, and interpolated)
     ///
     /// # Attribute Types
@@ -1196,7 +1229,7 @@ impl<'a> DampenWidgetBuilder<'a> {
 /// - `#RGB` format (e.g., `#F53`)
 ///
 /// Returns `None` if the format is invalid
-pub(super) fn parse_color(color_str: &str) -> Option<dampen_core::ir::style::Color> {
+pub fn parse_color(color_str: &str) -> Option<dampen_core::ir::style::Color> {
     let hex = color_str.trim().trim_start_matches('#');
 
     let (r, g, b) = if hex.len() == 6 {

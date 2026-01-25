@@ -292,7 +292,7 @@ fn test_canvas_program_attribute() {
     let schema = WidgetAttributeSchema::for_widget(&WidgetKind::Canvas);
 
     assert!(schema.all_valid().contains("program"));
-    assert!(schema.all_valid().contains("on_draw"));
+    assert!(schema.all_valid().contains("on_click"));
 }
 
 #[test]

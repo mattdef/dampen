@@ -52,6 +52,11 @@ pub enum WidgetKind {
     Tooltip,
     Grid,
     Canvas,
+    CanvasRect,
+    CanvasCircle,
+    CanvasLine,
+    CanvasText,
+    CanvasGroup,
     Float,
     // Control flow
     For,
@@ -190,6 +195,10 @@ pub enum EventKind {
     Select,
     Toggle,
     Scroll,
+    CanvasClick,
+    CanvasDrag,
+    CanvasMove,
+    CanvasRelease,
 }
 
 impl WidgetKind {
@@ -218,6 +227,11 @@ impl WidgetKind {
             "tooltip",
             "grid",
             "canvas",
+            "rect",
+            "circle",
+            "line",
+            "canvas_text",
+            "group",
             "float",
             "for",
             "if",
@@ -358,4 +372,115 @@ mod tests {
                 .contains_key(&WidgetState::Disabled)
         );
     }
+}
+
+// Canvas Shape Types
+
+/// A declarative representation of a shape in a canvas widget.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum CanvasShape {
+    /// A rectangle shape.
+    Rect(RectShape),
+    /// A circle shape.
+    Circle(CircleShape),
+    /// A line segment.
+    Line(LineShape),
+    /// Text drawn on the canvas.
+    Text(TextShape),
+    /// A group of shapes with a common transformation.
+    Group(GroupShape),
+}
+
+/// Attributes for a declarative rectangle shape.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct RectShape {
+    /// The X coordinate of the top-left corner.
+    pub x: AttributeValue,
+    /// The Y coordinate of the top-left corner.
+    pub y: AttributeValue,
+    /// The width of the rectangle.
+    pub width: AttributeValue,
+    /// The height of the rectangle.
+    pub height: AttributeValue,
+    /// The fill color.
+    pub fill: Option<AttributeValue>,
+    /// The stroke color.
+    pub stroke: Option<AttributeValue>,
+    /// The width of the stroke.
+    pub stroke_width: Option<AttributeValue>,
+    /// The corner radius for rounded rectangles.
+    pub radius: Option<AttributeValue>,
+}
+
+/// Attributes for a declarative circle shape.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct CircleShape {
+    /// The X coordinate of the center.
+    pub cx: AttributeValue,
+    /// The Y coordinate of the center.
+    pub cy: AttributeValue,
+    /// The radius of the circle.
+    pub radius: AttributeValue,
+    /// The fill color.
+    pub fill: Option<AttributeValue>,
+    /// The stroke color.
+    pub stroke: Option<AttributeValue>,
+    /// The width of the stroke.
+    pub stroke_width: Option<AttributeValue>,
+}
+
+/// Attributes for a declarative line shape.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LineShape {
+    /// The X coordinate of the starting point.
+    pub x1: AttributeValue,
+    /// The Y coordinate of the starting point.
+    pub y1: AttributeValue,
+    /// The X coordinate of the ending point.
+    pub x2: AttributeValue,
+    /// The Y coordinate of the ending point.
+    pub y2: AttributeValue,
+    /// The stroke color.
+    pub stroke: Option<AttributeValue>,
+    /// The width of the stroke.
+    pub stroke_width: Option<AttributeValue>,
+}
+
+/// Attributes for a declarative text element.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct TextShape {
+    /// The X coordinate of the text baseline.
+    pub x: AttributeValue,
+    /// The Y coordinate of the text baseline.
+    pub y: AttributeValue,
+    /// The content to be displayed.
+    pub content: AttributeValue,
+    /// The font size.
+    pub size: Option<AttributeValue>,
+    /// The text color.
+    pub color: Option<AttributeValue>,
+}
+
+/// Attributes for a group of canvas shapes.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct GroupShape {
+    /// An optional transformation to apply to all child shapes.
+    pub transform: Option<Transform>,
+    /// The child shapes within this group.
+    pub children: Vec<CanvasShape>,
+}
+
+/// Geometric transformations for canvas groups.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum Transform {
+    /// Translate by (x, y).
+    Translate(f32, f32),
+    /// Rotate by an angle in radians.
+    Rotate(f32),
+    /// Uniformly scale.
+    Scale(f32),
+    /// Scale non-uniformly by (x, y).
+    ScaleXY(f32, f32),
+    /// A 2D transformation matrix.
+    Matrix([f32; 6]),
 }

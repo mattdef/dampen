@@ -196,6 +196,17 @@ fn generate_widget_with_locals(
         WidgetKind::Custom(ref name) => {
             generate_custom_widget(node, name, model_ident, message_ident, style_classes)
         }
+        WidgetKind::CanvasRect
+        | WidgetKind::CanvasCircle
+        | WidgetKind::CanvasLine
+        | WidgetKind::CanvasText
+        | WidgetKind::CanvasGroup => {
+            // These are handled by generate_canvas logic, shouldn't appear as top-level widgets
+            Err(super::CodegenError::InvalidWidget(format!(
+                "{:?} is not a top-level widget and must be inside a <canvas>",
+                node.kind
+            )))
+        }
     }
 }
 
@@ -2435,8 +2446,8 @@ fn generate_grid(
 /// Generate canvas widget
 fn generate_canvas(
     node: &crate::WidgetNode,
-    _model_ident: &syn::Ident,
-    _message_ident: &syn::Ident,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
     _style_classes: &HashMap<String, StyleClass>,
 ) -> Result<TokenStream, super::CodegenError> {
     let width = node.attributes.get("width").and_then(|attr| {
@@ -2455,16 +2466,82 @@ fn generate_canvas(
         }
     });
 
-    let size = match (width, height) {
-        (Some(w), Some(h)) => quote! { iced::Size::new(#w, #h) },
-        (Some(w), None) => quote! { iced::Size::new(#w, 100.0) },
-        (None, Some(h)) => quote! { iced::Size::new(100.0, #h) },
-        _ => quote! { iced::Size::new(100.0, 100.0) },
+    let width_expr = match width {
+        Some(w) => quote! { iced::Length::Fixed(#w) },
+        None => quote! { iced::Length::Fixed(400.0) },
     };
 
-    Ok(quote! {
-        iced::widget::canvas(#size).into()
-    })
+    let height_expr = match height {
+        Some(h) => quote! { iced::Length::Fixed(#h) },
+        None => quote! { iced::Length::Fixed(300.0) },
+    };
+
+    // Check for custom program binding
+    let content_expr = if let Some(program_attr) = node.attributes.get("program") {
+        let program_binding = match program_attr {
+            AttributeValue::Binding(expr) => super::bindings::generate_bool_expr(&expr.expr),
+            _ => quote! { None },
+        };
+
+        // Generate declarative canvas for the 'else' case
+        let shape_exprs = generate_canvas_shapes(&node.children, model_ident)?;
+        let handlers_expr = generate_canvas_handlers(node, model_ident, message_ident)?;
+        let prog_init = quote! {
+            dampen_iced::canvas::DeclarativeProgram::new(vec![#(#shape_exprs),*])
+        };
+        let prog_with_handlers = if let Some(handlers) = handlers_expr {
+            quote! { #prog_init.with_handlers(#handlers) }
+        } else {
+            prog_init
+        };
+
+        quote! {
+            if let Some(container) = &#program_binding {
+                 let canvas = iced::widget::canvas(dampen_iced::canvas::CanvasProgramWrapper::new(
+                     dampen_iced::canvas::CanvasContent::Custom(container.0.clone())
+                 ))
+                 .width(#width_expr)
+                 .height(#height_expr);
+
+                 iced::Element::from(canvas).map(|()| unreachable!("Custom program action not supported in codegen"))
+            } else {
+                 let canvas = iced::widget::canvas(dampen_iced::canvas::CanvasProgramWrapper::new(
+                     dampen_iced::canvas::CanvasContent::Declarative(#prog_with_handlers)
+                 ))
+                 .width(#width_expr)
+                 .height(#height_expr);
+
+                 iced::Element::from(canvas)
+            }
+        }
+    } else {
+        // Generate declarative canvas
+        let shape_exprs = generate_canvas_shapes(&node.children, model_ident)?;
+
+        // Parse event handlers
+        let handlers_expr = generate_canvas_handlers(node, model_ident, message_ident)?;
+
+        let prog_init = quote! {
+            dampen_iced::canvas::DeclarativeProgram::new(vec![#(#shape_exprs),*])
+        };
+
+        let prog_with_handlers = if let Some(handlers) = handlers_expr {
+            quote! { #prog_init.with_handlers(#handlers) }
+        } else {
+            prog_init
+        };
+
+        quote! {
+            iced::widget::canvas(dampen_iced::canvas::CanvasProgramWrapper::new(
+                dampen_iced::canvas::CanvasContent::Declarative(#prog_with_handlers)
+            ))
+            .width(#width_expr)
+            .height(#height_expr)
+            .into()
+        }
+    };
+
+    Ok(content_expr)
 }
 
 /// Generate float widget
@@ -3308,6 +3385,316 @@ fn generate_attribute_value_raw_with_locals(
             quote! { format!(#lit, #(#binding_exprs),*) }
         }
     }
+}
+
+fn generate_canvas_shapes(
+    nodes: &[crate::WidgetNode],
+    model_ident: &syn::Ident,
+) -> Result<Vec<TokenStream>, super::CodegenError> {
+    let mut shape_exprs = Vec::new();
+    for node in nodes {
+        match node.kind {
+            WidgetKind::CanvasRect => shape_exprs.push(generate_rect_shape(node, model_ident)?),
+            WidgetKind::CanvasCircle => shape_exprs.push(generate_circle_shape(node, model_ident)?),
+            WidgetKind::CanvasLine => shape_exprs.push(generate_line_shape(node, model_ident)?),
+            WidgetKind::CanvasText => shape_exprs.push(generate_text_shape(node, model_ident)?),
+            WidgetKind::CanvasGroup => shape_exprs.push(generate_group_shape(node, model_ident)?),
+            _ => {}
+        }
+    }
+    Ok(shape_exprs)
+}
+
+fn generate_rect_shape(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+) -> Result<TokenStream, super::CodegenError> {
+    let x = generate_f32_attr(node, "x", 0.0, model_ident);
+    let y = generate_f32_attr(node, "y", 0.0, model_ident);
+    let width = generate_f32_attr(node, "width", 0.0, model_ident);
+    let height = generate_f32_attr(node, "height", 0.0, model_ident);
+    let fill = generate_color_option_attr(node, "fill", model_ident);
+    let stroke = generate_color_option_attr(node, "stroke", model_ident);
+    let stroke_width = generate_f32_attr(node, "stroke_width", 1.0, model_ident);
+    let radius = generate_f32_attr(node, "radius", 0.0, model_ident);
+
+    Ok(quote! {
+        dampen_iced::canvas::CanvasShape::Rect(dampen_iced::canvas::RectShape {
+            x: #x,
+            y: #y,
+            width: #width,
+            height: #height,
+            fill: #fill,
+            stroke: #stroke,
+            stroke_width: #stroke_width,
+            radius: #radius,
+        })
+    })
+}
+
+fn generate_circle_shape(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+) -> Result<TokenStream, super::CodegenError> {
+    let cx = generate_f32_attr(node, "cx", 0.0, model_ident);
+    let cy = generate_f32_attr(node, "cy", 0.0, model_ident);
+    let radius = generate_f32_attr(node, "radius", 0.0, model_ident);
+    let fill = generate_color_option_attr(node, "fill", model_ident);
+    let stroke = generate_color_option_attr(node, "stroke", model_ident);
+    let stroke_width = generate_f32_attr(node, "stroke_width", 1.0, model_ident);
+
+    Ok(quote! {
+        dampen_iced::canvas::CanvasShape::Circle(dampen_iced::canvas::CircleShape {
+            cx: #cx,
+            cy: #cy,
+            radius: #radius,
+            fill: #fill,
+            stroke: #stroke,
+            stroke_width: #stroke_width,
+        })
+    })
+}
+
+fn generate_line_shape(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+) -> Result<TokenStream, super::CodegenError> {
+    let x1 = generate_f32_attr(node, "x1", 0.0, model_ident);
+    let y1 = generate_f32_attr(node, "y1", 0.0, model_ident);
+    let x2 = generate_f32_attr(node, "x2", 0.0, model_ident);
+    let y2 = generate_f32_attr(node, "y2", 0.0, model_ident);
+    let stroke = generate_color_option_attr(node, "stroke", model_ident);
+    let stroke_width = generate_f32_attr(node, "stroke_width", 1.0, model_ident);
+
+    Ok(quote! {
+        dampen_iced::canvas::CanvasShape::Line(dampen_iced::canvas::LineShape {
+            x1: #x1,
+            y1: #y1,
+            x2: #x2,
+            y2: #y2,
+            stroke: #stroke,
+            stroke_width: #stroke_width,
+        })
+    })
+}
+
+fn generate_text_shape(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+) -> Result<TokenStream, super::CodegenError> {
+    let x = generate_f32_attr(node, "x", 0.0, model_ident);
+    let y = generate_f32_attr(node, "y", 0.0, model_ident);
+    let content = generate_attribute_value(
+        node.attributes
+            .get("content")
+            .unwrap_or(&AttributeValue::Static(String::new())),
+        model_ident,
+    );
+    let size = generate_f32_attr(node, "size", 16.0, model_ident);
+    let color = generate_color_option_attr(node, "color", model_ident);
+
+    Ok(quote! {
+        dampen_iced::canvas::CanvasShape::Text(dampen_iced::canvas::TextShape {
+            x: #x,
+            y: #y,
+            content: #content,
+            size: #size,
+            color: #color,
+        })
+    })
+}
+
+fn generate_group_shape(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+) -> Result<TokenStream, super::CodegenError> {
+    let children = generate_canvas_shapes(&node.children, model_ident)?;
+    let transform = generate_transform_attr(node, model_ident);
+
+    Ok(quote! {
+        dampen_iced::canvas::CanvasShape::Group(dampen_iced::canvas::GroupShape {
+            transform: #transform,
+            children: vec![#(#children),*],
+        })
+    })
+}
+
+fn generate_f32_attr(
+    node: &crate::WidgetNode,
+    name: &str,
+    default: f32,
+    _model_ident: &syn::Ident,
+) -> TokenStream {
+    if let Some(attr) = node.attributes.get(name) {
+        match attr {
+            AttributeValue::Static(s) => {
+                let val = s.parse::<f32>().unwrap_or(default);
+                quote! { #val }
+            }
+            AttributeValue::Binding(expr) => {
+                let tokens = super::bindings::generate_bool_expr(&expr.expr);
+                quote! { (#tokens) as f32 }
+            }
+            AttributeValue::Interpolated(_) => quote! { #default },
+        }
+    } else {
+        quote! { #default }
+    }
+}
+
+fn generate_color_option_attr(
+    node: &crate::WidgetNode,
+    name: &str,
+    _model_ident: &syn::Ident,
+) -> TokenStream {
+    if let Some(attr) = node.attributes.get(name) {
+        match attr {
+            AttributeValue::Static(s) => {
+                if let Ok(c) = crate::parser::style_parser::parse_color_attr(s) {
+                    let r = c.r;
+                    let g = c.g;
+                    let b = c.b;
+                    let a = c.a;
+                    quote! { Some(iced::Color::from_rgba(#r, #g, #b, #a)) }
+                } else {
+                    quote! { None }
+                }
+            }
+            AttributeValue::Binding(expr) => {
+                let tokens = generate_expr(&expr.expr);
+                quote! {
+                    dampen_iced::convert::parse_color_maybe(&(#tokens).to_string())
+                        .map(|c| iced::Color::from_rgba(c.r, c.g, c.b, c.a))
+                }
+            }
+            _ => quote! { None },
+        }
+    } else {
+        quote! { None }
+    }
+}
+
+fn generate_transform_attr(node: &crate::WidgetNode, _model_ident: &syn::Ident) -> TokenStream {
+    if let Some(AttributeValue::Static(s)) = node.attributes.get("transform") {
+        let s = s.trim();
+        if let Some(inner) = s
+            .strip_prefix("translate(")
+            .and_then(|s| s.strip_suffix(")"))
+        {
+            let parts: Vec<f32> = inner
+                .split(',')
+                .filter_map(|p| p.trim().parse().ok())
+                .collect();
+            if parts.len() == 2 {
+                let x = parts[0];
+                let y = parts[1];
+                return quote! { Some(dampen_iced::canvas::Transform::Translate(#x, #y)) };
+            }
+        }
+        if let Some(inner) = s.strip_prefix("rotate(").and_then(|s| s.strip_suffix(")"))
+            && let Ok(angle) = inner.trim().parse::<f32>()
+        {
+            return quote! { Some(dampen_iced::canvas::Transform::Rotate(#angle)) };
+        }
+        if let Some(inner) = s.strip_prefix("scale(").and_then(|s| s.strip_suffix(")")) {
+            let parts: Vec<f32> = inner
+                .split(',')
+                .filter_map(|p| p.trim().parse().ok())
+                .collect();
+            if parts.len() == 1 {
+                let s = parts[0];
+                return quote! { Some(dampen_iced::canvas::Transform::Scale(#s)) };
+            } else if parts.len() == 2 {
+                let x = parts[0];
+                let y = parts[1];
+                return quote! { Some(dampen_iced::canvas::Transform::ScaleXY(#x, #y)) };
+            }
+        }
+        if let Some(inner) = s.strip_prefix("matrix(").and_then(|s| s.strip_suffix(")")) {
+            let parts: Vec<f32> = inner
+                .split(',')
+                .filter_map(|p| p.trim().parse().ok())
+                .collect();
+            if parts.len() == 6 {
+                return quote! { Some(dampen_iced::canvas::Transform::Matrix([#(#parts),*])) };
+            }
+        }
+        quote! { None }
+    } else {
+        quote! { None }
+    }
+}
+
+fn generate_canvas_handlers(
+    node: &crate::WidgetNode,
+    _model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+) -> Result<Option<TokenStream>, super::CodegenError> {
+    let on_click = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::CanvasClick);
+    let on_drag = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::CanvasDrag);
+    let on_move = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::CanvasMove);
+    let on_release = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::CanvasRelease);
+
+    if on_click.is_none() && on_drag.is_none() && on_move.is_none() && on_release.is_none() {
+        return Ok(None);
+    }
+
+    let mut match_arms = Vec::new();
+
+    if let Some(e) = on_click {
+        let variant = format_ident!("{}", to_upper_camel_case(&e.handler));
+        let name = &e.handler;
+        match_arms.push(quote! { #name => #message_ident :: #variant(event) });
+    }
+    if let Some(e) = on_drag {
+        let variant = format_ident!("{}", to_upper_camel_case(&e.handler));
+        let name = &e.handler;
+        match_arms.push(quote! { #name => #message_ident :: #variant(event) });
+    }
+    if let Some(e) = on_move {
+        let variant = format_ident!("{}", to_upper_camel_case(&e.handler));
+        let name = &e.handler;
+        match_arms.push(quote! { #name => #message_ident :: #variant(event) });
+    }
+    if let Some(e) = on_release {
+        let variant = format_ident!("{}", to_upper_camel_case(&e.handler));
+        let name = &e.handler;
+        match_arms.push(quote! { #name => #message_ident :: #variant(event) });
+    }
+
+    let click_name = on_click.map(|e| e.handler.as_str()).unwrap_or("");
+    let drag_name = on_drag.map(|e| e.handler.as_str()).unwrap_or("");
+    let move_name = on_move.map(|e| e.handler.as_str()).unwrap_or("");
+    let release_name = on_release.map(|e| e.handler.as_str()).unwrap_or("");
+
+    Ok(Some(quote! {
+        dampen_iced::canvas::CanvasEventHandlers {
+            handler_names: dampen_iced::canvas::CanvasHandlerNames {
+                on_click: if #click_name != "" { Some(#click_name.to_string()) } else { None },
+                on_drag: if #drag_name != "" { Some(#drag_name.to_string()) } else { None },
+                on_move: if #move_name != "" { Some(#move_name.to_string()) } else { None },
+                on_release: if #release_name != "" { Some(#release_name.to_string()) } else { None },
+            },
+            msg_factory: |name, event| {
+                 match name {
+                     #(#match_arms,)*
+                     _ => panic!("Unknown canvas handler: {}", name),
+                 }
+            }
+        }
+    }))
 }
 
 #[cfg(test)]

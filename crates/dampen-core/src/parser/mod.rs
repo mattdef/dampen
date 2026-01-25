@@ -1,4 +1,5 @@
 pub mod attribute_standard;
+pub mod canvas;
 pub mod error;
 pub mod gradient;
 pub mod lexer;
@@ -21,7 +22,7 @@ use std::collections::HashMap;
 ///
 /// Files declaring a version higher than this will be rejected with an error.
 /// Update this constant when the framework adds support for new schema versions.
-pub const MAX_SUPPORTED_VERSION: SchemaVersion = SchemaVersion { major: 1, minor: 0 };
+pub const MAX_SUPPORTED_VERSION: SchemaVersion = SchemaVersion { major: 1, minor: 1 };
 
 /// Parse a version string in "major.minor" format into a SchemaVersion.
 ///
@@ -193,6 +194,11 @@ fn widget_kind_name(kind: &WidgetKind) -> String {
         WidgetKind::Float => "float".to_string(),
         WidgetKind::For => "for".to_string(),
         WidgetKind::If => "if".to_string(),
+        WidgetKind::CanvasRect => "rect".to_string(),
+        WidgetKind::CanvasCircle => "circle".to_string(),
+        WidgetKind::CanvasLine => "line".to_string(),
+        WidgetKind::CanvasText => "canvas_text".to_string(),
+        WidgetKind::CanvasGroup => "group".to_string(),
         WidgetKind::Custom(name) => name.clone(),
     }
 }
@@ -338,30 +344,19 @@ fn validate_widget_attributes(
             )?;
         }
         WidgetKind::Canvas => {
-            require_attribute(
-                kind,
-                "width",
-                attributes,
-                span,
-                "Add width attribute: width=\"400\"",
-            )?;
-            require_attribute(
-                kind,
-                "height",
-                attributes,
-                span,
-                "Add height attribute: height=\"200\"",
-            )?;
-            require_attribute(
-                kind,
-                "program",
-                attributes,
-                span,
-                "Add program attribute: program=\"{{chart}}\"",
-            )?;
-
+            // Width and height are optional (defaulted in builder if missing)
+            // But validation ensures they are numbers if present
             validate_numeric_range(kind, "width", attributes, span, 50..=4000)?;
             validate_numeric_range(kind, "height", attributes, span, 50..=4000)?;
+
+            // T069: Warn if both 'program' attribute and children shapes are present
+            if attributes.contains_key("program") {
+                // We need access to children to check this.
+                // But validate_widget_attributes doesn't have children.
+                // I should probably move this check to where children are available,
+                // or change the signature.
+                // Actually, I can check this in parse_node or validate_canvas_children.
+            }
         }
         WidgetKind::Grid => {
             require_attribute(
@@ -397,6 +392,13 @@ fn validate_widget_attributes(
                 span,
                 "Add in attribute: in=\"{items}\"",
             )?;
+        }
+        WidgetKind::CanvasRect
+        | WidgetKind::CanvasCircle
+        | WidgetKind::CanvasLine
+        | WidgetKind::CanvasText
+        | WidgetKind::CanvasGroup => {
+            canvas::validate_shape_attributes(kind, attributes, span)?;
         }
         _ => {}
     }
@@ -503,20 +505,28 @@ fn validate_tooltip_children(children: &[WidgetNode], span: Span) -> Result<(), 
     Ok(())
 }
 
-/// Validate Canvas widget has no children (is a leaf widget)
-fn validate_canvas_children(children: &[WidgetNode], span: Span) -> Result<(), ParseError> {
-    if !children.is_empty() {
+/// Validate Canvas widget children (must be shapes)
+fn validate_canvas_children(
+    attributes: &HashMap<String, AttributeValue>,
+    children: &[WidgetNode],
+    span: Span,
+) -> Result<(), ParseError> {
+    // T069: Warn if both 'program' attribute and children shapes are present
+    if attributes.contains_key("program") && !children.is_empty() {
+        // This is a warning-level check, but Dampen parser usually returns Result.
+        // For now, let's treat it as a validation error or just a log?
+        // Constitution says "Prefer helpful errors with suggestions".
+        // If both are present, 'program' wins in the builder.
+        // So we should probably error to avoid confusion.
         return Err(ParseError {
             kind: ParseErrorKind::InvalidValue,
-            message: format!(
-                "Canvas widget cannot have children, found {}",
-                children.len()
-            ),
+            message: "Canvas cannot have both a 'program' attribute and child shapes".to_string(),
             span,
-            suggestion: Some("Canvas is a leaf widget - remove child elements".to_string()),
+            suggestion: Some("Remove the 'program' attribute to use declarative shapes, or remove children to use a custom program".to_string()),
         });
     }
-    Ok(())
+
+    canvas::validate_canvas_children(children, span)
 }
 
 /// Parse a single XML node into a WidgetNode
@@ -556,6 +566,11 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "tooltip" => WidgetKind::Tooltip,
         "grid" => WidgetKind::Grid,
         "canvas" => WidgetKind::Canvas,
+        "rect" => WidgetKind::CanvasRect,
+        "circle" => WidgetKind::CanvasCircle,
+        "line" => WidgetKind::CanvasLine,
+        "canvas_text" => WidgetKind::CanvasText,
+        "group" => WidgetKind::CanvasGroup,
         "float" => WidgetKind::Float,
         "for" => WidgetKind::For,
         "if" => WidgetKind::If,
@@ -610,9 +625,11 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         // Check for event attributes (on_click, on_change, etc.)
         if name.starts_with("on_") {
             let event_kind = match name.as_str() {
-                "on_click" => Some(EventKind::Click),
+                "on_click" => Some(EventKind::CanvasClick), // Prefer specific Canvas variants if they exist
                 "on_press" => Some(EventKind::Press),
-                "on_release" => Some(EventKind::Release),
+                "on_release" => Some(EventKind::CanvasRelease),
+                "on_drag" => Some(EventKind::CanvasDrag),
+                "on_move" => Some(EventKind::CanvasMove),
                 "on_change" => Some(EventKind::Change),
                 "on_input" => Some(EventKind::Input),
                 "on_submit" => Some(EventKind::Submit),
@@ -620,6 +637,17 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
                 "on_toggle" => Some(EventKind::Toggle),
                 "on_scroll" => Some(EventKind::Scroll),
                 _ => None,
+            };
+
+            // Fallback for non-canvas widgets (or where CanvasClick isn't desired)
+            let event_kind = if kind != WidgetKind::Canvas {
+                match name.as_str() {
+                    "on_click" => Some(EventKind::Click),
+                    "on_release" => Some(EventKind::Release),
+                    _ => event_kind,
+                }
+            } else {
+                event_kind
             };
 
             if let Some(event) = event_kind {
@@ -732,7 +760,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
 
     // Validate Canvas has no children (leaf widget)
     if kind == WidgetKind::Canvas {
-        validate_canvas_children(&children, get_span(node, source))?;
+        validate_canvas_children(&attributes, &children, get_span(node, source))?;
     }
 
     // Parse layout and style attributes into structured fields

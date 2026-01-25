@@ -128,6 +128,11 @@ fn widget_kind_to_string(kind: &WidgetKind) -> String {
         WidgetKind::Float => "Float".to_string(),
         WidgetKind::For => "For".to_string(),
         WidgetKind::If => "If".to_string(),
+        WidgetKind::CanvasRect => "Rect".to_string(),
+        WidgetKind::CanvasCircle => "Circle".to_string(),
+        WidgetKind::CanvasLine => "Line".to_string(),
+        WidgetKind::CanvasText => "Text".to_string(),
+        WidgetKind::CanvasGroup => "Group".to_string(),
         WidgetKind::Custom(name) => name.clone(),
     }
 }
