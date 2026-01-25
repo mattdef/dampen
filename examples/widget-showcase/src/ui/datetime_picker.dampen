@@ -1,0 +1,42 @@
+<dampen version="1.1">
+    <container padding="20" width="fill" height="fill" align_x="center" align_y="center">
+        <column spacing="20" align_items="center">
+            <row width="fill">
+                 <button label="← Back" on_click="switch_to_window" />
+                 <space />
+            </row>
+
+            <text value="Dampen v1.1 DateTime Pickers" size="24" weight="bold" />
+
+            <row spacing="20">
+                <column spacing="5" align_items="center">
+                    <text value="Date Picker" weight="bold" />
+                    <date_picker
+                        value="{selected_date}"
+                        show="{show_date_picker}"
+                        on_submit="handle_date_selected"
+                        on_cancel="close_date_picker">
+                        <button label="Date: {selected_date}" on_click="toggle_date_picker" />
+                    </date_picker>
+                </column>
+
+                <column spacing="5" align_items="center">
+                    <text value="Time Picker" weight="bold" />
+                    <time_picker
+                        value="{selected_time}"
+                        show="{show_time_picker}"
+                        use_24h="true"
+                        show_seconds="true"
+                        on_submit="handle_time_selected"
+                        on_cancel="close_time_picker">
+                        <button label="Time: {selected_time}" on_click="toggle_time_picker" />
+                    </time_picker>
+                </column>
+            </row>
+
+            <rule />
+
+            <text value="Selection: {selected_date} at {selected_time}" />
+        </column>
+    </container>
+</dampen>
