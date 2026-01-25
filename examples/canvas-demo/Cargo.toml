@@ -1,0 +1,29 @@
+[package]
+name = "canvas-demo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+build = "build.rs"
+
+[dependencies]
+# The other examples use workspace deps. Let's use workspace deps.
+dampen-core = { workspace = true }
+dampen-macros = { workspace = true }
+dampen-iced = { workspace = true }
+dampen-dev = { workspace = true }
+iced = { workspace = true, features = ["canvas"] } # Need canvas feature
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = "0.4"
+
+[build-dependencies]
+dampen-core = { workspace = true }
+
+[features]
+default = ["interpreted"]
+codegen = ["dampen-core/codegen"]
+interpreted = ["dampen-core/interpreted"]
+
+[[bin]]
+name = "canvas-demo"
+path = "src/main.rs"

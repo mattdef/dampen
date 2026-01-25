@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dampen version="1.0">
+    <column
+        width="fill"
+        height="fill"
+        align_items="center"
+        justify_content="center"
+        spacing="20"
+    >
+        <text value="Dampen Canvas Demo" size="24" weight="bold" />
+
+        <row spacing="10">
+            <button label="Change Color" on_click="change_color" />
+        </row>
+
+        <!-- Added on_click, on_drag and on_release handlers -->
+        <canvas
+            width="400"
+            height="300"
+            on_click="on_canvas_click"
+            on_drag="on_canvas_drag"
+            on_release="on_canvas_release"
+        >
+            <!-- Background Rect -->
+            <rect
+                x="50"
+                y="50"
+                width="300"
+                height="200"
+                fill="{rect_color}"
+                radius="10"
+                stroke="#2980b9"
+                stroke_width="2"
+            />
+
+            <!-- Circle -->
+            <circle
+                cx="{circle_x}"
+                cy="{circle_y}"
+                radius="{circle_radius}"
+                fill="#e74c3c"
+                stroke="#c0392b"
+                stroke_width="3"
+            />
+
+            <!-- Text moved inside the rect -->
+            <canvas_text
+                x="140"
+                y="100"
+                size="20"
+                color="#ffffff"
+                content="Hello Canvas!"
+            />
+
+            <!-- Group with transform -->
+            <group transform="translate(40, 40)">
+                <rect x="60" y="60" width="30" height="30" fill="#f1c40f" />
+            </group>
+        </canvas>
+
+        <text value="Custom Clock Program:" size="20" weight="bold" />
+        <canvas width="200" height="200" program="{clock}" />
+    </column>
+</dampen>
