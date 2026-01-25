@@ -225,7 +225,8 @@ fn widget_kind_name(kind: &WidgetKind) -> String {
 /// ```rust
 /// use dampen_core::{parse, validate_widget_versions};
 ///
-/// let xml = r#"<dampen version="1.1" encoding="utf-8"><canvas width="400" height="200" program="{chart}" /></dampen>"#;
+/// // Implicit document defaults to v1.0, but Canvas requires v1.1
+/// let xml = r#"<canvas width="400" height="200" program="{chart}" />"#;
 /// let doc = parse(xml).unwrap();
 /// let warnings = validate_widget_versions(&doc);
 /// assert_eq!(warnings.len(), 1); // Canvas requires v1.1
@@ -260,6 +261,27 @@ fn validate_widget_tree(
     }
 }
 
+/// Preprocess XML to handle state attributes without XML namespaces.
+///
+/// Converts attributes like `hover:background` to `hover__state__background`
+/// to avoid "unknown namespace prefix" errors from roxmltree.
+fn preprocess_xml(xml: &str) -> String {
+    let mut result = xml.to_string();
+    let states = ["hover", "active", "focus", "disabled"];
+    let prefixes = [' ', '\n', '\t', '\r'];
+
+    for state in states {
+        for prefix in prefixes {
+            // We want to replace " hover:" with " hover__state__"
+            // Note: We deliberately remove the colon to make it a valid non-namespaced attribute
+            let target = format!("{}{}:", prefix, state);
+            let sub = format!("{}{}_state_", prefix, state);
+            result = result.replace(&target, &sub);
+        }
+    }
+    result
+}
+
 /// Parse XML markup into a DampenDocument.
 ///
 /// This is the main entry point for the parser. It takes XML markup and
@@ -292,8 +314,11 @@ fn validate_widget_tree(
 /// - Invalid attribute values
 /// - Malformed binding expressions
 pub fn parse(xml: &str) -> Result<DampenDocument, ParseError> {
+    // Preprocess XML to handle state attributes
+    let processed_xml = preprocess_xml(xml);
+
     // Parse XML using roxmltree
-    let doc = Document::parse(xml).map_err(|e| ParseError {
+    let doc = Document::parse(&processed_xml).map_err(|e| ParseError {
         kind: ParseErrorKind::XmlSyntax,
         message: e.to_string(),
         span: Span::new(0, 0, 1, 1),
@@ -869,6 +894,19 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
                 .insert(attr_name.to_string(), attr_value);
             continue;
         }
+
+        // Handle preprocessed state attributes (e.g. "hover_state_background")
+        if let Some((state_prefix, attr_name)) = name.split_once("_state_")
+            && let Some(state) = WidgetState::from_prefix(state_prefix)
+        {
+            let attr_value = parse_attribute_value(value, get_span(node, source))?;
+            inline_state_variants
+                .entry(state)
+                .or_default()
+                .insert(attr_name.to_string(), attr_value);
+            continue;
+        }
+
         // If state prefix is invalid, log warning and treat as regular attribute
         // TODO: Add proper logging when verbose mode is implemented
 

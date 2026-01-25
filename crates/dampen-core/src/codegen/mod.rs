@@ -261,7 +261,7 @@ pub fn generate_application(
 ) -> Result<CodegenOutput, CodegenError> {
     let warnings = Vec::new();
 
-    let message_enum = generate_message_enum(handlers);
+    let message_enum = generate_message_enum(handlers)?;
 
     let view_fn = view::generate_view(document, model_name, message_name)?;
 
@@ -333,7 +333,7 @@ pub fn generate_application_with_theme_and_subscriptions(
         subscription::SubscriptionConfig::from_theme_document(theme_document, message_name);
 
     // Generate message enum with system theme variant if needed
-    let message_enum = generate_message_enum_with_subscription(handlers, Some(&sub_config));
+    let message_enum = generate_message_enum_with_subscription(handlers, Some(&sub_config))?;
 
     let view_fn = view::generate_view(document, model_name, message_name)?;
 
@@ -451,7 +451,7 @@ pub fn generate_application_full(
     let has_persistence = persistence.is_some();
 
     // Generate message enum with system theme variant and window events if needed
-    let message_enum = generate_message_enum_full(handlers, Some(&sub_config), has_persistence);
+    let message_enum = generate_message_enum_full(handlers, Some(&sub_config), has_persistence)?;
 
     let view_fn = view::generate_view(document, model_name, message_name)?;
 
@@ -710,7 +710,7 @@ pub fn generate_application_full(
 }
 
 /// Generate Message enum from handler signatures
-fn generate_message_enum(handlers: &[HandlerSignature]) -> TokenStream {
+fn generate_message_enum(handlers: &[HandlerSignature]) -> Result<TokenStream, syn::Error> {
     generate_message_enum_with_subscription(handlers, None)
 }
 
@@ -718,7 +718,7 @@ fn generate_message_enum(handlers: &[HandlerSignature]) -> TokenStream {
 fn generate_message_enum_with_subscription(
     handlers: &[HandlerSignature],
     sub_config: Option<&subscription::SubscriptionConfig>,
-) -> TokenStream {
+) -> Result<TokenStream, syn::Error> {
     generate_message_enum_full(handlers, sub_config, false)
 }
 
@@ -727,7 +727,7 @@ fn generate_message_enum_full(
     handlers: &[HandlerSignature],
     sub_config: Option<&subscription::SubscriptionConfig>,
     include_window_events: bool,
-) -> TokenStream {
+) -> Result<TokenStream, syn::Error> {
     let handler_variants: Vec<_> = handlers
         .iter()
         .map(|h| {
@@ -743,14 +743,21 @@ fn generate_message_enum_full(
                 } else {
                     param_type
                 };
-                let type_path: syn::Type =
-                    syn::parse_str(effective_type).expect("Failed to parse parameter type");
-                quote! { #ident(#type_path) }
+                let type_path: syn::Type = syn::parse_str(effective_type).map_err(|e| {
+                    syn::Error::new(
+                        proc_macro2::Span::call_site(),
+                        format!(
+                            "Failed to parse parameter type '{}' for handler '{}': {}",
+                            effective_type, h.name, e
+                        ),
+                    )
+                })?;
+                Ok::<_, syn::Error>(quote! { #ident(#type_path) })
             } else {
-                quote! { #ident }
+                Ok::<_, syn::Error>(quote! { #ident })
             }
         })
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
 
     // Add system theme variant if configured
     let system_theme_variant = sub_config.and_then(subscription::generate_system_theme_variant);
@@ -771,19 +778,12 @@ fn generate_message_enum_full(
         .chain(window_variant)
         .collect();
 
-    if all_variants.is_empty() {
-        return quote! {
-            #[derive(Clone, Debug)]
-            pub enum Message {}
-        };
-    }
-
-    quote! {
-        #[derive(Clone, Debug)]
+    Ok(quote! {
+        #[derive(Debug, Clone)]
         pub enum Message {
             #(#all_variants),*
         }
-    }
+    })
 }
 
 /// Convert snake_case to UpperCamelCase
@@ -918,6 +918,9 @@ pub enum CodegenError {
 
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
+
+    #[error("Syntax error: {0}")]
+    SyntaxError(#[from] syn::Error),
 }
 
 #[cfg(test)]
@@ -940,7 +943,7 @@ mod tests {
             },
         ];
 
-        let tokens = generate_message_enum(&handlers);
+        let tokens = generate_message_enum(&handlers).unwrap();
         let code = tokens.to_string();
 
         assert!(code.contains("Increment"));

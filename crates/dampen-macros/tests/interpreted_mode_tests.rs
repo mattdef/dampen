@@ -49,7 +49,7 @@ mod interpreted_active {
 
         let doc = result.unwrap();
         assert_eq!(doc.version.major, 1);
-        assert_eq!(doc.version.minor, 0);
+        assert_eq!(doc.version.minor, 1);
     }
 
     #[test]

@@ -24,7 +24,7 @@ static DAMPEN_DOCUMENT: LazyLock<dampen_core::DampenDocument> = LazyLock::new(||
 fn test_document_parsing() {
     let doc = &DAMPEN_DOCUMENT;
     assert_eq!(doc.version.major, 1);
-    assert_eq!(doc.version.minor, 0);
+    assert_eq!(doc.version.minor, 1);
     assert!(matches!(doc.root.kind, dampen_core::ir::WidgetKind::Column));
 }
 

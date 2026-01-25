@@ -474,8 +474,8 @@ fn test_build_canvas_with_click_event() {
 
     let event = &canvas.events[0];
     assert!(
-        matches!(event.event, EventKind::Click),
-        "Event kind should be Click"
+        matches!(event.event, EventKind::CanvasClick),
+        "Event kind should be CanvasClick"
     );
     assert_eq!(
         event.handler, "handle_canvas_click",

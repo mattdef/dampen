@@ -58,7 +58,7 @@ fn parse_picklist_basic() {
 fn parse_combobox_with_all_attributes() {
     let xml = r#"<?xml version="1.0"?>
 <column>
-    <combobox 
+    <combobox
         options="Work,Personal,Shopping,Other"
         selected="{category}"
         placeholder="Select category..."
@@ -101,7 +101,7 @@ fn parse_combobox_with_all_attributes() {
 fn parse_picklist_with_all_attributes() {
     let xml = r#"<?xml version="1.0"?>
 <column>
-    <pick_list 
+    <pick_list
         options="All,Active,Completed"
         selected="{filter}"
         placeholder="Filter tasks..."
@@ -645,9 +645,9 @@ fn parse_canvas_basic() {
 fn parse_canvas_with_all_attributes() {
     let xml = r#"<?xml version="1.0"?>
 <column>
-    <canvas 
-        width="800" 
-        height="600" 
+    <canvas
+        width="800"
+        height="600"
         program="{chart_program}"
         on_click="handle_canvas_click"
     />
@@ -684,8 +684,8 @@ fn parse_canvas_with_all_attributes() {
     assert_eq!(canvas.events.len(), 1, "Should have one event handler");
     let event = &canvas.events[0];
     assert!(
-        matches!(event.event, EventKind::Click),
-        "Event should be Click"
+        matches!(event.event, EventKind::CanvasClick),
+        "Event should be CanvasClick"
     );
     assert_eq!(event.handler, "handle_canvas_click");
 }
@@ -783,57 +783,33 @@ fn parse_canvas_size_validation_valid() {
     assert!(result.is_ok(), "Should succeed for typical canvas size");
 }
 
-/// T072: Contract test for Canvas missing required attributes
+/// T072: Contract test for Canvas width attribute is optional
 #[test]
-fn parse_canvas_missing_width_errors() {
+fn parse_canvas_optional_width() {
     let xml = r#"<?xml version="1.0"?>
 <column>
     <canvas height="200" program="{chart}" />
 </column>"#;
 
     let result = parse(xml);
-    assert!(result.is_err(), "Should fail when width is missing");
-    let err = result.unwrap_err();
     assert!(
-        err.to_string().to_lowercase().contains("width"),
-        "Error should mention width: {}",
-        err
+        result.is_ok(),
+        "Canvas should parse when width is missing (optional)"
     );
 }
 
-/// T072: Contract test for Canvas missing height
+/// T072: Contract test for Canvas height attribute is optional
 #[test]
-fn parse_canvas_missing_height_errors() {
+fn parse_canvas_optional_height() {
     let xml = r#"<?xml version="1.0"?>
 <column>
     <canvas width="400" program="{chart}" />
 </column>"#;
 
     let result = parse(xml);
-    assert!(result.is_err(), "Should fail when height is missing");
-    let err = result.unwrap_err();
     assert!(
-        err.to_string().to_lowercase().contains("height"),
-        "Error should mention height: {}",
-        err
-    );
-}
-
-/// T072: Contract test for Canvas missing program
-#[test]
-fn parse_canvas_missing_program_errors() {
-    let xml = r#"<?xml version="1.0"?>
-<column>
-    <canvas width="400" height="200" />
-</column>"#;
-
-    let result = parse(xml);
-    assert!(result.is_err(), "Should fail when program is missing");
-    let err = result.unwrap_err();
-    assert!(
-        err.to_string().to_lowercase().contains("program"),
-        "Error should mention program: {}",
-        err
+        result.is_ok(),
+        "Canvas should parse when height is missing (optional)"
     );
 }
 

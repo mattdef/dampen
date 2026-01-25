@@ -209,14 +209,10 @@ mod validate_version_supported_tests {
     // Unsupported version tests (T021-T023)
 
     #[test]
-    fn validate_unsupported_version_1_1() {
+    fn validate_supported_version_1_1() {
         let version = SchemaVersion { major: 1, minor: 1 };
         let result = validate_version_supported(&version, dummy_span());
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert_eq!(err.kind, ParseErrorKind::UnsupportedVersion);
-        assert!(err.message.contains("1.1"));
-        assert!(err.message.contains("not supported"));
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -241,7 +237,7 @@ mod validate_version_supported_tests {
         assert!(err.message.contains("2.0"));
 
         // Check that max supported version is in message
-        assert!(err.message.contains("1.0"));
+        assert!(err.message.contains("1.1"));
 
         // Check suggestion exists
         assert!(err.suggestion.is_some());
@@ -257,18 +253,18 @@ mod parser_integration_tests {
     // Parser integration tests (T026-T029)
 
     #[test]
-    fn parse_document_with_version_1_0() {
+    fn parse_document_with_version_1_1() {
         let xml = r#"<dampen version="1.1" encoding="utf-8"><column><text value="Hello" /></column></dampen>"#;
         let result = parse(xml);
         assert!(result.is_ok());
         let doc = result.unwrap();
         assert_eq!(doc.version.major, 1);
-        assert_eq!(doc.version.minor, 0);
+        assert_eq!(doc.version.minor, 1);
     }
 
     #[test]
     fn parse_document_without_version_defaults() {
-        let xml = r#"<dampen version="1.1" encoding="utf-8"><column><text value="Hello" /></column></dampen>"#;
+        let xml = r#"<dampen encoding="utf-8"><column><text value="Hello" /></column></dampen>"#;
         let result = parse(xml);
         assert!(result.is_ok());
         let doc = result.unwrap();
@@ -398,11 +394,13 @@ mod widget_version_validation_tests {
 
     #[test]
     fn validate_canvas_in_v1_0_document_produces_warning() {
-        let xml = r#"<dampen version="1.1" encoding="utf-8">
+        // Use implicit v1.0 document (no <dampen> tag) to bypass strict validation in parse()
+        // so we can test the warning generation
+        let xml = r#"
             <column>
                 <canvas width="400" height="200" program="{chart}" />
             </column>
-        </dampen>"#;
+        "#;
         let doc = parse(xml).unwrap();
         let warnings = validate_widget_versions(&doc);
 
@@ -422,21 +420,20 @@ mod widget_version_validation_tests {
 
     #[test]
     fn validate_canvas_in_v1_1_document_no_warning() {
-        // This will fail to parse because v1.1 is unsupported
-        // But we can test the logic when MAX_SUPPORTED_VERSION is updated
         let xml = r#"<dampen version="1.1" encoding="utf-8">
             <canvas width="400" height="200" program="{chart}" />
         </dampen>"#;
         let doc = parse(xml).unwrap();
         let warnings = validate_widget_versions(&doc);
 
-        // Currently produces warning because document is v1.0
-        assert_eq!(warnings.len(), 1);
+        // Should produce no warnings because document is v1.1
+        assert!(warnings.is_empty());
     }
 
     #[test]
     fn validate_nested_canvas_produces_warning() {
-        let xml = r#"<dampen version="1.1" encoding="utf-8">
+        // Use implicit v1.0 document (no <dampen> tag)
+        let xml = r#"
             <column>
                 <row>
                     <container>
@@ -445,7 +442,7 @@ mod widget_version_validation_tests {
                 </row>
                 <canvas width="400" height="200" program="{main_chart}" />
             </column>
-        </dampen>"#;
+        "#;
         let doc = parse(xml).unwrap();
         let warnings = validate_widget_versions(&doc);
 
@@ -457,9 +454,8 @@ mod widget_version_validation_tests {
 
     #[test]
     fn validate_warning_format_message() {
-        let xml = r#"<dampen version="1.1" encoding="utf-8">
-            <canvas width="400" height="200" program="{chart}" />
-        </dampen>"#;
+        // Use implicit v1.0 document (no <dampen> tag)
+        let xml = r#"<canvas width="400" height="200" program="{chart}" />"#;
         let doc = parse(xml).unwrap();
         let warnings = validate_widget_versions(&doc);
 
@@ -482,9 +478,8 @@ mod widget_version_validation_tests {
 
     #[test]
     fn validate_warning_suggestion() {
-        let xml = r#"<dampen version="1.1" encoding="utf-8">
-            <canvas width="400" height="200" program="{chart}" />
-        </dampen>"#;
+        // Use implicit v1.0 document (no <dampen> tag)
+        let xml = r#"<canvas width="400" height="200" program="{chart}" />"#;
         let doc = parse(xml).unwrap();
         let warnings = validate_widget_versions(&doc);
 

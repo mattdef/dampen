@@ -2,4 +2,4 @@
 source: crates/dampen-core/tests/codegen_snapshot_tests.rs
 expression: output.code
 ---
-use iced :: { Element , Task } ; use crate :: ui :: window :: * ; # [derive (Clone , Debug)] pub enum Message { } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { } } pub fn view_model (model : & Model) -> Element < '_ , Message > { iced :: widget :: progress_bar (0.0 ..= 100f32 , model . progress . to_string ()) . into () }
+use iced :: { Element , Task } ; use crate :: ui :: window :: * ; # [derive (Debug , Clone)] pub enum Message { } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { } } pub fn view_model (model : & Model) -> Element < '_ , Message > { iced :: widget :: progress_bar (0.0 ..= 100f32 , model . progress . to_string ()) . into () }
