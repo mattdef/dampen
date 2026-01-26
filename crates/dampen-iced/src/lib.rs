@@ -519,6 +519,10 @@ pub fn render<'a>(
         | WidgetKind::CanvasText
         | WidgetKind::CanvasGroup => backend.column(Vec::new()),
         WidgetKind::DatePicker | WidgetKind::TimePicker => backend.column(Vec::new()),
+        WidgetKind::Menu
+        | WidgetKind::MenuItem
+        | WidgetKind::MenuSeparator
+        | WidgetKind::ContextMenu => backend.column(Vec::new()),
     }
 }
 

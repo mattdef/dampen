@@ -1,4 +1,5 @@
 pub mod layout;
+pub mod menu;
 pub mod node;
 pub mod span;
 pub mod style;
@@ -9,6 +10,7 @@ use std::collections::HashMap;
 pub use layout::{
     Alignment, Breakpoint, Direction, Justification, LayoutConstraints, Length, Padding,
 };
+pub use menu::MenuPosition;
 pub use node::InterpolatedPart;
 pub use node::{AttributeValue, EventBinding, EventKind, WidgetKind, WidgetNode};
 pub use span::Span;

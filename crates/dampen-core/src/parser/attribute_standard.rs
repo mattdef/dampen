@@ -135,6 +135,10 @@ fn widget_kind_to_string(kind: &WidgetKind) -> String {
         WidgetKind::CanvasGroup => "Group".to_string(),
         WidgetKind::DatePicker => "DatePicker".to_string(),
         WidgetKind::TimePicker => "TimePicker".to_string(),
+        WidgetKind::Menu => "Menu".to_string(),
+        WidgetKind::MenuItem => "MenuItem".to_string(),
+        WidgetKind::MenuSeparator => "MenuSeparator".to_string(),
+        WidgetKind::ContextMenu => "ContextMenu".to_string(),
         WidgetKind::Custom(name) => name.clone(),
     }
 }

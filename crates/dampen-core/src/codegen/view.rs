@@ -202,6 +202,29 @@ fn generate_widget_with_locals(
         WidgetKind::TimePicker => {
             generate_time_picker(node, model_ident, message_ident, style_classes)
         }
+        WidgetKind::Menu => generate_menu(node, model_ident, message_ident, style_classes),
+        WidgetKind::MenuItem | WidgetKind::MenuSeparator => {
+            // These are handled by generate_menu and shouldn't appear as top-level widgets
+            Err(super::CodegenError::InvalidWidget(format!(
+                "{:?} must be inside a <menu>",
+                node.kind
+            )))
+        }
+        WidgetKind::ContextMenu => {
+            // Placeholder for US2
+            // For now return underlay or empty
+            if let Some(underlay) = node.children.first() {
+                generate_widget_with_locals(
+                    underlay,
+                    model_ident,
+                    message_ident,
+                    style_classes,
+                    local_vars,
+                )
+            } else {
+                Ok(quote! { iced::widget::column(Vec::new()).into() })
+            }
+        }
         WidgetKind::CanvasRect
         | WidgetKind::CanvasCircle
         | WidgetKind::CanvasLine
@@ -3926,6 +3949,112 @@ fn generate_canvas_handlers(
             }
         }
     }))
+}
+
+/// Generate Menu widget (MenuBar)
+fn generate_menu(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    let items = generate_menu_items(&node.children, model_ident, message_ident, style_classes)?;
+    // TODO: Handle layout attributes via container wrapper if needed
+    Ok(quote! {
+        iced_aw::menu::MenuBar::new(#items)
+    })
+}
+
+/// Generate items for Menu/MenuBar
+fn generate_menu_items(
+    children: &[crate::WidgetNode],
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    let mut item_exprs = Vec::new();
+
+    for child in children {
+        match child.kind {
+            WidgetKind::MenuItem => {
+                item_exprs.push(generate_menu_item_struct(
+                    child,
+                    model_ident,
+                    message_ident,
+                    style_classes,
+                )?);
+            }
+            WidgetKind::MenuSeparator => {
+                item_exprs.push(generate_menu_separator_struct(child)?);
+            }
+            _ => {}
+        }
+    }
+
+    Ok(quote! {
+        vec![#(#item_exprs),*]
+    })
+}
+
+/// Generate Item struct for MenuItem
+fn generate_menu_item_struct(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    let label_attr = node.attributes.get("label").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("MenuItem requires label attribute".to_string())
+    })?;
+
+    let label_expr = generate_attribute_value(label_attr, model_ident);
+
+    // Content is a button
+    let mut btn = quote! {
+        iced::widget::button(iced::widget::text(#label_expr))
+            .width(iced::Length::Fill)
+            .style(iced::widget::button::text)
+    };
+
+    if let Some(event) = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Click)
+    {
+        let handler_ident = format_ident!("{}", event.handler);
+        let msg = if let Some(param) = &event.param {
+            let param_expr = crate::codegen::bindings::generate_expr(&param.expr);
+            quote! { #message_ident::#handler_ident(#param_expr) }
+        } else {
+            quote! { #message_ident::#handler_ident }
+        };
+
+        // TODO: Handle disabled state (requires bool expression generation)
+        btn = quote! { #btn.on_press(#msg) };
+    }
+
+    let content = quote! { #btn.into() };
+
+    // Check for submenu
+    if let Some(submenu) = node.children.iter().find(|c| c.kind == WidgetKind::Menu) {
+        let items =
+            generate_menu_items(&submenu.children, model_ident, message_ident, style_classes)?;
+        Ok(quote! {
+            iced_aw::menu::Item::with_menu(#content, iced_aw::menu::Menu::new(#items))
+        })
+    } else {
+        Ok(quote! {
+            iced_aw::menu::Item::new(#content)
+        })
+    }
+}
+
+fn generate_menu_separator_struct(
+    _node: &crate::WidgetNode,
+) -> Result<TokenStream, super::CodegenError> {
+    Ok(quote! {
+        iced_aw::menu::Item::new(iced::widget::horizontal_rule(1).into())
+    })
 }
 
 #[cfg(test)]

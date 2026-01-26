@@ -61,6 +61,10 @@ pub enum WidgetKind {
     DatePicker,
     /// Time selection widget with hour/minute/second picker
     TimePicker,
+    Menu,
+    MenuItem,
+    MenuSeparator,
+    ContextMenu,
     Float,
     // Control flow
     For,
@@ -204,6 +208,8 @@ pub enum EventKind {
     CanvasMove,
     CanvasRelease,
     Cancel,
+    Open,
+    Close,
 }
 
 impl WidgetKind {
@@ -239,6 +245,10 @@ impl WidgetKind {
             "group",
             "date_picker",
             "time_picker",
+            "menu",
+            "menu_item",
+            "menu_separator",
+            "context_menu",
             "float",
             "for",
             "if",

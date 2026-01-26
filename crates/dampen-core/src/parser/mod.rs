@@ -202,6 +202,10 @@ fn widget_kind_name(kind: &WidgetKind) -> String {
         WidgetKind::CanvasGroup => "group".to_string(),
         WidgetKind::DatePicker => "date_picker".to_string(),
         WidgetKind::TimePicker => "time_picker".to_string(),
+        WidgetKind::Menu => "menu".to_string(),
+        WidgetKind::MenuItem => "menu_item".to_string(),
+        WidgetKind::MenuSeparator => "menu_separator".to_string(),
+        WidgetKind::ContextMenu => "context_menu".to_string(),
         WidgetKind::Custom(name) => name.clone(),
     }
 }
@@ -696,6 +700,29 @@ fn validate_datetime_picker_children(
     Ok(())
 }
 
+/// Validate ContextMenu has exactly 2 children: underlay + menu
+fn validate_context_menu_children(children: &[WidgetNode], span: Span) -> Result<(), ParseError> {
+    if children.len() != 2 {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: "ContextMenu requires exactly 2 children: underlay and menu".to_string(),
+            span,
+            suggestion: Some(
+                "Add an underlay widget (1st child) and a <menu> element (2nd child)".to_string(),
+            ),
+        });
+    }
+    if children[1].kind != WidgetKind::Menu {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidValue,
+            message: "Second child of ContextMenu must be <menu>".to_string(),
+            span: children[1].span,
+            suggestion: None,
+        });
+    }
+    Ok(())
+}
+
 /// Parse a single XML node into a WidgetNode
 fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     // Only process element nodes
@@ -740,6 +767,10 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "group" => WidgetKind::CanvasGroup,
         "date_picker" => WidgetKind::DatePicker,
         "time_picker" => WidgetKind::TimePicker,
+        "menu" => WidgetKind::Menu,
+        "menu_item" => WidgetKind::MenuItem,
+        "menu_separator" => WidgetKind::MenuSeparator,
+        "context_menu" => WidgetKind::ContextMenu,
         "float" => WidgetKind::Float,
         "for" => WidgetKind::For,
         "if" => WidgetKind::If,
@@ -806,6 +837,8 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
                 "on_toggle" => Some(EventKind::Toggle),
                 "on_scroll" => Some(EventKind::Scroll),
                 "on_cancel" => Some(EventKind::Cancel),
+                "on_open" => Some(EventKind::Open),
+                "on_close" => Some(EventKind::Close),
                 _ => None,
             };
 
@@ -949,6 +982,10 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
     // Validate DatePicker/TimePicker has exactly one child
     if matches!(kind, WidgetKind::DatePicker | WidgetKind::TimePicker) {
         validate_datetime_picker_children(&kind, &children, get_span(node, source))?;
+    }
+
+    if kind == WidgetKind::ContextMenu {
+        validate_context_menu_children(&children, get_span(node, source))?;
     }
 
     // Parse layout and style attributes into structured fields
