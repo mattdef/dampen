@@ -1,0 +1,15 @@
+<dampen version="1.0">
+    <column padding="20">
+        <menu>
+            <menu_item label="File">
+                <menu>
+                    <menu_item label="New" on_click="new_file" />
+                    <menu_separator />
+                    <menu_item label="Exit" on_click="exit_app" />
+                </menu>
+            </menu_item>
+        </menu>
+        <space height="20" />
+        <text value="{status}" size="20" />
+    </column>
+</dampen>

@@ -1,0 +1,27 @@
+[package]
+name = "menu-demo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+build = "build.rs"
+
+[dependencies]
+dampen-core = { workspace = true }
+dampen-macros = { workspace = true }
+dampen-iced = { workspace = true }
+dampen-dev = { workspace = true, optional = true }
+iced = { workspace = true }
+iced_aw = { version = "0.13", default-features = false, features = ["menu", "context_menu"] }
+serde = { workspace = true }
+
+[build-dependencies]
+dampen-core = { workspace = true }
+
+[features]
+default = ["interpreted"]
+codegen = ["dampen-core/codegen"]
+interpreted = ["dampen-dev", "dampen-core/interpreted"]
+
+[[bin]]
+name = "menu-demo"
+path = "src/main.rs"
