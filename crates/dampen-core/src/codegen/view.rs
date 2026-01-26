@@ -211,19 +211,7 @@ fn generate_widget_with_locals(
             )))
         }
         WidgetKind::ContextMenu => {
-            // Placeholder for US2
-            // For now return underlay or empty
-            if let Some(underlay) = node.children.first() {
-                generate_widget_with_locals(
-                    underlay,
-                    model_ident,
-                    message_ident,
-                    style_classes,
-                    local_vars,
-                )
-            } else {
-                Ok(quote! { iced::widget::column(Vec::new()).into() })
-            }
+            generate_context_menu(node, model_ident, message_ident, style_classes, local_vars)
         }
         WidgetKind::CanvasRect
         | WidgetKind::CanvasCircle
@@ -4054,6 +4042,103 @@ fn generate_menu_separator_struct(
 ) -> Result<TokenStream, super::CodegenError> {
     Ok(quote! {
         iced_aw::menu::Item::new(iced::widget::horizontal_rule(1).into())
+    })
+}
+
+fn generate_context_menu(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    let underlay = node
+        .children
+        .first()
+        .ok_or(super::CodegenError::InvalidWidget(
+            "ContextMenu requires underlay".into(),
+        ))?;
+    let underlay_expr = generate_widget_with_locals(
+        underlay,
+        model_ident,
+        message_ident,
+        style_classes,
+        local_vars,
+    )?;
+
+    let menu_node = node
+        .children
+        .get(1)
+        .ok_or(super::CodegenError::InvalidWidget(
+            "ContextMenu requires menu".into(),
+        ))?;
+
+    if menu_node.kind != WidgetKind::Menu {
+        return Err(super::CodegenError::InvalidWidget(
+            "Second child of ContextMenu must be <menu>".into(),
+        ));
+    }
+
+    // Generate menu content (column of buttons)
+    let mut buttons = Vec::new();
+    for child in &menu_node.children {
+        match child.kind {
+            WidgetKind::MenuItem => {
+                let label =
+                    child
+                        .attributes
+                        .get("label")
+                        .ok_or(super::CodegenError::InvalidWidget(
+                            "MenuItem requires label".into(),
+                        ))?;
+                let label_expr =
+                    generate_attribute_value_with_locals(label, model_ident, local_vars);
+
+                let mut btn = quote! {
+                    iced::widget::button(iced::widget::text(#label_expr))
+                        .width(iced::Length::Fill)
+                        .style(iced::widget::button::text)
+                };
+
+                if let Some(event) = child
+                    .events
+                    .iter()
+                    .find(|e| e.event == crate::EventKind::Click)
+                {
+                    let handler_ident = format_ident!("{}", event.handler);
+                    let msg = if let Some(param) = &event.param {
+                        let param_expr = crate::codegen::bindings::generate_expr(&param.expr);
+                        quote! { #message_ident::#handler_ident(#param_expr) }
+                    } else {
+                        quote! { #message_ident::#handler_ident }
+                    };
+                    btn = quote! { #btn.on_press(#msg) };
+                }
+
+                buttons.push(quote! { #btn.into() });
+            }
+            WidgetKind::MenuSeparator => {
+                buttons.push(quote! { iced::widget::horizontal_rule(1).into() });
+            }
+            _ => {}
+        }
+    }
+
+    let overlay_content = quote! {
+        iced::widget::container(
+            iced::widget::column(vec![#(#buttons),*])
+                .spacing(2)
+        )
+        .padding(5)
+        .style(iced::widget::container::bordered_box)
+        .into()
+    };
+
+    Ok(quote! {
+        iced_aw::ContextMenu::new(
+            #underlay_expr,
+            move || #overlay_content
+        )
     })
 }
 

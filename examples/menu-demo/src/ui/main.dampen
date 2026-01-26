@@ -10,6 +10,16 @@
             </menu_item>
         </menu>
         <space height="20" />
+        <context_menu>
+            <row padding="10" background="#eeeeee">
+                <text>Right-click me!</text>
+            </row>
+            <menu>
+                <menu_item label="Action 1" on_click="action1" />
+                <menu_item label="Action 2" on_click="action2" />
+            </menu>
+        </context_menu>
+        <space height="20" />
         <text value="{status}" size="20" />
     </column>
 </dampen>

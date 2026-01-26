@@ -22,5 +22,15 @@ fn main() -> iced::Result {
         std::process::exit(0);
     });
 
+    registry.register_simple("action1", |m| {
+        let model = m.downcast_mut::<Model>().unwrap();
+        model.status = "Action 1 triggered".to_string();
+    });
+
+    registry.register_simple("action2", |m| {
+        let model = m.downcast_mut::<Model>().unwrap();
+        model.status = "Action 2 triggered".to_string();
+    });
+
     dampen_iced::run::<Model>("Menu Demo", registry)
 }
