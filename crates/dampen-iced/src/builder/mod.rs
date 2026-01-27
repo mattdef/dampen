@@ -518,7 +518,9 @@ impl<'a> DampenWidgetBuilder<'a> {
             WidgetKind::MenuSeparator => self.build_menu_separator(node),
             WidgetKind::ContextMenu => self.build_context_menu(node),
             WidgetKind::Radio => self.build_radio(node),
-            WidgetKind::CanvasRect
+            WidgetKind::DataTable => self.build_data_table(node),
+            WidgetKind::DataColumn
+            | WidgetKind::CanvasRect
             | WidgetKind::CanvasCircle
             | WidgetKind::CanvasLine
             | WidgetKind::CanvasText

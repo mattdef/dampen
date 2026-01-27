@@ -58,6 +58,7 @@
                 <button label="Tooltip" on_click="switch_to_tooltip" />
                 <button label="Grid" on_click="switch_to_grid" />
                 <button label="Menu &amp; Context" on_click="switch_to_menu" />
+                <button label="Data Table" on_click="switch_to_data_table" />
             </row>
 
         </column>

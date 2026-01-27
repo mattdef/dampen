@@ -10,6 +10,7 @@ mod column;
 mod combo_box;
 mod container;
 mod custom;
+mod data_table;
 mod date_picker;
 mod float;
 mod for_loop;

@@ -150,7 +150,7 @@ impl ValidationWarning {
     pub fn format_message(&self) -> String {
         format!(
             "Widget '{}' requires schema v{}.{} but document declares v{}.{}",
-            widget_kind_name(&self.widget_kind),
+            self.widget_kind,
             self.required_version.major,
             self.required_version.minor,
             self.declared_version.major,
@@ -164,49 +164,6 @@ impl ValidationWarning {
             "Update to <dampen version=\"{}.{}\"> or remove this widget",
             self.required_version.major, self.required_version.minor
         )
-    }
-}
-
-/// Helper function to get widget kind name as string
-fn widget_kind_name(kind: &WidgetKind) -> String {
-    match kind {
-        WidgetKind::Column => "column".to_string(),
-        WidgetKind::Row => "row".to_string(),
-        WidgetKind::Container => "container".to_string(),
-        WidgetKind::Scrollable => "scrollable".to_string(),
-        WidgetKind::Stack => "stack".to_string(),
-        WidgetKind::Text => "text".to_string(),
-        WidgetKind::Image => "image".to_string(),
-        WidgetKind::Svg => "svg".to_string(),
-        WidgetKind::Button => "button".to_string(),
-        WidgetKind::TextInput => "text_input".to_string(),
-        WidgetKind::Checkbox => "checkbox".to_string(),
-        WidgetKind::Slider => "slider".to_string(),
-        WidgetKind::PickList => "pick_list".to_string(),
-        WidgetKind::Toggler => "toggler".to_string(),
-        WidgetKind::Space => "space".to_string(),
-        WidgetKind::Rule => "rule".to_string(),
-        WidgetKind::Radio => "radio".to_string(),
-        WidgetKind::ComboBox => "combobox".to_string(),
-        WidgetKind::ProgressBar => "progress_bar".to_string(),
-        WidgetKind::Tooltip => "tooltip".to_string(),
-        WidgetKind::Grid => "grid".to_string(),
-        WidgetKind::Canvas => "canvas".to_string(),
-        WidgetKind::Float => "float".to_string(),
-        WidgetKind::For => "for".to_string(),
-        WidgetKind::If => "if".to_string(),
-        WidgetKind::CanvasRect => "rect".to_string(),
-        WidgetKind::CanvasCircle => "circle".to_string(),
-        WidgetKind::CanvasLine => "line".to_string(),
-        WidgetKind::CanvasText => "canvas_text".to_string(),
-        WidgetKind::CanvasGroup => "group".to_string(),
-        WidgetKind::DatePicker => "date_picker".to_string(),
-        WidgetKind::TimePicker => "time_picker".to_string(),
-        WidgetKind::Menu => "menu".to_string(),
-        WidgetKind::MenuItem => "menu_item".to_string(),
-        WidgetKind::MenuSeparator => "menu_separator".to_string(),
-        WidgetKind::ContextMenu => "context_menu".to_string(),
-        WidgetKind::Custom(name) => name.clone(),
     }
 }
 
@@ -347,6 +304,9 @@ pub fn parse(xml: &str) -> Result<DampenDocument, ParseError> {
         // Parse direct widget (backward compatibility)
         // Default to version 1.0 for backward compatibility
         let root_widget = parse_node(root, xml)?;
+
+        // Validate nesting constraints
+        validate_nesting_constraints(&root_widget, None)?;
 
         Ok(DampenDocument {
             version: SchemaVersion::default(),
@@ -678,7 +638,7 @@ fn validate_datetime_picker_children(
             span,
             suggestion: Some(format!(
                 "Wrap a single widget (e.g., <button>) in <{}>",
-                widget_kind_name(kind)
+                kind
             )),
         });
     }
@@ -691,10 +651,7 @@ fn validate_datetime_picker_children(
                 children.len()
             ),
             span,
-            suggestion: Some(format!(
-                "Wrap only one widget in <{}>",
-                widget_kind_name(kind)
-            )),
+            suggestion: Some(format!("Wrap only one widget in <{}>", kind)),
         });
     }
     Ok(())
@@ -772,6 +729,9 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "menu_separator" => WidgetKind::MenuSeparator,
         "context_menu" => WidgetKind::ContextMenu,
         "float" => WidgetKind::Float,
+        "data_table" => WidgetKind::DataTable,
+        "data_column" => WidgetKind::DataColumn,
+        "template" => WidgetKind::Custom("template".to_string()),
         "for" => WidgetKind::For,
         "if" => WidgetKind::If,
         unknown => {
@@ -839,6 +799,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
                 "on_cancel" => Some(EventKind::Cancel),
                 "on_open" => Some(EventKind::Open),
                 "on_close" => Some(EventKind::Close),
+                "on_row_click" => Some(EventKind::RowClick),
                 _ => None,
             };
 
@@ -1142,6 +1103,9 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
     // Widgets requiring a newer schema version than declared must be rejected
     validate_widget_versions_strict(&root_widget, &version)?;
 
+    // Enforce nesting constraints (e.g. DataColumn must be inside DataTable)
+    validate_nesting_constraints(&root_widget, None)?;
+
     Ok(DampenDocument {
         version,
         root: root_widget,
@@ -1150,6 +1114,29 @@ fn parse_dampen_document(root: Node, source: &str) -> Result<DampenDocument, Par
         global_theme,
         follow_system,
     })
+}
+
+/// Recursively validate widget nesting constraints
+fn validate_nesting_constraints(
+    node: &WidgetNode,
+    parent_kind: Option<&WidgetKind>,
+) -> Result<(), ParseError> {
+    // Rule: DataColumn must be inside DataTable
+    if node.kind == WidgetKind::DataColumn && parent_kind != Some(&WidgetKind::DataTable) {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidChild,
+            message: "DataColumn must be a direct child of DataTable".to_string(),
+            span: node.span,
+            suggestion: Some("Wrap this column in a <data_table>".to_string()),
+        });
+    }
+
+    // Recurse
+    for child in &node.children {
+        validate_nesting_constraints(child, Some(&node.kind))?;
+    }
+
+    Ok(())
 }
 
 /// Recursively validate widget versions and return an error on mismatch.
@@ -1164,7 +1151,7 @@ fn validate_widget_versions_strict(
             kind: ParseErrorKind::UnsupportedVersion,
             message: format!(
                 "Widget '{}' requires schema v{}.{} but document declares v{}.{}",
-                widget_kind_name(&node.kind),
+                node.kind,
                 min_version.major,
                 min_version.minor,
                 doc_version.major,

@@ -1,0 +1,32 @@
+<dampen version="1.1">
+<column padding="20" spacing="20">
+    <row spacing="10">
+        <button label="Back" on_click="switch_to_window" />
+        <text value="Data Table Widget" size="24" weight="bold" />
+    </row>
+
+    <text value="Basic Table (Field mapping)" size="18" weight="bold" />
+    <data_table data="{users}" height="200">
+        <data_column header="ID" field="id" width="50" />
+        <data_column header="Name" field="name" width="150" />
+        <data_column header="Email" field="email" width="fill" />
+    </data_table>
+
+    <text value="Table with Custom Templates" size="18" weight="bold" />
+    <data_table data="{users}" height="200">
+        <data_column header="User Info" width="fill">
+            <template>
+                <row spacing="10" align_y="center">
+                    <text value="{item.name}" weight="bold" />
+                    <text value="({item.email})" size="12" color="#666666" />
+                </row>
+            </template>
+        </data_column>
+        <data_column header="Actions" width="100">
+            <template>
+                <button label="Edit {item.id}" />
+            </template>
+        </data_column>
+    </data_table>
+</column>
+</dampen>

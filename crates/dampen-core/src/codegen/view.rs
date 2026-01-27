@@ -213,6 +213,16 @@ fn generate_widget_with_locals(
         WidgetKind::ContextMenu => {
             generate_context_menu(node, model_ident, message_ident, style_classes, local_vars)
         }
+        WidgetKind::DataTable => {
+            generate_data_table(node, model_ident, message_ident, style_classes)
+        }
+        WidgetKind::DataColumn => {
+            // These are handled by generate_data_table logic, shouldn't appear as top-level widgets
+            Err(super::CodegenError::InvalidWidget(format!(
+                "{:?} must be inside a <data_table>",
+                node.kind
+            )))
+        }
         WidgetKind::CanvasRect
         | WidgetKind::CanvasCircle
         | WidgetKind::CanvasLine
@@ -4145,6 +4155,130 @@ fn generate_context_menu(
         )
         .into()
     })
+}
+
+fn generate_data_table(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    let data_attr = node.attributes.get("data").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("data_table requires data attribute".to_string())
+    })?;
+    let data_expr = generate_attribute_value_raw(data_attr, model_ident);
+
+    let mut column_exprs = Vec::new();
+    for child in &node.children {
+        if child.kind == WidgetKind::DataColumn {
+            let header_attr = child.attributes.get("header").ok_or_else(|| {
+                super::CodegenError::InvalidWidget(
+                    "data_column requires header attribute".to_string(),
+                )
+            })?;
+            let header_expr = generate_attribute_value(header_attr, model_ident);
+            let header = quote! { iced::widget::text(#header_expr) };
+
+            let field = child.attributes.get("field");
+
+            let view_closure = if let Some(AttributeValue::Static(field_name)) = field {
+                let field_ident = syn::Ident::new(field_name, proc_macro2::Span::call_site());
+                // Assuming item is the model type or struct
+                quote! {
+                    |item| iced::widget::text(item.#field_ident.to_string()).into()
+                }
+            } else {
+                // Template handling
+                // Find template content
+                let template_content = if let Some(tmpl) = child
+                    .children
+                    .iter()
+                    .find(|c| matches!(c.kind, WidgetKind::Custom(ref s) if s == "template"))
+                {
+                    &tmpl.children
+                } else {
+                    &child.children
+                };
+
+                if let Some(root) = template_content.first() {
+                    let mut locals = std::collections::HashSet::new();
+                    locals.insert("index".to_string());
+                    locals.insert("item".to_string());
+
+                    let widget_expr = generate_widget_with_locals(
+                        root,
+                        model_ident,
+                        message_ident,
+                        style_classes,
+                        &locals,
+                    )?;
+
+                    quote! {
+                        |(index, item)| {
+                            let _ = index; // Suppress unused warning
+                            #widget_expr.into()
+                        }
+                    }
+                } else {
+                    quote! { |(_index, _item)| iced::widget::text("").into() }
+                }
+            };
+
+            let mut col = quote! {
+                iced::widget::table::column(#header, #view_closure)
+            };
+
+            if let Some(width) = child.attributes.get("width") {
+                let width_expr = match width {
+                    AttributeValue::Static(s) => generate_length_expr(s),
+                    _ => quote! { iced::Length::Fill },
+                };
+                col = quote! { #col.width(#width_expr) };
+            }
+
+            column_exprs.push(col);
+        }
+    }
+
+    let table = quote! {
+        iced::widget::table::Table::new(vec![#(#column_exprs),*], #data_expr)
+    };
+
+    // Handle on_row_click
+    // TODO: Re-enable when Table API for row clicks is identified
+    /*
+    if let Some(event) = node.events.iter().find(|e| e.event == crate::ir::EventKind::RowClick) {
+        let variant_name = to_upper_camel_case(&event.handler);
+        let handler_ident = format_ident!("{}", variant_name);
+
+        // Generate parameter expression
+        let param_expr = if let Some(ref binding) = event.param {
+            let mut locals = std::collections::HashSet::new();
+            locals.insert("index".to_string());
+            locals.insert("item".to_string());
+
+            let expr = crate::codegen::bindings::generate_expr_with_locals(
+                &binding.expr,
+                &locals,
+            );
+            quote! { (#expr) }
+        } else {
+            quote! {}
+        };
+
+        // We assume data_expr evaluates to something indexable (Vec, slice)
+        // We define `item` as reference to element at index
+        table = quote! {
+            #table.on_row_click(move |index: usize| {
+                let item = &(#data_expr)[index];
+                #message_ident::#handler_ident #param_expr
+            })
+        };
+    }
+    */
+
+    // Apply layout
+    Ok(maybe_wrap_in_container(table, node))
 }
 
 #[cfg(test)]

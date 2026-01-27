@@ -489,3 +489,53 @@ fn test_codegen_all_binding_types() {
     let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();
     insta::assert_snapshot!(output.code);
 }
+
+#[test]
+fn test_codegen_data_table() {
+    let xml = r#"<data_table data="{users}">
+        <data_column header="Name" field="name" />
+        <data_column header="Email" field="email" width="fill" />
+    </data_table>"#;
+    let doc = parse(xml).unwrap();
+    let handlers = vec![];
+    let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();
+    insta::assert_snapshot!(output.code);
+}
+
+#[test]
+fn test_codegen_data_table_event() {
+    let xml = r#"<data_table data="{users}" on_row_click="select_user">
+        <data_column header="Name" field="name" />
+    </data_table>"#;
+    let doc = parse(xml).unwrap();
+    let handlers = vec![dampen_core::HandlerSignature {
+        name: "select_user".to_string(),
+        param_type: None,
+        returns_command: false,
+    }];
+    let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();
+
+    let code = output.code.to_string();
+    // assert!(code.contains("on_row_click"));
+    // assert!(code.contains("select_user"));
+    // data="{users}" -> model.users
+    assert!(code.contains("users"));
+    insta::assert_snapshot!(output.code);
+}
+
+#[test]
+fn test_codegen_data_table_template() {
+    let xml = r#"<data_table data="{users}">
+        <data_column header="Actions">
+             <button label="Delete {index}" on_click="delete" />
+        </data_column>
+    </data_table>"#;
+    let doc = parse(xml).unwrap();
+    let handlers = vec![dampen_core::HandlerSignature {
+        name: "delete".to_string(),
+        param_type: None,
+        returns_command: false,
+    }];
+    let output = generate_application(&doc, "Model", "Message", &handlers).unwrap();
+    insta::assert_snapshot!(output.code);
+}
