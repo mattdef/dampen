@@ -11,10 +11,10 @@ use std::collections::HashMap;
 /// Deprecated attributes that should be warned about or migrated.
 const DEPRECATED_ATTRIBUTES: &[(&str, &str, &str)] = &[
     // (old_name, new_name, widget_applicable)
-    ("path", "src", "Image,Svg"),
-    ("active", "toggled", "Toggler"),
-    ("is_toggled", "toggled", "Toggler"),
-    ("secure", "password", "TextInput"),
+    ("path", "src", "image,svg"),
+    ("active", "toggled", "toggler"),
+    ("is_toggled", "toggled", "toggler"),
+    ("secure", "password", "text_input"),
 ];
 
 /// Validate and normalize attributes for a widget node.
@@ -37,7 +37,7 @@ pub fn validate_attributes(
     // Check for deprecated attributes and suggest alternatives
     for (old_name, new_name, applicable_widgets) in DEPRECATED_ATTRIBUTES {
         if attributes.contains_key(*old_name) {
-            let widget_name = widget_kind_to_string(widget_kind);
+            let widget_name = widget_kind.to_string();
 
             // Check if this deprecation applies to this widget
             if applicable_widgets
@@ -79,7 +79,7 @@ pub fn normalize_attributes(
     attributes: &mut HashMap<String, crate::ir::AttributeValue>,
 ) -> Vec<(String, String)> {
     let mut warnings = Vec::new();
-    let widget_name = widget_kind_to_string(widget_kind);
+    let widget_name = widget_kind.to_string();
 
     for (old_name, new_name, applicable_widgets) in DEPRECATED_ATTRIBUTES {
         if attributes.contains_key(*old_name) {
@@ -98,49 +98,6 @@ pub fn normalize_attributes(
     }
 
     warnings
-}
-
-/// Get the standard string name for a widget kind.
-fn widget_kind_to_string(kind: &WidgetKind) -> String {
-    match kind {
-        WidgetKind::Column => "Column".to_string(),
-        WidgetKind::Row => "Row".to_string(),
-        WidgetKind::Container => "Container".to_string(),
-        WidgetKind::Scrollable => "Scrollable".to_string(),
-        WidgetKind::Stack => "Stack".to_string(),
-        WidgetKind::Text => "Text".to_string(),
-        WidgetKind::Image => "Image".to_string(),
-        WidgetKind::Svg => "Svg".to_string(),
-        WidgetKind::Button => "Button".to_string(),
-        WidgetKind::TextInput => "TextInput".to_string(),
-        WidgetKind::Checkbox => "Checkbox".to_string(),
-        WidgetKind::Slider => "Slider".to_string(),
-        WidgetKind::PickList => "PickList".to_string(),
-        WidgetKind::Toggler => "Toggler".to_string(),
-        WidgetKind::Space => "Space".to_string(),
-        WidgetKind::Rule => "Rule".to_string(),
-        WidgetKind::Radio => "Radio".to_string(),
-        WidgetKind::ComboBox => "ComboBox".to_string(),
-        WidgetKind::ProgressBar => "ProgressBar".to_string(),
-        WidgetKind::Tooltip => "Tooltip".to_string(),
-        WidgetKind::Grid => "Grid".to_string(),
-        WidgetKind::Canvas => "Canvas".to_string(),
-        WidgetKind::Float => "Float".to_string(),
-        WidgetKind::For => "For".to_string(),
-        WidgetKind::If => "If".to_string(),
-        WidgetKind::CanvasRect => "Rect".to_string(),
-        WidgetKind::CanvasCircle => "Circle".to_string(),
-        WidgetKind::CanvasLine => "Line".to_string(),
-        WidgetKind::CanvasText => "Text".to_string(),
-        WidgetKind::CanvasGroup => "Group".to_string(),
-        WidgetKind::DatePicker => "DatePicker".to_string(),
-        WidgetKind::TimePicker => "TimePicker".to_string(),
-        WidgetKind::Menu => "Menu".to_string(),
-        WidgetKind::MenuItem => "MenuItem".to_string(),
-        WidgetKind::MenuSeparator => "MenuSeparator".to_string(),
-        WidgetKind::ContextMenu => "ContextMenu".to_string(),
-        WidgetKind::Custom(name) => name.clone(),
-    }
 }
 
 #[cfg(test)]

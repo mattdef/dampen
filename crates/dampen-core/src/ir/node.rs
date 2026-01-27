@@ -66,6 +66,9 @@ pub enum WidgetKind {
     MenuSeparator,
     ContextMenu,
     Float,
+    // Data display
+    DataTable,
+    DataColumn,
     // Control flow
     For,
     If,
@@ -207,9 +210,57 @@ pub enum EventKind {
     CanvasDrag,
     CanvasMove,
     CanvasRelease,
+    RowClick,
     Cancel,
     Open,
     Close,
+}
+
+impl std::fmt::Display for WidgetKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
+            WidgetKind::Column => "column",
+            WidgetKind::Row => "row",
+            WidgetKind::Container => "container",
+            WidgetKind::Scrollable => "scrollable",
+            WidgetKind::Stack => "stack",
+            WidgetKind::Text => "text",
+            WidgetKind::Image => "image",
+            WidgetKind::Svg => "svg",
+            WidgetKind::Button => "button",
+            WidgetKind::TextInput => "text_input",
+            WidgetKind::Checkbox => "checkbox",
+            WidgetKind::Slider => "slider",
+            WidgetKind::PickList => "pick_list",
+            WidgetKind::Toggler => "toggler",
+            WidgetKind::Space => "space",
+            WidgetKind::Rule => "rule",
+            WidgetKind::Radio => "radio",
+            WidgetKind::ComboBox => "combobox",
+            WidgetKind::ProgressBar => "progress_bar",
+            WidgetKind::Tooltip => "tooltip",
+            WidgetKind::Grid => "grid",
+            WidgetKind::Canvas => "canvas",
+            WidgetKind::CanvasRect => "rect",
+            WidgetKind::CanvasCircle => "circle",
+            WidgetKind::CanvasLine => "line",
+            WidgetKind::CanvasText => "canvas_text",
+            WidgetKind::CanvasGroup => "group",
+            WidgetKind::DatePicker => "date_picker",
+            WidgetKind::TimePicker => "time_picker",
+            WidgetKind::Menu => "menu",
+            WidgetKind::MenuItem => "menu_item",
+            WidgetKind::MenuSeparator => "menu_separator",
+            WidgetKind::ContextMenu => "context_menu",
+            WidgetKind::Float => "float",
+            WidgetKind::DataTable => "data_table",
+            WidgetKind::DataColumn => "data_column",
+            WidgetKind::For => "for",
+            WidgetKind::If => "if",
+            WidgetKind::Custom(name) => return write!(f, "{}", name),
+        };
+        write!(f, "{}", name)
+    }
 }
 
 impl WidgetKind {
@@ -250,6 +301,8 @@ impl WidgetKind {
             "menu_separator",
             "context_menu",
             "float",
+            "data_table",
+            "data_column",
             "for",
             "if",
         ]
@@ -294,7 +347,9 @@ impl WidgetKind {
             | WidgetKind::Menu
             | WidgetKind::MenuItem
             | WidgetKind::MenuSeparator
-            | WidgetKind::ContextMenu => crate::ir::SchemaVersion { major: 1, minor: 1 },
+            | WidgetKind::ContextMenu
+            | WidgetKind::DataTable
+            | WidgetKind::DataColumn => crate::ir::SchemaVersion { major: 1, minor: 1 },
             _ => crate::ir::SchemaVersion { major: 1, minor: 0 },
         }
     }

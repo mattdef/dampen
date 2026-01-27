@@ -309,6 +309,8 @@ fn display_widget_version_table() {
         ("menu_separator", WidgetKind::MenuSeparator),
         ("context_menu", WidgetKind::ContextMenu),
         ("float", WidgetKind::Float),
+        ("data_table", WidgetKind::DataTable),
+        ("data_column", WidgetKind::DataColumn),
     ];
 
     for (name, widget) in widgets {
@@ -1200,6 +1202,8 @@ impl WidgetKindExt for WidgetKind {
             WidgetKind::MenuSeparator,
             WidgetKind::ContextMenu,
             WidgetKind::Float,
+            WidgetKind::DataTable,
+            WidgetKind::DataColumn,
             WidgetKind::For,
             WidgetKind::If,
         ]

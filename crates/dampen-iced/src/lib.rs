@@ -522,7 +522,9 @@ pub fn render<'a>(
         WidgetKind::Menu
         | WidgetKind::MenuItem
         | WidgetKind::MenuSeparator
-        | WidgetKind::ContextMenu => backend.column(Vec::new()),
+        | WidgetKind::ContextMenu
+        | WidgetKind::DataTable
+        | WidgetKind::DataColumn => backend.column(Vec::new()),
     }
 }
 

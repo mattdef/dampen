@@ -371,6 +371,26 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
             style_attributes: COMMON_STYLE_ATTRIBUTES,
             layout_attributes: COMMON_LAYOUT_ATTRIBUTES,
         },
+        WidgetKind::DataTable => WidgetSchema {
+            required: &["data"],
+            optional: &[
+                "width",
+                "height",
+                "min_width",
+                "max_width",
+                "scrollbar_width",
+            ],
+            events: &["on_row_click"],
+            style_attributes: COMMON_STYLE_ATTRIBUTES,
+            layout_attributes: COMMON_LAYOUT_ATTRIBUTES,
+        },
+        WidgetKind::DataColumn => WidgetSchema {
+            required: &["header"],
+            optional: &["field", "width", "min_width", "max_width", "align"],
+            events: &[],
+            style_attributes: &[],
+            layout_attributes: &[],
+        },
         WidgetKind::For => WidgetSchema {
             required: &["each", "in"],
             optional: &["template"],
