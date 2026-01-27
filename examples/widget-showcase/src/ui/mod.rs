@@ -7,6 +7,7 @@ pub mod canvas;
 pub mod checkbox;
 pub mod combobox;
 pub mod datetime_picker;
+pub mod menu;
 pub mod for_loop;
 pub mod grid;
 pub mod image;

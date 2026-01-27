@@ -143,7 +143,7 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 | Canvas | ✅ | Medium | Vector drawing widget |
 | DatePicker | ✅ | High | Date selector |
 | TimePicker | ✅ | High | Time selector |
-| Menus | 🔲 | High | Menu bars and context menus |
+| Menus | ✅ | High | Menu bars and context menus |
 | DataTable | 🔲 | Medium | Table with sort/filter |
 | ColorPicker | 🔲 | Low | Color selector |
 | TreeView | 🔲 | Low | Hierarchical display |

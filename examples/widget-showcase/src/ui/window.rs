@@ -128,5 +128,9 @@ pub fn create_handler_registry() -> HandlerRegistry {
         Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Radio)))
     });
 
+    registry.register_with_command("switch_to_menu", |_model: &mut dyn std::any::Any| {
+        Box::new(iced::Task::done(Message::SwitchToView(CurrentView::Menu)))
+    });
+
     registry
 }

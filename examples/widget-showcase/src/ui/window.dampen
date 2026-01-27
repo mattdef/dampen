@@ -57,6 +57,7 @@
                 <button label="Progress Bar" on_click="switch_to_progressbar" />
                 <button label="Tooltip" on_click="switch_to_tooltip" />
                 <button label="Grid" on_click="switch_to_grid" />
+                <button label="Menu &amp; Context" on_click="switch_to_menu" />
             </row>
 
         </column>
