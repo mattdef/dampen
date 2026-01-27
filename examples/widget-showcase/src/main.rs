@@ -10,7 +10,7 @@ mod ui;
 use dampen_iced::HandlerMessage;
 use dampen_macros::dampen_app;
 
-#[cfg(debug_assertions)]
+#[cfg(all(debug_assertions, feature = "interpreted"))]
 use dampen_dev::FileEvent;
 
 /// Application messages
@@ -21,10 +21,10 @@ enum Message {
     /// Switch to a different view
     SwitchToView(CurrentView),
     /// Hot-reload event (development mode only)
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, feature = "interpreted"))]
     HotReload(FileEvent),
     /// Dismiss error overlay
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, feature = "interpreted"))]
     DismissError,
     /// System theme change
     SystemThemeChanged(String),

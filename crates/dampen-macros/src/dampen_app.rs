@@ -439,7 +439,7 @@ pub fn generate_app_struct(
     // Add error_overlay field if dismiss_error_variant is specified
     let error_overlay_field = if attrs.dismiss_error_variant.is_some() {
         Some(quote! {
-            #[cfg(debug_assertions)]
+            #[cfg(all(debug_assertions, feature = "interpreted"))]
             error_overlay: dampen_dev::ErrorOverlay,
         })
     } else {
@@ -449,7 +449,10 @@ pub fn generate_app_struct(
     // Add window_state field if persistence is enabled
     let window_state_field = if attrs.persistence {
         Some(quote! {
+            #[cfg(feature = "interpreted")]
             persisted_window_state: dampen_dev::persistence::WindowState,
+            #[cfg(not(feature = "interpreted"))]
+            persisted_window_state: (),
         })
     } else {
         None
@@ -578,7 +581,7 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
     // Add error_overlay initialization if dismiss_error_variant is specified
     let error_overlay_init = if attrs.dismiss_error_variant.is_some() {
         Some(quote! {
-            #[cfg(debug_assertions)]
+            #[cfg(all(debug_assertions, feature = "interpreted"))]
             error_overlay: dampen_dev::ErrorOverlay::new(),
         })
     } else {
@@ -590,7 +593,10 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
         #[allow(clippy::unwrap_used)]
         let app_name = attrs.app_name.as_ref().unwrap();
         Some(quote! {
+            #[cfg(feature = "interpreted")]
             persisted_window_state: dampen_dev::persistence::load_or_default(#app_name, 800, 600),
+            #[cfg(not(feature = "interpreted"))]
+            persisted_window_state: (),
         })
     } else {
         None
@@ -603,16 +609,15 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
 
             #shared_init
 
-            // Load theme context from theme.dampen if present
-            // Use find_project_root() which searches:
-            // 1. CARGO_MANIFEST_DIR (cargo run)
-            // 2. Executable ancestors (target/release)
-            // 3. Current directory ancestors
-            let project_dir = dampen_dev::theme_loader::find_project_root()
-                .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(".")));
+            // Load theme context from theme.dampen if present (dev mode only)
+            #[cfg(all(debug_assertions, feature = "interpreted"))]
+            let theme_context = {
+                dampen_dev::theme_loader::find_project_root()
+                    .and_then(|root| dampen_dev::theme_loader::load_theme_context(&root).ok().flatten())
+            };
 
-            let theme_context_result = dampen_dev::theme_loader::load_theme_context(&project_dir);
-            let theme_context = theme_context_result.ok().flatten();
+            #[cfg(not(all(debug_assertions, feature = "interpreted")))]
+            let theme_context: Option<dampen_core::ThemeContext> = None;
 
             let mut app = Self {
                 #shared_field_init
@@ -1046,6 +1051,7 @@ pub fn generate_update_method(views: &[ViewInfo], attrs: &MacroAttributes) -> To
                     iced::window::Event::CloseRequested => {
                          #[cfg(debug_assertions)]
                          println!("DEBUG: Saving window state on close");
+                         #[cfg(feature = "interpreted")]
                          let _ = dampen_dev::persistence::save_window_state(#app_name, &self.persisted_window_state);
                          iced::window::close(id)
                     }
