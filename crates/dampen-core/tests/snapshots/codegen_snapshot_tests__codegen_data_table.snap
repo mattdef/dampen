@@ -1,0 +1,6 @@
+---
+source: crates/dampen-core/tests/codegen_snapshot_tests.rs
+assertion_line: 502
+expression: output.code
+---
+use iced :: { Element , Task } ; use crate :: ui :: window :: * ; # [derive (Debug , Clone)] pub enum Message { } pub fn new_model () -> (Model , Task < Message >) { (Model :: default () , Task :: none ()) } pub fn update_model (model : & mut Model , message : Message) -> Task < Message > { match message { } } pub fn view_model (model : & Model) -> Element < '_ , Message > { iced :: widget :: table :: Table :: new (vec ! [iced :: widget :: table :: column (iced :: widget :: text ("Name" . to_string ()) , | item | iced :: widget :: text (item . name . to_string ()) . into ()) , iced :: widget :: table :: column (iced :: widget :: text ("Email" . to_string ()) , | item | iced :: widget :: text (item . email . to_string ()) . into ()) . width (iced :: Length :: Fill)] , model . users) . into () }
