@@ -14,6 +14,7 @@ members = [
     "examples/theming",
     "examples/widget-showcase",
     "examples/macro-shared-state",
+    "examples/menu-demo",
     "benchmarks",
     "tests/hot-reload-integration",
     "tests/integration",

@@ -1194,11 +1194,12 @@ impl<'a> DampenWidgetBuilder<'a> {
                 // Resolve theme colors for this widget type at render time
                 let mut theme_style = dampen_core::ir::style::StyleProperties::default();
 
-                if widget_kind == WidgetKind::Container
+                if (widget_kind == WidgetKind::Container || widget_kind == WidgetKind::MenuItem)
                     && let Some(ref surface) = palette.surface
                 {
-                    theme_style.background =
-                        Some(dampen_core::ir::style::Background::Color(*surface));
+                    let mut bg = *surface;
+                    bg.a = 1.0; // Force opaque
+                    theme_style.background = Some(dampen_core::ir::style::Background::Color(bg));
                 }
 
                 // Merge theme with static styles (theme is base, static overrides)

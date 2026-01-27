@@ -1,36 +1,57 @@
-use dampen_iced::prelude::*;
-use dampen_macros::{UiModel, dampen_ui};
-use serde::{Deserialize, Serialize};
+// Ensure codegen and interpreted are mutually exclusive
+#[cfg(all(feature = "codegen", feature = "interpreted"))]
+compile_error!(
+    "Features 'codegen' and 'interpreted' are mutually exclusive. Use --no-default-features with --features codegen for production builds."
+);
 
-#[dampen_ui("ui/main.dampen")]
-mod ui {}
+#[cfg(feature = "interpreted")]
+mod ui;
 
-#[derive(UiModel, Serialize, Deserialize, Default, Clone)]
-struct Model {
-    status: String,
+#[cfg(feature = "interpreted")]
+use dampen_iced::HandlerMessage;
+#[cfg(feature = "interpreted")]
+use dampen_macros::dampen_app;
+
+#[cfg(all(feature = "interpreted", debug_assertions))]
+use dampen_dev::FileEvent;
+
+#[cfg(feature = "interpreted")]
+#[derive(Clone, Debug)]
+enum Message {
+    Handler(HandlerMessage),
+    #[cfg(debug_assertions)]
+    HotReload(FileEvent),
+    #[cfg(debug_assertions)]
+    DismissError,
+    SystemThemeChanged(String),
 }
 
-fn main() -> iced::Result {
-    let mut registry = HandlerRegistry::new();
+#[cfg(feature = "interpreted")]
+#[dampen_app(
+    ui_dir = "src/ui",
+    message_type = "Message",
+    handler_variant = "Handler",
+    hot_reload_variant = "HotReload",
+    dismiss_error_variant = "DismissError",
+    system_theme_variant = "SystemThemeChanged",
+    default_view = "window",
+    exclude = ["theme/*"],
+)]
+struct App;
 
-    registry.register_simple("new_file", |m| {
-        let model = m.downcast_mut::<Model>().unwrap();
-        model.status = "New File clicked".to_string();
-    });
+#[cfg(feature = "interpreted")]
+pub fn main() -> iced::Result {
+    iced::application(App::init, App::update, App::view).run()
+}
 
-    registry.register_simple("exit_app", |_| {
-        std::process::exit(0);
-    });
+// Codegen mode placeholder (requires build.rs generation which I set up but didn't verify details)
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+mod ui;
 
-    registry.register_simple("action1", |m| {
-        let model = m.downcast_mut::<Model>().unwrap();
-        model.status = "Action 1 triggered".to_string();
-    });
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+include!(concat!(env!("OUT_DIR"), "/ui_generated.rs"));
 
-    registry.register_simple("action2", |m| {
-        let model = m.downcast_mut::<Model>().unwrap();
-        model.status = "Action 2 triggered".to_string();
-    });
-
-    dampen_iced::run::<Model>("Menu Demo", registry)
+#[cfg(all(feature = "codegen", not(feature = "interpreted")))]
+pub fn main() -> iced::Result {
+    iced::application(window::new_model, window::update_model, window::view_model).run()
 }

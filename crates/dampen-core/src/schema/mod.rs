@@ -338,20 +338,14 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
         },
         WidgetKind::Menu => WidgetSchema {
             required: &[],
-            optional: &[
-                "position",
-                "offset_x",
-                "offset_y",
-                "close_on_select",
-                "max_width",
-            ],
+            optional: &["position", "close_on_select", "width", "spacing", "class"],
             events: &["on_open", "on_close"],
             style_attributes: COMMON_STYLE_ATTRIBUTES,
-            layout_attributes: &["width", "max_width", "padding"],
+            layout_attributes: &["width", "padding"],
         },
         WidgetKind::MenuItem => WidgetSchema {
             required: &["label"],
-            optional: &["icon", "shortcut", "disabled"],
+            optional: &["icon", "shortcut", "disabled", "class"],
             events: &["on_click"],
             style_attributes: COMMON_STYLE_ATTRIBUTES,
             layout_attributes: &["padding"],

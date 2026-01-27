@@ -75,6 +75,7 @@ use dampen_core::state::ThemeContext;
 use iced::{Element, Renderer, Theme};
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 /// Builder for creating Iced widgets from Dampen markup
 ///
@@ -125,6 +126,7 @@ use std::collections::HashMap;
 /// ).build();
 /// ```
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct DampenWidgetBuilder<'a> {
     /// The root widget node from parsed XML
     pub(super) node: &'a WidgetNode,
@@ -145,7 +147,7 @@ pub struct DampenWidgetBuilder<'a> {
     pub(super) theme_context: Option<&'a ThemeContext>,
 
     /// Factory function to create messages from handler names
-    pub(super) message_factory: Box<dyn Fn(&str, Option<String>) -> HandlerMessage + 'a>,
+    pub(super) message_factory: Rc<dyn Fn(&str, Option<String>) -> HandlerMessage + 'a>,
 
     /// Binding context stack for `<for>` loop variables
     /// Each context maps variable names to their BindingValues
@@ -195,7 +197,7 @@ impl<'a> DampenWidgetBuilder<'a> {
             handler_registry,
             style_classes: Some(&document.style_classes),
             theme_context: None,
-            message_factory: Box::new(|name, value| {
+            message_factory: Rc::new(|name, value| {
                 HandlerMessage::Handler(name.to_string(), value)
             }),
             binding_context: RefCell::new(Vec::new()),
@@ -352,7 +354,7 @@ impl<'a> DampenWidgetBuilder<'a> {
             handler_registry,
             style_classes: None,
             theme_context: None,
-            message_factory: Box::new(message_factory),
+            message_factory: Rc::new(message_factory),
             binding_context: RefCell::new(Vec::new()),
         }
     }

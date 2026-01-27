@@ -3949,7 +3949,7 @@ fn generate_menu(
     let items = generate_menu_items(&node.children, model_ident, message_ident, style_classes)?;
     // TODO: Handle layout attributes via container wrapper if needed
     Ok(quote! {
-        iced_aw::menu::MenuBar::new(#items)
+        iced_aw::menu::MenuBar::new(#items).into()
     })
 }
 
@@ -4000,7 +4000,7 @@ fn generate_menu_item_struct(
     // Content is a button
     let mut btn = quote! {
         iced::widget::button(iced::widget::text(#label_expr))
-            .width(iced::Length::Fill)
+            .width(iced::Length::Shrink) // Use Shrink to avoid layout collapse in MenuBar
             .style(iced::widget::button::text)
     };
 
@@ -4009,19 +4009,20 @@ fn generate_menu_item_struct(
         .iter()
         .find(|e| e.event == crate::EventKind::Click)
     {
-        let handler_ident = format_ident!("{}", event.handler);
+        let variant_name = to_upper_camel_case(&event.handler);
+        let variant_ident = syn::Ident::new(&variant_name, proc_macro2::Span::call_site());
+
         let msg = if let Some(param) = &event.param {
             let param_expr = crate::codegen::bindings::generate_expr(&param.expr);
-            quote! { #message_ident::#handler_ident(#param_expr) }
+            quote! { #message_ident::#variant_ident(#param_expr) }
         } else {
-            quote! { #message_ident::#handler_ident }
+            quote! { #message_ident::#variant_ident }
         };
 
-        // TODO: Handle disabled state (requires bool expression generation)
         btn = quote! { #btn.on_press(#msg) };
     }
 
-    let content = quote! { #btn.into() };
+    let content = quote! { #btn };
 
     // Check for submenu
     if let Some(submenu) = node.children.iter().find(|c| c.kind == WidgetKind::Menu) {
@@ -4041,7 +4042,7 @@ fn generate_menu_separator_struct(
     _node: &crate::WidgetNode,
 ) -> Result<TokenStream, super::CodegenError> {
     Ok(quote! {
-        iced_aw::menu::Item::new(iced::widget::horizontal_rule(1).into())
+        iced_aw::menu::Item::new(iced::widget::rule::horizontal(1))
     })
 }
 
@@ -4105,12 +4106,15 @@ fn generate_context_menu(
                     .iter()
                     .find(|e| e.event == crate::EventKind::Click)
                 {
-                    let handler_ident = format_ident!("{}", event.handler);
+                    let variant_name = to_upper_camel_case(&event.handler);
+                    let variant_ident =
+                        syn::Ident::new(&variant_name, proc_macro2::Span::call_site());
+
                     let msg = if let Some(param) = &event.param {
                         let param_expr = crate::codegen::bindings::generate_expr(&param.expr);
-                        quote! { #message_ident::#handler_ident(#param_expr) }
+                        quote! { #message_ident::#variant_ident(#param_expr) }
                     } else {
-                        quote! { #message_ident::#handler_ident }
+                        quote! { #message_ident::#variant_ident }
                     };
                     btn = quote! { #btn.on_press(#msg) };
                 }
@@ -4118,7 +4122,7 @@ fn generate_context_menu(
                 buttons.push(quote! { #btn.into() });
             }
             WidgetKind::MenuSeparator => {
-                buttons.push(quote! { iced::widget::horizontal_rule(1).into() });
+                buttons.push(quote! { iced::widget::rule::horizontal(1).into() });
             }
             _ => {}
         }
@@ -4139,6 +4143,7 @@ fn generate_context_menu(
             #underlay_expr,
             move || #overlay_content
         )
+        .into()
     })
 }
 

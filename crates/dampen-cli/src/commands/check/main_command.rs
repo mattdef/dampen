@@ -304,6 +304,10 @@ fn display_widget_version_table() {
         ("canvas", WidgetKind::Canvas),
         ("date_picker", WidgetKind::DatePicker),
         ("time_picker", WidgetKind::TimePicker),
+        ("menu", WidgetKind::Menu),
+        ("menu_item", WidgetKind::MenuItem),
+        ("menu_separator", WidgetKind::MenuSeparator),
+        ("context_menu", WidgetKind::ContextMenu),
         ("float", WidgetKind::Float),
     ];
 
@@ -1191,6 +1195,10 @@ impl WidgetKindExt for WidgetKind {
             WidgetKind::CanvasGroup,
             WidgetKind::DatePicker,
             WidgetKind::TimePicker,
+            WidgetKind::Menu,
+            WidgetKind::MenuItem,
+            WidgetKind::MenuSeparator,
+            WidgetKind::ContextMenu,
             WidgetKind::Float,
             WidgetKind::For,
             WidgetKind::If,

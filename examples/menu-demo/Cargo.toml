@@ -15,7 +15,7 @@ iced_aw = { version = "0.13", default-features = false, features = ["menu", "con
 serde = { workspace = true }
 
 [build-dependencies]
-dampen-core = { workspace = true }
+dampen-core = { workspace = true, features = ["codegen"] }
 
 [features]
 default = ["interpreted"]

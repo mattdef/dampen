@@ -289,9 +289,12 @@ impl WidgetKind {
         // All other widgets are part of v1.0
         match self {
             WidgetKind::Canvas => crate::ir::SchemaVersion { major: 1, minor: 1 },
-            WidgetKind::DatePicker | WidgetKind::TimePicker => {
-                crate::ir::SchemaVersion { major: 1, minor: 1 }
-            }
+            WidgetKind::DatePicker
+            | WidgetKind::TimePicker
+            | WidgetKind::Menu
+            | WidgetKind::MenuItem
+            | WidgetKind::MenuSeparator
+            | WidgetKind::ContextMenu => crate::ir::SchemaVersion { major: 1, minor: 1 },
             _ => crate::ir::SchemaVersion { major: 1, minor: 0 },
         }
     }
