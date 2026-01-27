@@ -1,0 +1,124 @@
+<dampen version="1.1">
+    <styles>
+        <!-- Background and basic layout for the menu bar -->
+        <class name="menu_bar"
+               background="#1a1a1a"
+               width="fill"
+               padding="2" />
+
+        <!-- Style for top-level items (File, Edit, etc.) -->
+        <class name="top_item"
+               color="#ffffff"
+               padding="8 15"
+               border_radius="4" />
+
+        <!-- Style for the dropdown container -->
+        <class name="dropdown"
+               background="#2c2c2c"
+               border_color="#444444"
+               border_width="1"
+               border_radius="8"
+               width="400"
+               spacing="2" />
+
+        <!-- Style for the dropdown item -->
+        <class name="dropdownItem"
+               background="transparent"
+               border_radius="4" />
+
+        <!-- Professional container for status display -->
+        <class name="status_card"
+               background="#1e293b"
+               border_color="#334155"
+               border_width="1"
+               border_radius="8"
+               padding="20"
+               width="fill" />
+
+        <class name="context_area"
+               background="#0f172a"
+               border_color="#334155"
+               border_width="2"
+               border_radius="12"
+               padding="40"
+               width="fill"
+               align_x="center" />
+    </styles>
+
+    <column background="#0a0a0a">
+        <menu class="menu_bar">
+            <menu_item label="File" class="top_item">
+                <menu class="dropdown">
+                    <menu_item class="dropdownItem" label="New File" icon="📄" on_click="new_file" />
+                    <menu_item class="dropdownItem" label="Open..." icon="📂" />
+                    <menu_separator />
+                    <menu_item class="dropdownItem" label="Save All" icon="💾" />
+                    <menu_separator />
+                    <menu_item class="dropdownItem" label="Exit" icon="🚪" on_click="exit_app" />
+                </menu>
+            </menu_item>
+
+            <menu_item label="Edit" class="top_item">
+                <menu class="dropdown">
+                    <menu_item class="dropdownItem" label="Undo" icon="↶" />
+                    <menu_item class="dropdownItem" label="Redo" icon="↷" />
+                    <menu_separator />
+                    <menu_item class="dropdownItem" label="Cut" icon="✂" />
+                    <menu_item class="dropdownItem" label="Copy" icon="📋" />
+                    <menu_item class="dropdownItem" label="Paste" icon="📥" />
+                </menu>
+            </menu_item>
+
+            <menu_item label="View" class="top_item">
+                <menu class="dropdown">
+                    <menu_item class="dropdownItem" label="Full Screen" icon="⛶" />
+                    <menu_item class="dropdownItem" label="Zoom In" icon="🔍" />
+                    <menu_item class="dropdownItem" label="Zoom Out" icon="🔍" />
+                </menu>
+            </menu_item>
+
+            <menu_item label="Help" class="top_item">
+                <menu class="dropdown">
+                    <menu_item class="dropdownItem" label="Documentation" icon="📚" />
+                    <menu_item class="dropdownItem" label="Release Notes" icon="📝" />
+                    <menu_separator />
+                    <menu_item class="dropdownItem" label="About Dampen" icon="ℹ" />
+                </menu>
+            </menu_item>
+        </menu>
+
+        <rule height="1" background="#333333" />
+
+        <column padding="30" spacing="25" width="fill">
+            <row spacing="10">
+                <button label="← Back" on_click="switch_to_window" />
+                <text value="Advanced Menu Demo" size="36" weight="bold" color="#f8fafc" />
+            </row>
+
+            <column spacing="10">
+                <text value="Context Menu Demo" size="18" weight="medium" color="#94a3b8" />
+                <context_menu>
+                    <row class="context_area">
+                        <column align_x="center" spacing="10">
+                            <text value="🖱️" size="48" />
+                            <text value="Right-click anywhere in this box" color="#e2e8f0" size="18" />
+                        </column>
+                    </row>
+                    <menu class="dropdown">
+                        <menu_item label="Fast Action 1" icon="⚡" on_click="action1" />
+                        <menu_item label="Secure Action 2" icon="🛡️" on_click="action2" />
+                        <menu_separator />
+                        <menu_item label="Settings" icon="⚙" />
+                    </menu>
+                </context_menu>
+            </column>
+
+            <row class="status_card">
+                <column spacing="5">
+                    <text value="APPLICATION STATUS" size="12" weight="bold" color="#38bdf8" />
+                    <text value="{status}" size="20" color="#f1f5f9" />
+                </column>
+            </row>
+        </column>
+    </column>
+</dampen>
