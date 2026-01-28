@@ -138,7 +138,8 @@ impl TreeViewValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dampen_core::ir::node::{AttributeValue, Span};
+    use dampen_core::ir::Span;
+    use dampen_core::ir::node::AttributeValue;
     use std::collections::HashMap;
 
     fn create_test_node(id: &str, label: &str, line: u32) -> WidgetNode {
@@ -154,7 +155,7 @@ mod tests {
             attributes,
             events: vec![],
             children: vec![],
-            span: Span { line, column: 1 },
+            span: Span::new(0, 0, line, 1),
             style: None,
             layout: None,
             theme_ref: None,
@@ -177,7 +178,7 @@ mod tests {
             attributes,
             events: vec![],
             children: vec![],
-            span: Span { line, column: 1 },
+            span: Span::new(0, 0, line, 1),
             style: None,
             layout: None,
             theme_ref: None,
@@ -194,7 +195,7 @@ mod tests {
             attributes: HashMap::new(),
             events: vec![],
             children: vec![],
-            span: Span { line, column: 1 },
+            span: Span::new(0, 0, line, 1),
             style: None,
             layout: None,
             theme_ref: None,
@@ -219,7 +220,7 @@ mod tests {
                 create_test_node("node2", "Node 2", 15),
                 create_test_node("node3", "Node 3", 20),
             ],
-            span: Span { line: 1, column: 1 },
+            span: Span::new(0, 0, 1, 1),
             style: None,
             layout: None,
             theme_ref: None,
@@ -246,7 +247,7 @@ mod tests {
                 create_test_node("node1", "Node 1", 10),
                 create_test_node("node1", "Node 1 Duplicate", 15),
             ],
-            span: Span { line: 1, column: 1 },
+            span: Span::new(0, 0, 1, 1),
             style: None,
             layout: None,
             theme_ref: None,
@@ -271,7 +272,7 @@ mod tests {
             attributes: HashMap::new(),
             events: vec![],
             children: vec![create_node_without_id(10), create_node_without_label(15)],
-            span: Span { line: 1, column: 1 },
+            span: Span::new(0, 0, 1, 1),
             style: None,
             layout: None,
             theme_ref: None,

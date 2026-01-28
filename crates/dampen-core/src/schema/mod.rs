@@ -66,6 +66,7 @@ pub const COMMON_STYLE_ATTRIBUTES: &[&str] = &[
 
 /// Common layout attributes shared by most widgets.
 pub const COMMON_LAYOUT_ATTRIBUTES: &[&str] = &[
+    "id",
     "width",
     "height",
     "min_width",

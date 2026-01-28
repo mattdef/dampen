@@ -469,14 +469,7 @@ fn extract_tree_node_from_widget(
     _expanded_ids: &[String],
     _selected_id: Option<&String>,
 ) -> TreeNodeData {
-    let id = node
-        .attributes
-        .get("id")
-        .map(|a| match a {
-            AttributeValue::Static(s) => s.clone(),
-            _ => "unknown".to_string(),
-        })
-        .unwrap_or_else(|| "unknown".to_string());
+    let id = node.id.clone().unwrap_or_else(|| "unknown".to_string());
 
     let label = node
         .attributes

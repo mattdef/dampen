@@ -4557,14 +4557,7 @@ fn generate_tree_node(
         });
     }
 
-    let id = node
-        .attributes
-        .get("id")
-        .and_then(|attr| match attr {
-            AttributeValue::Static(s) => Some(s.clone()),
-            _ => None,
-        })
-        .unwrap_or_else(|| "unknown".to_string());
+    let id = node.id.clone().unwrap_or_else(|| "unknown".to_string());
 
     let label = node
         .attributes

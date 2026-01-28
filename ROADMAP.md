@@ -134,7 +134,7 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 |-----------|--------|-------------|
 | Window Persistence | ✅ | Save and restore window states |
 
-### v0.3.0 - Advanced Widgets (In progress)
+### v0.3.0 - Advanced Widgets (Completed ✓)
 
 **Objective**: Enrich available widget library
 
@@ -146,7 +146,7 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 | Menus | ✅ | High | Menu bars and context menus |
 | DataTable | ✅ | Medium | Table with sort/filter |
 | ColorPicker | ✅ | Low | Color selector |
-| TreeView | 🔲 | Low | Hierarchical display |
+| TreeView | ✅ | Low | Hierarchical display |
 
 ### Developer Experience (planned)
 
