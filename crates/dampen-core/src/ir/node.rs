@@ -61,6 +61,8 @@ pub enum WidgetKind {
     DatePicker,
     /// Time selection widget with hour/minute/second picker
     TimePicker,
+    /// Color selection widget with color picker overlay
+    ColorPicker,
     Menu,
     MenuItem,
     MenuSeparator,
@@ -248,6 +250,7 @@ impl std::fmt::Display for WidgetKind {
             WidgetKind::CanvasGroup => "group",
             WidgetKind::DatePicker => "date_picker",
             WidgetKind::TimePicker => "time_picker",
+            WidgetKind::ColorPicker => "color_picker",
             WidgetKind::Menu => "menu",
             WidgetKind::MenuItem => "menu_item",
             WidgetKind::MenuSeparator => "menu_separator",
@@ -296,6 +299,7 @@ impl WidgetKind {
             "group",
             "date_picker",
             "time_picker",
+            "color_picker",
             "menu",
             "menu_item",
             "menu_separator",
@@ -344,6 +348,7 @@ impl WidgetKind {
             WidgetKind::Canvas => crate::ir::SchemaVersion { major: 1, minor: 1 },
             WidgetKind::DatePicker
             | WidgetKind::TimePicker
+            | WidgetKind::ColorPicker
             | WidgetKind::Menu
             | WidgetKind::MenuItem
             | WidgetKind::MenuSeparator

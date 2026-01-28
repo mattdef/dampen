@@ -26,6 +26,7 @@
             </row>
             <row spacing="10">
                 <button label="Date &amp; Time" on_click="switch_to_datetime" />
+                <button label="Color Picker" on_click="switch_to_color_picker" />
             </row>
 
             <text value="Display Widgets" size="20" weight="bold" />

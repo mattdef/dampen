@@ -6,6 +6,7 @@
 mod button;
 mod canvas;
 mod checkbox;
+mod color_picker;
 mod column;
 mod combo_box;
 mod container;

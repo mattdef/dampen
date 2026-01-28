@@ -181,6 +181,15 @@ impl Color {
         format!("#{:02x}{:02x}{:02x}", r, g, b)
     }
 
+    /// Convert to hex string with alpha channel
+    pub fn to_rgba_hex(&self) -> String {
+        let r = (self.r.clamp(0.0, 1.0) * 255.0) as u8;
+        let g = (self.g.clamp(0.0, 1.0) * 255.0) as u8;
+        let b = (self.b.clamp(0.0, 1.0) * 255.0) as u8;
+        let a = (self.a.clamp(0.0, 1.0) * 255.0) as u8;
+        format!("#{:02x}{:02x}{:02x}{:02x}", r, g, b, a)
+    }
+
     /// Create color from RGB bytes (0-255 range)
     ///
     /// # Arguments

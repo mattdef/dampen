@@ -202,6 +202,9 @@ fn generate_widget_with_locals(
         WidgetKind::TimePicker => {
             generate_time_picker(node, model_ident, message_ident, style_classes)
         }
+        WidgetKind::ColorPicker => {
+            generate_color_picker(node, model_ident, message_ident, style_classes)
+        }
         WidgetKind::Menu => generate_menu(node, model_ident, message_ident, style_classes),
         WidgetKind::MenuItem | WidgetKind::MenuSeparator => {
             // These are handled by generate_menu and shouldn't appear as top-level widgets
@@ -2803,6 +2806,85 @@ fn generate_date_picker(
         iced_aw::widgets::date_picker::DatePicker::new(
             #show,
             #date,
+            #underlay,
+            #on_cancel,
+            #on_submit
+        )
+    })
+}
+
+/// Generate ColorPicker widget
+fn generate_color_picker(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    let show = node
+        .attributes
+        .get("show")
+        .map(|attr| match attr {
+            AttributeValue::Binding(b) => super::bindings::generate_bool_expr(&b.expr),
+            AttributeValue::Static(s) => {
+                let v = s == "true";
+                quote! { #v }
+            }
+            _ => quote! { false },
+        })
+        .unwrap_or(quote! { false });
+
+    let color = if let Some(attr) = node.attributes.get("value") {
+        match attr {
+            AttributeValue::Binding(b) => {
+                let expr = super::bindings::generate_expr(&b.expr);
+                quote! { iced::Color::from_hex(&#expr.to_string()).unwrap_or(iced::Color::BLACK) }
+            }
+            AttributeValue::Static(s) => {
+                quote! { iced::Color::from_hex(#s).unwrap_or(iced::Color::BLACK) }
+            }
+            _ => quote! { iced::Color::BLACK },
+        }
+    } else {
+        quote! { iced::Color::BLACK }
+    };
+
+    let on_cancel = if let Some(h) = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Cancel)
+    {
+        let msg = format_ident!("{}", h.handler);
+        quote! { #message_ident::#msg }
+    } else {
+        quote! { #message_ident::None }
+    };
+
+    let on_submit = if let Some(h) = node
+        .events
+        .iter()
+        .find(|e| e.event == crate::EventKind::Submit)
+    {
+        let msg = format_ident!("{}", h.handler);
+        quote! {
+            |color| {
+                let s = iced::color!(color).to_string();
+                #message_ident::#msg(s)
+            }
+        }
+    } else {
+        quote! { |_| #message_ident::None }
+    };
+
+    let underlay = if let Some(child) = node.children.first() {
+        generate_widget(child, model_ident, message_ident, style_classes)?
+    } else {
+        quote! { iced::widget::text("Missing child") }
+    };
+
+    Ok(quote! {
+        iced_aw::widgets::color_picker::ColorPicker::new(
+            #show,
+            #color,
             #underlay,
             #on_cancel,
             #on_submit

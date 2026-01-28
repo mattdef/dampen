@@ -5,6 +5,7 @@
 pub mod button;
 pub mod canvas;
 pub mod checkbox;
+pub mod color_picker;
 pub mod combobox;
 pub mod data_table;
 pub mod datetime_picker;

@@ -1,5 +1,6 @@
 pub mod attribute_standard;
 pub mod canvas;
+pub mod color_validator;
 pub mod error;
 pub mod gradient;
 pub mod lexer;
@@ -724,6 +725,7 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "group" => WidgetKind::CanvasGroup,
         "date_picker" => WidgetKind::DatePicker,
         "time_picker" => WidgetKind::TimePicker,
+        "color_picker" => WidgetKind::ColorPicker,
         "menu" => WidgetKind::Menu,
         "menu_item" => WidgetKind::MenuItem,
         "menu_separator" => WidgetKind::MenuSeparator,
@@ -755,6 +757,13 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         HashMap::new();
     let mut events = Vec::new();
     let mut id = None;
+
+    // Pre-scan attributes for validation
+    for attr in node.attributes() {
+        if kind == WidgetKind::ColorPicker && attr.name() == "value" {
+            color_validator::validate_color_format(attr.value(), get_span(node, source))?;
+        }
+    }
 
     for attr in node.attributes() {
         // Get full attribute name (including namespace prefix if present)

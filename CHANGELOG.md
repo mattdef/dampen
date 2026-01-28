@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **ColorPicker Widget**: New `<color_picker>` widget for interactive color selection
+  - Supports all CSS color formats (hex, RGB, RGBA, named colors)
+  - Interactive overlay interface with alpha channel support
+  - Full bidirectional model binding via `value` and `show` attributes
+  - Event handlers: `on_submit`, `on_cancel`, and `on_change`
+  - Integrated syntax validation in `dampen check` CLI command
+  - High-performance implementation for both interpreted and codegen modes
+
 ### Deprecated
 
 - **IcedBackend struct**: The `IcedBackend` struct in `dampen-iced` is now deprecated and will be removed in v0.3.0. Use `DampenWidgetBuilder` instead. See the migration guide in `docs/MIGRATION.md` for instructions on updating your code.

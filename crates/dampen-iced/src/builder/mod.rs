@@ -513,6 +513,7 @@ impl<'a> DampenWidgetBuilder<'a> {
             WidgetKind::If => self.build_if(node),
             WidgetKind::DatePicker => self.build_date_picker(node),
             WidgetKind::TimePicker => self.build_time_picker(node),
+            WidgetKind::ColorPicker => self.build_color_picker(node),
             WidgetKind::Menu => self.build_menu(node),
             WidgetKind::MenuItem => self.build_menu_item(node),
             WidgetKind::MenuSeparator => self.build_menu_separator(node),

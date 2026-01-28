@@ -336,6 +336,13 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
             style_attributes: COMMON_STYLE_ATTRIBUTES,
             layout_attributes: COMMON_LAYOUT_ATTRIBUTES,
         },
+        WidgetKind::ColorPicker => WidgetSchema {
+            required: &[],
+            optional: &["value", "show", "show_alpha", "enabled"],
+            events: &["on_submit", "on_cancel", "on_change"],
+            style_attributes: COMMON_STYLE_ATTRIBUTES,
+            layout_attributes: COMMON_LAYOUT_ATTRIBUTES,
+        },
         WidgetKind::Menu => WidgetSchema {
             required: &[],
             optional: &["position", "close_on_select", "width", "spacing", "class"],
