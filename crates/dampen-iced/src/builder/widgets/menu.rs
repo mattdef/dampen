@@ -123,16 +123,16 @@ impl<'a> DampenWidgetBuilder<'a> {
         };
 
         // If second child is menu, wrap in ContextMenu
-        if let Some(menu_node) = node.children.get(1) {
-            if menu_node.kind == WidgetKind::Menu {
-                let menu_node_clone = menu_node.clone();
-                let builder = self.clone();
+        if let Some(menu_node) = node.children.get(1)
+            && menu_node.kind == WidgetKind::Menu
+        {
+            let menu_node_clone = menu_node.clone();
+            let builder = self.clone();
 
-                return iced_aw::ContextMenu::new(underlay, move || {
-                    builder.build_menu_as_column(&menu_node_clone)
-                })
-                .into();
-            }
+            return iced_aw::ContextMenu::new(underlay, move || {
+                builder.build_menu_as_column(&menu_node_clone)
+            })
+            .into();
         }
 
         underlay
@@ -279,16 +279,17 @@ impl<'a> DampenWidgetBuilder<'a> {
                 .width(Length::Shrink)
                 .style(|theme: &iced::Theme, status| {
                     let palette = theme.extended_palette();
-                    let mut style = iced::widget::button::Style::default();
-                    style.background = match status {
-                        iced::widget::button::Status::Hovered
-                        | iced::widget::button::Status::Pressed => {
-                            Some(palette.background.strong.color.into())
-                        }
-                        _ => None,
-                    };
-                    style.text_color = palette.background.base.text;
-                    style
+                    iced::widget::button::Style {
+                        background: match status {
+                            iced::widget::button::Status::Hovered
+                            | iced::widget::button::Status::Pressed => {
+                                Some(palette.background.strong.color.into())
+                            }
+                            _ => None,
+                        },
+                        text_color: palette.background.base.text,
+                        ..Default::default()
+                    }
                 })
                 .into()
         } else {
@@ -297,20 +298,21 @@ impl<'a> DampenWidgetBuilder<'a> {
                 .width(Length::Fill)
                 .style(|theme: &iced::Theme, status| {
                     let palette = theme.extended_palette();
-                    let mut style = iced::widget::button::Style::default();
-                    style.background = match status {
-                        iced::widget::button::Status::Hovered
-                        | iced::widget::button::Status::Pressed => {
-                            Some(palette.primary.weak.color.into())
-                        }
-                        _ => None,
-                    };
-                    style.text_color = match status {
-                        iced::widget::button::Status::Hovered
-                        | iced::widget::button::Status::Pressed => palette.primary.weak.text,
-                        _ => palette.background.base.text,
-                    };
-                    style
+                    iced::widget::button::Style {
+                        background: match status {
+                            iced::widget::button::Status::Hovered
+                            | iced::widget::button::Status::Pressed => {
+                                Some(palette.primary.weak.color.into())
+                            }
+                            _ => None,
+                        },
+                        text_color: match status {
+                            iced::widget::button::Status::Hovered
+                            | iced::widget::button::Status::Pressed => palette.primary.weak.text,
+                            _ => palette.background.base.text,
+                        },
+                        ..Default::default()
+                    }
                 });
 
             if let Some(event) = node.events.iter().find(|e| e.event == EventKind::Click) {

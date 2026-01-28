@@ -34,34 +34,35 @@ pub struct Model {
 mod _app {}
 
 pub fn create_app_state() -> AppState<Model> {
-    let mut model = Model::default();
-    model.users = vec![
-        User {
-            id: 1,
-            name: "Alice".to_string(),
-            email: "alice@example.com".to_string(),
-        },
-        User {
-            id: 2,
-            name: "Bob".to_string(),
-            email: "bob@example.com".to_string(),
-        },
-        User {
-            id: 3,
-            name: "Charlie".to_string(),
-            email: "charlie@example.com".to_string(),
-        },
-        User {
-            id: 4,
-            name: "David".to_string(),
-            email: "david@example.com".to_string(),
-        },
-        User {
-            id: 5,
-            name: "Eve".to_string(),
-            email: "eve@example.com".to_string(),
-        },
-    ];
+    let model = Model {
+        users: vec![
+            User {
+                id: 1,
+                name: "Alice".to_string(),
+                email: "alice@example.com".to_string(),
+            },
+            User {
+                id: 2,
+                name: "Bob".to_string(),
+                email: "bob@example.com".to_string(),
+            },
+            User {
+                id: 3,
+                name: "Charlie".to_string(),
+                email: "charlie@example.com".to_string(),
+            },
+            User {
+                id: 4,
+                name: "David".to_string(),
+                email: "david@example.com".to_string(),
+            },
+            User {
+                id: 5,
+                name: "Eve".to_string(),
+                email: "eve@example.com".to_string(),
+            },
+        ],
+    };
     let document = _app::document();
     let handler_registry = create_handler_registry();
     AppState::with_all(document, model, handler_registry)

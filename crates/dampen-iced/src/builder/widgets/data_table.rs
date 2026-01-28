@@ -97,21 +97,22 @@ impl<'a> DampenWidgetBuilder<'a> {
                                 scoped_builder.push_context("index", BindingValue::Integer(index as i64));
                                 scoped_builder.push_context("item", item.clone());
                                 
-                                let widget = scoped_builder.build_widget(root);
-                                
-                                // Pop context happens when scoped_builder is dropped? 
+                                // Pop context happens when scoped_builder is dropped?
                                 // No, we modified the RefCell in scoped_builder.
-                                // Since scoped_builder shares the same RefCell (it was shallow cloned but RefCell is deep cloned in logic? No.)
+                                // Since scoped_builder shares the same RefCell (it was shallow cloned
+                                // but RefCell is deep cloned in logic? No.)
                                 // Wait, RefCell<Vec<...>> in DampenWidgetBuilder.
-                                // If DampenWidgetBuilder derives Clone, `RefCell` is NOT implicitly deep cloned if it's `RefCell<T>`.
+                                // If DampenWidgetBuilder derives Clone, `RefCell` is NOT implicitly
+                                // deep cloned if it's `RefCell<T>`.
                                 // `RefCell` does NOT implement Clone unless T implements Clone?
                                 // Actually `RefCell` implements Clone if T does.
                                 // `Vec` implements Clone. `HashMap` implements Clone.
                                 // So `self.clone()` creates a NEW RefCell with CLONED data.
-                                // So modifications to scoped_builder.binding_context DO NOT affect `builder` or `self`.
+                                // So modifications to scoped_builder.binding_context DO NOT affect
+                                // `builder` or `self`.
                                 // So we don't need to pop.
-                                
-                                widget
+
+                                scoped_builder.build_widget(root)
                             } else {
                                 Element::from(iced::widget::text(""))
                             }

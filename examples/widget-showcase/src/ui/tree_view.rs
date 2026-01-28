@@ -11,6 +11,7 @@ use crate::{CurrentView, Message};
 
 /// Tree node data structure
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct TreeNode {
     pub id: String,
     pub label: String,
@@ -18,6 +19,7 @@ pub struct TreeNode {
     pub children: Vec<TreeNode>,
 }
 
+#[allow(dead_code)]
 impl TreeNode {
     pub fn new(id: &str, label: &str) -> Self {
         Self {
@@ -45,6 +47,7 @@ pub struct Model {
     pub selected_node: Option<String>,
 }
 
+#[allow(dead_code)]
 impl Model {
     pub fn new() -> Self {
         Self {

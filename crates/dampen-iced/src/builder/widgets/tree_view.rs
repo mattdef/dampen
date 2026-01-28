@@ -180,6 +180,7 @@ impl<'a> DampenWidgetBuilder<'a> {
     }
 
     /// Recursively build a tree node and its children
+    #[allow(clippy::too_many_arguments)]
     fn build_tree_node_recursive(
         &self,
         tree_node: TreeNodeData,
@@ -441,11 +442,11 @@ fn extract_tree_node_data(value: &BindingValue) -> Option<TreeNodeData> {
 
             let children = map
                 .get("children")
-                .and_then(|v| match v {
+                .map(|v| match v {
                     BindingValue::List(items) => {
-                        Some(items.iter().filter_map(extract_tree_node_data).collect())
+                        items.iter().filter_map(extract_tree_node_data).collect()
                     }
-                    _ => Some(Vec::new()),
+                    _ => Vec::new(),
                 })
                 .unwrap_or_default();
 
