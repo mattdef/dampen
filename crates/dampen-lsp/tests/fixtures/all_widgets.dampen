@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<column xmlns="https://dampen.io/schema/v1">
+    <!-- Layout widgets -->
+    <row spacing="10">
+        <column spacing="5">
+            <container padding="10">
+                <text value="Container"/>
+            </container>
+        </column>
+    </row>
+    
+    <stack>
+        <text value="Stack layer 1"/>
+        <text value="Stack layer 2"/>
+    </stack>
+    
+    <grid columns="3" spacing="10">
+        <text value="Grid item 1"/>
+        <text value="Grid item 2"/>
+        <text value="Grid item 3"/>
+    </grid>
+    
+    <!-- Input widgets -->
+    <text_input placeholder="Enter text..." value="{|text_value|}"/>
+    <checkbox label="Enable feature" checked="{|is_enabled|}"/>
+    <slider min="0" max="100" value="{|slider_value|}"/>
+    <toggler label="Toggle me" checked="{|is_toggled|}"/>
+    <pick_list options="{|options|}" selected="{|selected|}"/>
+    <combobox options="{|options|}" selected="{|selected|}"/>
+    <radio options="{|radio_options|}" selected="{|radio_selected|}"/>
+    
+    <!-- Display widgets -->
+    <text value="Plain text"/>
+    <button label="Click me" on_click="handle_click"/>
+    <image src="/path/to/image.png" width="100" height="100"/>
+    <svg src="/path/to/icon.svg" width="24" height="24"/>
+    <progress_bar value="{|progress|}" max="100"/>
+    <rule/>
+    
+    <!-- Advanced widgets -->
+    <scrollable height="400">
+        <text value="Scrollable content"/>
+    </scrollable>
+    
+    <tooltip text="This is a tooltip">
+        <text value="Hover over me"/>
+    </tooltip>
+    
+    <float x="100" y="100">
+        <text value="Floating content"/>
+    </float>
+    
+    <!-- Date/Time/Color -->
+    <date_picker value="{|selected_date|}"/>
+    <time_picker value="{|selected_time|}"/>
+    <color_picker value="{|selected_color|}"/>
+    
+    <!-- Menu -->
+    <menu label="File">
+        <menu_item label="New" on_click="file_new"/>
+        <menu_item label="Open" on_click="file_open"/>
+        <menu_separator/>
+        <menu_item label="Exit" on_click="file_exit"/>
+    </menu>
+    
+    <!-- Data table -->
+    <data_table data="{|table_data|}">
+        <data_column key="name" header="Name"/>
+        <data_column key="email" header="Email"/>
+        <data_column key="role" header="Role"/>
+    </data_table>
+    
+    <!-- Tree view -->
+    <tree_view>
+        <tree_node label="Root" expanded="true">
+            <tree_node label="Child 1"/>
+            <tree_node label="Child 2">
+                <tree_node label="Grandchild"/>
+            </tree_node>
+        </tree_node>
+    </tree_view>
+    
+    <!-- Canvas -->
+    <canvas width="400" height="300" on_draw="draw_canvas"/>
+</column>

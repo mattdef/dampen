@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<column xmlns="https://dampen.io/schema/v1">
+    <unknown_widget value="This widget doesn't exist"/>
+    <text invalid_attribute="test"/>
+</column>

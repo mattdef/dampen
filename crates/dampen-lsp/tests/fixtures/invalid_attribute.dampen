@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<column xmlns="https://dampen.io/schema/v1">
+    <!-- Invalid attribute values -->
+    <text value="123" invalid_attr="test"/>
+    <button label="Test" on_click="{|invalid binding|}"/>
+    <slider min="abc" max="def" value="ghi"/>
+    <checkbox checked="maybe"/>
+</column>
