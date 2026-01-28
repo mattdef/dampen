@@ -52,7 +52,7 @@ enum Message {
     /// System theme change
     SystemThemeChanged(String),
     // Window persistence:
-    Window(iced::window::Event),
+    Window(iced::window::Id, iced::window::Event),
 }
 
 /// Main application structure with auto-generated view management (interpreted mode)
@@ -118,7 +118,7 @@ pub fn main() -> iced::Result {
         )
         .theme(window::theme)
         .title("{{PROJECT_NAME}}")
-        .subscription(|_model| window::subscription_model())
+        .subscription(window::subscription_model())
         .exit_on_close_request(false)
         .run()
 }

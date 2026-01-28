@@ -148,13 +148,21 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 | ColorPicker | ✅ | Low | Color selector |
 | TreeView | ✅ | Low | Hierarchical display |
 
+### v0.3.1 - Enhanced multi-windows application (In progress)
+
+**Objective**: Improve tooling 
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
+| Language Server | 🔲 | LSP support for `.dampen` files |
+
 ### Developer Experience (planned)
 
 **Objective**: Improve tooling and DX
 
 | Milestone | Status | Priority | Description |
 |-----------|--------|----------|-------------|
-| Language Server | 🔲 | High | LSP support for `.dampen` files |
+| Zed Extension | 🔲 | High | Official Zed extension |
 | VS Code Extension | 🔲 | High | Official VS Code extension |
 | Interactive CLI | 🔲 | Low | Interactive mode for `dampen new` |
 | Visual Hot Reload | 🔲 | Medium | Improved error overlay |
