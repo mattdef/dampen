@@ -109,6 +109,20 @@ pub enum CheckError {
         source: serde_json::Error,
     },
 
+    // Phase 8: TreeView Validation
+    #[error(
+        "Duplicate tree node ID '{id}' at {file}:{line}:{col}. First occurrence: {first_file}:{first_line}:{first_col}"
+    )]
+    DuplicateTreeNodeId {
+        id: String,
+        file: PathBuf,
+        line: u32,
+        col: u32,
+        first_file: PathBuf,
+        first_line: u32,
+        first_col: u32,
+    },
+
     // Generic errors
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),

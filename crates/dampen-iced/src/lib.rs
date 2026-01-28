@@ -526,7 +526,9 @@ pub fn render<'a>(
         | WidgetKind::MenuSeparator
         | WidgetKind::ContextMenu
         | WidgetKind::DataTable
-        | WidgetKind::DataColumn => backend.column(Vec::new()),
+        | WidgetKind::DataColumn
+        | WidgetKind::TreeView
+        | WidgetKind::TreeNode => backend.column(Vec::new()),
     }
 }
 

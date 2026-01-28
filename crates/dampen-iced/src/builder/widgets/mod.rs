@@ -34,5 +34,6 @@ mod text_input;
 mod time_picker;
 mod toggler;
 mod tooltip;
+mod tree_view;
 
 // Re-export the build methods as part of DampenWidgetBuilder implementation

@@ -520,6 +520,11 @@ impl<'a> DampenWidgetBuilder<'a> {
             WidgetKind::ContextMenu => self.build_context_menu(node),
             WidgetKind::Radio => self.build_radio(node),
             WidgetKind::DataTable => self.build_data_table(node),
+            WidgetKind::TreeView => self.build_tree_view(node),
+            WidgetKind::TreeNode => {
+                // TreeNode is handled within build_tree_view, shouldn't appear as top-level
+                iced::widget::column(Vec::new()).into()
+            }
             WidgetKind::DataColumn
             | WidgetKind::CanvasRect
             | WidgetKind::CanvasCircle

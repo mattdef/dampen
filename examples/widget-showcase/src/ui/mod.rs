@@ -26,4 +26,5 @@ pub mod text;
 pub mod textinput;
 pub mod toggler;
 pub mod tooltip;
+pub mod tree_view;
 pub mod window;

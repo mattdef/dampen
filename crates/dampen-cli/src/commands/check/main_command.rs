@@ -748,10 +748,10 @@ fn validate_document(
 ) {
     use crate::commands::check::cross_widget::RadioGroupValidator;
 
-    // Get all valid widget names
+    // Get all valid widget names (using Display trait to get proper names like "tree_view")
     let valid_widgets: HashSet<String> = WidgetKind::all_variants()
         .iter()
-        .map(|w| format!("{:?}", w).to_lowercase())
+        .map(|w| format!("{}", w).to_lowercase())
         .collect();
 
     // Create radio group validator to collect radio buttons across the tree
@@ -817,6 +817,76 @@ fn validate_document(
             _ => {}
         }
     }
+
+    // T057: Validate TreeView widgets for duplicate IDs and required attributes
+    validate_tree_views(&document.root, file_path, errors);
+}
+
+/// Recursively find and validate all TreeView widgets
+fn validate_tree_views(
+    node: &dampen_core::ir::WidgetNode,
+    file_path: &Path,
+    errors: &mut Vec<CheckError>,
+) {
+    use crate::commands::check::tree_view::TreeViewValidator;
+
+    // If this is a TreeView, validate it
+    if matches!(node.kind, WidgetKind::TreeView) {
+        let mut validator = TreeViewValidator::new();
+        validator.set_file(file_path.to_path_buf());
+        validator.validate_tree_view(node);
+
+        // Convert TreeView errors to CheckError
+        for error in validator.errors() {
+            match error {
+                crate::commands::check::errors::CheckError::DuplicateTreeNodeId {
+                    id,
+                    file,
+                    line,
+                    col,
+                    first_file,
+                    first_line,
+                    first_col,
+                } => {
+                    errors.push(CheckError::XmlValidationError {
+                        file: file.clone(),
+                        line: *line,
+                        col: *col,
+                        message: format!(
+                            "Duplicate tree node ID '{}'. First occurrence: {}:{}:{}",
+                            id,
+                            first_file.display(),
+                            first_line,
+                            first_col
+                        ),
+                    });
+                }
+                crate::commands::check::errors::CheckError::MissingRequiredAttribute {
+                    attr,
+                    widget,
+                    file,
+                    line,
+                    col,
+                } => {
+                    errors.push(CheckError::XmlValidationError {
+                        file: file.clone(),
+                        line: *line,
+                        col: *col,
+                        message: format!(
+                            "Missing required attribute '{}' for widget '{}'",
+                            attr, widget
+                        ),
+                    });
+                }
+                _ => {}
+            }
+        }
+    }
+
+    // Recursively check children
+    for child in &node.children {
+        validate_tree_views(child, file_path, errors);
+    }
 }
 
 fn validate_widget_node(
@@ -832,7 +902,7 @@ fn validate_widget_node(
     use crate::commands::check::suggestions;
 
     // Check if widget kind is valid
-    let widget_name = format!("{:?}", node.kind).to_lowercase();
+    let widget_name = format!("{}", node.kind).to_lowercase();
     if !valid_widgets.contains(&widget_name) && !matches!(node.kind, WidgetKind::Custom(_)) {
         errors.push(CheckError::InvalidWidget {
             widget: widget_name.clone(),
@@ -843,7 +913,10 @@ fn validate_widget_node(
     }
 
     // Validate widget attributes (US1: Unknown Attribute Detection)
-    let attr_names: Vec<String> = node.attributes.keys().map(|s| s.to_string()).collect();
+    let mut attr_names: Vec<String> = node.attributes.keys().map(|s| s.to_string()).collect();
+    if node.id.is_some() {
+        attr_names.push("id".to_string());
+    }
     let unknown_attrs = attributes::validate_widget_attributes(&node.kind, &attr_names);
 
     for (attr, _suggestion_opt) in unknown_attrs {
@@ -1206,6 +1279,8 @@ impl WidgetKindExt for WidgetKind {
             WidgetKind::Float,
             WidgetKind::DataTable,
             WidgetKind::DataColumn,
+            WidgetKind::TreeView,
+            WidgetKind::TreeNode,
             WidgetKind::For,
             WidgetKind::If,
         ]

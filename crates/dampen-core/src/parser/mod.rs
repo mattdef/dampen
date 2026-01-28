@@ -733,6 +733,8 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "float" => WidgetKind::Float,
         "data_table" => WidgetKind::DataTable,
         "data_column" => WidgetKind::DataColumn,
+        "tree_view" => WidgetKind::TreeView,
+        "tree_node" => WidgetKind::TreeNode,
         "template" => WidgetKind::Custom("template".to_string()),
         "for" => WidgetKind::For,
         "if" => WidgetKind::If,

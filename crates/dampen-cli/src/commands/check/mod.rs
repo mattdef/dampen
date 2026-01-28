@@ -8,6 +8,7 @@ mod main_command;
 pub mod model;
 pub mod suggestions;
 pub mod themes;
+pub mod tree_view;
 
 // Re-exports for convenience
 pub use attributes::WidgetAttributeSchema;
@@ -19,3 +20,4 @@ pub use main_command::{CheckArgs, CheckError, execute, resolve_package_ui_path, 
 pub use model::{ModelField, ModelInfo};
 pub use suggestions::{find_closest_match, levenshtein_distance, suggest};
 pub use themes::ThemeValidator;
+pub use tree_view::TreeViewValidator;

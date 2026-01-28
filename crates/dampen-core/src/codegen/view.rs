@@ -226,6 +226,16 @@ fn generate_widget_with_locals(
                 node.kind
             )))
         }
+        WidgetKind::TreeView => {
+            generate_tree_view(node, model_ident, message_ident, style_classes, local_vars)
+        }
+        WidgetKind::TreeNode => {
+            // These are handled by generate_tree_view logic, shouldn't appear as top-level widgets
+            Err(super::CodegenError::InvalidWidget(format!(
+                "{:?} must be inside a <tree_view>",
+                node.kind
+            )))
+        }
         WidgetKind::CanvasRect
         | WidgetKind::CanvasCircle
         | WidgetKind::CanvasLine
@@ -4361,6 +4371,352 @@ fn generate_data_table(
 
     // Apply layout
     Ok(maybe_wrap_in_container(table, node))
+}
+
+/// Generate TreeView widget code
+fn generate_tree_view(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    // Get tree configuration from attributes
+    let indent_size = node
+        .attributes
+        .get("indent_size")
+        .and_then(|attr| match attr {
+            AttributeValue::Static(s) => s.parse::<f32>().ok(),
+            _ => None,
+        })
+        .unwrap_or(20.0);
+
+    let node_height = node
+        .attributes
+        .get("node_height")
+        .and_then(|attr| match attr {
+            AttributeValue::Static(s) => s.parse::<f32>().ok(),
+            _ => None,
+        })
+        .unwrap_or(30.0);
+
+    let _icon_size = node
+        .attributes
+        .get("icon_size")
+        .and_then(|attr| match attr {
+            AttributeValue::Static(s) => s.parse::<f32>().ok(),
+            _ => None,
+        })
+        .unwrap_or(16.0);
+
+    let expand_icon = node
+        .attributes
+        .get("expand_icon")
+        .and_then(|attr| match attr {
+            AttributeValue::Static(s) => Some(s.clone()),
+            _ => None,
+        })
+        .unwrap_or_else(|| "▶".to_string());
+
+    let collapse_icon = node
+        .attributes
+        .get("collapse_icon")
+        .and_then(|attr| match attr {
+            AttributeValue::Static(s) => Some(s.clone()),
+            _ => None,
+        })
+        .unwrap_or_else(|| "▼".to_string());
+
+    // Check if we have a nodes binding (dynamic tree) or inline children (static tree)
+    let has_nodes_binding = node.attributes.contains_key("nodes");
+
+    if has_nodes_binding {
+        // Dynamic tree from binding - generate code that builds tree at runtime
+        let nodes_binding = node.attributes.get("nodes").ok_or_else(|| {
+            super::CodegenError::InvalidWidget("nodes attribute is required".into())
+        })?;
+        let nodes_expr = generate_attribute_value_raw(nodes_binding, model_ident);
+
+        // Get expanded IDs binding
+        let expanded_binding = node.attributes.get("expanded");
+        let expanded_expr =
+            expanded_binding.map(|attr| generate_attribute_value_raw(attr, model_ident));
+
+        // Get selected ID binding
+        let selected_binding = node.attributes.get("selected");
+        let selected_expr =
+            selected_binding.map(|attr| generate_attribute_value_raw(attr, model_ident));
+
+        // Generate the tree view using a recursive helper function
+        let tree_view = quote! {
+            {
+                let tree_nodes = #nodes_expr;
+                let expanded_ids: std::collections::HashSet<String> = #expanded_expr
+                    .map(|v: Vec<String>| v.into_iter().collect())
+                    .unwrap_or_default();
+                let selected_id: Option<String> = #selected_expr;
+
+                // Build tree recursively
+                fn build_tree_nodes(
+                    nodes: &[TreeNode],
+                    expanded_ids: &std::collections::HashSet<String>,
+                    selected_id: &Option<String>,
+                    depth: usize,
+                ) -> Vec<iced::Element<'static, #message_ident>> {
+                    let mut elements = Vec::new();
+                    for node in nodes {
+                        let is_expanded = expanded_ids.contains(&node.id);
+                        let is_selected = selected_id.as_ref() == Some(&node.id);
+                        let has_children = !node.children.is_empty();
+
+                        // Build node row
+                        let indent = (depth as f32) * #indent_size;
+                        let node_element = build_tree_node_row(
+                            node,
+                            is_expanded,
+                            is_selected,
+                            has_children,
+                            indent,
+                            #node_height,
+                            #expand_icon,
+                            #collapse_icon,
+                        );
+                        elements.push(node_element);
+
+                        // Add children if expanded
+                        if is_expanded && has_children {
+                            let child_elements = build_tree_nodes(
+                                &node.children,
+                                expanded_ids,
+                                selected_id,
+                                depth + 1,
+                            );
+                            elements.extend(child_elements);
+                        }
+                    }
+                    elements
+                }
+
+                iced::widget::column(build_tree_nodes(&tree_nodes, &expanded_ids, &selected_id, 0))
+                    .spacing(2)
+                    .into()
+            }
+        };
+
+        Ok(tree_view)
+    } else {
+        // Static tree from inline XML children
+        let tree_elements: Vec<TokenStream> = node
+            .children
+            .iter()
+            .filter(|c| c.kind == WidgetKind::TreeNode)
+            .map(|child| {
+                generate_tree_node(
+                    child,
+                    model_ident,
+                    message_ident,
+                    style_classes,
+                    local_vars,
+                    indent_size,
+                    node_height,
+                    &expand_icon,
+                    &collapse_icon,
+                    0,
+                    node,
+                )
+            })
+            .collect::<Result<_, _>>()?;
+
+        Ok(quote! {
+            iced::widget::column(vec![#(#tree_elements),*])
+                .spacing(2)
+                .into()
+        })
+    }
+}
+
+/// Generate a single tree node element (recursive for children)
+#[allow(clippy::too_many_arguments)]
+fn generate_tree_node(
+    node: &crate::WidgetNode,
+    _model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    _style_classes: &HashMap<String, StyleClass>,
+    _local_vars: &std::collections::HashSet<String>,
+    indent_size: f32,
+    node_height: f32,
+    expand_icon: &str,
+    collapse_icon: &str,
+    depth: usize,
+    parent_node: &crate::WidgetNode,
+) -> Result<TokenStream, super::CodegenError> {
+    // T068, T069: Prevent infinite recursion during code generation
+    if depth > 50 {
+        return Ok(quote! {
+            iced::widget::text("... max depth reached").size(12).into()
+        });
+    }
+
+    let id = node
+        .attributes
+        .get("id")
+        .and_then(|attr| match attr {
+            AttributeValue::Static(s) => Some(s.clone()),
+            _ => None,
+        })
+        .unwrap_or_else(|| "unknown".to_string());
+
+    let label = node
+        .attributes
+        .get("label")
+        .and_then(|attr| match attr {
+            AttributeValue::Static(s) => Some(s.clone()),
+            _ => None,
+        })
+        .unwrap_or_else(|| id.clone());
+
+    let icon = node.attributes.get("icon").and_then(|attr| match attr {
+        AttributeValue::Static(s) => Some(s.clone()),
+        _ => None,
+    });
+
+    let expanded = node.attributes.get("expanded").and_then(|attr| match attr {
+        AttributeValue::Static(s) => s.parse::<bool>().ok(),
+        _ => None,
+    });
+
+    let selected = node.attributes.get("selected").and_then(|attr| match attr {
+        AttributeValue::Static(s) => s.parse::<bool>().ok(),
+        _ => None,
+    });
+
+    let _disabled = node.attributes.get("disabled").and_then(|attr| match attr {
+        AttributeValue::Static(s) => s.parse::<bool>().ok(),
+        _ => None,
+    });
+
+    let has_children = !node.children.is_empty();
+    let is_expanded = expanded.unwrap_or(false);
+    let is_selected = selected.unwrap_or(false);
+
+    let indent = (depth as f32) * indent_size;
+
+    // Build label text with optional icon
+    let label_text = if let Some(ref icon_str) = icon {
+        format!("{} {}", icon_str, label)
+    } else {
+        label
+    };
+
+    // Generate expand/collapse button or spacer
+    let toggle_button = if has_children {
+        let icon = if is_expanded {
+            collapse_icon
+        } else {
+            expand_icon
+        };
+
+        // Check for on_toggle event handler
+        if let Some(event) = parent_node
+            .events
+            .iter()
+            .find(|e| matches!(e.event, crate::ir::node::EventKind::Toggle))
+        {
+            let variant_name = to_upper_camel_case(&event.handler);
+            let handler_ident = format_ident!("{}", variant_name);
+
+            quote! {
+                iced::widget::button(iced::widget::text(#icon).size(14))
+                    .on_press(#message_ident::#handler_ident)
+                    .width(iced::Length::Fixed(20.0))
+                    .height(iced::Length::Fixed(#node_height))
+            }
+        } else {
+            quote! {
+                iced::widget::text(#icon).size(14)
+            }
+        }
+    } else {
+        quote! {
+            iced::widget::container(iced::widget::text(""))
+                .width(iced::Length::Fixed(20.0))
+        }
+    };
+
+    // Generate label element with selection handling
+    let label_element = if let Some(event) = parent_node
+        .events
+        .iter()
+        .find(|e| matches!(e.event, crate::ir::node::EventKind::Select))
+    {
+        let variant_name = to_upper_camel_case(&event.handler);
+        let handler_ident = format_ident!("{}", variant_name);
+
+        quote! {
+            iced::widget::button(iced::widget::text(#label_text).size(14))
+                .on_press(#message_ident::#handler_ident)
+                .style(|_theme: &iced::Theme, _status: iced::widget::button::Status| {
+                    if #is_selected {
+                        iced::widget::button::Style {
+                            background: Some(iced::Background::Color(
+                                iced::Color::from_rgb(0.0, 0.48, 0.8),
+                            )),
+                            text_color: iced::Color::WHITE,
+                            ..Default::default()
+                        }
+                    } else {
+                        iced::widget::button::Style::default()
+                    }
+                })
+        }
+    } else {
+        quote! {
+            iced::widget::text(#label_text).size(14)
+        }
+    };
+
+    // Build node row
+    let node_row = quote! {
+        iced::widget::row(vec![#toggle_button.into(), #label_element.into()])
+            .spacing(4)
+            .padding(iced::Padding::from([0.0, 0.0, 0.0, #indent]))
+    };
+
+    // If expanded and has children, render them recursively
+    if is_expanded && has_children {
+        let child_elements: Vec<TokenStream> = node
+            .children
+            .iter()
+            .filter(|c| c.kind == WidgetKind::TreeNode)
+            .map(|child| {
+                generate_tree_node(
+                    child,
+                    _model_ident,
+                    message_ident,
+                    _style_classes,
+                    _local_vars,
+                    indent_size,
+                    node_height,
+                    expand_icon,
+                    collapse_icon,
+                    depth + 1,
+                    parent_node,
+                )
+            })
+            .collect::<Result<_, _>>()?;
+
+        Ok(quote! {
+            iced::widget::column(vec![
+                #node_row.into(),
+                iced::widget::column(vec![#(#child_elements),*])
+                    .spacing(2)
+                    .into(),
+            ])
+            .spacing(2)
+        })
+    } else {
+        Ok(node_row)
+    }
 }
 
 #[cfg(test)]
