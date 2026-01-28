@@ -1,0 +1,78 @@
+<dampen version="1.1" encoding="utf-8">
+    <scrollable>
+        <column padding="40" spacing="15" align="center">
+            <text value="TreeView Widget Demo" size="36" weight="bold" />
+            <text
+                value="Hierarchical tree display with expand/collapse"
+                size="14"
+                color="#666666"
+            />
+
+            <rule />
+
+            <text value="Static Tree (Inline XML)" size="20" weight="bold" />
+            <container padding="20" background="#f5f5f5" border_radius="8">
+                <tree_view indent_size="24" node_height="32">
+                    <tree_node id="root" label="Root Category" expanded="true">
+                        <tree_node id="child1" label="First Child" />
+                        <tree_node id="child2" label="Second Child">
+                            <tree_node id="grandchild1" label="Grandchild 1" />
+                            <tree_node id="grandchild2" label="Grandchild 2" />
+                        </tree_node>
+                        <tree_node id="child3" label="Third Child" />
+                    </tree_node>
+                </tree_view>
+            </container>
+
+            <rule />
+
+            <text value="Dynamic Tree (Data Binding)" size="20" weight="bold" />
+            <container padding="20" background="#f5f5f5" border_radius="8">
+                <tree_view
+                    expanded="{expanded_nodes}"
+                    selected="{selected_node}"
+                    on_toggle="toggle_node"
+                    on_select="select_node"
+                    indent_size="24"
+                    node_height="32"
+                    expand_icon="📁"
+                    collapse_icon="📂"
+                    leaf_icon="📄"
+                >
+                    <tree_node id="docs" label="📁 Documents" expanded="true">
+                        <tree_node id="resume" label="📄 Resume.pdf" />
+                        <tree_node id="notes" label="📁 Notes">
+                            <tree_node id="ideas" label="📝 Ideas.md" />
+                            <tree_node id="todo" label="📄 Todo.txt" />
+                        </tree_node>
+                        <tree_node id="budget" label="📊 Budget.xlsx" />
+                    </tree_node>
+                    <tree_node id="pics" label="📁 Pictures">
+                        <tree_node id="vacation" label="📁 Vacation">
+                            <tree_node id="beach" label="🖼️ Beach.jpg" />
+                            <tree_node id="mountain" label="🖼️ Mountain.jpg" />
+                        </tree_node>
+                        <tree_node id="family" label="🖼️ Family.jpg" />
+                    </tree_node>
+                    <tree_node id="music" label="📁 Music">
+                        <tree_node id="rock" label="📁 Rock">
+                            <tree_node id="song1" label="🎵 Song1.mp3" />
+                            <tree_node id="song2" label="🎵 Song2.mp3" />
+                        </tree_node>
+                        <tree_node id="jazz" label="📁 Jazz" />
+                    </tree_node>
+                </tree_view>
+            </container>
+
+            <rule />
+
+            <text value="Selected: {selected_node}" size="16" />
+            
+            <row spacing="10">
+                <button label="Expand All" on_click="expand_all" />
+                <button label="Collapse All" on_click="collapse_all" />
+                <button label="Back to Menu" on_click="switch_to_window" />
+            </row>
+        </column>
+    </scrollable>
+</dampen>
