@@ -96,7 +96,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                                 let scoped_builder = builder.clone();
                                 scoped_builder.push_context("index", BindingValue::Integer(index as i64));
                                 scoped_builder.push_context("item", item.clone());
-                                
+
                                 // Pop context happens when scoped_builder is dropped?
                                 // No, we modified the RefCell in scoped_builder.
                                 // Since scoped_builder shares the same RefCell (it was shallow cloned
@@ -119,7 +119,7 @@ impl<'a> DampenWidgetBuilder<'a> {
                         }
                     },
                 );
-                
+
                 col.width(width)
             })
             .collect();
