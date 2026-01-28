@@ -609,14 +609,14 @@ pub fn generate_init_method(views: &[ViewInfo], attrs: &MacroAttributes) -> Toke
 
             #shared_init
 
-            // Load theme context from theme.dampen if present (dev mode only)
-            #[cfg(all(debug_assertions, feature = "interpreted"))]
+            // Load theme context from theme.dampen if present (interpreted mode only)
+            #[cfg(feature = "interpreted")]
             let theme_context = {
                 dampen_dev::theme_loader::find_project_root()
                     .and_then(|root| dampen_dev::theme_loader::load_theme_context(&root).ok().flatten())
             };
 
-            #[cfg(not(all(debug_assertions, feature = "interpreted")))]
+            #[cfg(not(feature = "interpreted"))]
             let theme_context: Option<dampen_core::ThemeContext> = None;
 
             let mut app = Self {
