@@ -8,7 +8,7 @@ use tower_lsp::lsp_types::*;
 use url::Url;
 
 use dampen_lsp::document::{DocumentCache, DocumentState};
-use dampen_lsp::handlers::diagnostics;
+use dampen_lsp::handlers::{completion, diagnostics};
 
 /// Helper function to create a test document URI.
 fn test_uri(name: &str) -> Url {
@@ -391,5 +391,185 @@ fn test_acceptance_us1_invalid_attribute_value_with_suggestion() {
         println!(
             "Note: No diagnostics generated for invalid_attribute.dampen - parser may be lenient"
         );
+    }
+}
+
+// ============================================================================
+// ACCEPTANCE TESTS - User Story 2: Intelligent Autocompletion
+// ============================================================================
+
+/// T064 [US2] ACCEPTANCE TEST: Type `<` then verify widget list appears
+///
+/// Acceptance Criteria: When a developer types `<` to start a new tag,
+/// a list of all available widgets appears as completion suggestions.
+#[test]
+fn test_acceptance_us2_widget_completion() {
+    let uri = test_uri("completion_widget.dampen");
+    let content = load_fixture("completion_widget.dampen");
+
+    // Create doc state
+    let doc_state = DocumentState::new(uri.clone(), content, 1);
+
+    // Position after `<` (Line 1, Character 5)
+    // <column>
+    //     <
+    // 012345
+    let position = Position::new(1, 5);
+
+    let params = CompletionParams {
+        text_document_position: TextDocumentPositionParams {
+            text_document: TextDocumentIdentifier { uri },
+            position,
+        },
+        work_done_progress_params: Default::default(),
+        partial_result_params: Default::default(),
+        context: Some(CompletionContext {
+            trigger_kind: CompletionTriggerKind::TRIGGER_CHARACTER,
+            trigger_character: Some("<".to_string()),
+        }),
+    };
+
+    let start_time = std::time::Instant::now();
+    let response = completion::completion(&doc_state, params);
+    let elapsed = start_time.elapsed();
+
+    // AC-1: Completion list should not be empty
+    assert!(
+        response.is_some(),
+        "AC-1: Completion list should be returned"
+    );
+
+    if let Some(CompletionResponse::Array(items)) = response {
+        assert!(
+            !items.is_empty(),
+            "AC-1: Completion list should not be empty"
+        );
+
+        // AC-2: Should contain standard widgets
+        let has_button = items.iter().any(|i| i.label == "button");
+        let has_column = items.iter().any(|i| i.label == "column");
+        let has_text = items.iter().any(|i| i.label == "text");
+
+        assert!(has_button, "AC-2: Should contain 'button'");
+        assert!(has_column, "AC-2: Should contain 'column'");
+        assert!(has_text, "AC-2: Should contain 'text'");
+
+        // AC-3: Items should be of type Class (or similar suitable kind)
+        let button_item = items.iter().find(|i| i.label == "button").unwrap();
+        assert_eq!(
+            button_item.kind,
+            Some(CompletionItemKind::CLASS),
+            "AC-3: Widgets should be Class kind"
+        );
+    } else {
+        panic!("Expected Array response");
+    }
+
+    // AC-4: Response time < 100ms (SC-003)
+    assert!(
+        elapsed.as_millis() < 100,
+        "AC-4: Completion should respond within 100ms, took {}ms",
+        elapsed.as_millis()
+    );
+}
+
+/// T065 [US2] ACCEPTANCE TEST: Inside widget tag then verify attribute suggestions
+///
+/// Acceptance Criteria: When cursor is inside a widget tag, valid attributes
+/// for that widget are suggested.
+#[test]
+fn test_acceptance_us2_attribute_completion() {
+    let uri = test_uri("completion_attribute.dampen");
+    let content = load_fixture("completion_attribute.dampen");
+
+    let doc_state = DocumentState::new(uri.clone(), content, 1);
+
+    // Position inside `<button ... />` after space
+    // <button  />
+    // 012345678
+    let position = Position::new(0, 8);
+
+    let params = CompletionParams {
+        text_document_position: TextDocumentPositionParams {
+            text_document: TextDocumentIdentifier { uri },
+            position,
+        },
+        work_done_progress_params: Default::default(),
+        partial_result_params: Default::default(),
+        context: None,
+    };
+
+    let response =
+        completion::completion(&doc_state, params).expect("Should return completion items");
+
+    if let CompletionResponse::Array(items) = response {
+        assert!(!items.is_empty(), "Completion list should not be empty");
+
+        // AC-1: Should contain button-specific attributes
+        let has_label = items.iter().any(|i| i.label == "label");
+        let has_onclick = items.iter().any(|i| i.label == "on_click");
+
+        assert!(has_label, "AC-1: Should contain 'label' attribute");
+        assert!(has_onclick, "AC-1: Should contain 'on_click' event");
+
+        // AC-2: Should contain common attributes
+        let has_width = items.iter().any(|i| i.label == "width");
+        let has_style = items.iter().any(|i| i.label == "style");
+
+        assert!(has_width, "AC-2: Should contain 'width' attribute");
+        assert!(has_style, "AC-2: Should contain 'style' attribute");
+    } else {
+        panic!("Expected Array response");
+    }
+}
+
+/// T066 [US2] ACCEPTANCE TEST: Inside attribute quotes then verify value suggestions
+///
+/// Acceptance Criteria: When cursor is inside attribute quotes, appropriate values are suggested.
+#[test]
+fn test_acceptance_us2_value_completion() {
+    let uri = test_uri("completion_value.dampen");
+    let content = load_fixture("completion_value.dampen");
+
+    let doc_state = DocumentState::new(uri.clone(), content, 1);
+
+    // Position inside `enabled="..."`
+    // <button enabled="" />
+    // 012345678901234567
+    // quotes at 16, 17. position 17 is inside.
+    let position = Position::new(0, 17);
+
+    let params = CompletionParams {
+        text_document_position: TextDocumentPositionParams {
+            text_document: TextDocumentIdentifier { uri },
+            position,
+        },
+        work_done_progress_params: Default::default(),
+        partial_result_params: Default::default(),
+        context: None,
+    };
+
+    let response =
+        completion::completion(&doc_state, params).expect("Should return completion items");
+
+    if let CompletionResponse::Array(items) = response {
+        assert!(!items.is_empty(), "Completion list should not be empty");
+
+        // AC-1: Should suggest boolean values for 'enabled'
+        let has_true = items.iter().any(|i| i.label == "true");
+        let has_false = items.iter().any(|i| i.label == "false");
+
+        assert!(has_true, "AC-1: Should contain 'true'");
+        assert!(has_false, "AC-1: Should contain 'false'");
+
+        // AC-2: Items should be of Value kind
+        let true_item = items.iter().find(|i| i.label == "true").unwrap();
+        assert_eq!(
+            true_item.kind,
+            Some(CompletionItemKind::VALUE),
+            "AC-2: Values should be Value kind"
+        );
+    } else {
+        panic!("Expected Array response");
     }
 }

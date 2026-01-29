@@ -172,6 +172,23 @@ impl LanguageServer for LspServer {
         // Clear diagnostics
         self.client.publish_diagnostics(uri, vec![], None).await;
     }
+
+    /// Handles completion request.
+    ///
+    /// Provides context-aware autocompletion suggestions.
+    async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+        let uri = params.text_document_position.text_document.uri.clone();
+        info!("Completion request for: {}", uri);
+
+        // Use write lock because cache.get() updates LRU recency
+        let mut cache = self.document_cache.write().await;
+        if let Some(doc) = cache.get(&uri) {
+            Ok(handlers::completion::completion(doc, params))
+        } else {
+            warn!("Completion requested for unknown document: {}", uri);
+            Ok(None)
+        }
+    }
 }
 
 impl LspServer {
