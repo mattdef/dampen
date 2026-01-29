@@ -189,6 +189,45 @@ impl LanguageServer for LspServer {
             Ok(None)
         }
     }
+
+    /// Handles hover request.
+    ///
+    /// Provides contextual documentation for the element under the cursor.
+    async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
+        let uri = params
+            .text_document_position_params
+            .text_document
+            .uri
+            .clone();
+        let position = params.text_document_position_params.position;
+
+        info!("Hover request for: {} at {:?}", uri, position);
+
+        // Track request timing for performance monitoring
+        let start_time = std::time::Instant::now();
+
+        // Use write lock because cache.get() updates LRU recency
+        let mut cache = self.document_cache.write().await;
+        let result = if let Some(doc) = cache.get(&uri) {
+            Ok(handlers::hover::hover(doc, position))
+        } else {
+            warn!("Hover requested for unknown document: {}", uri);
+            Ok(None)
+        };
+
+        // Log performance metric
+        let elapsed = start_time.elapsed();
+        if elapsed.as_millis() > 200 {
+            warn!(
+                "Hover response time exceeded 200ms target: {}ms",
+                elapsed.as_millis()
+            );
+        } else {
+            info!("Hover response time: {}ms", elapsed.as_millis());
+        }
+
+        result
+    }
 }
 
 impl LspServer {

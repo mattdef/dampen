@@ -8,7 +8,7 @@ use tower_lsp::lsp_types::*;
 use url::Url;
 
 use dampen_lsp::document::{DocumentCache, DocumentState};
-use dampen_lsp::handlers::{completion, diagnostics};
+use dampen_lsp::handlers::{completion, diagnostics, hover};
 
 /// Helper function to create a test document URI.
 fn test_uri(name: &str) -> Url {
@@ -572,4 +572,173 @@ fn test_acceptance_us2_value_completion() {
     } else {
         panic!("Expected Array response");
     }
+}
+// ============================================================================
+// ACCEPTANCE TESTS - User Story 3: Contextual Documentation (Hover)
+// ============================================================================
+
+/// T081 [US3] ACCEPTANCE TEST: Hover over widget name then verify tooltip with description
+///
+/// Acceptance Criteria: When a developer hovers over a widget name,
+/// a tooltip appears showing the widget documentation.
+#[test]
+fn test_acceptance_us3_hover_widget_documentation() {
+    let uri = test_uri("hover_widget.dampen");
+    let content = load_fixture("hover_widget.dampen");
+
+    // Create document state
+    let doc_state = DocumentState::new(uri, content, 1);
+
+    // Position at "button" widget (character 7 is after "button")
+    let position = Position::new(0, 7);
+
+    let start_time = std::time::Instant::now();
+    let result = hover::hover(&doc_state, position);
+    let elapsed = start_time.elapsed();
+
+    // AC-1: Hover should return documentation
+    assert!(
+        result.is_some(),
+        "AC-1: Hover should return documentation for widget"
+    );
+
+    let hover = result.unwrap();
+
+    // AC-2: Documentation should be in Markdown format
+    match hover.contents {
+        HoverContents::Markup(content) => {
+            assert_eq!(
+                content.kind,
+                MarkupKind::Markdown,
+                "AC-2: Documentation should be Markdown"
+            );
+
+            // AC-3: Documentation should contain widget name
+            assert!(
+                content.value.contains("Button"),
+                "AC-3: Documentation should contain 'Button', got: {}",
+                content.value
+            );
+
+            // AC-4: Documentation should have description
+            assert!(
+                content.value.len() > 50,
+                "AC-4: Documentation should have substantial content"
+            );
+        }
+        _ => panic!("AC-2: Expected Markup content"),
+    }
+
+    // AC-5: Response time should be within 200ms (SC-004)
+    assert!(
+        elapsed.as_millis() < 200,
+        "AC-5: Hover should respond within 200ms, took {}ms",
+        elapsed.as_millis()
+    );
+}
+
+/// T082 [US3] ACCEPTANCE TEST: Hover over attribute then verify type and description
+///
+/// Acceptance Criteria: When a developer hovers over an attribute name,
+/// a tooltip appears showing the attribute type and description.
+#[test]
+fn test_acceptance_us3_hover_attribute_documentation() {
+    let uri = test_uri("hover_attributes.dampen");
+    let content = load_fixture("hover_attributes.dampen");
+
+    let doc_state = DocumentState::new(uri, content, 1);
+
+    // Position at "spacing" attribute (character 12 is inside "spacing")
+    let position = Position::new(0, 12);
+
+    let start_time = std::time::Instant::now();
+    let result = hover::hover(&doc_state, position);
+    let elapsed = start_time.elapsed();
+
+    // AC-1: Hover should return documentation
+    assert!(
+        result.is_some(),
+        "AC-1: Hover should return documentation for attribute"
+    );
+
+    let hover = result.unwrap();
+
+    // AC-2: Documentation should be in Markdown format
+    match hover.contents {
+        HoverContents::Markup(content) => {
+            assert_eq!(
+                content.kind,
+                MarkupKind::Markdown,
+                "AC-2: Documentation should be Markdown"
+            );
+
+            // AC-3: Documentation should contain attribute information
+            assert!(
+                content.value.contains("spacing") || content.value.contains("space"),
+                "AC-3: Documentation should contain attribute info, got: {}",
+                content.value
+            );
+        }
+        _ => panic!("AC-2: Expected Markup content"),
+    }
+
+    // AC-4: Response time should be within 200ms (SC-004)
+    assert!(
+        elapsed.as_millis() < 200,
+        "AC-4: Hover should respond within 200ms, took {}ms",
+        elapsed.as_millis()
+    );
+}
+
+/// T083 [US3] ACCEPTANCE TEST: Hover over value then verify format constraints
+///
+/// Acceptance Criteria: When a developer hovers over an attribute value,
+/// a tooltip appears showing valid values and format constraints.
+#[test]
+fn test_acceptance_us3_hover_value_documentation() {
+    let uri = test_uri("hover_values.dampen");
+    let content = load_fixture("hover_values.dampen");
+
+    let doc_state = DocumentState::new(uri, content, 1);
+
+    // Position inside "true" value (character 18)
+    let position = Position::new(0, 18);
+
+    let start_time = std::time::Instant::now();
+    let result = hover::hover(&doc_state, position);
+    let elapsed = start_time.elapsed();
+
+    // AC-1: Hover should return documentation for value
+    assert!(
+        result.is_some(),
+        "AC-1: Hover should return documentation for value"
+    );
+
+    let hover = result.unwrap();
+
+    // AC-2: Documentation should be in Markdown format
+    match hover.contents {
+        HoverContents::Markup(content) => {
+            assert_eq!(
+                content.kind,
+                MarkupKind::Markdown,
+                "AC-2: Documentation should be Markdown"
+            );
+
+            // AC-3: Documentation should show valid values
+            assert!(
+                content.value.contains("true") || content.value.contains("false"),
+                "AC-3: Documentation should show valid boolean values, got: {}",
+                content.value
+            );
+        }
+        _ => panic!("AC-2: Expected Markup content"),
+    }
+
+    // AC-4: Response time should be within 200ms (SC-004)
+    assert!(
+        elapsed.as_millis() < 200,
+        "AC-4: Hover should respond within 200ms, took {}ms",
+        elapsed.as_millis()
+    );
 }
