@@ -1,7 +1,7 @@
 # Dampen Styling System
 
-**Version**: 1.1.0  
-**Last Updated**: 2026-01-16
+**Version**: 1.2.0  
+**Last Updated**: 2026-01-30
 
 This guide covers the complete styling system for Dampen UI, including themes, style classes, inline styles, and state-based styling.
 
@@ -44,7 +44,7 @@ Themes provide a consistent look and feel across your application.
                 font_family="Inter, sans-serif"
                 font_size_base="16"
                 font_size_small="12"
-                font_size_large="24"
+                font_size_large="20"
                 font_weight="normal"
                 line_height="1.5" />
             <spacing unit="8" />
@@ -75,7 +75,7 @@ Themes provide a consistent look and feel across your application.
 - `font_size_base`: Base size in px (e.g., "16")
 - `font_size_small`: Small text size
 - `font_size_large`: Large text size
-- `font_weight`: normal, bold, etc.
+- `font_weight`: thin, light, normal, medium, bold, black
 - `line_height`: Line height multiplier
 
 ### Spacing
@@ -90,9 +90,7 @@ All spacing values are multiples of this unit.
 
 ### Custom Themes with Inheritance
 
-Themes can inherit from other themes using the `extends` attribute. This allows you to create theme variants without duplicating all properties.
-
-#### Basic Inheritance
+Themes can inherit from other themes using the `extends` attribute.
 
 ```xml
 <dampen>
@@ -113,7 +111,7 @@ Themes can inherit from other themes using the `extends` attribute. This allows 
                 font_family="Inter, sans-serif"
                 font_size_base="16"
                 font_size_small="12"
-                font_size_large="24"
+                font_size_large="20"
                 font_weight="normal"
                 line_height="1.5" />
             <spacing unit="8" />
@@ -126,7 +124,6 @@ Themes can inherit from other themes using the `extends` attribute. This allows 
                 surface="#34495e"
                 text="#ecf0f1"
                 text_secondary="#95a5a6" />
-            <!-- Other colors inherited from "base" -->
         </theme>
 
         <!-- High contrast variant of dark -->
@@ -140,15 +137,6 @@ Themes can inherit from other themes using the `extends` attribute. This allows 
     <default_theme name="dark" />
 </dampen>
 ```
-
-#### Benefits of Inheritance
-
-| Benefit | Description |
-|---------|-------------|
-| **Reduced Duplication** | Only define what's different |
-| **Consistency** | Changes to base theme propagate to variants |
-| **Maintainability** | Single source of truth for common properties |
-| **Flexibility** | Create as many variants as needed |
 
 #### Inheritance Rules
 
@@ -182,77 +170,11 @@ Error message:
 THEME_006: Parent theme 'nonexistent' not found for theme 'child'
 ```
 
-#### Tips for Theme Inheritance
-
-- **Start with a base theme** containing all required colors and typography
-- **Name your base theme** something generic like "base", "default", or "core"
-- **Use semantic names** for variants: "dark", "light", "high_contrast"
-- **Test inheritance chain** by modifying the base theme and verifying variants update
-
-#### Complete Example: Multi-Theme App
-
-```xml
-<dampen>
-    <themes>
-        <!-- Brand base -->
-        <theme name="brand">
-            <palette
-                primary="#6366f1"
-                secondary="#8b5cf6"
-                success="#22c55e"
-                warning="#f59e0b"
-                danger="#ef4444"
-                background="#f8fafc"
-                surface="#ffffff"
-                text="#1e293b"
-                text_secondary="#64748b" />
-            <typography
-                font_family="Inter, system-ui, sans-serif"
-                font_size_base="16"
-                font_size_small="12"
-                font_size_large="20"
-                line_height="1.5" />
-            <spacing unit="4" />
-        </theme>
-
-        <!-- Light variant -->
-        <theme name="light" extends="brand" />
-
-        <!-- Dark variant -->
-        <theme name="dark" extends="brand">
-            <palette
-                background="#0f172a"
-                surface="#1e293b"
-                text="#f1f5f9"
-                text_secondary="#94a3b8" />
-        </theme>
-
-        <!-- High contrast for accessibility -->
-        <theme name="high_contrast" extends="dark">
-            <palette
-                primary="#00ffff"
-                secondary="#ff00ff"
-                background="#000000"
-                surface="#1a1a1a"
-                text="#ffffff"
-                text_secondary="#ffff00" />
-            <typography
-                font_size_base="18"
-                font_size_large="24"
-                line_height="1.4" />
-        </theme>
-    </themes>
-
-    <default_theme name="light" />
-    <follow_system enabled="true" />
-</dampen>
-```
-
 ---
 
 ## Global Theme File
 
-For applications with complex theming needs, you can define themes in a separate `theme.dampen` file instead of inline in your window files.
+For applications with complex theming needs, you can define themes in a separate `theme.dampen` file.
 
 ### File Location
 
@@ -288,7 +210,7 @@ This location is:
                 font_family="Inter, sans-serif"
                 font_size_base="16"
                 font_size_small="12"
-                font_size_large="24" />
+                font_size_large="20" />
             <spacing unit="8" />
         </theme>
 
@@ -353,15 +275,6 @@ struct Model {
 </window>
 ```
 
-### Benefits of Separate Theme File
-
-| Benefit | Description |
-|---------|-------------|
-| **Single Source of Truth** | All themes defined in one place |
-| **Hot-Reload** | Edit themes without restarting |
-| **Multi-Window** | Same theme applies to all windows |
-| **Cleaner Windows** | Window files focus on UI structure |
-
 ### Project Structure with Theme File
 
 ```
@@ -411,9 +324,11 @@ Override theme defaults directly on widgets.
 | `padding` | Spacing | `10 20`, `10 20 30 40` | Padding (top/right/bottom/left) |
 | `border_width` | Length | `2` | Border thickness |
 | `border_color` | Color | `#000000` | Border color |
-| `border_radius` | Length | `4` | Corner rounding |
+| `border_radius` | Length | `4` or `4 4 4 4` | Corner rounding |
+| `border_style` | String | `solid`, `dashed`, `dotted` | Border style |
 | `shadow` | Shadow | `2 2 4 #00000040` | Offset-x offset-y blur color |
 | `opacity` | Float | `0.8` | Transparency (0.0-1.0) |
+| `transform` | Transform | `scale(1.2)`, `rotate(45)` | Transformations |
 | `width` | Length | `200`, `fill`, `shrink` | Widget width |
 | `height` | Length | `100`, `fill`, `shrink` | Widget height |
 | `spacing` | Length | `10` | Child spacing |
@@ -454,6 +369,33 @@ background="linear-gradient(90deg, #ff0000 0%, #0000ff 100%)"
 background="radial-gradient(circle, #ff0000 0%, #0000ff 100%)"
 ```
 
+### Border Radius
+
+```xml
+<!-- Single value (all corners) -->
+border_radius="8"
+
+<!-- Four values (top-left, top-right, bottom-right, bottom-left) -->
+border_radius="8 8 8 8"
+```
+
+### Transform
+
+```xml
+<!-- Scale -->
+transform="scale(1.2)"
+transform="scale(1.2, 0.8)"
+
+<!-- Rotate -->
+transform="rotate(45)"
+
+<!-- Translate -->
+transform="translate(10, 20)"
+
+<!-- Matrix -->
+transform="matrix(1,0,0,1,0,0)"
+```
+
 ---
 
 ## Layout & Alignment
@@ -469,6 +411,7 @@ All alignment properties accept these values:
 | `start` | Align to start (left for horizontal, top for vertical) |
 | `center` | Center alignment |
 | `end` | Align to end (right for horizontal, bottom for vertical) |
+| `stretch` | Stretch to fill available space |
 
 ### Container Alignment
 
@@ -522,35 +465,35 @@ Align text content within its bounds:
 | `row` | Horizontal alignment within container | Vertical alignment of children |
 | `text` | Text horizontal alignment | Text vertical alignment |
 
-### Alignment in Style Classes
+### Layout Attributes
 
 ```xml
-<style_classes>
-    <style name="centered_card"
-        background="#ffffff"
-        padding="20"
-        width="300"
-        height="200"
-        align_x="center"
-        align_y="center" />
-</style_classes>
-
-<container class="centered_card">
-    <text value="Perfectly Centered" />
+<container
+    width="fill"
+    height="200"
+    min_width="100"
+    max_width="500"
+    padding="20"
+    position="relative"
+    top="10"
+    left="5"
+    z_index="1"
+    direction="horizontal">
+    <!-- content -->
 </container>
 ```
 
-### Responsive Alignment
-
-Alignment can also be responsive:
+### Flexbox-like Properties
 
 ```xml
-<container 
-    mobile:align_x="start"
-    desktop:align_x="center"
-    width="fill" height="200">
-    <text value="Responsive Alignment" />
-</container>
+<column
+    align_items="center"
+    justify_content="space_between"
+    direction="vertical">
+    <text value="Item 1" />
+    <text value="Item 2" />
+    <text value="Item 3" />
+</column>
 ```
 
 ---
@@ -564,7 +507,7 @@ Define reusable styles that can be applied to multiple widgets.
 ```xml
 <style_classes>
     <!-- Base button style -->
-    <style name="button_base" 
+    <class name="button_base" 
         padding="12 24" 
         border_radius="6" 
         border_width="2" 
@@ -572,21 +515,21 @@ Define reusable styles that can be applied to multiple widgets.
         color="#2c3e50" />
     
     <!-- Primary button - extends base -->
-    <style name="button_primary" 
+    <class name="button_primary" 
         extends="button_base"
         background="#3498db"
         color="#ffffff"
         border_color="#2980b9" />
     
     <!-- Danger button -->
-    <style name="button_danger" 
+    <class name="button_danger" 
         extends="button_base"
         background="#e74c3c"
         color="#ffffff"
         border_color="#c0392b" />
     
     <!-- Card style -->
-    <style name="card" 
+    <class name="card" 
         background="#ffffff" 
         padding="20" 
         border_radius="8" 
@@ -617,14 +560,14 @@ Define reusable styles that can be applied to multiple widgets.
 
 Classes are merged in order (later classes override earlier ones).
 
-### Inheritance
+### Class Inheritance
 
 Classes can extend other classes:
 
 ```xml
-<style name="button_primary" extends="button_base">
+<class name="button_primary" extends="button_base">
     <!-- Overrides and additions -->
-</style>
+</class>
 ```
 
 Maximum inheritance depth: 5 levels.
@@ -643,10 +586,10 @@ Four states are supported:
 - `active`: Mouse button pressed
 - `disabled`: Widget is disabled
 
-### Format 1: Child Elements (XML Schema Compliant)
+### Format 1: Child Elements
 
 ```xml
-<style name="button_primary" 
+<class name="button_primary" 
     background="#3498db"
     color="#ffffff"
     padding="12 24"
@@ -654,13 +597,15 @@ Four states are supported:
     <hover background="#2980b9" />
     <active background="#21618c" />
     <disabled opacity="0.5" />
-</style>
+</class>
 ```
 
-### Format 2: Prefixed Attributes
+### Format 2: Colon Prefix (Recommended)
+
+The parser automatically preprocesses colon-prefixed attributes:
 
 ```xml
-<style name="button_primary"
+<class name="button_primary"
     background="#3498db"
     color="#ffffff"
     padding="12 24"
@@ -670,16 +615,37 @@ Four states are supported:
     disabled:opacity="0.5" />
 ```
 
-### Using State Classes
+**Note:** The parser converts `hover:background` to `hover_state_background` internally to avoid XML namespace issues.
+
+### Format 3: Underscore State Prefix
+
+Use the `_state_` separator for direct state attributes:
 
 ```xml
-<style_classes>
-    <style name="btn"
-        background="#3498db"
-        hover:background="#2980b9"
-        active:background="#21618c"
-        disabled:opacity="0.5" />
-</style_classes>
+<class name="button_primary"
+    background="#3498db"
+    color="#ffffff"
+    padding="12 24"
+    border_radius="6"
+    hover_state_background="#2980b9"
+    active_state_background="#21618c"
+    disabled_state_opacity="0.5" />
+```
+
+### Combined States
+
+Support for multiple states simultaneously:
+
+```xml
+<!-- Colon syntax (recommended) -->
+<button label="Click"
+    background="#3498db"
+    hover:active:background="#1a5276" />
+
+<!-- Underscore state syntax -->
+<button label="Click"
+    background="#3498db"
+    hover_state_active_state_background="#1a5276" />
 ```
 
 ### Inline State Styles
@@ -689,6 +655,16 @@ Four states are supported:
     background="#3498db"
     hover:background="#2980b9"
     active:background="#21618c"
+    label="Interactive" />
+```
+
+Or using underscore syntax:
+
+```xml
+<button
+    background="#3498db"
+    hover_state_background="#2980b9"
+    active_state_background="#21618c"
     label="Interactive" />
 ```
 
@@ -737,7 +713,7 @@ Apply different styles based on viewport size.
 ### Breakpoint-Prefixed Classes
 
 ```xml
-<style name="responsive_card"
+<class name="responsive_card"
     mobile:padding="10"
     tablet:padding="15"
     desktop:padding="20" />
@@ -755,7 +731,7 @@ Apply different styles based on viewport size.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<dampen>
+<dampen version="1.0">
     <!-- Theme Definition -->
     <themes>
         <theme name="app_theme">
@@ -778,21 +754,20 @@ Apply different styles based on viewport size.
     
     <!-- Style Classes -->
     <style_classes>
-        <!-- Button with states -->
-        <style name="btn" 
+        <!-- Button with states using colon syntax -->
+        <class name="btn" 
             padding="12 24" 
             border_radius="6" 
             border_width="2" 
             background="#3498db"
             color="#ffffff"
-            border_color="#2980b9">
-            <hover background="#2980b9" />
-            <active background="#21618c" />
-            <disabled opacity="0.5" />
-        </style>
+            border_color="#2980b9"
+            hover:background="#2980b9"
+            active:background="#21618c"
+            disabled:opacity="0.5" />
         
         <!-- Card with responsive padding -->
-        <style name="card" 
+        <class name="card" 
             background="#ffffff" 
             border_radius="8" 
             border_width="1" 
@@ -801,17 +776,16 @@ Apply different styles based on viewport size.
             mobile:padding="15"
             desktop:padding="25" />
         
-        <!-- Danger variant -->
-        <style name="btn_danger" 
+        <!-- Danger variant using underscore state syntax -->
+        <class name="btn_danger" 
             extends="btn"
             background="#e74c3c"
-            border_color="#c0392b">
-            <hover background="#c0392b" />
-            <active background="#a52714" />
-        </style>
+            border_color="#c0392b"
+            hover_state_background="#c0392b"
+            active_state_background="#a52714" />
     </style_classes>
     
-    <global_theme name="app_theme" />
+    <default_theme name="app_theme" />
     
     <!-- UI -->
     <column padding="40" spacing="20">
@@ -865,28 +839,6 @@ Verify hover, focus, active, and disabled states work correctly.
 
 ---
 
-## Migration from v1.0
-
-If upgrading from before state-based styling:
-
-**Before:**
-```xml
-<button background="#3498db" label="Click" />
-```
-
-**After:**
-```xml
-<style_classes>
-    <style name="btn"
-        background="#3498db"
-        hover:background="#2980b9">
-        <active background="#21618c" />
-    </style>
-</style_classes>
-```
-
----
-
 ## API Reference
 
 ### Theme Attributes
@@ -909,28 +861,54 @@ All inline style attributes plus:
 
 All style class attributes plus:
 - `class` - apply style classes (space-separated)
-- `theme_ref` - apply local theme
+- `theme` - apply theme to widget
 - `disabled` - boolean to disable widget
 - `mobile:*`, `tablet:*`, `desktop:*` - responsive variants
 - `align_x` - horizontal alignment (start, center, end)
 - `align_y` - vertical alignment (start, center, end)
+- `align_items` - flex alignment of children
+- `justify_content` - flex justification of children
+- `align_self` - override alignment for single child
+- `direction` - layout direction (horizontal, vertical)
+- `position` - positioning mode (relative, absolute)
+- `top`, `right`, `bottom`, `left` - position offsets
+- `z_index` - stacking order
 
 ### State Variants
 
-All style properties can have state variants:
+All style properties can have state variants using either syntax:
+
+**Colon syntax (recommended):**
 - `hover:background`, `hover:color`, `hover:opacity`, etc.
 - `focus:border_color`, `focus:shadow`, etc.
 - `active:background`, `active:transform`, etc.
 - `disabled:opacity`, `disabled:color`, etc.
+- Combined: `hover:active:background`, etc.
+
+**Underscore state syntax:**
+- `hover_state_background`, `hover_state_color`, etc.
+- `focus_state_border_color`, etc.
+- `active_state_background`, etc.
+- `disabled_state_opacity`, etc.
+- Combined: `hover_state_active_state_background`, etc.
+
+### Layout Attributes
+
+- `width`, `height` - dimensions (pixels, fill, shrink, fill_portion(n), %)
+- `min_width`, `max_width`, `min_height`, `max_height` - constraints
+- `padding` - inner spacing (1-4 values)
+- `spacing` - gap between children
+- `border_width`, `border_color`, `border_radius`, `border_style` - borders
 
 ---
 
 ## Troubleshooting
 
 ### State styles not applying
-- Check that widget has an `id` attribute
 - Verify state prefix is correct (`hover:`, not `hover_`)
-- Check browser/dev tools for errors
+- When using underscore syntax, use `hover_state_background` (not `hover_background`)
+- Check that the state name is valid: `hover`, `focus`, `active`, `disabled`
+- Use `--verbose` flag to see parsing errors
 
 ### Classes not merging
 - Verify class names are space-separated
