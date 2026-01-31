@@ -14,8 +14,7 @@ This document defines the complete XML schema for Dampen UI markup files (`.damp
 Every Dampen file must have a single root element:
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<dampen version="1.0" xmlns="https://dampen-ui.dev/schema/1.0">
+<dampen version="1.0">
     <!-- UI content here -->
 </dampen>
 ```
@@ -25,7 +24,7 @@ Every Dampen file must have a single root element:
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `version` | string | **Yes** | Schema version in `major.minor` format (e.g., "1.0"). Specifies which Dampen schema version the file uses. See [Schema Versioning](#schema-versioning) for details. |
-| `xmlns` | URI | No | Namespace URI for XML validation tools (e.g., "https://dampen-ui.dev/schema/1.0") |
+| `encoding` | string | No | Character encoding (e.g., "utf-8"). Defaults to UTF-8 if not specified. |
 
 **Version Attribute Details:**
 - **Format**: `major.minor` (e.g., "1.0", "1.1", "2.0")
@@ -40,8 +39,8 @@ Every Dampen file must have a single root element:
     <column><text value="Hello!" /></column>
 </dampen>
 
-<!-- With namespace -->
-<dampen version="1.0" xmlns="https://dampen-ui.dev/schema/1.0">
+<!-- With encoding -->
+<dampen version="1.0" encoding="utf-8">
     <column><text value="Hello!" /></column>
 </dampen>
 ```
@@ -54,6 +53,8 @@ Every Dampen file must have a single root element:
 </column>
 ```
 Note: Files starting directly with widgets (without `<dampen>` root) implicitly use version 1.0.
+
+**Note on XML Declaration:** Dampen does not use standard XML declarations (`<?xml version="1.0"?>`) or XML namespaces (`xmlns`). The `<dampen>` element serves as both the root element and version declaration.
 
 ---
 
@@ -187,7 +188,7 @@ Displays an image from file or URL.
 
 ```xml
 <image src="logo.png" width="100" height="100" />
-<image src="{user.avatar}" content_fit="cover" />
+<image src="{user.avatar}" fit="cover" />
 ```
 
 **Attributes:**
@@ -196,7 +197,9 @@ Displays an image from file or URL.
 | `src` | string/binding | required | Image path or URL |
 | `width` | length | auto | Width constraint |
 | `height` | length | auto | Height constraint |
-| `content_fit` | fit | contain | contain, cover, fill, none |
+| `fit` | fit | contain | contain, cover, fill, none, scale_down |
+| `filter_method` | string | - | Filter method for scaling |
+| `path` | string | - | Alternative path specification |
 
 ### `<svg>` - SVG Display
 
@@ -256,10 +259,13 @@ Displays SVG content.
 | `placeholder` | string | "" | Placeholder text |
 | `on_input` | handler | - | Keystroke handler |
 | `on_submit` | handler | - | Enter key handler |
-| `on_release` | handler | - | Focus lost handler |
+| `on_change` | handler | - | Value change handler |
+| `on_paste` | handler | - | Paste handler |
 | `password` | bool | false | Mask as password |
 | `enabled` | bool/binding | true | Editable state |
 | `width` | length | auto | Width constraint |
+| `size` | number | - | Input size |
+| `icon` | string | - | Input icon |
 
 ### `<checkbox>` - Toggle Checkbox
 
@@ -278,6 +284,8 @@ Displays SVG content.
 | `checked` | bool/binding | false | Checked state |
 | `on_toggle` | handler | - | Toggle handler |
 | `enabled` | bool/binding | true | Interactive state |
+| `icon` | string | - | Checkbox icon |
+| `size` | number | - | Checkbox size |
 
 ### `<slider>` - Numeric Slider
 
@@ -299,6 +307,7 @@ Displays SVG content.
 | `value` | number/binding | min | Current value |
 | `step` | number | 1 | Step increment |
 | `on_change` | handler | - | Change handler |
+| `on_release` | handler | - | Release handler |
 | `enabled` | bool/binding | true | Interactive state |
 | `width` | length | auto | Width constraint |
 
@@ -323,17 +332,9 @@ Displays SVG content.
 | `enabled` | bool/binding | true | Interactive state |
 | `width` | length | auto | Width constraint |
 
-### `<radio>` - Radio Button Group
+### `<radio>` - Radio Button
 
-```xml
-<radio_group name="selection">
-    <radio label="Option A" value="a" />
-    <radio label="Option B" value="b" />
-    <radio label="Option C" value="c" />
-</radio_group>
-```
-
-Or with inline definition:
+Individual radio button widget.
 
 ```xml
 <column>
@@ -343,14 +344,23 @@ Or with inline definition:
 </column>
 ```
 
-**Radio Attributes:**
+**Attributes:**
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `label` | string/binding | "" | Radio button label |
 | `value` | string/binding | required | Value when selected |
+| `id` | string | - | Radio button ID |
 | `selected` | any/binding | none | Currently selected value |
-| `on_select` | handler | - | Selection handler |
 | `disabled` | bool/binding | false | Disabled state |
+| `size` | number | - | Radio button size |
+| `text_size` | number | - | Label text size |
+| `text_line_height` | number | - | Label line height |
+| `text_shaping` | string | - | Text shaping option |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_select` | Selection handler |
 
 ### `<toggler>` - Toggle Switch
 
@@ -367,6 +377,8 @@ Or with inline definition:
 |-----------|------|---------|-------------|
 | `label` | string/binding | "" | Label text |
 | `toggled` | bool/binding | false | Toggle state |
+| `checked` | bool/binding | false | Alias for toggled |
+| `active` | bool/binding | false | Alias for toggled |
 | `on_toggle` | handler | - | Toggle handler |
 | `enabled` | bool/binding | true | Interactive state |
 
@@ -404,6 +416,9 @@ Render a list of items by iterating over a collection.
 |-----------|------|---------|-------------|
 | `each` | string | required | Iterator variable name |
 | `in` | binding | required | Collection to iterate over |
+| `template` | string | - | Optional template name for rendering |
+
+**Note:** The `in` attribute uses a binding expression (e.g., `{items}`) to reference the collection.
 
 ---
 
@@ -458,10 +473,12 @@ Combines a text input with a dropdown list for selection.
 **Attributes:**
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `options` | string | required | Comma-separated list of options |
+| `options` | string/binding | - | List of options (comma-separated string or binding) |
 | `selected` | string/binding | - | Currently selected value |
+| `value` | string/binding | - | Current input value |
 | `placeholder` | string | "" | Placeholder text |
 | `on_select` | handler | - | Selection handler (receives selected value) |
+| `on_input` | handler | - | Input handler (for text input) |
 | `enabled` | bool/binding | true | Interactive state |
 | `width` | length | auto | Width constraint |
 
@@ -529,7 +546,7 @@ Positions a child element absolutely relative to its parent.
 
 ### `<canvas>` - Canvas Drawing
 
-Renders custom graphics using a drawing program (experimental).
+Renders custom graphics using a drawing program.
 
 ```xml
 <canvas width="400" height="300" program="{drawing_program}" />
@@ -541,9 +558,351 @@ Renders custom graphics using a drawing program (experimental).
 | `width` | number | required | Canvas width (50-4000px) |
 | `height` | number | required | Canvas height (50-4000px) |
 | `program` | binding | required | Reference to a `CanvasProgram` |
+| `cache` | bool | false | Enable caching for better performance |
 | `style` | style-ref | - | Style reference |
 
-**Note:** The canvas widget is experimental. Requires schema v1.1 or higher.
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_click` | Mouse click on canvas |
+| `on_drag` | Mouse drag on canvas |
+| `on_move` | Mouse move over canvas |
+| `on_release` | Mouse release on canvas |
+
+---
+
+### `<date_picker>` - Date Selection
+
+Date picker widget for selecting dates.
+
+```xml
+<date_picker 
+    value="{selected_date}" 
+    format="YYYY-MM-DD"
+    on_submit="handle_date_submit"
+    on_cancel="handle_date_cancel"
+/>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `value` | string/binding | - | Selected date value |
+| `format` | string | "YYYY-MM-DD" | Date format string |
+| `show` | bool/binding | false | Show/hide picker |
+| `min_date` | string | - | Minimum selectable date |
+| `max_date` | string | - | Maximum selectable date |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_submit` | Date selected |
+| `on_cancel` | Selection cancelled |
+
+---
+
+### `<time_picker>` - Time Selection
+
+Time picker widget for selecting times.
+
+```xml
+<time_picker 
+    value="{selected_time}" 
+    format="HH:mm"
+    use_24h="true"
+    on_submit="handle_time_submit"
+/>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `value` | string/binding | - | Selected time value |
+| `format` | string | "HH:mm" | Time format string |
+| `show` | bool/binding | false | Show/hide picker |
+| `use_24h` | bool | true | Use 24-hour format |
+| `show_seconds` | bool | false | Show seconds selector |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_submit` | Time selected |
+| `on_cancel` | Selection cancelled |
+
+---
+
+### `<color_picker>` - Color Selection
+
+Color picker widget for selecting colors.
+
+```xml
+<color_picker 
+    value="{selected_color}" 
+    show_alpha="true"
+    on_change="handle_color_change"
+    on_submit="handle_color_submit"
+/>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `value` | string/binding | - | Selected color value (hex) |
+| `show` | bool/binding | false | Show/hide picker |
+| `show_alpha` | bool | false | Show alpha channel selector |
+| `enabled` | bool/binding | true | Enable/disable picker |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_change` | Color changed |
+| `on_submit` | Color selected |
+| `on_cancel` | Selection cancelled |
+
+---
+
+### `<menu>` - Menu Widget
+
+Menu container for dropdown or context menus.
+
+```xml
+<menu position="bottom" close_on_select="true">
+    <menu_item label="New" on_click="handle_new" />
+    <menu_item label="Open" on_click="handle_open" />
+    <menu_separator />
+    <menu_item label="Exit" on_click="handle_exit" />
+</menu>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `position` | string | "bottom" | Menu position: "top", "bottom", "left", "right" |
+| `close_on_select` | bool | true | Close menu when item selected |
+| `width` | length | auto | Menu width |
+| `spacing` | number | 0 | Spacing between items |
+| `class` | string | - | CSS class for styling |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_open` | Menu opened |
+| `on_close` | Menu closed |
+
+---
+
+### `<menu_item>` - Menu Item
+
+Individual menu item within a `<menu>`.
+
+```xml
+<menu_item 
+    label="Save" 
+    icon="save_icon"
+    shortcut="Ctrl+S"
+    on_click="handle_save"
+/>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `label` | string | **required** | Menu item text |
+| `icon` | string | - | Icon reference |
+| `shortcut` | string | - | Keyboard shortcut display |
+| `disabled` | bool | false | Disable the item |
+| `class` | string | - | CSS class for styling |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_click` | Item clicked |
+
+---
+
+### `<menu_separator>` - Menu Separator
+
+Horizontal separator line between menu items.
+
+```xml
+<menu_separator />
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `color` | color | inherit | Separator color |
+| `opacity` | number | 1.0 | Separator opacity |
+| `height` | length | 1 | Separator height |
+
+---
+
+### `<context_menu>` - Context Menu
+
+Right-click context menu.
+
+```xml
+<context_menu context="{menu_items}">
+    <!-- Menu items or use binding -->
+</context_menu>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `context` | binding | - | Context data binding |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_open` | Menu opened |
+| `on_close` | Menu closed |
+
+---
+
+### `<data_table>` - Data Table
+
+Table widget for displaying tabular data.
+
+```xml
+<data_table 
+    data="{table_data}"
+    width="fill"
+    height="400"
+    on_row_click="handle_row_click"
+>
+    <data_column header="Name" field="name" width="200" />
+    <data_column header="Email" field="email" width="fill" />
+    <data_column header="Age" field="age" width="80" align="center" />
+</data_table>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `data` | binding | **required** | Table data source |
+| `width` | length | auto | Table width |
+| `height` | length | auto | Table height |
+| `min_width` | length | - | Minimum width |
+| `max_width` | length | - | Maximum width |
+| `scrollbar_width` | number | 10 | Scrollbar width |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_row_click` | Row clicked |
+
+---
+
+### `<data_column>` - Data Table Column
+
+Column definition for `<data_table>`.
+
+```xml
+<data_column 
+    header="Column Name" 
+    field="data_field"
+    width="150"
+    min_width="100"
+    align="left"
+/>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `header` | string | **required** | Column header text |
+| `field` | string | - | Data field name |
+| `width` | length | auto | Column width |
+| `min_width` | length | - | Minimum column width |
+| `max_width` | length | - | Maximum column width |
+| `align` | align | left | Text alignment: left, center, right |
+
+---
+
+### `<tree_view>` - Tree View
+
+Hierarchical tree widget for displaying nested data.
+
+```xml
+<tree_view 
+    nodes="{tree_nodes}"
+    expanded="{expanded_nodes}"
+    selected="{selected_node}"
+    indent_size="20"
+    node_height="30"
+    on_toggle="handle_expand_toggle"
+    on_select="handle_node_select"
+    on_double_click="handle_node_double_click"
+/>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `nodes` | binding | - | Tree nodes data |
+| `expanded` | binding | - | Set of expanded node IDs |
+| `selected` | binding | - | Currently selected node ID |
+| `indent_size` | number | 20 | Indentation per level (px) |
+| `node_height` | number | 30 | Height of each node (px) |
+| `icon_size` | number | 16 | Size of expand/collapse icons |
+| `expand_icon` | string | - | Custom expand icon |
+| `collapse_icon` | string | - | Custom collapse icon |
+| `leaf_icon` | string | - | Custom leaf node icon |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_toggle` | Node expanded/collapsed |
+| `on_select` | Node selected |
+| `on_double_click` | Node double-clicked |
+
+---
+
+### `<tree_node>` - Tree Node
+
+Individual node within a `<tree_view>` (used in data structure).
+
+```xml
+<!-- Tree nodes are typically defined in your model, not XML -->
+<!-- Example structure expected by tree_view: -->
+TreeNode {
+    id: "node_1",
+    label: "Parent Node",
+    icon: "folder_icon",
+    expanded: true,
+    selected: false,
+    children: [...]
+}
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `id` | string | **required** | Unique node identifier |
+| `label` | string | **required** | Node display text |
+| `icon` | string | - | Node icon |
+| `expanded` | bool | false | Expanded state |
+| `selected` | bool | false | Selected state |
+| `disabled` | bool | false | Disabled state |
+| `class` | string | - | CSS class |
+
+---
+
+### `<if>` - Conditional Rendering
+
+Conditionally renders content based on a condition.
+
+```xml
+<if condition="{show_welcome}">
+    <text value="Welcome back!" />
+</if>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `condition` | bool/binding | **required** | Condition to evaluate |
 
 ---
 
@@ -887,7 +1246,6 @@ Breakpoint-prefixed attributes override base values:
 ## Complete Example
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
 <dampen version="1.0">
     <column padding="20" spacing="10">
         <text value="Todo List" size="24" weight="bold" />
@@ -939,22 +1297,22 @@ Version numbers follow the `major.minor` format:
 ### Supported Versions
 
 **Version 1.0** (Current): Initial release with core widgets
-- Layout: column, row, container, scrollable, stack
+- Layout: column, row, container, scrollable, stack, grid, float
 - Content: text, image, svg
-- Interactive: button, text_input, checkbox, slider, pick_list, toggler, radio, progress_bar
-- Control flow: for
-- Decorative: space, rule
-- Bindings: field access, method calls, conditionals, formatting
-- Events: click, input, change, toggle, submit, select
-- ComboBox widget for dropdown selection with text input
-- Grid layout widget for grid-based layouts
-- Tooltip widget for hover information overlays
-- Float widget for absolute positioning
+- Interactive: button, text_input, checkbox, slider, pick_list, toggler, radio, progress_bar, combobox
+- Control flow: for, if
+- Decorative: space, rule, tooltip
+- Bindings: field access, method calls, conditionals, formatting, shared state
+- Events: click, input, change, toggle, submit, select, scroll, drag, move, release, open, close
 
-**Version 1.1** (Available): Additional features
-- Canvas widget for custom drawing (still experimental)
+**Version 1.1** (Experimental): Additional widgets (not fully functional)
+- Pickers: date_picker, time_picker, color_picker
+- Menu: menu, menu_item, menu_separator, context_menu
+- Data: data_table, data_column
+- Tree: tree_view, tree_node
+- Canvas: canvas (with shapes: canvas_rect, canvas_circle, canvas_line, canvas_text, canvas_group)
 
-**Note**: Canvas widget is currently marked as v1.1 to indicate it's experimental. While parseable in v1.0 documents, it will produce a validation warning and may not render correctly.
+**Note**: Widgets requiring v1.1+ are experimental and may not be fully functional. Use `dampen check --show-widget-versions` to see the full list.
 
 ### Version Validation
 
@@ -963,7 +1321,7 @@ The parser validates schema versions at parse time:
 1. **Declared Version Check**: Parser reads the `version` attribute from `<dampen>` root
 2. **Support Validation**: Compares against maximum supported version (currently 1.0)
 3. **Error Handling**: Rejects files declaring unsupported future versions with clear error messages
-4. **Widget Version Warnings**: `dampen check` warns about widgets requiring higher versions than declared (e.g., Canvas in v1.0 documents)
+4. **Widget Version Warnings**: `dampen check` warns about widgets requiring higher versions than declared
 
 ### Backward Compatibility
 
@@ -1082,43 +1440,33 @@ Suggestion: Use format: version="1.0"
 
 **Example**:
 ```
-Warning: Widget 'canvas' requires schema v1.1 but document declares v1.0 in src/ui/window.dampen:153:21
+Warning: Widget 'experimental_widget' requires schema v1.1 but document declares v1.0 in src/ui/window.dampen:153:21
   Suggestion: Update to <dampen version="1.1"> or remove this widget
 ```
 
 **What this means**:
 - The widget you're using requires a schema version newer than what your document declares
-- Currently affects: **Canvas** widget (requires v1.1, experimental/non-functional)
+- Currently affects: **Canvas**, **date_picker**, **time_picker**, **color_picker**, **menu**, **menu_item**, **menu_separator**, **context_menu**, **data_table**, **data_column** (all require v1.1, experimental/non-functional)
 - All other widgets are v1.0 and fully functional
-
-**Example file with warning**:
-```xml
-<dampen version="1.0">
-    <column>
-        <!-- Canvas requires v1.1 but document declares v1.0 -->
-        <canvas width="400" height="200" program="{chart}" />
-    </column>
-</dampen>
-```
 
 **Solutions**:
 
-1. **Upgrade schema version** (when v1.1 is officially supported):
+1. **Upgrade schema version** (when a newer version is officially supported):
    ```xml
    <dampen version="1.1">
-       <canvas width="400" height="200" program="{chart}" />
+       <!-- Use newer widgets here -->
    </dampen>
    ```
 
 2. **Replace with compatible widget**:
-   Use v1.0 alternatives (image, custom drawing with image bindings)
+   Use v1.0 alternatives
 
 3. **Ignore warning** (if you know what you're doing):
-   The warning is informational. Canvas will be parsed but may not render correctly since it's experimental.
+   The warning is informational for experimental features.
 
 **Why warnings instead of errors**:
 - Allows gradual migration to new schema versions
-- Developers can test experimental widgets before official v1.1 release
+- Developers can test experimental widgets before official release
 - Non-blocking for development workflows
 
 **Check widget versions**:
@@ -1130,10 +1478,38 @@ This displays a table of all widgets with their minimum required versions:
 ```
 Widget               Min Version Status
 -------------------- ---------- ------------------------------
-canvas               1.1        Experimental (not fully functional)
 column               1.0        Stable
+row                  1.0        Stable
+container            1.0        Stable
+scrollable           1.0        Stable
+stack                1.0        Stable
+text                 1.0        Stable
+image                1.0        Stable
+svg                  1.0        Stable
 button               1.0        Stable
-...
+text_input           1.0        Stable
+checkbox             1.0        Stable
+slider               1.0        Stable
+pick_list            1.0        Stable
+toggler              1.0        Stable
+radio                1.0        Stable
+space                1.0        Stable
+rule                 1.0        Stable
+progress_bar         1.0        Stable
+combobox             1.0        Stable
+tooltip              1.0        Stable
+grid                 1.0        Stable
+canvas               1.1        Experimental (not fully functional)
+date_picker          1.1        Experimental (not fully functional)
+time_picker          1.1        Experimental (not fully functional)
+color_picker         1.1        Experimental (not fully functional)
+menu                 1.1        Experimental (not fully functional)
+menu_item            1.1        Experimental (not fully functional)
+menu_separator       1.1        Experimental (not fully functional)
+context_menu         1.1        Experimental (not fully functional)
+float                1.0        Stable
+data_table           1.1        Experimental (not fully functional)
+data_column          1.1        Experimental (not fully functional)
 ```
 
 ### Validation Commands

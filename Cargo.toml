@@ -6,6 +6,7 @@ members = [
     "crates/dampen-iced",
     "crates/dampen-dev",
     "crates/dampen-cli",
+    "crates/dampen-lsp",
     "crates/dampen-visual-tests",
     "examples/hello-world",
     "examples/counter",
@@ -53,7 +54,7 @@ uuid = { version = "1.0", features = ["v4"] }
 directories = "5.0"
 
 # Parser
-roxmltree = "0.19"
+roxmltree = "0.21"
 nom = "7.1"
 csscolorparser = "0.6"
 

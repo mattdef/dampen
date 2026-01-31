@@ -1,0 +1,3 @@
+<column spacing="10px" align_items="center" padding="20px">
+    <text value="Hello World"/>
+</column>

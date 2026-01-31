@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<column xmlns="https://dampen.io/schema/v1" padding="20" spacing="10">
+    <row spacing="10" align_items="center">
+        <text value="User Profile" font_size="24" font_weight="bold"/>
+        <space width="10"/>
+        <button label="Edit" on_click="edit_profile"/>
+    </row>
+    
+    <container padding="15" background="#f5f5f5" border_radius="8">
+        <column spacing="8">
+            <row spacing="5">
+                <text value="Name:" font_weight="bold"/>
+                <text value="{|user.name|}"/>
+            </row>
+            <row spacing="5">
+                <text value="Email:" font_weight="bold"/>
+                <text value="{|user.email|}"/>
+            </row>
+            <row spacing="5">
+                <text value="Role:" font_weight="bold"/>
+                <text value="{|user.role|}"/>
+            </row>
+        </column>
+    </container>
+    
+    <scrollable height="300">
+        <column spacing="5">
+            <text value="Recent Activity" font_size="18" font_weight="bold"/>
+            <for item="activity" in="{|user.activities|}">
+                <row spacing="10" padding="5">
+                    <text value="{|activity.date|}"/>
+                    <text value="{|activity.description|}"/>
+                </row>
+            </for>
+        </column>
+    </scrollable>
+</column>
