@@ -252,8 +252,11 @@ impl LspServer {
 
 #[tokio::main]
 async fn main() {
-    // Initialize tracing
-    tracing_subscriber::fmt().with_env_filter("info").init();
+    // Initialize tracing to stderr (stdout is reserved for LSP JSON-RPC messages)
+    tracing_subscriber::fmt()
+        .with_env_filter("info")
+        .with_writer(std::io::stderr)
+        .init();
 
     info!("Starting Dampen LSP server");
 

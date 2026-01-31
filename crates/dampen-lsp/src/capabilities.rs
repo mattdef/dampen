@@ -32,12 +32,8 @@ pub fn server_capabilities() -> ServerCapabilities {
             work_done_progress_options: WorkDoneProgressOptions::default(),
         }),
         hover_provider: Some(HoverProviderCapability::Simple(true)),
-        diagnostic_provider: Some(DiagnosticServerCapabilities::Options(DiagnosticOptions {
-            identifier: Some("dampen".to_string()),
-            inter_file_dependencies: false,
-            workspace_diagnostics: false,
-            work_done_progress_options: WorkDoneProgressOptions::default(),
-        })),
+        // Note: diagnostic_provider is not enabled - we use push diagnostics instead
+        // (sent automatically via publishDiagnostics on document open/change)
         ..ServerCapabilities::default()
     }
 }
