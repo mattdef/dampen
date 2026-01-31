@@ -45,128 +45,126 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 **Objective**: Establish framework basics with essential features
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| XML Parser | ✅ | Parsing of `.dampen` files |
-| IR (Intermediate Representation) | ✅ | Internal data structure for UI |
-| Iced Backend | ✅ | Complete widget mapping |
-| Proc Macros | ✅ | `#[derive(UiModel)]`, `#[dampen_ui]` |
-| Basic CLI | ✅ | Commands `new`, `check`, `build` |
-| Examples | ✅ | hello-world, counter, todo-app |
+| Milestone                        | Status | Description                          |
+| -------------------------------- | ------ | ------------------------------------ |
+| XML Parser                       | ✅     | Parsing of `.dampen` files           |
+| IR (Intermediate Representation) | ✅     | Internal data structure for UI       |
+| Iced Backend                     | ✅     | Complete widget mapping              |
+| Proc Macros                      | ✅     | `#[derive(UiModel)]`, `#[dampen_ui]` |
+| Basic CLI                        | ✅     | Commands `new`, `check`, `build`     |
+| Examples                         | ✅     | hello-world, counter, todo-app       |
 
 ### v0.2.0 - Validation and Dual-Mode Architecture (Completed ✓)
 
 **Objective**: Improve robustness and prepare for production
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Version Validation | ✅ | XML schema validation |
-| Interpreted Mode | ✅ | Runtime parsing with hot-reload |
-| Codegen Mode | ✅ | Static code generation |
-| Parity Tests | ✅ | Ensure identical behavior |
-| Benchmarks | ✅ | Performance metrics |
+| Milestone          | Status | Description                     |
+| ------------------ | ------ | ------------------------------- |
+| Version Validation | ✅     | XML schema validation           |
+| Interpreted Mode   | ✅     | Runtime parsing with hot-reload |
+| Codegen Mode       | ✅     | Static code generation          |
+| Parity Tests       | ✅     | Ensure identical behavior       |
+| Benchmarks         | ✅     | Performance metrics             |
 
 ### v0.2.1 - Add versioning to the XML schema (Completed ✓)
 
 **Objective**: Improve robustness and prepare for production
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Versioning | ✅ | Add versioning to the XML schema |
-| Backward Compatibility | ✅ | Ensure backward compatibility |
-| Forward Compatibility | ✅ | Ensure forward compatibility |
-| Version Migration | ✅ | Provide migration tools |
-| Version Documentation | ✅ | Document version changes |
+| Milestone              | Status | Description                      |
+| ---------------------- | ------ | -------------------------------- |
+| Versioning             | ✅     | Add versioning to the XML schema |
+| Backward Compatibility | ✅     | Ensure backward compatibility    |
+| Forward Compatibility  | ✅     | Ensure forward compatibility     |
+| Version Migration      | ✅     | Provide migration tools          |
+| Version Documentation  | ✅     | Document version changes         |
 
 ### v0.2.2 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Code refactoring | ✅ | Auto-Discovery Multi-View Application |
+| Milestone        | Status | Description                           |
+| ---------------- | ------ | ------------------------------------- |
+| Code refactoring | ✅     | Auto-Discovery Multi-View Application |
 
 ### v0.2.3 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| CLI - Create window UI  | ✅ | Create a new window with the command `dampen add --ui <window_name>` |
+| Milestone              | Status | Description                                                          |
+| ---------------------- | ------ | -------------------------------------------------------------------- |
+| CLI - Create window UI | ✅     | Create a new window with the command `dampen add --ui <window_name>` |
 
 ### v0.2.4 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Window Communication | ✅ | Inter-window messaging |
+| Milestone            | Status | Description            |
+| -------------------- | ------ | ---------------------- |
+| Window Communication | ✅     | Inter-window messaging |
 
 ### v0.2.5 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Window Theming | ✅ | Customizable window appearance |
+| Milestone      | Status | Description                    |
+| -------------- | ------ | ------------------------------ |
+| Window Theming | ✅     | Customizable window appearance |
 
 ### v0.2.6 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Window Layouts | ✅ | Predefined window arrangements |
+| Milestone      | Status | Description                    |
+| -------------- | ------ | ------------------------------ |
+| Window Layouts | ✅     | Predefined window arrangements |
 
 ### v0.2.7 - Add Widgets schema system (Completed ✓)
 
 **Objective**: Introduce a new schema module et expose it as API
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Widgets Schema | ✅ | Expose get_widget_schema(kind) and a WidgetKind.schema() helper |
+| Milestone      | Status | Description                                                     |
+| -------------- | ------ | --------------------------------------------------------------- |
+| Widgets Schema | ✅     | Expose get_widget_schema(kind) and a WidgetKind.schema() helper |
 
 ### v0.2.8 - Enhanced multi-windows application (Completed ✓)
 
 **Objective**: Improve user experience and functionality
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Window Persistence | ✅ | Save and restore window states |
+| Milestone          | Status | Description                    |
+| ------------------ | ------ | ------------------------------ |
+| Window Persistence | ✅     | Save and restore window states |
 
 ### v0.3.0 - Advanced Widgets (Completed ✓)
 
 **Objective**: Enrich available widget library
 
-| Milestone | Status | Priority | Description |
-|-----------|--------|----------|-------------|
-| Canvas | ✅ | Medium | Vector drawing widget |
-| DatePicker | ✅ | High | Date selector |
-| TimePicker | ✅ | High | Time selector |
-| Menus | ✅ | High | Menu bars and context menus |
-| DataTable | ✅ | Medium | Table with sort/filter |
-| ColorPicker | ✅ | Low | Color selector |
-| TreeView | ✅ | Low | Hierarchical display |
+| Milestone   | Status | Priority | Description                 |
+| ----------- | ------ | -------- | --------------------------- |
+| Canvas      | ✅     | Medium   | Vector drawing widget       |
+| DatePicker  | ✅     | High     | Date selector               |
+| TimePicker  | ✅     | High     | Time selector               |
+| Menus       | ✅     | High     | Menu bars and context menus |
+| DataTable   | ✅     | Medium   | Table with sort/filter      |
+| ColorPicker | ✅     | Low      | Color selector              |
+| TreeView    | ✅     | Low      | Hierarchical display        |
 
-### v0.3.1 - Enhanced multi-windows application (In progress)
+**Objective**: Improve tooling
 
-**Objective**: Improve tooling 
-
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Language Server | 🔲 | LSP support for `.dampen` files |
+| Milestone       | Status | Description                     |
+| --------------- | ------ | ------------------------------- |
+| Language Server | ✅     | LSP support for `.dampen` files |
 
 ### Developer Experience (planned)
 
 **Objective**: Improve tooling and DX
 
-| Milestone | Status | Priority | Description |
-|-----------|--------|----------|-------------|
-| Zed Extension | 🔲 | High | Official Zed extension |
-| VS Code Extension | 🔲 | High | Official VS Code extension |
-| Interactive CLI | 🔲 | Low | Interactive mode for `dampen new` |
-| Visual Hot Reload | 🔲 | Medium | Improved error overlay |
-| Debugger Integration | 🔲 | Low | IDE debugging support |
+| Milestone            | Status | Priority | Description                       |
+| -------------------- | ------ | -------- | --------------------------------- |
+| Zed Extension        | 🔲     | High     | Official Zed extension            |
+| VS Code Extension    | 🔲     | High     | Official VS Code extension        |
+| Interactive CLI      | 🔲     | Low      | Interactive mode for `dampen new` |
+| Visual Hot Reload    | 🔲     | Medium   | Improved error overlay            |
+| Debugger Integration | 🔲     | Low      | IDE debugging support             |
 
 ---
 
@@ -324,21 +322,21 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 ### Performance
 
-| Improvement | Priority | Target |
-|-------------|----------|--------|
-| Persistent IR Cache | High | < 50ms for re-parse |
-| Parallel Parsing | Medium | Use all CPU cores |
-| Widget Pooling | Medium | Reduce dynamic allocations |
-| Incremental Updates | Low | Partial DOM update |
+| Improvement         | Priority | Target                     |
+| ------------------- | -------- | -------------------------- |
+| Persistent IR Cache | High     | < 50ms for re-parse        |
+| Parallel Parsing    | Medium   | Use all CPU cores          |
+| Widget Pooling      | Medium   | Reduce dynamic allocations |
+| Incremental Updates | Low      | Partial DOM update         |
 
 ### Code Quality
 
-| Improvement | Priority | Description |
-|--------------|----------|-------------|
-| 100% Test Coverage | High | Current > 90% → 100% |
-| API Documentation | High | All public items documented |
-| Fuzzing Tests | Medium | Parser fuzzing tests |
-| Property-based Tests | Medium | proptest tests |
+| Improvement          | Priority | Description                 |
+| -------------------- | -------- | --------------------------- |
+| 100% Test Coverage   | High     | Current > 90% → 100%        |
+| API Documentation    | High     | All public items documented |
+| Fuzzing Tests        | Medium   | Parser fuzzing tests        |
+| Property-based Tests | Medium   | proptest tests              |
 
 ### Backend Agnostic
 
@@ -377,12 +375,12 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 ### Supported Editors
 
-| Editor | Status | Support |
-|--------|--------|---------|
-| VS Code | 🔲 | Extension planned |
-| RustRover | 🔲 | IDEA plugin |
-| Zed | 🔲 | LSP configuration |
-| Emacs | 🔲 | dampen mode |
+| Editor    | Status | Support           |
+| --------- | ------ | ----------------- |
+| VS Code   | 🔲     | Extension planned |
+| RustRover | 🔲     | IDEA plugin       |
+| Zed       | 🔲     | LSP configuration |
+| Emacs     | 🔲     | dampen mode       |
 
 ### Templates
 
@@ -406,28 +404,28 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 
 ### Performance
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| Boot time (codegen) | < 100ms | ⏳ |
-| Boot time (interpreted) | < 50ms | ⏳ |
-| Hot-reload latency | < 300ms | ✓ |
-| Memory footprint | < 50MB | ⏳ |
-| Binary size (release) | < 10MB | ⏳ |
+| Metric                  | Target  | Current |
+| ----------------------- | ------- | ------- |
+| Boot time (codegen)     | < 100ms | ⏳      |
+| Boot time (interpreted) | < 50ms  | ⏳      |
+| Hot-reload latency      | < 300ms | ✓       |
+| Memory footprint        | < 50MB  | ⏳      |
+| Binary size (release)   | < 10MB  | ⏳      |
 
 ### Stability
 
-| Criterion | Target | Current |
-|-----------|--------|---------|
-| Unit tests | > 95% coverage | > 90% |
-| Integration tests | 100% passing | 100% |
-| Breaking changes / version | 0 | ⏳ |
-| Critical bugs | 0 | 0 |
+| Criterion                  | Target         | Current |
+| -------------------------- | -------------- | ------- |
+| Unit tests                 | > 95% coverage | > 90%   |
+| Integration tests          | 100% passing   | 100%    |
+| Breaking changes / version | 0              | ⏳      |
+| Critical bugs              | 0              | 0       |
 
 ### Compatibility
 
-| Criterion | Target |
-|-----------|--------|
-| MSRV Rust | 1.85+ |
+| Criterion         | Target                |
+| ----------------- | --------------------- |
+| MSRV Rust         | 1.85+                 |
 | Desktop platforms | Linux, macOS, Windows |
 
 ---
@@ -494,6 +492,6 @@ Features not listed can be proposed via:
 
 **Thank you for contributing to Dampen!** 🙏
 
-*Together, let's build the future of UI development in Rust.*
+_Together, let's build the future of UI development in Rust._
 
 </div>
