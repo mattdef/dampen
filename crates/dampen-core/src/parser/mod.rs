@@ -735,6 +735,8 @@ fn parse_node(node: Node, source: &str) -> Result<WidgetNode, ParseError> {
         "data_column" => WidgetKind::DataColumn,
         "tree_view" => WidgetKind::TreeView,
         "tree_node" => WidgetKind::TreeNode,
+        "tab_bar" => WidgetKind::TabBar,
+        "tab" => WidgetKind::Tab,
         "template" => WidgetKind::Custom("template".to_string()),
         "for" => WidgetKind::For,
         "if" => WidgetKind::If,
@@ -1140,6 +1142,30 @@ fn validate_nesting_constraints(
             span: node.span,
             suggestion: Some("Wrap this column in a <data_table>".to_string()),
         });
+    }
+
+    // Rule: Tab must be inside TabBar
+    if node.kind == WidgetKind::Tab && parent_kind != Some(&WidgetKind::TabBar) {
+        return Err(ParseError {
+            kind: ParseErrorKind::InvalidChild,
+            message: "Tab must be inside TabBar".to_string(),
+            span: node.span,
+            suggestion: Some("Wrap this tab in a <tab_bar>".to_string()),
+        });
+    }
+
+    // Rule: TabBar must contain only Tab children
+    if node.kind == WidgetKind::TabBar {
+        for child in &node.children {
+            if child.kind != WidgetKind::Tab {
+                return Err(ParseError {
+                    kind: ParseErrorKind::InvalidChild,
+                    message: "TabBar can only contain Tab widgets".to_string(),
+                    span: child.span,
+                    suggestion: Some("Use <tab> elements inside <tab_bar>".to_string()),
+                });
+            }
+        }
     }
 
     // Recurse

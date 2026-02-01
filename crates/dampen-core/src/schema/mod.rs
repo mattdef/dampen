@@ -437,6 +437,28 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
             style_attributes: &[],
             layout_attributes: &[],
         },
+        WidgetKind::TabBar => WidgetSchema {
+            required: &["selected"],
+            optional: &[
+                "spacing",
+                "padding",
+                "icon_size",
+                "text_size",
+                "width",
+                "height",
+                "class",
+            ],
+            events: &["on_select"],
+            style_attributes: COMMON_STYLE_ATTRIBUTES,
+            layout_attributes: &["width", "height"],
+        },
+        WidgetKind::Tab => WidgetSchema {
+            required: &[],
+            optional: &["label", "icon", "enabled"],
+            events: &["on_click"],
+            style_attributes: COMMON_STYLE_ATTRIBUTES,
+            layout_attributes: &[],
+        },
         WidgetKind::Custom(_) => WidgetSchema {
             required: &[],
             optional: &[],

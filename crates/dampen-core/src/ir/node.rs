@@ -74,6 +74,9 @@ pub enum WidgetKind {
     // Tree widget
     TreeView,
     TreeNode,
+    // Tab widgets
+    TabBar,
+    Tab,
     // Control flow
     For,
     If,
@@ -263,6 +266,8 @@ impl std::fmt::Display for WidgetKind {
             WidgetKind::DataColumn => "data_column",
             WidgetKind::TreeView => "tree_view",
             WidgetKind::TreeNode => "tree_node",
+            WidgetKind::TabBar => "tab_bar",
+            WidgetKind::Tab => "tab",
             WidgetKind::For => "for",
             WidgetKind::If => "if",
             WidgetKind::Custom(name) => return write!(f, "{}", name),
@@ -314,6 +319,8 @@ impl WidgetKind {
             "data_column",
             "tree_view",
             "tree_node",
+            "tab_bar",
+            "tab",
             "for",
             "if",
         ]
@@ -363,7 +370,9 @@ impl WidgetKind {
             | WidgetKind::DataTable
             | WidgetKind::DataColumn
             | WidgetKind::TreeView
-            | WidgetKind::TreeNode => crate::ir::SchemaVersion { major: 1, minor: 1 },
+            | WidgetKind::TreeNode
+            | WidgetKind::TabBar
+            | WidgetKind::Tab => crate::ir::SchemaVersion { major: 1, minor: 1 },
             _ => crate::ir::SchemaVersion { major: 1, minor: 0 },
         }
     }

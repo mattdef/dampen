@@ -1281,6 +1281,8 @@ impl WidgetKindExt for WidgetKind {
             WidgetKind::DataColumn,
             WidgetKind::TreeView,
             WidgetKind::TreeNode,
+            WidgetKind::TabBar,
+            WidgetKind::Tab,
             WidgetKind::For,
             WidgetKind::If,
         ]

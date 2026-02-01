@@ -247,6 +247,13 @@ fn generate_widget_with_locals(
                 node.kind
             )))
         }
+        WidgetKind::TabBar => generate_tab_bar(node, message_ident, style_classes),
+        WidgetKind::Tab => {
+            // Tab must be inside TabBar, handled by generate_tab_bar
+            Err(super::CodegenError::InvalidWidget(
+                "Tab must be inside TabBar".to_string(),
+            ))
+        }
     }
 }
 
@@ -4919,5 +4926,170 @@ mod tests {
         assert!(code.contains("container :: Style"));
         assert!(code.contains("background"));
         assert!(code.contains("border"));
+    }
+}
+
+/// Generate TabBar widget code
+fn generate_tab_bar(
+    node: &crate::WidgetNode,
+    message_ident: &syn::Ident,
+    _style_classes: &HashMap<String, StyleClass>,
+) -> Result<TokenStream, super::CodegenError> {
+    use proc_macro2::Span;
+    use quote::quote;
+
+    // Get selected index attribute
+    let selected_attr = node.attributes.get("selected").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("TabBar requires 'selected' attribute".to_string())
+    })?;
+
+    // Generate selected index expression
+    let selected_expr = match selected_attr {
+        AttributeValue::Static(s) => {
+            let idx: usize = s.parse().map_err(|_| {
+                super::CodegenError::InvalidWidget(format!("Invalid selected index: {}", s))
+            })?;
+            quote! { #idx }
+        }
+        AttributeValue::Binding(_) => {
+            // For now, use a placeholder - this would need proper binding resolution
+            quote! { 0usize }
+        }
+        _ => quote! { 0usize },
+    };
+
+    // Find on_select event handler
+    let on_select_handler = node
+        .events
+        .iter()
+        .find(|e| matches!(e.event, crate::ir::EventKind::Select))
+        .map(|e| syn::Ident::new(&e.handler, Span::call_site()));
+
+    // Generate tab labels
+    let tab_labels: Vec<_> = node
+        .children
+        .iter()
+        .enumerate()
+        .map(|(idx, child)| {
+            let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
+
+            // Get label from tab
+            let label_expr = if let Some(label_attr) = child.attributes.get("label") {
+                match label_attr {
+                    AttributeValue::Static(s) => Some(quote! { #s.to_string() }),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+
+            // Get icon from tab
+            let icon_expr = if let Some(icon_attr) = child.attributes.get("icon") {
+                match icon_attr {
+                    AttributeValue::Static(s) => {
+                        let icon_char = resolve_icon_for_codegen(s);
+                        Some(quote! { #icon_char })
+                    }
+                    _ => None,
+                }
+            } else {
+                None
+            };
+
+            // Build TabLabel expression based on what we have
+            let tab_label_expr = match (icon_expr, label_expr) {
+                (Some(icon), Some(label)) => {
+                    quote! { iced_aw::tab_bar::TabLabel::IconText(#icon, #label) }
+                }
+                (Some(icon), None) => {
+                    quote! { iced_aw::tab_bar::TabLabel::Icon(#icon) }
+                }
+                (None, Some(label)) => {
+                    quote! { iced_aw::tab_bar::TabLabel::Text(#label) }
+                }
+                (None, None) => {
+                    quote! { iced_aw::tab_bar::TabLabel::Text("Tab".to_string()) }
+                }
+            };
+
+            quote! {
+                tab_bar = tab_bar.push(#idx_lit, #tab_label_expr);
+            }
+        })
+        .collect();
+
+    // Generate on_select callback if handler exists
+    let on_select_expr = if let Some(handler) = on_select_handler {
+        quote! {
+            .on_select(|idx| #message_ident::#handler(idx))
+        }
+    } else {
+        quote! {}
+    };
+
+    // Generate icon_size if specified
+    let icon_size_expr = if let Some(icon_size_attr) = node.attributes.get("icon_size") {
+        match icon_size_attr {
+            AttributeValue::Static(s) => {
+                if let Ok(icon_size) = s.parse::<f32>() {
+                    Some(quote! { .icon_size(#icon_size) })
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    } else {
+        None
+    };
+
+    // Generate text_size if specified
+    let text_size_expr = if let Some(text_size_attr) = node.attributes.get("text_size") {
+        match text_size_attr {
+            AttributeValue::Static(s) => {
+                if let Ok(text_size) = s.parse::<f32>() {
+                    Some(quote! { .text_size(#text_size) })
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    } else {
+        None
+    };
+
+    // Build the TabBar widget
+    let tab_bar = quote! {
+        {
+            let mut tab_bar = iced_aw::TabBar::new(#selected_expr)
+                #on_select_expr
+                #icon_size_expr
+                #text_size_expr;
+
+            #(#tab_labels)*
+
+            tab_bar
+        }
+    };
+
+    Ok(tab_bar)
+}
+
+/// Resolve icon name to Unicode character for codegen
+fn resolve_icon_for_codegen(name: &str) -> char {
+    match name {
+        "home" => '\u{F015}',
+        "settings" => '\u{F013}',
+        "user" => '\u{F007}',
+        "search" => '\u{F002}',
+        "add" => '\u{F067}',
+        "delete" => '\u{F1F8}',
+        "edit" => '\u{F044}',
+        "save" => '\u{F0C7}',
+        "close" => '\u{F00D}',
+        "back" => '\u{F060}',
+        "forward" => '\u{F061}',
+        _ => '\u{F111}', // Circle as fallback
     }
 }

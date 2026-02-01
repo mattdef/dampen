@@ -61,6 +61,7 @@
                 <button label="Menu &amp; Context" on_click="switch_to_menu" />
                 <button label="Data Table" on_click="switch_to_data_table" />
                 <button label="Tree View" on_click="switch_to_tree_view" />
+                <button label="TabBar" on_click="switch_to_tab_bar" />
             </row>
 
         </column>

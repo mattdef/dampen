@@ -525,6 +525,11 @@ impl<'a> DampenWidgetBuilder<'a> {
                 // TreeNode is handled within build_tree_view, shouldn't appear as top-level
                 iced::widget::column(Vec::new()).into()
             }
+            WidgetKind::TabBar => self.build_tab_bar(node),
+            WidgetKind::Tab => {
+                // Tab is handled within build_tab_bar, shouldn't appear as top-level
+                iced::widget::column(Vec::new()).into()
+            }
             WidgetKind::DataColumn
             | WidgetKind::CanvasRect
             | WidgetKind::CanvasCircle
