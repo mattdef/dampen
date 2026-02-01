@@ -154,14 +154,30 @@ The long-term goal is to enable Rust developers to create modern desktop applica
 | --------------- | ------ | ------------------------------- |
 | Language Server | ✅     | LSP support for `.dampen` files |
 
+### v0.3.1 - Advanced Widgets (In progress)
+
+**Objective**: Enrich available widget library
+
+| Milestone | Status | Description         |
+| --------- | ------ | ------------------- |
+| Tabs      | 🔲     | Tabs/TabBar widgets |
+
+### v0.3.2 - Advanced Widgets (planned)
+
+**Objective**: Enhance widget Datatable
+
+| Milestone | Status | Description              |
+| --------- | ------ | ------------------------ |
+| DataTable | 🔲     | Add missing click events |
+
 ### Developer Experience (planned)
 
 **Objective**: Improve tooling and DX
 
 | Milestone            | Status | Priority | Description                       |
 | -------------------- | ------ | -------- | --------------------------------- |
-| Zed Extension        | 🔲     | High     | Official Zed extension            |
-| VS Code Extension    | 🔲     | High     | Official VS Code extension        |
+| Zed Extension        | ✅     | High     | Official Zed extension            |
+| VS Code Extension    | ✅     | High     | Official VS Code extension        |
 | Interactive CLI      | 🔲     | Low      | Interactive mode for `dampen new` |
 | Visual Hot Reload    | 🔲     | Medium   | Improved error overlay            |
 | Debugger Integration | 🔲     | Low      | IDE debugging support             |
