@@ -112,6 +112,19 @@ impl<'a> DampenWidgetBuilder<'a> {
             .map(|child| self.build_tab_label(child))
             .collect();
 
+        // Build tab contents for each tab
+        let mut tab_contents: Vec<Vec<Element<'a, HandlerMessage, Theme, Renderer>>> = node
+            .children
+            .iter()
+            .map(|child| {
+                child
+                    .children
+                    .iter()
+                    .map(|child_node| self.build_widget(child_node))
+                    .collect()
+            })
+            .collect();
+
         // Create TabBar with on_select callback
         // The iced_aw API requires the callback in the constructor
         let mut tab_bar = if let Some(event_binding) = on_select_event {
@@ -190,7 +203,43 @@ impl<'a> DampenWidgetBuilder<'a> {
             tab_bar = tab_bar.push(idx, label);
         }
 
-        tab_bar.into()
+        // Apply custom style to highlight selected tab
+        tab_bar = tab_bar.style(move |theme: &iced::Theme, status| {
+            let base_style = iced_aw::style::tab_bar::Style::default();
+
+            match status {
+                iced_aw::style::Status::Selected => iced_aw::style::tab_bar::Style {
+                    tab_label_background: iced::Background::Color(theme.palette().primary),
+                    tab_label_border_color: theme.palette().primary,
+                    text_color: iced::Color::WHITE,
+                    icon_color: iced::Color::WHITE,
+                    ..base_style
+                },
+                _ => base_style,
+            }
+        });
+
+        // Build content column for the selected tab
+        // We need to move the content widgets out of tab_contents since Element doesn't implement Clone
+        let content_element: Element<'a, HandlerMessage, Theme, Renderer> =
+            if selected_index < tab_contents.len() {
+                let content_widgets = std::mem::take(&mut tab_contents[selected_index]);
+                match content_widgets.len() {
+                    0 => iced::widget::column![].into(),
+                    1 => content_widgets
+                        .into_iter()
+                        .next()
+                        .unwrap_or_else(|| iced::widget::column![].into()),
+                    _ => iced::widget::Column::with_children(content_widgets).into(),
+                }
+            } else {
+                iced::widget::column![].into()
+            };
+
+        // Combine TabBar and content in a column
+        let result = iced::widget::column![tab_bar, content_element];
+
+        result.into()
     }
 
     /// Build a TabLabel from a Tab widget node

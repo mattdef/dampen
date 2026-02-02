@@ -41,60 +41,48 @@
         <!-- TabBar with icons and labels -->
         <column class="tab_bar_container">
             <tab_bar selected="{selected_tab}" on_select="on_tab_selected" icon_size="20" text_size="14">
-                <tab label="General" icon="settings" />
-                <tab label="Appearance" icon="user" />
-                <tab label="Notifications" icon="add" />
+                <tab label="General" icon="settings">
+                    <column class="tab_content">
+                        <text value="⚙️ General Settings" size="28" weight="bold" color="#f8fafc" />
+                        <text value="Configure your application preferences here." color="#94a3b8" />
+                        <row spacing="10">
+                            <checkbox label="Enable auto-save" checked="{auto_save}" on_toggle="toggle_auto_save" />
+                        </row>
+                        <row spacing="10">
+                            <checkbox label="Show welcome screen on startup" checked="{show_welcome}" on_toggle="toggle_welcome" />
+                        </row>
+                    </column>
+                </tab>
+                <tab label="Appearance" icon="user">
+                    <column class="tab_content">
+                        <text value="🎨 Appearance Settings" size="28" weight="bold" color="#f8fafc" />
+                        <text value="Customize the look and feel of the application." color="#94a3b8" />
+                        <row spacing="10">
+                            <text value="Theme:" color="#e2e8f0" />
+                            <pick_list selected="{theme}" options="Light,Dark,System" on_select="change_theme" />
+                        </row>
+                        <row spacing="10">
+                            <text value="Accent Color:" color="#e2e8f0" />
+                            <pick_list selected="{accent_color}" options="Blue,Green,Purple,Orange" on_select="change_accent" />
+                        </row>
+                    </column>
+                </tab>
+                <tab label="Notifications" icon="add">
+                    <column class="tab_content">
+                        <text value="🔔 Notification Settings" size="28" weight="bold" color="#f8fafc" />
+                        <text value="Manage how you receive notifications." color="#94a3b8" />
+                        <row spacing="10">
+                            <checkbox label="Email notifications" checked="{email_notifications}" on_toggle="toggle_email" />
+                        </row>
+                        <row spacing="10">
+                            <checkbox label="Push notifications" checked="{push_notifications}" on_toggle="toggle_push" />
+                        </row>
+                        <row spacing="10">
+                            <checkbox label="SMS notifications" checked="{sms_notifications}" on_toggle="toggle_sms" />
+                        </row>
+                    </column>
+                </tab>
             </tab_bar>
-        </column>
-
-        <!-- Conditional content based on selected tab -->
-        <column class="content_area">
-            <!-- General Tab Content (selected_tab == 0) -->
-            <if condition="{selected_tab == 0}">
-                <column class="tab_content">
-                    <text value="⚙️ General Settings" size="28" weight="bold" color="#f8fafc" />
-                    <text value="Configure your application preferences here." color="#94a3b8" />
-                    <row spacing="10">
-                        <checkbox label="Enable auto-save" checked="{auto_save}" on_toggle="toggle_auto_save" />
-                    </row>
-                    <row spacing="10">
-                        <checkbox label="Show welcome screen on startup" checked="{show_welcome}" on_toggle="toggle_welcome" />
-                    </row>
-                </column>
-            </if>
-
-            <!-- Appearance Tab Content (selected_tab == 1) -->
-            <if condition="{selected_tab == 1}">
-                <column class="tab_content">
-                    <text value="🎨 Appearance Settings" size="28" weight="bold" color="#f8fafc" />
-                    <text value="Customize the look and feel of the application." color="#94a3b8" />
-                    <row spacing="10">
-                        <text value="Theme:" color="#e2e8f0" />
-                        <pick_list selected="{theme}" options="Light,Dark,System" on_select="change_theme" />
-                    </row>
-                    <row spacing="10">
-                        <text value="Accent Color:" color="#e2e8f0" />
-                        <pick_list selected="{accent_color}" options="Blue,Green,Purple,Orange" on_select="change_accent" />
-                    </row>
-                </column>
-            </if>
-
-            <!-- Notifications Tab Content (selected_tab == 2) -->
-            <if condition="{selected_tab == 2}">
-                <column class="tab_content">
-                    <text value="🔔 Notification Settings" size="28" weight="bold" color="#f8fafc" />
-                    <text value="Manage how you receive notifications." color="#94a3b8" />
-                    <row spacing="10">
-                        <checkbox label="Email notifications" checked="{email_notifications}" on_toggle="toggle_email" />
-                    </row>
-                    <row spacing="10">
-                        <checkbox label="Push notifications" checked="{push_notifications}" on_toggle="toggle_push" />
-                    </row>
-                    <row spacing="10">
-                        <checkbox label="SMS notifications" checked="{sms_notifications}" on_toggle="toggle_sms" />
-                    </row>
-                </column>
-            </if>
         </column>
 
         <!-- Status bar showing current state -->

@@ -247,7 +247,13 @@ fn generate_widget_with_locals(
                 node.kind
             )))
         }
-        WidgetKind::TabBar => generate_tab_bar(node, message_ident, style_classes),
+        WidgetKind::TabBar => generate_tab_bar_with_locals(
+            node,
+            model_ident,
+            message_ident,
+            style_classes,
+            local_vars,
+        ),
         WidgetKind::Tab => {
             // Tab must be inside TabBar, handled by generate_tab_bar
             Err(super::CodegenError::InvalidWidget(
@@ -4929,11 +4935,13 @@ mod tests {
     }
 }
 
-/// Generate TabBar widget code
-fn generate_tab_bar(
+/// Generate TabBar widget code with content
+fn generate_tab_bar_with_locals(
     node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
     message_ident: &syn::Ident,
-    _style_classes: &HashMap<String, StyleClass>,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
 ) -> Result<TokenStream, super::CodegenError> {
     use proc_macro2::Span;
     use quote::quote;
@@ -4951,9 +4959,10 @@ fn generate_tab_bar(
             })?;
             quote! { #idx }
         }
-        AttributeValue::Binding(_) => {
-            // For now, use a placeholder - this would need proper binding resolution
-            quote! { 0usize }
+        AttributeValue::Binding(binding) => {
+            // Generate binding expression - generate_expr returns a TokenStream that produces a String
+            let binding_expr = generate_expr(&binding.expr);
+            quote! { (#binding_expr).parse::<usize>().unwrap_or(0) }
         }
         _ => quote! { 0usize },
     };
@@ -4965,7 +4974,8 @@ fn generate_tab_bar(
         .find(|e| matches!(e.event, crate::ir::EventKind::Select))
         .map(|e| syn::Ident::new(&e.handler, Span::call_site()));
 
-    // Generate tab labels
+    // Generate tab labels and content
+    let _tab_count = node.children.len();
     let tab_labels: Vec<_> = node
         .children
         .iter()
@@ -5018,6 +5028,35 @@ fn generate_tab_bar(
         })
         .collect();
 
+    // Generate content for each tab
+    let tab_content_arms: Vec<_> = node
+        .children
+        .iter()
+        .enumerate()
+        .map(|(idx, child)| {
+            let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
+
+            // Generate content for this tab's children
+            let content_widgets: Vec<_> = child
+                .children
+                .iter()
+                .map(|child_node| {
+                    generate_widget_with_locals(
+                        child_node,
+                        model_ident,
+                        message_ident,
+                        style_classes,
+                        local_vars,
+                    )
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
+            Ok::<_, super::CodegenError>(quote! {
+                #idx_lit => iced::widget::column(vec![#(#content_widgets),*]).into()
+            })
+        })
+        .collect::<Result<Vec<_>, super::CodegenError>>()?;
+
     // Generate on_select callback if handler exists
     let on_select_expr = if let Some(handler) = on_select_handler {
         quote! {
@@ -5059,8 +5098,8 @@ fn generate_tab_bar(
         None
     };
 
-    // Build the TabBar widget
-    let tab_bar = quote! {
+    // Build the complete TabBar widget with content
+    let tab_bar_widget = quote! {
         {
             let mut tab_bar = iced_aw::TabBar::new(#selected_expr)
                 #on_select_expr
@@ -5073,7 +5112,27 @@ fn generate_tab_bar(
         }
     };
 
-    Ok(tab_bar)
+    // Build content element using match on selected index
+    let content_element = if tab_content_arms.is_empty() {
+        quote! { iced::widget::column(vec![]).into() }
+    } else {
+        quote! {
+            match #selected_expr {
+                #(#tab_content_arms,)*
+                _ => iced::widget::column(vec![]).into(),
+            }
+        }
+    };
+
+    // Combine TabBar and content in a column
+    let result = quote! {
+        iced::widget::column![
+            #tab_bar_widget,
+            #content_element
+        ]
+    };
+
+    Ok(result)
 }
 
 /// Resolve icon name to Unicode character for codegen

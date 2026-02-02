@@ -13,45 +13,55 @@ This example serves as a reference implementation and testing ground for all Dam
 The following widget examples are available in the `ui/` directory:
 
 #### ProgressBar (`ui/progressbar.dampen`)
+
 Demonstrates progress indicators with different styles and value ranges.
 
 **Features**:
+
 - Multiple style variants (primary, success, warning, danger, secondary)
 - Custom value ranges
 - Percentage display
 - Value clamping behavior
 
 #### Tooltip (`ui/tooltip.dampen`)
+
 Shows contextual help text on hover with different positioning options.
 
 **Features**:
+
 - Multiple position variants (top, bottom, left, right, follow_cursor)
 - Custom delay settings
 - Wrapping different widget types
 - Hover interaction
 
 #### Canvas (`ui/canvas.dampen`)
+
 Custom drawing surface for graphics and visualizations.
 
 **Features**:
+
 - Custom `canvas::Program` implementation
 - Drawing primitives (paths, fills, strokes)
 - Interactive click handling
 - Real-time rendering
 
 #### PickList (`ui/picklist.dampen`)
+
 Dropdown selection from a list of options.
 
 **Features**:
+
 - Static option lists
 - Selected value binding
 - Event handling on selection change
 - Placeholder text
 
 #### ComboBox (`ui/combobox.dampen`)
+
 Searchable dropdown with type-ahead functionality.
 
 **Features**:
+
 - Search filtering
 - Dynamic option list
 - Selected value binding
@@ -60,9 +70,11 @@ Searchable dropdown with type-ahead functionality.
 **Note**: ComboBox rendering is not yet implemented. This file demonstrates the XML syntax.
 
 #### Float (`ui/float.dampen`)
+
 Positioned overlay elements like floating action buttons.
 
 **Features**:
+
 - Corner positioning (top-left, top-right, bottom-left, bottom-right)
 - Custom offset control
 - Z-index layering
@@ -71,9 +83,11 @@ Positioned overlay elements like floating action buttons.
 **Note**: Float rendering is not yet implemented. This file demonstrates the XML syntax.
 
 #### Grid (`ui/grid.dampen`)
+
 Multi-column responsive layout.
 
 **Features**:
+
 - Configurable column count
 - Automatic wrapping
 - Spacing and padding
@@ -95,6 +109,7 @@ The application will display examples of all implemented widgets.
 ### Running in Different Modes
 
 **Development Mode (Interpreted with Hot-Reload):**
+
 ```bash
 cd examples/widget-showcase
 dampen run
@@ -103,6 +118,7 @@ dampen run
 The UI will reload automatically when you modify `.dampen` files.
 
 **Production Mode (Codegen):**
+
 ```bash
 # Debug build
 dampen build -p widget-showcase
@@ -117,6 +133,7 @@ dampen release -p widget-showcase
 ```
 
 **Framework Development (using cargo directly):**
+
 ```bash
 # Interpreted mode
 cargo run -p widget-showcase
@@ -219,7 +236,6 @@ When implementing new widget renderers:
 ## References
 
 - [Dampen Documentation](../../docs/)
-- [Widget XML Schema](../../specs/004-advanced-widgets-todo/contracts/xml-schema.md)
 - [Iced Widget Documentation](https://docs.rs/iced/latest/iced/widget/)
 
 ## License
