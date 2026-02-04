@@ -247,6 +247,19 @@ fn generate_widget_with_locals(
                 node.kind
             )))
         }
+        WidgetKind::TabBar => generate_tab_bar_with_locals(
+            node,
+            model_ident,
+            message_ident,
+            style_classes,
+            local_vars,
+        ),
+        WidgetKind::Tab => {
+            // Tab must be inside TabBar, handled by generate_tab_bar
+            Err(super::CodegenError::InvalidWidget(
+                "Tab must be inside TabBar".to_string(),
+            ))
+        }
     }
 }
 
@@ -2030,15 +2043,189 @@ fn generate_progress_bar(
         }
     });
 
+    // Parse style attribute (default to "primary")
+    let style_str = node
+        .attributes
+        .get("style")
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(|| "primary".to_string());
+
+    // Parse custom colors
+    let bar_color = node.attributes.get("bar_color").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            parse_color_to_tokens(s)
+        } else {
+            None
+        }
+    });
+
+    let background_color = node.attributes.get("background_color").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            parse_color_to_tokens(s)
+        } else {
+            None
+        }
+    });
+
+    // Parse border radius
+    let border_radius = node.attributes.get("border_radius").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    });
+
+    // Parse height (girth)
+    let height = node.attributes.get("height").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    });
+
+    // Generate style closure based on style attribute
+    let bar_color_expr = if let Some(color_tokens) = bar_color {
+        quote! { #color_tokens }
+    } else {
+        match style_str.as_str() {
+            "success" => quote! { palette.success.base.color },
+            "warning" => quote! { palette.warning.base.color },
+            "danger" => quote! { palette.danger.base.color },
+            "secondary" => quote! { palette.secondary.base.color },
+            _ => quote! { palette.primary.base.color }, // default to primary
+        }
+    };
+
+    // Generate background color expression
+    let background_color_expr = if let Some(color_tokens) = background_color {
+        quote! { #color_tokens }
+    } else {
+        quote! { palette.background.weak.color }
+    };
+
+    // Generate border expression
+    let border_expr = if let Some(radius) = border_radius {
+        quote! { iced::Border::default().rounded(#radius) }
+    } else {
+        quote! { iced::Border::default() }
+    };
+
+    // Generate height/girth expression
+    let girth_expr = if let Some(h) = height {
+        quote! { .girth(#h) }
+    } else {
+        quote! {}
+    };
+
     if let Some(max) = max_attr {
         Ok(quote! {
-            iced::widget::progress_bar(0.0..=#max, #value_expr).into()
+            iced::widget::progress_bar(0.0..=#max, #value_expr)
+                #girth_expr
+                .style(|theme: &iced::Theme| {
+                    let palette = theme.extended_palette();
+                    iced::widget::progress_bar::Style {
+                        background: iced::Background::Color(#background_color_expr),
+                        bar: iced::Background::Color(#bar_color_expr),
+                        border: #border_expr,
+                    }
+                })
+                .into()
         })
     } else {
         Ok(quote! {
-            iced::widget::progress_bar(0.0..=100.0, #value_expr).into()
+            iced::widget::progress_bar(0.0..=100.0, #value_expr)
+                #girth_expr
+                .style(|theme: &iced::Theme| {
+                    let palette = theme.extended_palette();
+                    iced::widget::progress_bar::Style {
+                        background: iced::Background::Color(#background_color_expr),
+                        bar: iced::Background::Color(#bar_color_expr),
+                        border: #border_expr,
+                    }
+                })
+                .into()
         })
     }
+}
+
+/// Parse a color string into TokenStream for code generation
+fn parse_color_to_tokens(color_str: &str) -> Option<TokenStream> {
+    // Try hex color (#RRGGBB or #RRGGBBAA)
+    if color_str.starts_with('#') {
+        let hex = &color_str[1..];
+        if hex.len() == 6 {
+            if let (Ok(r), Ok(g), Ok(b)) = (
+                u8::from_str_radix(&hex[0..2], 16),
+                u8::from_str_radix(&hex[2..4], 16),
+                u8::from_str_radix(&hex[4..6], 16),
+            ) {
+                let rf = r as f32 / 255.0;
+                let gf = g as f32 / 255.0;
+                let bf = b as f32 / 255.0;
+                return Some(quote! { iced::Color::from_rgb(#rf, #gf, #bf) });
+            }
+        } else if hex.len() == 8 {
+            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+                u8::from_str_radix(&hex[0..2], 16),
+                u8::from_str_radix(&hex[2..4], 16),
+                u8::from_str_radix(&hex[4..6], 16),
+                u8::from_str_radix(&hex[6..8], 16),
+            ) {
+                let rf = r as f32 / 255.0;
+                let gf = g as f32 / 255.0;
+                let bf = b as f32 / 255.0;
+                let af = a as f32 / 255.0;
+                return Some(quote! { iced::Color::from_rgba(#rf, #gf, #bf, #af) });
+            }
+        }
+    }
+
+    // Try RGB format: rgb(r,g,b)
+    if color_str.starts_with("rgb(") && color_str.ends_with(')') {
+        let inner = &color_str[4..color_str.len() - 1];
+        let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
+        if parts.len() == 3 {
+            if let (Ok(r), Ok(g), Ok(b)) = (
+                parts[0].parse::<u8>(),
+                parts[1].parse::<u8>(),
+                parts[2].parse::<u8>(),
+            ) {
+                let rf = r as f32 / 255.0;
+                let gf = g as f32 / 255.0;
+                let bf = b as f32 / 255.0;
+                return Some(quote! { iced::Color::from_rgb(#rf, #gf, #bf) });
+            }
+        }
+    }
+
+    // Try RGBA format: rgba(r,g,b,a)
+    if color_str.starts_with("rgba(") && color_str.ends_with(')') {
+        let inner = &color_str[5..color_str.len() - 1];
+        let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
+        if parts.len() == 4 {
+            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+                parts[0].parse::<u8>(),
+                parts[1].parse::<u8>(),
+                parts[2].parse::<u8>(),
+                parts[3].parse::<f32>(),
+            ) {
+                let rf = r as f32 / 255.0;
+                let gf = g as f32 / 255.0;
+                let bf = b as f32 / 255.0;
+                return Some(quote! { iced::Color::from_rgba(#rf, #gf, #bf, #a) });
+            }
+        }
+    }
+
+    None
 }
 
 /// Generate text input widget
@@ -4919,5 +5106,223 @@ mod tests {
         assert!(code.contains("container :: Style"));
         assert!(code.contains("background"));
         assert!(code.contains("border"));
+    }
+}
+
+/// Generate TabBar widget code with content
+fn generate_tab_bar_with_locals(
+    node: &crate::WidgetNode,
+    model_ident: &syn::Ident,
+    message_ident: &syn::Ident,
+    style_classes: &HashMap<String, StyleClass>,
+    local_vars: &std::collections::HashSet<String>,
+) -> Result<TokenStream, super::CodegenError> {
+    use proc_macro2::Span;
+    use quote::quote;
+
+    // Get selected index attribute
+    let selected_attr = node.attributes.get("selected").ok_or_else(|| {
+        super::CodegenError::InvalidWidget("TabBar requires 'selected' attribute".to_string())
+    })?;
+
+    // Generate selected index expression
+    let selected_expr = match selected_attr {
+        AttributeValue::Static(s) => {
+            let idx: usize = s.parse().map_err(|_| {
+                super::CodegenError::InvalidWidget(format!("Invalid selected index: {}", s))
+            })?;
+            quote! { #idx }
+        }
+        AttributeValue::Binding(binding) => {
+            // Generate binding expression - generate_expr returns a TokenStream that produces a String
+            let binding_expr = generate_expr(&binding.expr);
+            quote! { (#binding_expr).parse::<usize>().unwrap_or(0) }
+        }
+        _ => quote! { 0usize },
+    };
+
+    // Find on_select event handler
+    let on_select_handler = node
+        .events
+        .iter()
+        .find(|e| matches!(e.event, crate::ir::EventKind::Select))
+        .map(|e| syn::Ident::new(&e.handler, Span::call_site()));
+
+    // Generate tab labels and content
+    let _tab_count = node.children.len();
+    let tab_labels: Vec<_> = node
+        .children
+        .iter()
+        .enumerate()
+        .map(|(idx, child)| {
+            let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
+
+            // Get label from tab
+            let label_expr = if let Some(label_attr) = child.attributes.get("label") {
+                match label_attr {
+                    AttributeValue::Static(s) => Some(quote! { #s.to_string() }),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+
+            // Get icon from tab
+            let icon_expr = if let Some(icon_attr) = child.attributes.get("icon") {
+                match icon_attr {
+                    AttributeValue::Static(s) => {
+                        let icon_char = resolve_icon_for_codegen(s);
+                        Some(quote! { #icon_char })
+                    }
+                    _ => None,
+                }
+            } else {
+                None
+            };
+
+            // Build TabLabel expression based on what we have
+            let tab_label_expr = match (icon_expr, label_expr) {
+                (Some(icon), Some(label)) => {
+                    quote! { iced_aw::tab_bar::TabLabel::IconText(#icon, #label) }
+                }
+                (Some(icon), None) => {
+                    quote! { iced_aw::tab_bar::TabLabel::Icon(#icon) }
+                }
+                (None, Some(label)) => {
+                    quote! { iced_aw::tab_bar::TabLabel::Text(#label) }
+                }
+                (None, None) => {
+                    quote! { iced_aw::tab_bar::TabLabel::Text("Tab".to_string()) }
+                }
+            };
+
+            quote! {
+                tab_bar = tab_bar.push(#idx_lit, #tab_label_expr);
+            }
+        })
+        .collect();
+
+    // Generate content for each tab
+    let tab_content_arms: Vec<_> = node
+        .children
+        .iter()
+        .enumerate()
+        .map(|(idx, child)| {
+            let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
+
+            // Generate content for this tab's children
+            let content_widgets: Vec<_> = child
+                .children
+                .iter()
+                .map(|child_node| {
+                    generate_widget_with_locals(
+                        child_node,
+                        model_ident,
+                        message_ident,
+                        style_classes,
+                        local_vars,
+                    )
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
+            Ok::<_, super::CodegenError>(quote! {
+                #idx_lit => iced::widget::column(vec![#(#content_widgets),*]).into()
+            })
+        })
+        .collect::<Result<Vec<_>, super::CodegenError>>()?;
+
+    // Generate on_select callback if handler exists
+    let on_select_expr = if let Some(handler) = on_select_handler {
+        quote! {
+            .on_select(|idx| #message_ident::#handler(idx))
+        }
+    } else {
+        quote! {}
+    };
+
+    // Generate icon_size if specified
+    let icon_size_expr = if let Some(icon_size_attr) = node.attributes.get("icon_size") {
+        match icon_size_attr {
+            AttributeValue::Static(s) => {
+                if let Ok(icon_size) = s.parse::<f32>() {
+                    Some(quote! { .icon_size(#icon_size) })
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    } else {
+        None
+    };
+
+    // Generate text_size if specified
+    let text_size_expr = if let Some(text_size_attr) = node.attributes.get("text_size") {
+        match text_size_attr {
+            AttributeValue::Static(s) => {
+                if let Ok(text_size) = s.parse::<f32>() {
+                    Some(quote! { .text_size(#text_size) })
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    } else {
+        None
+    };
+
+    // Build the complete TabBar widget with content
+    let tab_bar_widget = quote! {
+        {
+            let mut tab_bar = iced_aw::TabBar::new(#selected_expr)
+                #on_select_expr
+                #icon_size_expr
+                #text_size_expr;
+
+            #(#tab_labels)*
+
+            tab_bar
+        }
+    };
+
+    // Build content element using match on selected index
+    let content_element = if tab_content_arms.is_empty() {
+        quote! { iced::widget::column(vec![]).into() }
+    } else {
+        quote! {
+            match #selected_expr {
+                #(#tab_content_arms,)*
+                _ => iced::widget::column(vec![]).into(),
+            }
+        }
+    };
+
+    // Combine TabBar and content in a column
+    let result = quote! {
+        iced::widget::column![
+            #tab_bar_widget,
+            #content_element
+        ]
+    };
+
+    Ok(result)
+}
+
+/// Resolve icon name to Unicode character for codegen
+fn resolve_icon_for_codegen(name: &str) -> char {
+    match name {
+        "home" => '\u{F015}',
+        "settings" => '\u{F013}',
+        "user" => '\u{F007}',
+        "search" => '\u{F002}',
+        "add" => '\u{F067}',
+        "delete" => '\u{F1F8}',
+        "edit" => '\u{F044}',
+        "save" => '\u{F0C7}',
+        "close" => '\u{F00D}',
+        "back" => '\u{F060}',
+        "forward" => '\u{F061}',
+        _ => '\u{F111}', // Circle as fallback
     }
 }

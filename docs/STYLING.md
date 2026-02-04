@@ -892,6 +892,107 @@ All style properties can have state variants using either syntax:
 - `disabled_state_opacity`, etc.
 - Combined: `hover_state_active_state_background`, etc.
 
+### Widget-Specific Styling
+
+#### Progress Bar Styling
+
+The `progress_bar` widget supports extensive customization:
+
+**Predefined Styles:**
+```xml
+<!-- Using theme-based styles -->
+<progress_bar value="{progress}" style="primary" />
+<progress_bar value="{progress}" style="success" />
+<progress_bar value="{progress}" style="warning" />
+<progress_bar value="{progress}" style="danger" />
+<progress_bar value="{progress}" style="secondary" />
+```
+
+**Custom Colors:**
+```xml
+<!-- Hex colors -->
+<progress_bar 
+    value="{progress}" 
+    bar_color="#FF8C00" 
+    background_color="#E0E0E0" 
+/>
+
+<!-- RGB/RGBA colors -->
+<progress_bar 
+    value="{progress}" 
+    bar_color="rgb(0, 200, 100)" 
+    background_color="rgba(50, 50, 50, 0.8)" 
+/>
+
+<!-- With alpha channel -->
+<progress_bar 
+    value="{progress}" 
+    bar_color="#00FF0080" 
+    background_color="#00000040" 
+/>
+```
+
+**Border Radius (Rounded Corners):**
+```xml
+<!-- Subtle rounding -->
+<progress_bar value="{progress}" border_radius="4" />
+
+<!-- Medium rounding -->
+<progress_bar value="{progress}" border_radius="10" />
+
+<!-- Full rounding (pill shape) -->
+<progress_bar value="{progress}" border_radius="20" />
+```
+
+**Custom Height:**
+```xml
+<!-- Thin bar -->
+<progress_bar value="{progress}" height="8" />
+
+<!-- Standard height -->
+<progress_bar value="{progress}" height="20" />
+
+<!-- Thick bar -->
+<progress_bar value="{progress}" height="40" />
+```
+
+**Complete Examples:**
+```xml
+<!-- Modern rounded progress bar -->
+<progress_bar 
+    value="{progress}" 
+    style="success"
+    border_radius="10"
+    height="12"
+/>
+
+<!-- Custom branded progress bar -->
+<progress_bar 
+    value="{progress}" 
+    bar_color="#6366F1"
+    background_color="#E0E7FF"
+    border_radius="6"
+    height="8"
+/>
+
+<!-- High contrast progress bar -->
+<progress_bar 
+    value="{progress}" 
+    bar_color="#000000"
+    background_color="#FFFFFF"
+    border_radius="0"
+    height="4"
+/>
+```
+
+**Color Formats Supported:**
+- Hex: `#RRGGBB` (e.g., `#FF5733`)
+- Hex with alpha: `#RRGGBBAA` (e.g., `#FF573380`)
+- RGB: `rgb(r, g, b)` (e.g., `rgb(255, 87, 51)`)
+- RGBA: `rgba(r, g, b, a)` (e.g., `rgba(255, 87, 51, 0.5)`)
+
+**Note:** Custom colors (`bar_color`, `background_color`) override the predefined `style` colors. If both are specified, custom colors take precedence.
+
 ### Layout Attributes
 
 - `width`, `height` - dimensions (pixels, fill, shrink, fill_portion(n), %)

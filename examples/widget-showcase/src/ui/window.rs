@@ -153,5 +153,9 @@ pub fn create_handler_registry() -> HandlerRegistry {
         )))
     });
 
+    registry.register_with_command("switch_to_tab_bar", |_model: &mut dyn std::any::Any| {
+        Box::new(iced::Task::done(Message::SwitchToView(CurrentView::TabBar)))
+    });
+
     registry
 }

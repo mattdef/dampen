@@ -22,6 +22,7 @@ pub mod slider;
 pub mod space;
 pub mod stack;
 pub mod svg;
+pub mod tab_bar;
 pub mod text;
 pub mod textinput;
 pub mod toggler;

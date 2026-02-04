@@ -29,6 +29,7 @@ mod slider;
 mod space;
 mod stack;
 mod svg;
+mod tab_bar;
 mod text;
 mod text_input;
 mod time_picker;

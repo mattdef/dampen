@@ -398,6 +398,47 @@ Individual radio button widget.
 | `min` | number | 0 | Minimum value |
 | `max` | number | 100 | Maximum value |
 | `value` | number/binding | 0 | Current progress |
+| `style` | string | primary | Predefined style: `primary`, `success`, `warning`, `danger`, `secondary` |
+| `bar_color` | color | - | Custom bar color (overrides style). Formats: `#RRGGBB`, `#RRGGBBAA`, `rgb(r,g,b)`, `rgba(r,g,b,a)` |
+| `background_color` | color | - | Custom background color. Formats: `#RRGGBB`, `#RRGGBBAA`, `rgb(r,g,b)`, `rgba(r,g,b,a)` |
+| `border_radius` | number | 0 | Corner radius in pixels |
+| `height` | number | - | Bar height in pixels (girth) |
+
+**Style Attribute:**
+The `style` attribute provides predefined color schemes from the theme palette:
+- `primary` - Primary theme color
+- `success` - Green/success color
+- `warning` - Orange/warning color  
+- `danger` - Red/danger color
+- `secondary` - Secondary theme color
+
+**Custom Styling:**
+When `bar_color` or `background_color` are specified, they override the style colors:
+
+```xml
+<!-- Using predefined style -->
+<progress_bar value="{progress}" style="success" />
+
+<!-- Custom colors -->
+<progress_bar value="{progress}" bar_color="#FF8C00" background_color="#E0E0E0" />
+
+<!-- With rounded corners and custom height -->
+<progress_bar 
+    value="{progress}" 
+    style="primary"
+    border_radius="10"
+    height="30"
+/>
+
+<!-- Fully customized -->
+<progress_bar 
+    value="{progress}" 
+    bar_color="rgb(0,200,100)"
+    background_color="#333333"
+    border_radius="20"
+    height="40"
+/>
+```
 
 ### `<for>` - Iteration Widget
 
@@ -886,6 +927,86 @@ TreeNode {
 | `selected` | bool | false | Selected state |
 | `disabled` | bool | false | Disabled state |
 | `class` | string | - | CSS class |
+
+---
+
+### `<tab_bar>` - Tab Bar Widget
+
+A tab bar widget that displays a row of selectable tabs with associated content.
+
+```xml
+<tab_bar selected="{selected_tab}" on_select="on_tab_selected" icon_size="20" text_size="14">
+    <tab label="General" icon="settings">
+        <column>
+            <text value="General Settings" />
+            <checkbox label="Enable auto-save" checked="{auto_save}" on_toggle="toggle_auto_save" />
+        </column>
+    </tab>
+    <tab label="Appearance" icon="user">
+        <column>
+            <text value="Appearance Settings" />
+            <pick_list selected="{theme}" options="Light,Dark,System" on_select="change_theme" />
+        </column>
+    </tab>
+    <tab label="Notifications" icon="add">
+        <column>
+            <text value="Notification Settings" />
+            <checkbox label="Email notifications" checked="{email_notifications}" on_toggle="toggle_email" />
+        </column>
+    </tab>
+</tab_bar>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `selected` | number/binding | **required** | Index of the currently selected tab (0-based) |
+| `icon_size` | number | 20 | Size of tab icons in pixels |
+| `text_size` | number | 14 | Size of tab text in pixels |
+| `spacing` | number | 0 | Spacing between tabs |
+| `padding` | length/box | 0 | Padding around the tab bar |
+| `width` | length | auto | Width constraint |
+| `height` | length | auto | Height constraint |
+| `class` | string | - | CSS class for styling |
+
+**Events:**
+| Event | Description |
+|-------|-------------|
+| `on_select` | Called when a tab is selected, receives the tab index |
+
+**Child Elements:**
+
+The `<tab_bar>` must contain one or more `<tab>` elements as children.
+
+### `<tab>` - Tab Item
+
+Individual tab within a `<tab_bar>`. Each tab defines its label, optional icon, and content.
+
+```xml
+<tab label="Settings" icon="settings">
+    <!-- Tab content widgets here -->
+    <column>
+        <text value="Settings Content" />
+    </column>
+</tab>
+```
+
+**Attributes:**
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `label` | string | **required** | Tab label text |
+| `icon` | string | - | Icon name (e.g., "settings", "user", "home") |
+| `enabled` | bool | true | Whether the tab is clickable |
+
+**Content:**
+
+Each `<tab>` can contain any number of child widgets. The content of the selected tab is automatically displayed below the tab bar.
+
+**Notes:**
+- The `selected` attribute of `<tab_bar>` should be bound to a numeric field in your model
+- When `on_select` is triggered, update the bound field to change the displayed tab
+- Tab content is rendered dynamically based on the selected index
+- Icons are resolved using the framework's icon mapping system
 
 ---
 

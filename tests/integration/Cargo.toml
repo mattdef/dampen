@@ -12,6 +12,7 @@ dampen-iced = { workspace = true }
 dampen-dev = { path = "../../crates/dampen-dev" }
 serde = { workspace = true }
 tempfile = "3.0"
+iced = { workspace = true }
 
 [lib]
 path = "lib.rs"
@@ -19,3 +20,7 @@ path = "lib.rs"
 [[test]]
 name = "mode_parity_tests"
 path = "mode_parity_tests.rs"
+
+[[test]]
+name = "tab_content"
+path = "tab_content.rs"
