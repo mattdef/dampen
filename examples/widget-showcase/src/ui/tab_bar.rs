@@ -34,11 +34,11 @@ pub fn create_handler_registry() -> HandlerRegistry {
         "on_tab_selected",
         |model: &mut dyn std::any::Any, value: Box<dyn std::any::Any>| {
             let model = model.downcast_mut::<Model>().unwrap();
-            if let Some(idx_str) = value.downcast_ref::<String>() {
-                if let Ok(idx) = idx_str.parse::<i32>() {
-                    model.selected_tab = idx;
-                    println!("Tab selected: {}", model.selected_tab);
-                }
+            if let Some(idx_str) = value.downcast_ref::<String>()
+                && let Ok(idx) = idx_str.parse::<i32>()
+            {
+                model.selected_tab = idx;
+                println!("Tab selected: {}", model.selected_tab);
             }
         },
     );
@@ -55,13 +55,11 @@ pub fn create_handler_registry() -> HandlerRegistry {
         println!("Show welcome: {}", model.show_welcome);
     });
 
-    registry.register_simple("change_theme", |model: &mut dyn std::any::Any| {
-        let model = model.downcast_mut::<Model>().unwrap();
+    registry.register_simple("change_theme", |_model: &mut dyn std::any::Any| {
         println!("Theme changed");
     });
 
-    registry.register_simple("change_accent", |model: &mut dyn std::any::Any| {
-        let model = model.downcast_mut::<Model>().unwrap();
+    registry.register_simple("change_accent", |_model: &mut dyn std::any::Any| {
         println!("Accent color changed");
     });
 

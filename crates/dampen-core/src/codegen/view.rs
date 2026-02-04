@@ -2159,8 +2159,7 @@ fn generate_progress_bar(
 /// Parse a color string into TokenStream for code generation
 fn parse_color_to_tokens(color_str: &str) -> Option<TokenStream> {
     // Try hex color (#RRGGBB or #RRGGBBAA)
-    if color_str.starts_with('#') {
-        let hex = &color_str[1..];
+    if let Some(hex) = color_str.strip_prefix('#') {
         if hex.len() == 6 {
             if let (Ok(r), Ok(g), Ok(b)) = (
                 u8::from_str_radix(&hex[0..2], 16),
@@ -2172,19 +2171,19 @@ fn parse_color_to_tokens(color_str: &str) -> Option<TokenStream> {
                 let bf = b as f32 / 255.0;
                 return Some(quote! { iced::Color::from_rgb(#rf, #gf, #bf) });
             }
-        } else if hex.len() == 8 {
-            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+        } else if hex.len() == 8
+            && let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
                 u8::from_str_radix(&hex[0..2], 16),
                 u8::from_str_radix(&hex[2..4], 16),
                 u8::from_str_radix(&hex[4..6], 16),
                 u8::from_str_radix(&hex[6..8], 16),
-            ) {
-                let rf = r as f32 / 255.0;
-                let gf = g as f32 / 255.0;
-                let bf = b as f32 / 255.0;
-                let af = a as f32 / 255.0;
-                return Some(quote! { iced::Color::from_rgba(#rf, #gf, #bf, #af) });
-            }
+            )
+        {
+            let rf = r as f32 / 255.0;
+            let gf = g as f32 / 255.0;
+            let bf = b as f32 / 255.0;
+            let af = a as f32 / 255.0;
+            return Some(quote! { iced::Color::from_rgba(#rf, #gf, #bf, #af) });
         }
     }
 
@@ -2192,17 +2191,17 @@ fn parse_color_to_tokens(color_str: &str) -> Option<TokenStream> {
     if color_str.starts_with("rgb(") && color_str.ends_with(')') {
         let inner = &color_str[4..color_str.len() - 1];
         let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
-        if parts.len() == 3 {
-            if let (Ok(r), Ok(g), Ok(b)) = (
+        if parts.len() == 3
+            && let (Ok(r), Ok(g), Ok(b)) = (
                 parts[0].parse::<u8>(),
                 parts[1].parse::<u8>(),
                 parts[2].parse::<u8>(),
-            ) {
-                let rf = r as f32 / 255.0;
-                let gf = g as f32 / 255.0;
-                let bf = b as f32 / 255.0;
-                return Some(quote! { iced::Color::from_rgb(#rf, #gf, #bf) });
-            }
+            )
+        {
+            let rf = r as f32 / 255.0;
+            let gf = g as f32 / 255.0;
+            let bf = b as f32 / 255.0;
+            return Some(quote! { iced::Color::from_rgb(#rf, #gf, #bf) });
         }
     }
 
@@ -2210,18 +2209,18 @@ fn parse_color_to_tokens(color_str: &str) -> Option<TokenStream> {
     if color_str.starts_with("rgba(") && color_str.ends_with(')') {
         let inner = &color_str[5..color_str.len() - 1];
         let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
-        if parts.len() == 4 {
-            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+        if parts.len() == 4
+            && let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
                 parts[0].parse::<u8>(),
                 parts[1].parse::<u8>(),
                 parts[2].parse::<u8>(),
                 parts[3].parse::<f32>(),
-            ) {
-                let rf = r as f32 / 255.0;
-                let gf = g as f32 / 255.0;
-                let bf = b as f32 / 255.0;
-                return Some(quote! { iced::Color::from_rgba(#rf, #gf, #bf, #a) });
-            }
+            )
+        {
+            let rf = r as f32 / 255.0;
+            let gf = g as f32 / 255.0;
+            let bf = b as f32 / 255.0;
+            return Some(quote! { iced::Color::from_rgba(#rf, #gf, #bf, #a) });
         }
     }
 

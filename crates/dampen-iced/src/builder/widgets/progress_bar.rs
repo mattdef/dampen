@@ -41,8 +41,7 @@ impl ProgressBarStyle {
 /// Parse a color string into an iced Color
 fn parse_color(color_str: &str) -> Option<iced::Color> {
     // Try hex color (#RRGGBB or #RRGGBBAA)
-    if color_str.starts_with('#') {
-        let hex = &color_str[1..];
+    if let Some(hex) = color_str.strip_prefix('#') {
         if hex.len() == 6 {
             if let (Ok(r), Ok(g), Ok(b)) = (
                 u8::from_str_radix(&hex[0..2], 16),
@@ -55,20 +54,20 @@ fn parse_color(color_str: &str) -> Option<iced::Color> {
                     b as f32 / 255.0,
                 ));
             }
-        } else if hex.len() == 8 {
-            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+        } else if hex.len() == 8
+            && let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
                 u8::from_str_radix(&hex[0..2], 16),
                 u8::from_str_radix(&hex[2..4], 16),
                 u8::from_str_radix(&hex[4..6], 16),
                 u8::from_str_radix(&hex[6..8], 16),
-            ) {
-                return Some(iced::Color::from_rgba(
-                    r as f32 / 255.0,
-                    g as f32 / 255.0,
-                    b as f32 / 255.0,
-                    a as f32 / 255.0,
-                ));
-            }
+            )
+        {
+            return Some(iced::Color::from_rgba(
+                r as f32 / 255.0,
+                g as f32 / 255.0,
+                b as f32 / 255.0,
+                a as f32 / 255.0,
+            ));
         }
     }
 
@@ -76,18 +75,18 @@ fn parse_color(color_str: &str) -> Option<iced::Color> {
     if color_str.starts_with("rgb(") && color_str.ends_with(')') {
         let inner = &color_str[4..color_str.len() - 1];
         let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
-        if parts.len() == 3 {
-            if let (Ok(r), Ok(g), Ok(b)) = (
+        if parts.len() == 3
+            && let (Ok(r), Ok(g), Ok(b)) = (
                 parts[0].parse::<u8>(),
                 parts[1].parse::<u8>(),
                 parts[2].parse::<u8>(),
-            ) {
-                return Some(iced::Color::from_rgb(
-                    r as f32 / 255.0,
-                    g as f32 / 255.0,
-                    b as f32 / 255.0,
-                ));
-            }
+            )
+        {
+            return Some(iced::Color::from_rgb(
+                r as f32 / 255.0,
+                g as f32 / 255.0,
+                b as f32 / 255.0,
+            ));
         }
     }
 
@@ -95,20 +94,20 @@ fn parse_color(color_str: &str) -> Option<iced::Color> {
     if color_str.starts_with("rgba(") && color_str.ends_with(')') {
         let inner = &color_str[5..color_str.len() - 1];
         let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
-        if parts.len() == 4 {
-            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+        if parts.len() == 4
+            && let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
                 parts[0].parse::<u8>(),
                 parts[1].parse::<u8>(),
                 parts[2].parse::<u8>(),
                 parts[3].parse::<f32>(),
-            ) {
-                return Some(iced::Color::from_rgba(
-                    r as f32 / 255.0,
-                    g as f32 / 255.0,
-                    b as f32 / 255.0,
-                    a,
-                ));
-            }
+            )
+        {
+            return Some(iced::Color::from_rgba(
+                r as f32 / 255.0,
+                g as f32 / 255.0,
+                b as f32 / 255.0,
+                a,
+            ));
         }
     }
 
