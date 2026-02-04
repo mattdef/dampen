@@ -10,7 +10,6 @@
 
 // Allow cfg warnings from dampen_ui macro (internal feature checks)
 #![allow(unexpected_cfgs)]
-
 mod shared;
 
 // Ensure codegen and interpreted are mutually exclusive
@@ -48,6 +47,8 @@ enum Message {
     DismissError,
     /// System theme change
     SystemThemeChanged(String),
+    // Window persistence:
+    Window(iced::window::Id, iced::window::Event),
 }
 
 /// Main application structure with auto-generated view management (interpreted mode)
@@ -62,6 +63,8 @@ enum Message {
     exclude = ["theme/*"],
     switch_view_variant = "SwitchToView",
     default_view = "window",
+    persistence = true,
+    app_name = "macro-shared-state",
     shared_model = "SharedState"  // ← The magic happens here!
 )]
 struct MacroSharedStateApp;

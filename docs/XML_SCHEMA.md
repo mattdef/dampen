@@ -398,6 +398,47 @@ Individual radio button widget.
 | `min` | number | 0 | Minimum value |
 | `max` | number | 100 | Maximum value |
 | `value` | number/binding | 0 | Current progress |
+| `style` | string | primary | Predefined style: `primary`, `success`, `warning`, `danger`, `secondary` |
+| `bar_color` | color | - | Custom bar color (overrides style). Formats: `#RRGGBB`, `#RRGGBBAA`, `rgb(r,g,b)`, `rgba(r,g,b,a)` |
+| `background_color` | color | - | Custom background color. Formats: `#RRGGBB`, `#RRGGBBAA`, `rgb(r,g,b)`, `rgba(r,g,b,a)` |
+| `border_radius` | number | 0 | Corner radius in pixels |
+| `height` | number | - | Bar height in pixels (girth) |
+
+**Style Attribute:**
+The `style` attribute provides predefined color schemes from the theme palette:
+- `primary` - Primary theme color
+- `success` - Green/success color
+- `warning` - Orange/warning color  
+- `danger` - Red/danger color
+- `secondary` - Secondary theme color
+
+**Custom Styling:**
+When `bar_color` or `background_color` are specified, they override the style colors:
+
+```xml
+<!-- Using predefined style -->
+<progress_bar value="{progress}" style="success" />
+
+<!-- Custom colors -->
+<progress_bar value="{progress}" bar_color="#FF8C00" background_color="#E0E0E0" />
+
+<!-- With rounded corners and custom height -->
+<progress_bar 
+    value="{progress}" 
+    style="primary"
+    border_radius="10"
+    height="30"
+/>
+
+<!-- Fully customized -->
+<progress_bar 
+    value="{progress}" 
+    bar_color="rgb(0,200,100)"
+    background_color="#333333"
+    border_radius="20"
+    height="40"
+/>
+```
 
 ### `<for>` - Iteration Widget
 

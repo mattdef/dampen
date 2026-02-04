@@ -2043,15 +2043,189 @@ fn generate_progress_bar(
         }
     });
 
+    // Parse style attribute (default to "primary")
+    let style_str = node
+        .attributes
+        .get("style")
+        .and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                Some(s.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(|| "primary".to_string());
+
+    // Parse custom colors
+    let bar_color = node.attributes.get("bar_color").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            parse_color_to_tokens(s)
+        } else {
+            None
+        }
+    });
+
+    let background_color = node.attributes.get("background_color").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            parse_color_to_tokens(s)
+        } else {
+            None
+        }
+    });
+
+    // Parse border radius
+    let border_radius = node.attributes.get("border_radius").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    });
+
+    // Parse height (girth)
+    let height = node.attributes.get("height").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            s.parse::<f32>().ok()
+        } else {
+            None
+        }
+    });
+
+    // Generate style closure based on style attribute
+    let bar_color_expr = if let Some(color_tokens) = bar_color {
+        quote! { #color_tokens }
+    } else {
+        match style_str.as_str() {
+            "success" => quote! { palette.success.base.color },
+            "warning" => quote! { palette.warning.base.color },
+            "danger" => quote! { palette.danger.base.color },
+            "secondary" => quote! { palette.secondary.base.color },
+            _ => quote! { palette.primary.base.color }, // default to primary
+        }
+    };
+
+    // Generate background color expression
+    let background_color_expr = if let Some(color_tokens) = background_color {
+        quote! { #color_tokens }
+    } else {
+        quote! { palette.background.weak.color }
+    };
+
+    // Generate border expression
+    let border_expr = if let Some(radius) = border_radius {
+        quote! { iced::Border::default().rounded(#radius) }
+    } else {
+        quote! { iced::Border::default() }
+    };
+
+    // Generate height/girth expression
+    let girth_expr = if let Some(h) = height {
+        quote! { .girth(#h) }
+    } else {
+        quote! {}
+    };
+
     if let Some(max) = max_attr {
         Ok(quote! {
-            iced::widget::progress_bar(0.0..=#max, #value_expr).into()
+            iced::widget::progress_bar(0.0..=#max, #value_expr)
+                #girth_expr
+                .style(|theme: &iced::Theme| {
+                    let palette = theme.extended_palette();
+                    iced::widget::progress_bar::Style {
+                        background: iced::Background::Color(#background_color_expr),
+                        bar: iced::Background::Color(#bar_color_expr),
+                        border: #border_expr,
+                    }
+                })
+                .into()
         })
     } else {
         Ok(quote! {
-            iced::widget::progress_bar(0.0..=100.0, #value_expr).into()
+            iced::widget::progress_bar(0.0..=100.0, #value_expr)
+                #girth_expr
+                .style(|theme: &iced::Theme| {
+                    let palette = theme.extended_palette();
+                    iced::widget::progress_bar::Style {
+                        background: iced::Background::Color(#background_color_expr),
+                        bar: iced::Background::Color(#bar_color_expr),
+                        border: #border_expr,
+                    }
+                })
+                .into()
         })
     }
+}
+
+/// Parse a color string into TokenStream for code generation
+fn parse_color_to_tokens(color_str: &str) -> Option<TokenStream> {
+    // Try hex color (#RRGGBB or #RRGGBBAA)
+    if color_str.starts_with('#') {
+        let hex = &color_str[1..];
+        if hex.len() == 6 {
+            if let (Ok(r), Ok(g), Ok(b)) = (
+                u8::from_str_radix(&hex[0..2], 16),
+                u8::from_str_radix(&hex[2..4], 16),
+                u8::from_str_radix(&hex[4..6], 16),
+            ) {
+                let rf = r as f32 / 255.0;
+                let gf = g as f32 / 255.0;
+                let bf = b as f32 / 255.0;
+                return Some(quote! { iced::Color::from_rgb(#rf, #gf, #bf) });
+            }
+        } else if hex.len() == 8 {
+            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+                u8::from_str_radix(&hex[0..2], 16),
+                u8::from_str_radix(&hex[2..4], 16),
+                u8::from_str_radix(&hex[4..6], 16),
+                u8::from_str_radix(&hex[6..8], 16),
+            ) {
+                let rf = r as f32 / 255.0;
+                let gf = g as f32 / 255.0;
+                let bf = b as f32 / 255.0;
+                let af = a as f32 / 255.0;
+                return Some(quote! { iced::Color::from_rgba(#rf, #gf, #bf, #af) });
+            }
+        }
+    }
+
+    // Try RGB format: rgb(r,g,b)
+    if color_str.starts_with("rgb(") && color_str.ends_with(')') {
+        let inner = &color_str[4..color_str.len() - 1];
+        let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
+        if parts.len() == 3 {
+            if let (Ok(r), Ok(g), Ok(b)) = (
+                parts[0].parse::<u8>(),
+                parts[1].parse::<u8>(),
+                parts[2].parse::<u8>(),
+            ) {
+                let rf = r as f32 / 255.0;
+                let gf = g as f32 / 255.0;
+                let bf = b as f32 / 255.0;
+                return Some(quote! { iced::Color::from_rgb(#rf, #gf, #bf) });
+            }
+        }
+    }
+
+    // Try RGBA format: rgba(r,g,b,a)
+    if color_str.starts_with("rgba(") && color_str.ends_with(')') {
+        let inner = &color_str[5..color_str.len() - 1];
+        let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
+        if parts.len() == 4 {
+            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+                parts[0].parse::<u8>(),
+                parts[1].parse::<u8>(),
+                parts[2].parse::<u8>(),
+                parts[3].parse::<f32>(),
+            ) {
+                let rf = r as f32 / 255.0;
+                let gf = g as f32 / 255.0;
+                let bf = b as f32 / 255.0;
+                return Some(quote! { iced::Color::from_rgba(#rf, #gf, #bf, #a) });
+            }
+        }
+    }
+
+    None
 }
 
 /// Generate text input widget

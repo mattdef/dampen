@@ -1,35 +1,55 @@
 <column padding="40" spacing="30">
-    <row spacing="10">
-        <button label="← Back" on_click="switch_to_window" />
-        <text value="ProgressBar Widget Showcase" size="32" weight="bold" />
-    </row>
-    
-    <text value="Primary Style (Default)" size="18" />
-    <progress_bar min="0" max="100" value="{primary_progress}" style="primary" />
-    <text value="{primary_progress}%" size="14" color="#666666" />
-    
-    <text value="Success Style" size="18" />
-    <progress_bar min="0" max="100" value="{success_progress}" style="success" />
-    <text value="{success_progress}%" size="14" color="#666666" />
-    
-    <text value="Warning Style" size="18" />
-    <progress_bar min="0" max="100" value="{warning_progress}" style="warning" />
-    <text value="{warning_progress}%" size="14" color="#666666" />
-    
-    <text value="Danger Style" size="18" />
-    <progress_bar min="0" max="100" value="{danger_progress}" style="danger" />
-    <text value="{danger_progress}%" size="14" color="#666666" />
-    
-    <text value="Secondary Style" size="18" />
-    <progress_bar min="0" max="100" value="{secondary_progress}" style="secondary" />
-    <text value="{secondary_progress}%" size="14" color="#666666" />
-    
-    <text value="Custom Range (0-50)" size="18" />
-    <progress_bar min="0" max="50" value="{custom_progress}" style="primary" />
-    <text value="{custom_progress}/50" size="14" color="#666666" />
-    
-    <row spacing="10">
-        <button label="Reset" on_click="reset_progress" />
-        <button label="Increment" on_click="increment_progress" />
-    </row>
+    <scrollable>
+        <container width="fill" height="fill" padding="10" spacing="10">
+            <row spacing="10">
+                <button label="← Back" on_click="switch_to_window" />
+                <text value="ProgressBar Widget Showcase" size="32" weight="bold" />
+            </row>
+
+            <text value="Primary Style (Default)" size="18" />
+            <progress_bar min="0" max="100" value="{primary_progress}" style="primary" />
+            <text value="{primary_progress}%" size="14" color="#666666" />
+
+            <text value="Success Style" size="18" />
+            <progress_bar min="0" max="100" value="{success_progress}" style="success" />
+            <text value="{success_progress}%" size="14" color="#666666" />
+
+            <text value="Warning Style" size="18" />
+            <progress_bar min="0" max="100" value="{warning_progress}" style="warning" />
+            <text value="{warning_progress}%" size="14" color="#666666" />
+
+            <text value="Danger Style" size="18" />
+            <progress_bar min="0" max="100" value="{danger_progress}" style="danger" />
+            <text value="{danger_progress}%" size="14" color="#666666" />
+
+            <text value="Secondary Style" size="18" />
+            <progress_bar min="0" max="100" value="{secondary_progress}" style="secondary" />
+            <text value="{secondary_progress}%" size="14" color="#666666" />
+
+            <text value="Custom Range (0-50)" size="18" />
+            <progress_bar min="0" max="50" value="{custom_progress}" style="primary" />
+            <text value="{custom_progress}/50" size="14" color="#666666" />
+
+            <text value="Custom Colors (Orange bar, Light gray background)" size="18" />
+            <progress_bar min="0" max="100" value="{primary_progress}" bar_color="#FF8C00" background_color="#E0E0E0" />
+            <text value="{primary_progress}%" size="14" color="#666666" />
+
+            <text value="Rounded Corners (radius 10)" size="18" />
+            <progress_bar min="0" max="100" value="{success_progress}" style="success" border_radius="10" />
+            <text value="{success_progress}%" size="14" color="#666666" />
+
+            <text value="Custom Height (40px)" size="18" />
+            <progress_bar min="0" max="100" value="{warning_progress}" style="warning" height="40" />
+            <text value="{warning_progress}%" size="14" color="#666666" />
+
+            <text value="Fully Custom (Green, rounded, thick)" size="18" />
+            <progress_bar min="0" max="100" value="{danger_progress}" bar_color="rgb(0,200,100)" background_color="#333333" border_radius="20" height="30" />
+            <text value="{danger_progress}%" size="14" color="#666666" />
+
+            <row spacing="10">
+                <button label="Reset" on_click="reset_progress" />
+                <button label="Increment" on_click="increment_progress" />
+            </row>
+        </container>
+    </scrollable>
 </column>

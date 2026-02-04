@@ -260,7 +260,16 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
         },
         WidgetKind::ProgressBar => WidgetSchema {
             required: &[],
-            optional: &["value", "min", "max", "style"],
+            optional: &[
+                "value",
+                "min",
+                "max",
+                "style",
+                "bar_color",
+                "background_color",
+                "border_radius",
+                "height",
+            ],
             events: &[],
             style_attributes: COMMON_STYLE_ATTRIBUTES,
             layout_attributes: COMMON_LAYOUT_ATTRIBUTES,
