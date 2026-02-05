@@ -269,6 +269,7 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
                 "background_color",
                 "border_radius",
                 "height",
+                "width",
             ],
             events: &[],
             style_attributes: COMMON_STYLE_ATTRIBUTES,

@@ -2057,13 +2057,17 @@ fn generate_progress_bar(
         .unwrap_or_else(|| "primary".to_string());
 
     // Parse custom colors
-    let bar_color = node.attributes.get("bar_color").and_then(|attr| {
+    // bar_color is bindable - handle both static and binding cases
+    let bar_color_attr = node.attributes.get("bar_color");
+    let bar_color_static = bar_color_attr.and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
             parse_color_to_tokens(s)
         } else {
             None
         }
     });
+    let bar_color_binding =
+        bar_color_attr.filter(|attr| !matches!(attr, AttributeValue::Static(_)));
 
     let background_color = node.attributes.get("background_color").and_then(|attr| {
         if let AttributeValue::Static(s) = attr {
@@ -2091,9 +2095,100 @@ fn generate_progress_bar(
         }
     });
 
+    // Parse width
+    let width = node.attributes.get("width").and_then(|attr| {
+        if let AttributeValue::Static(s) = attr {
+            Some(generate_length_expr(s))
+        } else {
+            None
+        }
+    });
+
     // Generate style closure based on style attribute
-    let bar_color_expr = if let Some(color_tokens) = bar_color {
+    let bar_color_expr = if let Some(color_tokens) = bar_color_static {
         quote! { #color_tokens }
+    } else if let Some(attr) = bar_color_binding {
+        // bar_color is bindable - generate inline runtime color parsing
+        let color_expr = generate_attribute_value(attr, model_ident);
+        quote! {
+            {
+                let color_str = #color_expr;
+                // Inline color parsing for bindable bar_color
+                let parsed_color = (|| {
+                    let s = color_str.trim();
+                    // Try hex color (#RRGGBB or #RRGGBBAA)
+                    if let Some(hex) = s.strip_prefix('#') {
+                        if hex.len() == 6 {
+                            if let (Ok(r), Ok(g), Ok(b)) = (
+                                u8::from_str_radix(&hex[0..2], 16),
+                                u8::from_str_radix(&hex[2..4], 16),
+                                u8::from_str_radix(&hex[4..6], 16),
+                            ) {
+                                return Some(iced::Color::from_rgb(
+                                    r as f32 / 255.0,
+                                    g as f32 / 255.0,
+                                    b as f32 / 255.0,
+                                ));
+                            }
+                        } else if hex.len() == 8 {
+                            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+                                u8::from_str_radix(&hex[0..2], 16),
+                                u8::from_str_radix(&hex[2..4], 16),
+                                u8::from_str_radix(&hex[4..6], 16),
+                                u8::from_str_radix(&hex[6..8], 16),
+                            ) {
+                                return Some(iced::Color::from_rgba(
+                                    r as f32 / 255.0,
+                                    g as f32 / 255.0,
+                                    b as f32 / 255.0,
+                                    a as f32 / 255.0,
+                                ));
+                            }
+                        }
+                    }
+                    // Try RGB format: rgb(r,g,b)
+                    if s.starts_with("rgb(") && s.ends_with(')') {
+                        let inner = &s[4..s.len() - 1];
+                        let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
+                        if parts.len() == 3 {
+                            if let (Ok(r), Ok(g), Ok(b)) = (
+                                parts[0].parse::<u8>(),
+                                parts[1].parse::<u8>(),
+                                parts[2].parse::<u8>(),
+                            ) {
+                                return Some(iced::Color::from_rgb(
+                                    r as f32 / 255.0,
+                                    g as f32 / 255.0,
+                                    b as f32 / 255.0,
+                                ));
+                            }
+                        }
+                    }
+                    // Try RGBA format: rgba(r,g,b,a)
+                    if s.starts_with("rgba(") && s.ends_with(')') {
+                        let inner = &s[5..s.len() - 1];
+                        let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
+                        if parts.len() == 4 {
+                            if let (Ok(r), Ok(g), Ok(b), Ok(a)) = (
+                                parts[0].parse::<u8>(),
+                                parts[1].parse::<u8>(),
+                                parts[2].parse::<u8>(),
+                                parts[3].parse::<f32>(),
+                            ) {
+                                return Some(iced::Color::from_rgba(
+                                    r as f32 / 255.0,
+                                    g as f32 / 255.0,
+                                    b as f32 / 255.0,
+                                    a,
+                                ));
+                            }
+                        }
+                    }
+                    None
+                })();
+                parsed_color.unwrap_or_else(|| palette.primary.base.color)
+            }
+        }
     } else {
         match style_str.as_str() {
             "success" => quote! { palette.success.base.color },
@@ -2125,10 +2220,18 @@ fn generate_progress_bar(
         quote! {}
     };
 
+    // Generate width expression (using length() method)
+    let width_expr = if let Some(w) = width {
+        quote! { .length(#w) }
+    } else {
+        quote! {}
+    };
+
     if let Some(max) = max_attr {
         Ok(quote! {
             iced::widget::progress_bar(0.0..=#max, #value_expr)
                 #girth_expr
+                #width_expr
                 .style(|theme: &iced::Theme| {
                     let palette = theme.extended_palette();
                     iced::widget::progress_bar::Style {
@@ -2143,6 +2246,7 @@ fn generate_progress_bar(
         Ok(quote! {
             iced::widget::progress_bar(0.0..=100.0, #value_expr)
                 #girth_expr
+                #width_expr
                 .style(|theme: &iced::Theme| {
                     let palette = theme.extended_palette();
                     iced::widget::progress_bar::Style {

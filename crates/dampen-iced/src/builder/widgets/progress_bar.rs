@@ -2,6 +2,7 @@
 
 use crate::HandlerMessage;
 use crate::builder::DampenWidgetBuilder;
+use crate::builder::helpers::parse_length;
 use dampen_core::ir::node::{AttributeValue, WidgetNode};
 use iced::{Element, Renderer, Theme};
 
@@ -156,13 +157,12 @@ impl<'a> DampenWidgetBuilder<'a> {
             .unwrap_or(ProgressBarStyle::Primary);
 
         // Parse custom colors
-        let bar_color = node.attributes.get("bar_color").and_then(|attr| {
-            if let AttributeValue::Static(s) = attr {
-                parse_color(s)
-            } else {
-                None
-            }
-        });
+        // bar_color is bindable - evaluate attribute to support bindings
+        let bar_color_str = node
+            .attributes
+            .get("bar_color")
+            .map(|attr| self.evaluate_attribute(attr));
+        let bar_color = bar_color_str.as_deref().and_then(parse_color);
 
         let background_color = node.attributes.get("background_color").and_then(|attr| {
             if let AttributeValue::Static(s) = attr {
@@ -190,12 +190,26 @@ impl<'a> DampenWidgetBuilder<'a> {
             }
         });
 
+        // Parse width
+        let width = node.attributes.get("width").and_then(|attr| {
+            if let AttributeValue::Static(s) = attr {
+                parse_length(s)
+            } else {
+                None
+            }
+        });
+
         // Create progress bar
         let mut progress_bar = iced::widget::progress_bar(min..=max, clamped_value);
 
         // Apply height if specified
         if let Some(h) = height {
             progress_bar = progress_bar.girth(h);
+        }
+
+        // Apply width if specified
+        if let Some(w) = width {
+            progress_bar = progress_bar.length(w);
         }
 
         // Apply style

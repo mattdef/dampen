@@ -43,7 +43,15 @@
             <text value="{warning_progress}%" size="14" color="#666666" />
 
             <text value="Fully Custom (Green, rounded, thick)" size="18" />
-            <progress_bar min="0" max="100" value="{danger_progress}" bar_color="rgb(0,200,100)" background_color="#333333" border_radius="20" height="30" />
+            <progress_bar
+                min="0"
+                max="100"
+                value="{danger_progress}"
+                bar_color="rgb(0,200,100)"
+                background_color="#333333"
+                border_radius="20"
+                height="20"
+                width="300" />
             <text value="{danger_progress}%" size="14" color="#666666" />
 
             <row spacing="10">
