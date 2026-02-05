@@ -8,13 +8,13 @@
     <text value="Basic Table (Field mapping)" size="18" weight="bold" />
     <data_table data="{users}" height="200">
         <data_column header="ID" field="id" width="50" />
-        <data_column header="Name" field="name" width="150" />
+        <data_column header="Name" field="name" width="150" align_x="center" />
         <data_column header="Email" field="email" width="fill" />
     </data_table>
 
     <text value="Table with Custom Templates" size="18" weight="bold" />
     <data_table data="{users}" height="200">
-        <data_column header="User Info" width="fill">
+        <data_column header="User Info" width="fill" align_x="center">
             <template>
                 <row spacing="10" align_y="center">
                     <text value="{item.name}" weight="bold" />
@@ -22,7 +22,7 @@
                 </row>
             </template>
         </data_column>
-        <data_column header="Actions" width="100">
+        <data_column header="Actions" width="100" align_x="end">
             <template>
                 <button label="Edit {item.id}" />
             </template>

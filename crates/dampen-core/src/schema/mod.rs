@@ -404,7 +404,14 @@ pub fn get_widget_schema(kind: &WidgetKind) -> WidgetSchema {
         },
         WidgetKind::DataColumn => WidgetSchema {
             required: &["header"],
-            optional: &["field", "width", "min_width", "max_width", "align"],
+            optional: &[
+                "field",
+                "width",
+                "min_width",
+                "max_width",
+                "align_x",
+                "align_y",
+            ],
             events: &[],
             style_attributes: &[],
             layout_attributes: &[],

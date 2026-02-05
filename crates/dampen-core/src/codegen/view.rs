@@ -4618,6 +4618,30 @@ fn generate_data_table(
                 col = quote! { #col.width(#width_expr) };
             }
 
+            // Apply align_x if specified
+            if let Some(align_x) = child.attributes.get("align_x")
+                && let AttributeValue::Static(s) = align_x
+            {
+                let align_expr = match s.to_lowercase().as_str() {
+                    "center" => quote! { iced::alignment::Horizontal::Center },
+                    "end" | "right" => quote! { iced::alignment::Horizontal::Right },
+                    _ => quote! { iced::alignment::Horizontal::Left },
+                };
+                col = quote! { #col.align_x(#align_expr) };
+            }
+
+            // Apply align_y if specified
+            if let Some(align_y) = child.attributes.get("align_y")
+                && let AttributeValue::Static(s) = align_y
+            {
+                let align_expr = match s.to_lowercase().as_str() {
+                    "center" => quote! { iced::alignment::Vertical::Center },
+                    "end" | "bottom" => quote! { iced::alignment::Vertical::Bottom },
+                    _ => quote! { iced::alignment::Vertical::Top },
+                };
+                col = quote! { #col.align_y(#align_expr) };
+            }
+
             column_exprs.push(col);
         }
     }

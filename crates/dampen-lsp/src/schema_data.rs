@@ -508,10 +508,15 @@ Displays progress as a horizontal bar.\n\n\
 ## Description\n\n\
 The `progress_bar` widget shows a visual representation of progress, typically from 0% to 100%.\n\n\
 ## Optional Attributes\n\n\
-- `value` - Current progress value\n\
+- `value` - Current progress value (supports bindings)\n\
 - `min` - Minimum value (default: 0)\n\
 - `max` - Maximum value (default: 100)\n\
-- `style` - Visual style variant\n\n\
+- `style` - Predefined style: `primary`, `success`, `warning`, `danger`, `secondary`\n\
+- `bar_color` - Custom bar color (supports bindings). Formats: `#RRGGBB`, `#RRGGBBAA`, `rgb(r,g,b)`, `rgba(r,g,b,a)`\n\
+- `background_color` - Custom background color. Formats: `#RRGGBB`, `#RRGGBBAA`, `rgb(r,g,b)`, `rgba(r,g,b,a)`\n\
+- `border_radius` - Corner radius in pixels\n\
+- `height` - Bar height in pixels (girth)\n\
+- `width` - Bar width: fixed pixels, `fill`, `shrink`, or percentage\n\n\
 ## Style Attributes\n\n\
 - `background` - Track background\n\
 - `color` - Progress fill color\n\n\
@@ -521,7 +526,12 @@ The `progress_bar` widget shows a visual representation of progress, typically f
     value=\"{|download_progress|}\"\n\
     min=\"0\"\n\
     max=\"100\"\n\
-    color=\"#4CAF50\"/>\n\
+    style=\"success\"\n\
+    bar_color=\"#4CAF50\"\n\
+    background_color=\"#E0E0E0\"\n\
+    border_radius=\"10\"\n\
+    height=\"12\"\n\
+    width=\"fill\"/>\n\
 ```\n\n\
 ## See Also\n\n\
 - `slider` - Interactive value selector",
@@ -910,14 +920,15 @@ The `data_column` widget defines a column within a `data_table`, specifying how 
 - `width` - Column width\n\
 - `min_width` - Minimum column width\n\
 - `max_width` - Maximum column width\n\
-- `align` - Text alignment: \"left\", \"center\", \"right\"\n\n\
+- `align_x` - Horizontal text alignment: `start`/`left`, `center`, `end`/`right`\n\
+- `align_y` - Vertical text alignment: `start`/`top`, `center`, `end`/`bottom`\n\n\
 ## Example\n\n\
 ```xml\n\
 <data_column \n\
     header=\"Price\"\n\
     field=\"price\"\n\
     width=\"100px\"\n\
-    align=\"right\"/>\n\
+    align_x=\"end\"/>\n\
 ```\n\n\
 ## See Also\n\n\
 - `data_table` - Table container\n\

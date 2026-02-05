@@ -814,7 +814,7 @@ Table widget for displaying tabular data.
 >
     <data_column header="Name" field="name" width="200" />
     <data_column header="Email" field="email" width="fill" />
-    <data_column header="Age" field="age" width="80" align="center" />
+    <data_column header="Age" field="age" width="80" align_x="center" />
 </data_table>
 ```
 
@@ -845,7 +845,8 @@ Column definition for `<data_table>`.
     field="data_field"
     width="150"
     min_width="100"
-    align="left"
+    align_x="start"
+    align_y="center"
 />
 ```
 
@@ -857,7 +858,8 @@ Column definition for `<data_table>`.
 | `width` | length | auto | Column width |
 | `min_width` | length | - | Minimum column width |
 | `max_width` | length | - | Maximum column width |
-| `align` | align | left | Text alignment: left, center, right |
+| `align_x` | align | start | Horizontal text alignment: `start`/`left`, `center`, `end`/`right` |
+| `align_y` | align | start | Vertical text alignment: `start`/`top`, `center`, `end`/`bottom` |
 
 ---
 

@@ -120,7 +120,31 @@ impl<'a> DampenWidgetBuilder<'a> {
                     },
                 );
 
-                col.width(width)
+                let mut col = col.width(width);
+
+                // Apply align_x if specified
+                if let Some(align_attr) = col_node.attributes.get("align_x") {
+                    let align_str = self.evaluate_attribute(align_attr);
+                    let align = match align_str.to_lowercase().as_str() {
+                        "center" => iced::alignment::Horizontal::Center,
+                        "end" | "right" => iced::alignment::Horizontal::Right,
+                        _ => iced::alignment::Horizontal::Left,
+                    };
+                    col = col.align_x(align);
+                }
+
+                // Apply align_y if specified
+                if let Some(align_attr) = col_node.attributes.get("align_y") {
+                    let align_str = self.evaluate_attribute(align_attr);
+                    let align = match align_str.to_lowercase().as_str() {
+                        "center" => iced::alignment::Vertical::Center,
+                        "end" | "bottom" => iced::alignment::Vertical::Bottom,
+                        _ => iced::alignment::Vertical::Top,
+                    };
+                    col = col.align_y(align);
+                }
+
+                col
             })
             .collect();
 
